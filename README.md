@@ -1,5 +1,11 @@
 # SkillScan
 
+[![CI](https://github.com/your-org/skillscan/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/skillscan/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/your-org/skillscan/actions/workflows/codeql.yml/badge.svg)](https://github.com/your-org/skillscan/actions/workflows/codeql.yml)
+[![Coverage](https://codecov.io/gh/your-org/skillscan/graph/badge.svg)](https://codecov.io/gh/your-org/skillscan)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+
 SkillScan is a standalone CLI security analyzer for AI skills and tool bundles.
 
 It scans local artifacts (code + markdown instructions), detects risky patterns, and returns deterministic verdicts:
@@ -157,6 +163,10 @@ Shell script uninstall is also provided at `scripts/uninstall.sh`.
 - Testing guide: `docs/TESTING.md`
 - Rules and scoring: `docs/RULES.md`
 - Comprehensive examples: `docs/EXAMPLES.md`
+
+## License
+
+Licensed under Apache-2.0. See `LICENSE`.
 
 ## Security Note
 

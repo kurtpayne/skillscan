@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from skillscan.intel import config_path, intel_dir, load_store
-from skillscan.intel_update import sync_managed
+from skillscan.intel_update import _parse_ioc_text, sync_managed
 
 
 class _FakeResponse:
@@ -59,7 +59,7 @@ def test_sync_managed_skips_fresh(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("SKILLSCAN_HOME", str(tmp_path / ".skillscan"))
 
     target = intel_dir() / "managed_test_ips.json"
-    target.write_text('{"domains": [], "ips": ["1.2.3.4"], "urls": []}', encoding="utf-8")
+    target.write_text('{"domains": [], "ips": ["1.2.3.4"], "urls": [], "cidrs": []}', encoding="utf-8")
 
     def fake_load_sources() -> list[dict[str, str]]:
         return [
@@ -75,3 +75,14 @@ def test_sync_managed_skips_fresh(monkeypatch, tmp_path: Path) -> None:
 
     stats = sync_managed(max_age_seconds=3600, force=False)
     assert stats["skipped"] == 1
+
+
+def test_parse_spamhaus_drop_cidr() -> None:
+    parsed = _parse_ioc_text("203.0.113.0/24 ; SBL12345\n", "spamhaus_drop")
+    assert "203.0.113.0/24" in parsed["cidrs"]
+
+
+def test_parse_hostfile_domain() -> None:
+    parsed = _parse_ioc_text("0.0.0.0 bad.example\n127.0.0.1 localhost\n", "hostfile")
+    assert "bad.example" in parsed["domains"]
+    assert "localhost" not in parsed["domains"]

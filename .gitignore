@@ -7,6 +7,42 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*$py.class
 build/
 dist/
 *.egg-info/
+
+# Distribution / packaging
+*.egg
+MANIFEST
+pip-wheel-metadata/
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+hypothesis/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environments
+.env
+.env.*
+env/
+venv/
+ENV/
+
+# Editors / IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log

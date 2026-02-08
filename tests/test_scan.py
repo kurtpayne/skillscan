@@ -1,6 +1,8 @@
+import json
 from pathlib import Path
 
 from skillscan.analysis import scan
+from skillscan.intel import add_source
 from skillscan.models import Policy, Verdict
 from skillscan.policies import load_builtin_policy
 
@@ -45,3 +47,17 @@ def test_policy_block_domain_adds_finding() -> None:
     target = Path("tests/fixtures/policy")
     report = scan(target, policy, "custom")
     assert any(f.id == "POL-IOC-BLOCK" for f in report.findings)
+
+
+def test_cidr_ioc_match(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("SKILLSCAN_HOME", str(tmp_path / ".skillscan"))
+    custom_ioc = tmp_path / "cidr_iocs.json"
+    custom_ioc.write_text(
+        json.dumps({"domains": [], "ips": [], "urls": [], "cidrs": ["203.0.113.0/24"]}),
+        encoding="utf-8",
+    )
+    add_source(name="cidr-test", kind="ioc", source_path=custom_ioc)
+    policy = load_builtin_policy("strict")
+    target = Path("tests/fixtures/policy")
+    report = scan(target, policy, "builtin:strict")
+    assert any(f.id == "IOC-001" for f in report.findings)

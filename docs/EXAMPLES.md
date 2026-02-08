@@ -28,3 +28,5 @@ skillscan scan examples/showcase/09_policy_block_domain --policy examples/polici
 ```
 
 For a single-page summary, see `examples/showcase/INDEX.md`.
+
+Each triggered finding in these examples includes an in-report `mitigation` field with recommended remediation steps.

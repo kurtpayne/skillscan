@@ -105,6 +105,17 @@ VulnVersionMap = dict[str, VulnRecord]
 VulnPackageMap = dict[str, VulnVersionMap]
 VulnDB = dict[str, VulnPackageMap]
 
+MITIGATIONS = {
+    "MAL-001": "Remove download-and-execute chains. Pin and verify artifacts before execution.",
+    "MAL-002": "Avoid decode-and-exec flows. Store reviewed scripts in-repo and execute only trusted files.",
+    "ABU-001": "Remove coercive setup steps. Do not ask users to disable security controls.",
+    "EXF-001": "Do not read secret files unless strictly required; use scoped secret providers instead.",
+    "IOC-001": "Block install/use and investigate indicator reputation. Remove all references to this IOC.",
+    "POL-IOC-BLOCK": "Replace blocked destination with an approved domain or remove network dependency.",
+    "DEP-001": "Upgrade to a non-vulnerable dependency version and refresh lockfiles.",
+    "DEP-UNPIN": "Pin exact dependency versions to improve reproducibility and reduce supply-chain risk.",
+}
+
 
 @dataclass
 class PreparedTarget:
@@ -310,7 +321,7 @@ def _merge_user_intel(ioc_db: IOCDB, vuln_db: VulnDB) -> tuple[IOCDB, VulnDB, li
         except Exception:
             continue
         if source.kind == "ioc" and isinstance(payload, dict):
-            for key in ("domains", "ips", "urls"):
+            for key in ("domains", "ips", "urls", "cidrs"):
                 values = payload.get(key, [])
                 if isinstance(values, list):
                     ioc_db.setdefault(key, []).extend([str(v).lower() for v in values])
@@ -320,10 +331,24 @@ def _merge_user_intel(ioc_db: IOCDB, vuln_db: VulnDB) -> tuple[IOCDB, VulnDB, li
                 if isinstance(values, dict):
                     eco.update(values)
         sources.append(f"user:{source.name}")
-    for key in ("domains", "ips", "urls"):
+    for key in ("domains", "ips", "urls", "cidrs"):
         deduped = sorted(set(ioc_db.get(key, [])))
         ioc_db[key] = deduped
     return ioc_db, vuln_db, sources
+
+
+def _ip_in_cidrs(ip_value: str, cidrs: list[str]) -> bool:
+    try:
+        ip_obj = ipaddress.ip_address(ip_value)
+    except ValueError:
+        return False
+    for cidr in cidrs:
+        try:
+            if ip_obj in ipaddress.ip_network(cidr, strict=False):
+                return True
+        except ValueError:
+            continue
+    return False
 
 
 def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
@@ -357,6 +382,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                                 evidence_path=str(path),
                                 line=line_no,
                                 snippet=line.strip()[:240],
+                                mitigation=MITIGATIONS.get(rule_id),
                             )
                         )
                         break
@@ -394,6 +420,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                             title=f"Unpinned python dependency: {name}",
                             evidence_path=str(path),
                             snippet=spec,
+                            mitigation=MITIGATIONS.get("DEP-UNPIN"),
                         )
                     )
             if lower == "package.json":
@@ -421,6 +448,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                                 title=f"Unpinned npm dependency: {name}",
                                 evidence_path=str(path),
                                 snippet=f"{name}: {version}",
+                                mitigation=MITIGATIONS.get("DEP-UNPIN"),
                             )
                         )
 
@@ -432,6 +460,8 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
             if ioc.kind == "domain" and ioc.value.lower() in ioc_db.get("domains", []):
                 listed = True
             if ioc.kind == "ip" and ioc.value in ioc_db.get("ips", []):
+                listed = True
+            if ioc.kind == "ip" and _ip_in_cidrs(ioc.value, ioc_db.get("cidrs", [])):
                 listed = True
             if ioc.kind == "url" and ioc.value.lower() in ioc_db.get("urls", []):
                 listed = True
@@ -453,6 +483,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                         title="Domain blocked by local policy",
                         evidence_path=ioc.source_path,
                         snippet=ioc.value,
+                        mitigation=MITIGATIONS.get("POL-IOC-BLOCK"),
                     )
                 )
 
@@ -467,6 +498,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                         title="IOC matched local blocklist",
                         evidence_path=ioc.source_path,
                         snippet=ioc.value,
+                        mitigation=MITIGATIONS.get("IOC-001"),
                     )
                 )
 
@@ -480,6 +512,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                     title=f"Vulnerable dependency: {dep.name}@{dep.version}",
                     evidence_path=dep.name,
                     snippet=dep.vulnerability_id,
+                    mitigation=MITIGATIONS.get("DEP-001"),
                 )
             )
 

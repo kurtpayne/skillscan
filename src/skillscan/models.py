@@ -29,6 +29,7 @@ class Finding(BaseModel):
     evidence_path: str
     line: int | None = None
     snippet: str = ""
+    mitigation: str | None = None
 
 
 class IOC(BaseModel):

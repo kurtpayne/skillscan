@@ -8,10 +8,21 @@ Current built-in IDs:
 2. `MAL-002` (high): base64 decode plus execution patterns.
 3. `ABU-001` (high): coercive instruction text (for example disabling security controls).
 4. `EXF-001` (high): sensitive credential file access markers.
-5. `IOC-001` (high): IOC matched against local intel blocklists.
+5. `IOC-001` (high): IOC matched against local intel blocklists (domain, URL, IP, or CIDR netblock).
 6. `POL-IOC-BLOCK` (high): domain matched explicit `block_domains` policy list.
 7. `DEP-001` (severity from feed): vulnerable dependency version matched local vuln data.
 8. `DEP-UNPIN` (medium): unpinned dependency version specification.
+
+## Mitigation guidance by rule
+
+1. `MAL-001`: Remove download-and-execute chains. Pin and verify artifacts before execution.
+2. `MAL-002`: Remove decode-and-exec flows. Commit reviewed scripts and execute trusted local files only.
+3. `ABU-001`: Remove coercive setup instructions and never require disabling host security controls.
+4. `EXF-001`: Avoid direct secret-file access; use scoped secret providers and least-privilege credentials.
+5. `IOC-001`: Treat as high risk, block deployment, and remove indicator references pending investigation.
+6. `POL-IOC-BLOCK`: Replace blocked domains with approved endpoints or remove outbound dependency.
+7. `DEP-001`: Upgrade affected package versions and regenerate lockfiles.
+8. `DEP-UNPIN`: Pin exact package versions to reduce supply-chain drift and improve reproducibility.
 
 ## Capability inference rules
 

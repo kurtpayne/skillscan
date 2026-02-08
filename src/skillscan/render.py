@@ -37,6 +37,7 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
     findings.add_column("Category")
     findings.add_column("Evidence")
     findings.add_column("Snippet")
+    findings.add_column("Mitigation")
     for finding in report.findings[:20]:
         findings.add_row(
             finding.id,
@@ -44,6 +45,7 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
             finding.category,
             f"{finding.evidence_path}:{finding.line or '-'}",
             finding.snippet[:90],
+            (finding.mitigation or "")[:110],
         )
     if report.findings:
         console.print(findings)

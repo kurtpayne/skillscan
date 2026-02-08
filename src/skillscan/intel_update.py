@@ -62,10 +62,17 @@ def _parse_ioc_text(raw: str, source_format: str) -> dict[str, list[str]]:
     urls: set[str] = set()
     ips: set[str] = set()
     domains: set[str] = set()
+    cidrs: set[str] = set()
 
     for line in raw.splitlines():
         line = line.strip()
-        if not line or line.startswith("#"):
+        if not line:
+            continue
+        if line.startswith("#") or line.startswith(";") or line.startswith("!"):
+            continue
+        if ";" in line:
+            line = line.split(";", 1)[0].strip()
+        if not line:
             continue
         if source_format == "url_text" and line.startswith("http"):
             urls.add(line.lower())
@@ -76,12 +83,37 @@ def _parse_ioc_text(raw: str, source_format: str) -> dict[str, list[str]]:
                 ips.add(token)
             continue
         if source_format == "domain_text":
-            domains.add(line.lower())
+            token = line.split()[0].lower()
+            if token.startswith("||") and token.endswith("^"):
+                token = token[2:-1]
+            if token.startswith("*."):
+                token = token[2:]
+            if token and "." in token:
+                domains.add(token)
+            continue
+        if source_format == "hostfile":
+            parts = line.split()
+            if len(parts) >= 2:
+                token = parts[1].lower()
+                if token != "localhost":
+                    domains.add(token)
+            continue
+        if source_format == "spamhaus_drop":
+            token = line.split()[0]
+            if "/" in token:
+                cidrs.add(token)
+            continue
+        if source_format == "cidr_text":
+            token = line.split()[0]
+            if "/" in token:
+                cidrs.add(token)
+            continue
 
     return {
         "domains": sorted(domains),
         "ips": sorted(ips),
         "urls": sorted(urls),
+        "cidrs": sorted(cidrs),
     }
 
 
@@ -92,7 +124,7 @@ def _is_stale(path: Path, max_age_seconds: int) -> bool:
     return age > max_age_seconds
 
 
-def sync_managed(max_age_seconds: int = 3600, timeout_seconds: int = 3, force: bool = False) -> SyncStats:
+def sync_managed(max_age_seconds: int = 3600, timeout_seconds: int = 20, force: bool = False) -> SyncStats:
     stats: SyncStats = {"updated": 0, "skipped": 0, "errors": 0}
     sources = _load_sources()
     for source in sources:

@@ -9,6 +9,15 @@ Default refresh behavior:
 2. Refresh if older than 60 minutes.
 3. Continue scanning even if refresh errors occur.
 
+Current managed feed set includes:
+
+1. abuse.ch URLHaus (URLs and hostfile domains)
+2. abuse.ch FeodoTracker (botnet C2 IPs)
+3. Spamhaus DROP (CIDR netblocks)
+4. HaGeZi threat intelligence domains/IPs
+5. Phishing Army domain blocklist
+6. KADhosts domain hostfile
+
 ## Supported types
 
 - `ioc`: JSON with `domains`, `ips`, `urls`
