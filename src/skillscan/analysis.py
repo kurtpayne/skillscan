@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import base64
+import binascii
 import ipaddress
 import json
 import os
 import re
 import tarfile
 import tempfile
+import unicodedata
 import zipfile
 from dataclasses import dataclass
 from importlib import resources
@@ -71,6 +74,8 @@ CAPABILITY_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
 URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
 IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 DOMAIN_RE = re.compile(r"\b[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b")
+ZERO_WIDTH_RE = re.compile(r"[\u200b-\u200f\u2060\ufeff]")
+B64_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/=])")
 KNOWN_TLDS = {
     "ai",
     "app",
@@ -114,6 +119,23 @@ MITIGATIONS = {
     "POL-IOC-BLOCK": "Replace blocked destination with an approved domain or remove network dependency.",
     "DEP-001": "Upgrade to a non-vulnerable dependency version and refresh lockfiles.",
     "DEP-UNPIN": "Pin exact dependency versions to improve reproducibility and reduce supply-chain risk.",
+    "CHN-001": "Break download-and-execute behavior. Require reviewed local artifacts before execution.",
+    "CHN-002": "Remove secret-to-network data flow. Secrets must not be sent to outbound endpoints.",
+    "ABU-002": "Remove elevated-security-bypass sequences. Do not require sudo plus security disablement.",
+}
+
+ACTION_PATTERNS: dict[str, re.Pattern[str]] = {
+    "download": re.compile(r"\b(curl|wget|invoke-webrequest|iwr|download)\b|https?://", re.IGNORECASE),
+    "execute": re.compile(
+        r"\b(bash|sh|powershell|cmd\.exe|os\.system|subprocess|python\s+-c)\b", re.IGNORECASE
+    ),
+    "secret_access": re.compile(r"(\.env|id_rsa|aws_access_key_id|ssh key|credentials?)", re.IGNORECASE),
+    "network": re.compile(r"https?://|webhook|post\b|upload|socket|requests\.", re.IGNORECASE),
+    "privilege": re.compile(r"\bsudo\b|run as administrator|elevat", re.IGNORECASE),
+    "security_disable": re.compile(
+        r"disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)",
+        re.IGNORECASE,
+    ),
 }
 
 
@@ -214,6 +236,54 @@ def _safe_read_text(path: Path) -> str:
     if b"\x00" in raw:
         return ""
     return raw.decode("utf-8", errors="ignore")
+
+
+def _normalize_text(text: str) -> str:
+    norm = unicodedata.normalize("NFKC", text)
+    return ZERO_WIDTH_RE.sub("", norm)
+
+
+def _decode_base64_fragments(text: str, max_decodes: int = 6) -> list[str]:
+    decoded: list[str] = []
+    seen: set[str] = set()
+    for token in B64_TOKEN_RE.findall(text):
+        if token in seen:
+            continue
+        seen.add(token)
+        if len(decoded) >= max_decodes:
+            break
+        if len(token) % 4 != 0:
+            continue
+        try:
+            blob = base64.b64decode(token, validate=True)
+        except (binascii.Error, ValueError):
+            continue
+        if not blob:
+            continue
+        candidate = blob.decode("utf-8", errors="ignore").strip()
+        if not candidate:
+            continue
+        # Keep only mostly-printable decoded strings to avoid binary noise.
+        printable_ratio = sum(ch.isprintable() for ch in candidate) / max(len(candidate), 1)
+        if printable_ratio >= 0.9:
+            decoded.append(candidate)
+    return decoded
+
+
+def _prepare_analysis_text(text: str) -> str:
+    norm = _normalize_text(text)
+    decoded = _decode_base64_fragments(norm)
+    if not decoded:
+        return norm
+    return f"{norm}\n\n# decoded_fragments\n" + "\n".join(decoded)
+
+
+def _extract_actions(text: str) -> set[str]:
+    actions: set[str] = set()
+    for action, pattern in ACTION_PATTERNS.items():
+        if pattern.search(text):
+            actions.add(action)
+    return actions
 
 
 def _normalize_domain(value: str) -> str:
@@ -368,9 +438,10 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
             text = _safe_read_text(path)
             if not text:
                 continue
+            analysis_text = _prepare_analysis_text(text)
 
             for rule_id, category, severity, title, pattern in PATTERNS:
-                for line_no, line in enumerate(text.splitlines(), 1):
+                for line_no, line in enumerate(analysis_text.splitlines(), 1):
                     if pattern.search(line):
                         findings.append(
                             Finding(
@@ -388,12 +459,53 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                         break
 
             for capability_name, pattern in CAPABILITY_PATTERNS:
-                if pattern.search(text):
+                if pattern.search(analysis_text):
                     capabilities.append(
                         Capability(name=capability_name, evidence_path=str(path), detail="Pattern match")
                     )
 
-            iocs.extend(_extract_iocs(path, text))
+            iocs.extend(_extract_iocs(path, analysis_text))
+
+            actions = _extract_actions(analysis_text)
+            if {"download", "execute"}.issubset(actions):
+                findings.append(
+                    Finding(
+                        id="CHN-001",
+                        category="malware_pattern",
+                        severity=Severity.CRITICAL,
+                        confidence=0.95,
+                        title="Dangerous action chain: download plus execute",
+                        evidence_path=str(path),
+                        snippet="download + execute actions detected",
+                        mitigation=MITIGATIONS.get("CHN-001"),
+                    )
+                )
+            if {"secret_access", "network"}.issubset(actions):
+                findings.append(
+                    Finding(
+                        id="CHN-002",
+                        category="exfiltration",
+                        severity=Severity.CRITICAL,
+                        confidence=0.92,
+                        title="Potential secret exfiltration chain",
+                        evidence_path=str(path),
+                        snippet="secret access + outbound network actions detected",
+                        mitigation=MITIGATIONS.get("CHN-002"),
+                    )
+                )
+            if {"privilege", "security_disable"}.issubset(actions):
+                findings.append(
+                    Finding(
+                        id="ABU-002",
+                        category="instruction_abuse",
+                        severity=Severity.HIGH,
+                        confidence=0.9,
+                        title="Elevated setup with security bypass",
+                        evidence_path=str(path),
+                        snippet="privilege escalation + security disable sequence detected",
+                        mitigation=MITIGATIONS.get("ABU-002"),
+                    )
+                )
 
             lower = path.name.lower()
             if lower == "requirements.txt":

@@ -4,12 +4,13 @@
 
 1. Input path resolution and archive-safe extraction.
 2. Text file iteration with binary/cache filtering.
-3. Pattern analysis for malware and instruction abuse.
-4. IOC extraction and local intel correlation.
-5. Dependency vulnerability and unpinned version checks.
-6. Capability inference.
-7. Policy scoring and verdicting.
-8. Report generation and output rendering.
+3. Instruction hardening (Unicode normalization, zero-width stripping, bounded base64 decoding).
+4. Pattern and action-chain analysis for malware and instruction abuse.
+5. IOC extraction and local intel correlation.
+6. Dependency vulnerability and unpinned version checks.
+7. Capability inference.
+8. Policy scoring and verdicting.
+9. Report generation and output rendering.
 
 ## Core modules
 

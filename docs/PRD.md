@@ -65,9 +65,13 @@ Teams need a local tool that:
 2. Instruction-abuse detection in markdown/text.
 3. Sensitive access intent detection (`.env`, `id_rsa`, cloud credential markers).
 4. IOC extraction from content with basic normalization.
-5. Dependency risk checks (vulnerable versions, unpinned version patterns).
-6. Capability enumeration (shell, network, filesystem write indicators).
-7. Ecosystem hint detection (OpenClaw/ClawHub, Claude-style, OpenAI-style, fallback generic).
+5. Instruction hardening pre-processing:
+6. Unicode normalization and zero-width stripping.
+7. Bounded base64 text-fragment decoding.
+8. Deterministic action-chain checks (download+execute, secret+network, privilege+security-disable).
+9. Dependency risk checks (vulnerable versions, unpinned version patterns).
+10. Capability enumeration (shell, network, filesystem write indicators).
+11. Ecosystem hint detection (OpenClaw/ClawHub, Claude-style, OpenAI-style, fallback generic).
 
 ### 7.3 Policy Engine
 

@@ -18,6 +18,10 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `10_openai_style` | OpenAI-style ecosystem hint | `openai_style` |
 | `11_claude_style` | Claude-style ecosystem hint | `claude_style` |
 | `12_benign_minimal` | Clean baseline sample | no high-severity findings |
+| `13_zero_width_evasion` | Unicode obfuscation normalization | `ABU-001` |
+| `14_base64_hidden_chain` | Decoded hidden command chain | `CHN-001` |
+| `15_secret_network_chain` | Secret access + network chain | `CHN-002` |
+| `16_privilege_disable_chain` | Privilege + security bypass sequence | `ABU-002` |
 
 ## Commands
 

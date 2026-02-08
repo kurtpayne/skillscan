@@ -21,6 +21,10 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "DEP-001" for f in _scan("examples/showcase/06_dep_vuln_python").findings)
     assert any(f.id == "DEP-001" for f in _scan("examples/showcase/07_dep_vuln_npm").findings)
     assert any(f.id == "DEP-UNPIN" for f in _scan("examples/showcase/08_unpinned_deps").findings)
+    assert any(f.id == "ABU-001" for f in _scan("examples/showcase/13_zero_width_evasion").findings)
+    assert any(f.id == "CHN-001" for f in _scan("examples/showcase/14_base64_hidden_chain").findings)
+    assert any(f.id == "CHN-002" for f in _scan("examples/showcase/15_secret_network_chain").findings)
+    assert any(f.id == "ABU-002" for f in _scan("examples/showcase/16_privilege_disable_chain").findings)
 
 
 def test_showcase_policy_block_domain() -> None:

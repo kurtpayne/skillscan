@@ -14,6 +14,10 @@ Each folder demonstrates one major detection or behavior.
 10. `10_openai_style`: ecosystem hint `openai_style`
 11. `11_claude_style`: ecosystem hint `claude_style`
 12. `12_benign_minimal`: expected clean/low-risk baseline
+13. `13_zero_width_evasion`: unicode-normalized instruction detection (`ABU-001`)
+14. `14_base64_hidden_chain`: decoded hidden chain detection (`CHN-001`)
+15. `15_secret_network_chain`: secret-to-network chain detection (`CHN-002`)
+16. `16_privilege_disable_chain`: privilege+security bypass chain (`ABU-002`)
 
 ## Run examples
 
