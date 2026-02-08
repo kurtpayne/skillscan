@@ -1,0 +1,13 @@
+{
+  "domains": [
+    "evil.example",
+    "clawdhub1.com"
+  ],
+  "ips": [
+    "91.92.242.30",
+    "54.91.154.110"
+  ],
+  "urls": [
+    "https://glot.io/snippets/malicious-bootstrap"
+  ]
+}

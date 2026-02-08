@@ -1,0 +1,19 @@
+.PHONY: setup lint type test check demo
+
+setup:
+	python3 -m venv .venv
+	.venv/bin/pip install -e '.[dev]'
+
+lint:
+	.venv/bin/ruff check src tests
+
+type:
+	.venv/bin/mypy src
+
+test:
+	.venv/bin/pytest -q
+
+check: lint type test
+
+demo:
+	.venv/bin/skillscan scan examples/suspicious_skill --fail-on never

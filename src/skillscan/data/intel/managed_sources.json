@@ -1,0 +1,14 @@
+[
+  {
+    "name": "urlhaus_urls",
+    "kind": "ioc",
+    "format": "url_text",
+    "url": "https://urlhaus.abuse.ch/downloads/text/"
+  },
+  {
+    "name": "feodotracker_ips",
+    "kind": "ioc",
+    "format": "ip_text",
+    "url": "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"
+  }
+]

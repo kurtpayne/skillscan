@@ -1,0 +1,7 @@
+{
+  "name": "example-unpinned",
+  "version": "1.0.0",
+  "dependencies": {
+    "left-pad": "latest"
+  }
+}
