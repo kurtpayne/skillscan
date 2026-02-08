@@ -1,8 +1,8 @@
 # SkillScan
 
-[![CI](https://github.com/your-org/skillscan/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/skillscan/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/your-org/skillscan/actions/workflows/codeql.yml/badge.svg)](https://github.com/your-org/skillscan/actions/workflows/codeql.yml)
-[![Coverage](https://codecov.io/gh/your-org/skillscan/graph/badge.svg)](https://codecov.io/gh/your-org/skillscan)
+[![CI](https://github.com/kurtpayne/skillscan/actions/workflows/ci.yml/badge.svg)](https://github.com/kurtpayne/skillscan/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/kurtpayne/skillscan/actions/workflows/codeql.yml/badge.svg)](https://github.com/kurtpayne/skillscan/actions/workflows/codeql.yml)
+[![Coverage](https://codecov.io/gh/kurtpayne/skillscan/graph/badge.svg)](https://codecov.io/gh/kurtpayne/skillscan)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 

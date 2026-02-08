@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_URL="${SKILLSCAN_REPO_URL:-https://github.com/your-org/skillscan.git}"
+REPO_URL="${SKILLSCAN_REPO_URL:-https://github.com/kurtpayne/skillscan.git}"
 INSTALL_DIR="${HOME}/.skillscan/runtime"
 BIN_DIR="${HOME}/.local/bin"
 
 mkdir -p "${BIN_DIR}"
-
-if [[ "${REPO_URL}" == "https://github.com/your-org/skillscan.git" ]]; then
-  echo "Set SKILLSCAN_REPO_URL to your repository URL before installing."
-  exit 1
-fi
 
 if [[ -d "${INSTALL_DIR}" ]]; then
   rm -rf "${INSTALL_DIR}"
