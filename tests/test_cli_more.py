@@ -30,6 +30,10 @@ def test_scan_invalid_options() -> None:
 
     invalid_intel_age = runner.invoke(app, ["scan", target, "--intel-max-age-minutes", "0"])
     assert invalid_intel_age.exit_code == 2
+    invalid_url_links = runner.invoke(app, ["scan", target, "--url-max-links", "-1"])
+    assert invalid_url_links.exit_code == 2
+    invalid_ai_timeout = runner.invoke(app, ["scan", target, "--ai-timeout-seconds", "0"])
+    assert invalid_ai_timeout.exit_code == 2
 
 
 def test_scan_fail_on_warn_and_block() -> None:
@@ -161,3 +165,154 @@ limits:
 
     no_keep = runner.invoke(app, ["uninstall"])
     assert no_keep.exit_code == 0
+
+
+def test_scan_passes_url_flags(monkeypatch) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_scan(target, policy, policy_source, **kwargs):
+        calls["target"] = target
+        calls["kwargs"] = kwargs
+        return __import__("skillscan.models", fromlist=["ScanReport"]).ScanReport.model_validate(
+            {
+                "metadata": {
+                    "scanner_version": "0.1.0",
+                    "target": str(target),
+                    "target_type": "url",
+                    "ecosystem_hints": ["generic"],
+                    "rulepack_version": "x",
+                    "policy_profile": "strict",
+                    "policy_source": policy_source,
+                    "intel_sources": [],
+                },
+                "verdict": "allow",
+                "score": 0,
+                "findings": [],
+                "iocs": [],
+                "dependency_findings": [],
+                "capabilities": [],
+            }
+        )
+
+    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "https://example.com/SKILL.md",
+            "--url-max-links",
+            "50",
+            "--no-url-same-origin-only",
+            "--fail-on",
+            "never",
+        ],
+    )
+    assert result.exit_code == 0
+    assert calls["target"] == "https://example.com/SKILL.md"
+    kwargs = calls["kwargs"]
+    assert kwargs["url_max_links"] == 50
+    assert kwargs["url_same_origin_only"] is False
+
+
+def test_scan_passes_ai_flags(monkeypatch, tmp_path: Path) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_scan(target, policy, policy_source, **kwargs):
+        calls["target"] = target
+        calls["kwargs"] = kwargs
+        return __import__("skillscan.models", fromlist=["ScanReport"]).ScanReport.model_validate(
+            {
+                "metadata": {
+                    "scanner_version": "0.1.0",
+                    "target": str(target),
+                    "target_type": "directory",
+                    "ecosystem_hints": ["generic"],
+                    "rulepack_version": "x",
+                    "policy_profile": "strict",
+                    "policy_source": policy_source,
+                    "intel_sources": [],
+                },
+                "verdict": "allow",
+                "score": 0,
+                "findings": [],
+                "iocs": [],
+                "dependency_findings": [],
+                "capabilities": [],
+            }
+        )
+
+    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
+    ai_out = tmp_path / "ai.json"
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--ai-assist",
+            "--ai-provider",
+            "anthropic",
+            "--ai-model",
+            "claude-3-5-sonnet-latest",
+            "--ai-base-url",
+            "https://api.example.com",
+            "--ai-timeout-seconds",
+            "15",
+            "--ai-required",
+            "--ai-report-out",
+            str(ai_out),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    kwargs = calls["kwargs"]
+    assert kwargs["ai_assist"] is True
+    assert kwargs["ai_provider"] == "anthropic"
+    assert kwargs["ai_model"] == "claude-3-5-sonnet-latest"
+    assert kwargs["ai_base_url"] == "https://api.example.com"
+    assert kwargs["ai_timeout_seconds"] == 15
+    assert kwargs["ai_required"] is True
+    assert kwargs["ai_report_out"] == ai_out
+
+
+def test_scan_deprecated_extended_ai_alias(monkeypatch) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_scan(target, policy, policy_source, **kwargs):
+        calls["kwargs"] = kwargs
+        return __import__("skillscan.models", fromlist=["ScanReport"]).ScanReport.model_validate(
+            {
+                "metadata": {
+                    "scanner_version": "0.1.0",
+                    "target": str(target),
+                    "target_type": "directory",
+                    "ecosystem_hints": ["generic"],
+                    "rulepack_version": "x",
+                    "policy_profile": "strict",
+                    "policy_source": policy_source,
+                    "intel_sources": [],
+                },
+                "verdict": "allow",
+                "score": 0,
+                "findings": [],
+                "iocs": [],
+                "dependency_findings": [],
+                "capabilities": [],
+            }
+        )
+
+    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--extended-ai-checks",
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert calls["kwargs"]["ai_assist"] is True

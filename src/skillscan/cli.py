@@ -9,6 +9,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from skillscan import __version__
+from skillscan.ai import load_dotenv
 from skillscan.analysis import ScanError, scan
 from skillscan.intel import (
     add_source,
@@ -38,7 +39,7 @@ def version() -> None:
 
 @app.command("scan")
 def scan_cmd(
-    target: Path = typer.Argument(..., exists=True, readable=True, help="Path to scan"),
+    target: str = typer.Argument(..., help="Local path or URL to scan"),
     policy_profile: str = typer.Option(
         "strict", "--policy-profile", "--profile", help="Built-in policy profile"
     ),
@@ -50,7 +51,49 @@ def scan_cmd(
     intel_max_age_minutes: int = typer.Option(
         60, "--intel-max-age-minutes", help="Auto-intel refresh max age in minutes"
     ),
+    url_max_links: int = typer.Option(25, "--url-max-links", help="Maximum links to follow for URL targets"),
+    url_same_origin_only: bool = typer.Option(
+        True,
+        "--url-same-origin-only/--no-url-same-origin-only",
+        help="Only follow links on same origin as root URL target",
+    ),
+    ai_assist: bool = typer.Option(
+        False,
+        "--ai-assist/--no-ai-assist",
+        help="Enable optional AI semantic risk analysis (off by default)",
+    ),
+    extended_ai_checks: bool | None = typer.Option(
+        None,
+        "--extended-ai-checks/--no-extended-ai-checks",
+        help="Deprecated alias for --ai-assist",
+        hidden=True,
+    ),
+    ai_provider: str = typer.Option(
+        "auto",
+        "--ai-provider",
+        help="AI provider: auto|openai|anthropic|gemini|openai_compatible",
+    ),
+    ai_model: str | None = typer.Option(None, "--ai-model", help="AI model name"),
+    ai_base_url: str | None = typer.Option(
+        None,
+        "--ai-base-url",
+        help="Optional custom API base URL (for self-hosted or proxy endpoints)",
+    ),
+    ai_timeout_seconds: int = typer.Option(20, "--ai-timeout-seconds", help="AI request timeout in seconds"),
+    ai_required: bool = typer.Option(
+        False,
+        "--ai-required/--ai-optional",
+        help="Fail scan if AI assist is requested but unavailable",
+    ),
+    ai_report_out: Path | None = typer.Option(
+        None,
+        "--ai-report-out",
+        help="Write raw AI JSON response to file for review/audit",
+    ),
 ) -> None:
+    load_dotenv()
+    if extended_ai_checks is not None:
+        ai_assist = extended_ai_checks
     if policy_profile not in BUILTIN_PROFILES:
         console.print(
             f"[bold red]Invalid --policy-profile:[/] {policy_profile}. "
@@ -65,6 +108,12 @@ def scan_cmd(
         raise typer.Exit(2)
     if intel_max_age_minutes < 1:
         console.print("[bold red]Invalid --intel-max-age-minutes:[/] expected >= 1")
+        raise typer.Exit(2)
+    if url_max_links < 0:
+        console.print("[bold red]Invalid --url-max-links:[/] expected >= 0")
+        raise typer.Exit(2)
+    if ai_timeout_seconds < 1:
+        console.print("[bold red]Invalid --ai-timeout-seconds:[/] expected >= 1")
         raise typer.Exit(2)
 
     if policy_file:
@@ -83,7 +132,20 @@ def scan_cmd(
             )
 
     try:
-        report = scan(target, policy, policy_source)
+        report = scan(
+            target,
+            policy,
+            policy_source,
+            url_max_links=url_max_links,
+            url_same_origin_only=url_same_origin_only,
+            ai_assist=ai_assist,
+            ai_provider=ai_provider,
+            ai_model=ai_model,
+            ai_base_url=ai_base_url,
+            ai_timeout_seconds=ai_timeout_seconds,
+            ai_required=ai_required,
+            ai_report_out=ai_report_out,
+        )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
         raise typer.Exit(2)

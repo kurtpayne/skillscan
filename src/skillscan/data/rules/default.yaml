@@ -1,0 +1,99 @@
+version: "2026.02.09.1"
+
+static_rules:
+  - id: MAL-001
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: Download-and-execute chain
+    pattern: '(curl|wget).*(bash|sh)'
+    mitigation: Remove download-and-execute chains. Pin and verify artifacts before execution.
+
+  - id: MAL-002
+    category: malware_pattern
+    severity: high
+    confidence: 0.9
+    title: Base64 decode + execution
+    pattern: 'base64\s+-d.*(bash|sh|python)'
+    mitigation: Avoid decode-and-exec flows. Store reviewed scripts in-repo and execute only trusted files.
+
+  - id: ABU-001
+    category: instruction_abuse
+    severity: high
+    confidence: 0.9
+    title: Coercive prerequisite wording
+    pattern: 'must run.*sudo|disable.*security|turn off.*defender'
+    mitigation: Remove coercive setup steps. Do not ask users to disable security controls.
+
+  - id: PINJ-001
+    category: instruction_abuse
+    severity: high
+    confidence: 0.82
+    title: Prompt override / jailbreak instruction pattern
+    pattern: 'ignore (all )?(previous|prior) instructions|override (the )?(system|safety) prompt|developer mode|jailbreak|do not reveal these instructions'
+    mitigation: Remove instruction-override content and keep model behavior constrained by explicit trusted policy.
+
+  - id: EXF-001
+    category: exfiltration
+    severity: high
+    confidence: 0.9
+    title: Sensitive credential file access
+    pattern: '(\.env|id_rsa|aws_access_key_id|browser.*cookies)'
+    mitigation: Do not read secret files unless strictly required; use scoped secret providers instead.
+
+  - id: MAL-003
+    category: malware_pattern
+    severity: high
+    confidence: 0.9
+    title: Subshell downloader execution pattern
+    pattern: '(source|bash)\s*<\(\s*(curl|wget)|powershell\s+-enc(?:odedcommand)?'
+    mitigation: Remove subshell/encoded execution flows. Keep scripts explicit, reviewed, and non-obfuscated.
+
+  - id: OBF-001
+    category: instruction_abuse
+    severity: medium
+    confidence: 0.9
+    title: Bidirectional Unicode control character detected
+    pattern: '[\u202A-\u202E\u2066-\u2069]'
+    mitigation: Remove bidi control characters and verify displayed text matches executed intent.
+
+action_patterns:
+  download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'
+  execute: '\b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b'
+  secret_access: '(\.env|id_rsa|aws_access_key_id|ssh key|credentials?)'
+  network: 'https?://|webhook|post\b|upload|socket|requests\.'
+  privilege: '\bsudo\b|run as administrator|elevat'
+  security_disable: 'disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)'
+
+chain_rules:
+  - id: CHN-001
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: "Dangerous action chain: download plus execute"
+    all_of: [download, execute]
+    snippet: download + execute actions detected
+    mitigation: Break download+execute flows; require reviewed local artifacts and explicit integrity checks.
+
+  - id: CHN-002
+    category: exfiltration
+    severity: critical
+    confidence: 0.92
+    title: "Potential secret exfiltration chain"
+    all_of: [secret_access, network]
+    snippet: secret access + outbound network actions detected
+    mitigation: Remove any secret-to-network path; use scoped token exchange or local-only processing.
+
+  - id: ABU-002
+    category: instruction_abuse
+    severity: high
+    confidence: 0.9
+    title: "Elevated setup with security bypass"
+    all_of: [privilege, security_disable]
+    snippet: privilege escalation + security disable sequence detected
+    mitigation: Remove elevation plus security-disable guidance from setup instructions.
+
+capability_patterns:
+  shell_execution: '\b(subprocess|os\.system|bash|powershell)\b'
+  network_access: '\b(requests\.|fetch\(|axios|http[s]?://|socket)\b'
+  filesystem_write: '\b(open\(.*[wa]|write_text\(|append)\b'

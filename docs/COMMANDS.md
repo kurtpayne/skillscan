@@ -2,7 +2,7 @@
 
 ## `skillscan scan <path>`
 
-Run a scan on a folder, file, or archive.
+Run a scan on a folder, file, archive, or URL.
 
 Options:
 - `--policy-profile, --profile`: `strict|balanced|permissive` (default `strict`)
@@ -12,6 +12,15 @@ Options:
 - `--fail-on`: `warn|block|never` (default `block`)
 - `--auto-intel/--no-auto-intel`: enable/disable managed intel auto-refresh (default enabled)
 - `--intel-max-age-minutes`: staleness threshold before refresh (default 60)
+- `--url-max-links`: max followed links for URL targets (default 25)
+- `--url-same-origin-only/--no-url-same-origin-only`: link-following origin policy (default same-origin only)
+- `--ai-assist/--no-ai-assist`: enable optional AI semantic risk checks (default disabled)
+- `--ai-provider`: `auto|openai|anthropic|gemini|openai_compatible` (default `auto`)
+- `--ai-model`: model id override (provider-specific)
+- `--ai-base-url`: custom provider base URL (self-hosted/proxy)
+- `--ai-timeout-seconds`: AI request timeout (default 20)
+- `--ai-required/--ai-optional`: fail scan if AI assist fails (default optional)
+- `--ai-report-out`: write raw AI JSON output to file
 
 Examples:
 
@@ -19,6 +28,8 @@ Examples:
 skillscan scan ./examples/suspicious_skill
 skillscan scan ./artifact.zip --format json --out report.json
 skillscan scan ./artifact --profile balanced --fail-on never
+skillscan scan "https://github.com/blader/humanizer/blob/main/SKILL.md?plain=1"
+skillscan scan ./examples/showcase/20_ai_semantic_risk --ai-assist --ai-provider openai --fail-on never
 ```
 
 ## `skillscan explain <report.json>`

@@ -4,6 +4,7 @@ from rich.console import Console
 
 from skillscan.models import (
     IOC,
+    AIAssessment,
     Capability,
     DependencyFinding,
     Finding,
@@ -72,6 +73,12 @@ def test_render_report_full_sections() -> None:
             )
         ],
         capabilities=[Capability(name="network_access", evidence_path="a", detail="x")],
+        ai_assessment=AIAssessment(
+            provider="openai",
+            model="gpt-4o-mini",
+            summary="extra context",
+            findings_added=1,
+        ),
     )
     console = Console(record=True)
     render_report(report, console=console)
@@ -79,3 +86,4 @@ def test_render_report_full_sections() -> None:
     assert "Top Findings" in output
     assert "Network Indicators" in output
     assert "Dependency Vulnerabilities" in output
+    assert "AI Assist" in output

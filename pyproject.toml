@@ -34,7 +34,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-skillscan = ["data/policies/*.yaml", "data/intel/*.json"]
+skillscan = ["data/policies/*.yaml", "data/intel/*.json", "data/rules/*.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
@@ -42,6 +42,7 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 110
 target-version = "py312"
+exclude = ["tests/adversarial/cases"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]

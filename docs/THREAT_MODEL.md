@@ -25,4 +25,5 @@
 
 1. SkillScan does not execute scanned artifact code in default scan mode.
 2. Scanning verdicts are deterministic and do not require LLMs.
-3. If optional LLM analysis is added later, it should remain non-authoritative.
+3. Optional AI analysis is supported, remains non-executing, and is bounded by explicit prompt and snippet limits.
+4. High-confidence critical AI semantic findings can be configured to force block via policy.

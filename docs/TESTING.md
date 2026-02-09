@@ -15,6 +15,7 @@ Recommended CI gates:
 3. Minimum coverage threshold for scanner core
 
 The malicious fixtures include OpenClaw-style compromised plugin patterns reproduced in safe test data.
+AI-assist tests mock provider responses and do not require network/API keys.
 
 ## Regression fixtures
 
@@ -22,3 +23,18 @@ The malicious fixtures include OpenClaw-style compromised plugin patterns reprod
 2. `tests/fixtures/malicious/openclaw_compromised_like`: strict profile should block.
 3. `tests/fixtures/dependencies`: vulnerable and unpinned dependency coverage.
 4. `tests/fixtures/policy`: policy domain-block behavior.
+5. `examples/showcase/20_ai_semantic_risk`: semantic risk example used for AI-assist value-add testing.
+
+## Adversarial regression corpus
+
+SkillScan includes a red-team style adversarial suite with expected verdicts and finding IDs:
+
+1. Cases: `tests/adversarial/cases/`
+2. Manifest: `tests/adversarial/expectations.json`
+3. Test runner: `tests/test_adversarial_suite.py`
+
+Run all tests:
+
+```bash
+pytest -q
+```

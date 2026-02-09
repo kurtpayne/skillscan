@@ -50,6 +50,16 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
     if report.findings:
         console.print(findings)
 
+    if report.ai_assessment is not None:
+        ai_summary = (
+            f"[bold]Provider:[/bold] {report.ai_assessment.provider}\n"
+            f"[bold]Model:[/bold] {report.ai_assessment.model}\n"
+            f"[bold]Prompt Version:[/bold] {report.ai_assessment.prompt_version}\n"
+            f"[bold]AI Findings Added:[/bold] {report.ai_assessment.findings_added}\n"
+            f"[bold]Summary:[/bold] {report.ai_assessment.summary}"
+        )
+        console.print(Panel(ai_summary, title="AI Assist"))
+
     caps = Table(title="Capabilities")
     caps.add_column("Capability", style="magenta")
     caps.add_column("Evidence")

@@ -1,8 +1,9 @@
 from pathlib import Path
 
+from skillscan.ai import AIResult
 from skillscan.analysis import scan
 from skillscan.ecosystems import detect_ecosystems
-from skillscan.models import Policy
+from skillscan.models import AIAssessment, Finding, Policy, Severity
 from skillscan.policies import load_builtin_policy
 
 STRICT = load_builtin_policy("strict")
@@ -25,6 +26,11 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "CHN-001" for f in _scan("examples/showcase/14_base64_hidden_chain").findings)
     assert any(f.id == "CHN-002" for f in _scan("examples/showcase/15_secret_network_chain").findings)
     assert any(f.id == "ABU-002" for f in _scan("examples/showcase/16_privilege_disable_chain").findings)
+    assert any(f.id == "CHN-001" for f in _scan("examples/showcase/18_split_base64_chain").findings)
+    assert any(f.id == "CHN-001" for f in _scan("examples/showcase/19_alt_download_exec").findings)
+    assert any(f.id == "SUP-001" for f in _scan("examples/showcase/21_npm_lifecycle_abuse").findings)
+    assert any(f.id == "PINJ-001" for f in _scan("examples/showcase/22_prompt_injection").findings)
+    assert any(f.id == "OBF-001" for f in _scan("examples/showcase/23_trojan_source_bidi").findings)
 
 
 def test_showcase_policy_block_domain() -> None:
@@ -58,3 +64,35 @@ def test_showcase_policy_block_domain() -> None:
 def test_showcase_ecosystem_hints() -> None:
     assert "openai_style" in detect_ecosystems(Path("examples/showcase/10_openai_style"))
     assert "claude_style" in detect_ecosystems(Path("examples/showcase/11_claude_style"))
+
+
+def test_showcase_ai_semantic_example_value_add(monkeypatch) -> None:
+    base = scan(Path("examples/showcase/20_ai_semantic_risk"), STRICT, "builtin:strict")
+    assert not any(f.id.startswith("AI-SEM-") for f in base.findings)
+
+    def fake_ai(*_args, **_kwargs):
+        return AIResult(
+            assessment=AIAssessment(
+                provider="openai",
+                model="gpt-4o-mini",
+                summary="Instruction asks for raw production credentials.",
+                findings_added=1,
+            ),
+            findings=[
+                Finding(
+                    id="AI-SEM-001",
+                    category="ai_semantic_risk",
+                    severity=Severity.HIGH,
+                    confidence=0.85,
+                    title="Socially engineered credential request",
+                    evidence_path="examples/showcase/20_ai_semantic_risk/SKILL.md",
+                    snippet="paste their production API token into the chat",
+                    mitigation="Never request raw credentials; use delegated, scoped authentication.",
+                )
+            ],
+            raw_response='{"summary":"x","risks":[]}',
+        )
+
+    monkeypatch.setattr("skillscan.analysis.run_ai_assist", fake_ai)
+    enriched = scan(Path("examples/showcase/20_ai_semantic_risk"), STRICT, "builtin:strict", ai_assist=True)
+    assert any(f.id == "AI-SEM-001" for f in enriched.findings)

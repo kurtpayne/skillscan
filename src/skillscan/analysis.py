@@ -16,10 +16,13 @@ from pathlib import Path
 from typing import cast
 
 from skillscan import __version__
+from skillscan.ai import AIAssistError, AIConfig, run_ai_assist
+from skillscan.detectors.ast_flows import detect_python_ast_flows
 from skillscan.ecosystems import detect_ecosystems
 from skillscan.intel import load_store
 from skillscan.models import (
     IOC,
+    AIAssessment,
     Capability,
     DependencyFinding,
     Finding,
@@ -30,52 +33,20 @@ from skillscan.models import (
     Verdict,
     is_archive,
 )
-
-PATTERNS: list[tuple[str, str, Severity, str, re.Pattern[str]]] = [
-    (
-        "MAL-001",
-        "malware_pattern",
-        Severity.CRITICAL,
-        "Download-and-execute chain",
-        re.compile(r"(curl|wget).*(bash|sh)", re.IGNORECASE),
-    ),
-    (
-        "MAL-002",
-        "malware_pattern",
-        Severity.HIGH,
-        "Base64 decode + execution",
-        re.compile(r"base64\s+-d.*(bash|sh|python)", re.IGNORECASE),
-    ),
-    (
-        "ABU-001",
-        "instruction_abuse",
-        Severity.HIGH,
-        "Coercive prerequisite wording",
-        re.compile(r"must run.*sudo|disable.*security|turn off.*defender", re.IGNORECASE),
-    ),
-    (
-        "EXF-001",
-        "exfiltration",
-        Severity.HIGH,
-        "Sensitive credential file access",
-        re.compile(r"(\.env|id_rsa|aws_access_key_id|browser.*cookies)", re.IGNORECASE),
-    ),
-]
-
-CAPABILITY_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    (
-        "shell_execution",
-        re.compile(r"\b(subprocess|os\.system|bash|powershell)\b", re.IGNORECASE),
-    ),
-    ("network_access", re.compile(r"\b(requests\.|fetch\(|axios|http[s]?://|socket)\b", re.IGNORECASE)),
-    ("filesystem_write", re.compile(r"\b(open\(.*[wa]|write_text\(|append)\b", re.IGNORECASE)),
-]
+from skillscan.remote import RemoteFetchError, fetch_remote_target, is_url_target
+from skillscan.rules import CompiledRulePack, load_compiled_builtin_rulepack
 
 URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
 IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 DOMAIN_RE = re.compile(r"\b[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\b")
 ZERO_WIDTH_RE = re.compile(r"[\u200b-\u200f\u2060\ufeff]")
-B64_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/])[A-Za-z0-9+/]{24,}={0,2}(?![A-Za-z0-9+/=])")
+B64_TOKEN_RE = re.compile(r"(?<![A-Za-z0-9+/_-])[A-Za-z0-9+/_-]{16,}={0,2}(?![A-Za-z0-9+/_=-])")
+QUOTED_B64_FRAGMENT_RE = re.compile(r"[\"']([A-Za-z0-9+/_-]{8,}={0,2})[\"']")
+RISKY_NPM_SCRIPT_RE = re.compile(
+    r"\b(curl|wget|invoke-webrequest|powershell|pwsh|bash|sh|cmd\.exe|certutil|bitsadmin|nc|ncat|netcat)\b|"
+    r"https?://",
+    re.IGNORECASE,
+)
 KNOWN_TLDS = {
     "ai",
     "app",
@@ -110,40 +81,14 @@ VulnVersionMap = dict[str, VulnRecord]
 VulnPackageMap = dict[str, VulnVersionMap]
 VulnDB = dict[str, VulnPackageMap]
 
-MITIGATIONS = {
-    "MAL-001": "Remove download-and-execute chains. Pin and verify artifacts before execution.",
-    "MAL-002": "Avoid decode-and-exec flows. Store reviewed scripts in-repo and execute only trusted files.",
-    "ABU-001": "Remove coercive setup steps. Do not ask users to disable security controls.",
-    "EXF-001": "Do not read secret files unless strictly required; use scoped secret providers instead.",
-    "IOC-001": "Block install/use and investigate indicator reputation. Remove all references to this IOC.",
-    "POL-IOC-BLOCK": "Replace blocked destination with an approved domain or remove network dependency.",
-    "DEP-001": "Upgrade to a non-vulnerable dependency version and refresh lockfiles.",
-    "DEP-UNPIN": "Pin exact dependency versions to improve reproducibility and reduce supply-chain risk.",
-    "CHN-001": "Break download-and-execute behavior. Require reviewed local artifacts before execution.",
-    "CHN-002": "Remove secret-to-network data flow. Secrets must not be sent to outbound endpoints.",
-    "ABU-002": "Remove elevated-security-bypass sequences. Do not require sudo plus security disablement.",
-}
-
-ACTION_PATTERNS: dict[str, re.Pattern[str]] = {
-    "download": re.compile(r"\b(curl|wget|invoke-webrequest|iwr|download)\b|https?://", re.IGNORECASE),
-    "execute": re.compile(
-        r"\b(bash|sh|powershell|cmd\.exe|os\.system|subprocess|python\s+-c)\b", re.IGNORECASE
-    ),
-    "secret_access": re.compile(r"(\.env|id_rsa|aws_access_key_id|ssh key|credentials?)", re.IGNORECASE),
-    "network": re.compile(r"https?://|webhook|post\b|upload|socket|requests\.", re.IGNORECASE),
-    "privilege": re.compile(r"\bsudo\b|run as administrator|elevat", re.IGNORECASE),
-    "security_disable": re.compile(
-        r"disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)",
-        re.IGNORECASE,
-    ),
-}
-
 
 @dataclass
 class PreparedTarget:
     root: Path
     target_type: str
     cleanup_dir: tempfile.TemporaryDirectory[str] | None
+    read_warnings: list[str]
+    policy_warnings: list[str]
 
 
 class ScanError(Exception):
@@ -184,16 +129,55 @@ def _safe_extract_tar(src: Path, dst: Path, max_files: int, max_bytes: int) -> N
         tf.extractall(dst, filter="data")
 
 
-def prepare_target(target: Path, policy: Policy) -> PreparedTarget:
+def prepare_target(
+    target: Path | str,
+    policy: Policy,
+    url_max_links: int = 25,
+    url_timeout_seconds: int = 12,
+    url_same_origin_only: bool = True,
+) -> PreparedTarget:
+    if isinstance(target, str) and is_url_target(target):
+        try:
+            fetched = fetch_remote_target(
+                target,
+                max_links=url_max_links,
+                timeout_seconds=url_timeout_seconds,
+                same_origin_only=url_same_origin_only,
+            )
+        except RemoteFetchError as exc:
+            raise ScanError(str(exc)) from exc
+        return PreparedTarget(
+            root=fetched.root,
+            target_type="url",
+            cleanup_dir=fetched.cleanup_dir,
+            read_warnings=fetched.unreadable_urls,
+            policy_warnings=fetched.skipped_urls,
+        )
+
+    if isinstance(target, str):
+        target = Path(target)
+
     if not target.exists():
         raise ScanError(f"Target does not exist: {target}")
     if target.is_dir():
-        return PreparedTarget(root=target, target_type="directory", cleanup_dir=None)
+        return PreparedTarget(
+            root=target,
+            target_type="directory",
+            cleanup_dir=None,
+            read_warnings=[],
+            policy_warnings=[],
+        )
     if target.is_file() and not is_archive(target):
         tmp = tempfile.TemporaryDirectory(prefix="skillscan-")
         dst = Path(tmp.name)
         (dst / target.name).write_bytes(target.read_bytes())
-        return PreparedTarget(root=dst, target_type="file", cleanup_dir=tmp)
+        return PreparedTarget(
+            root=dst,
+            target_type="file",
+            cleanup_dir=tmp,
+            read_warnings=[],
+            policy_warnings=[],
+        )
     if target.is_file() and is_archive(target):
         tmp = tempfile.TemporaryDirectory(prefix="skillscan-")
         dst = Path(tmp.name)
@@ -201,7 +185,13 @@ def prepare_target(target: Path, policy: Policy) -> PreparedTarget:
             _safe_extract_zip(target, dst, policy.limits["max_files"], policy.limits["max_bytes"])
         else:
             _safe_extract_tar(target, dst, policy.limits["max_files"], policy.limits["max_bytes"])
-        return PreparedTarget(root=dst, target_type="archive", cleanup_dir=tmp)
+        return PreparedTarget(
+            root=dst,
+            target_type="archive",
+            cleanup_dir=tmp,
+            read_warnings=[],
+            policy_warnings=[],
+        )
     raise ScanError("Unsupported target type")
 
 
@@ -240,7 +230,36 @@ def _safe_read_text(path: Path) -> str:
 
 def _normalize_text(text: str) -> str:
     norm = unicodedata.normalize("NFKC", text)
-    return ZERO_WIDTH_RE.sub("", norm)
+    norm = ZERO_WIDTH_RE.sub("", norm)
+    # Recover common defanged URL/domain forms.
+    norm = re.sub(r"\bhxxps://", "https://", norm, flags=re.IGNORECASE)
+    norm = re.sub(r"\bhxxp://", "http://", norm, flags=re.IGNORECASE)
+    norm = norm.replace("[.]", ".").replace("(.)", ".").replace("{.}", ".")
+    return norm
+
+
+def _try_decode_b64(token: str) -> str | None:
+    value = token.strip()
+    if len(value) < 16:
+        return None
+    # Normalize urlsafe base64 and missing padding.
+    value = value.replace("-", "+").replace("_", "/")
+    padding = (-len(value)) % 4
+    if padding:
+        value += "=" * padding
+    try:
+        blob = base64.b64decode(value, validate=True)
+    except (binascii.Error, ValueError):
+        return None
+    if not blob:
+        return None
+    candidate = blob.decode("utf-8", errors="ignore").strip()
+    if not candidate:
+        return None
+    printable_ratio = sum(ch.isprintable() for ch in candidate) / max(len(candidate), 1)
+    if printable_ratio < 0.9:
+        return None
+    return candidate
 
 
 def _decode_base64_fragments(text: str, max_decodes: int = 6) -> list[str]:
@@ -252,20 +271,23 @@ def _decode_base64_fragments(text: str, max_decodes: int = 6) -> list[str]:
         seen.add(token)
         if len(decoded) >= max_decodes:
             break
-        if len(token) % 4 != 0:
+        candidate = _try_decode_b64(token)
+        if candidate:
+            decoded.append(candidate)
+
+    # Also try concatenated quoted fragments often used to bypass token scanners.
+    for line in text.splitlines():
+        fragments = QUOTED_B64_FRAGMENT_RE.findall(line)
+        if len(fragments) < 2:
             continue
-        try:
-            blob = base64.b64decode(token, validate=True)
-        except (binascii.Error, ValueError):
+        joined = "".join(fragments)
+        if joined in seen:
             continue
-        if not blob:
-            continue
-        candidate = blob.decode("utf-8", errors="ignore").strip()
-        if not candidate:
-            continue
-        # Keep only mostly-printable decoded strings to avoid binary noise.
-        printable_ratio = sum(ch.isprintable() for ch in candidate) / max(len(candidate), 1)
-        if printable_ratio >= 0.9:
+        seen.add(joined)
+        if len(decoded) >= max_decodes:
+            break
+        candidate = _try_decode_b64(joined)
+        if candidate:
             decoded.append(candidate)
     return decoded
 
@@ -278,9 +300,9 @@ def _prepare_analysis_text(text: str) -> str:
     return f"{norm}\n\n# decoded_fragments\n" + "\n".join(decoded)
 
 
-def _extract_actions(text: str) -> set[str]:
+def _extract_actions(text: str, action_patterns: dict[str, re.Pattern[str]]) -> set[str]:
     actions: set[str] = set()
-    for action, pattern in ACTION_PATTERNS.items():
+    for action, pattern in action_patterns.items():
         if pattern.search(text):
             actions.add(action)
     return actions
@@ -327,6 +349,21 @@ def _parse_package_json(text: str) -> list[tuple[str, str]]:
             for name, version in values.items():
                 deps.append((name.lower(), str(version)))
     return deps
+
+
+def _parse_package_scripts(text: str) -> dict[str, str]:
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        return {}
+    scripts = data.get("scripts", {})
+    if not isinstance(scripts, dict):
+        return {}
+    parsed: dict[str, str] = {}
+    for name, cmd in scripts.items():
+        if isinstance(name, str) and isinstance(cmd, str):
+            parsed[name.lower()] = cmd
+    return parsed
 
 
 def _is_unpinned_npm(version: str) -> bool:
@@ -421,14 +458,37 @@ def _ip_in_cidrs(ip_value: str, cidrs: list[str]) -> bool:
     return False
 
 
-def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
-    prepared = prepare_target(target, policy)
+def scan(
+    target: Path | str,
+    policy: Policy,
+    policy_source: str,
+    *,
+    url_max_links: int = 25,
+    url_timeout_seconds: int = 12,
+    url_same_origin_only: bool = True,
+    ai_assist: bool = False,
+    ai_provider: str = "auto",
+    ai_model: str | None = None,
+    ai_base_url: str | None = None,
+    ai_timeout_seconds: int = 20,
+    ai_required: bool = False,
+    ai_report_out: Path | None = None,
+) -> ScanReport:
+    prepared = prepare_target(
+        target,
+        policy,
+        url_max_links=url_max_links,
+        url_timeout_seconds=url_timeout_seconds,
+        url_same_origin_only=url_same_origin_only,
+    )
     try:
+        ruleset: CompiledRulePack = load_compiled_builtin_rulepack()
         files = iter_text_files(prepared.root, policy.limits["max_files"], policy.limits["max_bytes"])
         findings: list[Finding] = []
         iocs: list[IOC] = []
         capabilities: list[Capability] = []
         dependency_findings: list[DependencyFinding] = []
+        ai_assessment: AIAssessment | None = None
 
         vuln_db = _load_builtin_vuln_db()
         ioc_db = _load_builtin_ioc_db()
@@ -440,72 +500,63 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                 continue
             analysis_text = _prepare_analysis_text(text)
 
-            for rule_id, category, severity, title, pattern in PATTERNS:
+            for rule in ruleset.static_rules:
                 for line_no, line in enumerate(analysis_text.splitlines(), 1):
-                    if pattern.search(line):
+                    if rule.pattern.search(line):
                         findings.append(
                             Finding(
-                                id=rule_id,
-                                category=category,
-                                severity=severity,
-                                confidence=0.9 if severity in {Severity.HIGH, Severity.CRITICAL} else 0.7,
-                                title=title,
+                                id=rule.id,
+                                category=rule.category,
+                                severity=rule.severity,
+                                confidence=rule.confidence,
+                                title=rule.title,
                                 evidence_path=str(path),
                                 line=line_no,
                                 snippet=line.strip()[:240],
-                                mitigation=MITIGATIONS.get(rule_id),
+                                mitigation=rule.mitigation,
                             )
                         )
                         break
 
-            for capability_name, pattern in CAPABILITY_PATTERNS:
+            for capability_name, pattern in ruleset.capability_patterns:
                 if pattern.search(analysis_text):
                     capabilities.append(
                         Capability(name=capability_name, evidence_path=str(path), detail="Pattern match")
                     )
 
+            if path.suffix.lower() == ".py":
+                for ast_finding in detect_python_ast_flows(analysis_text):
+                    findings.append(
+                        Finding(
+                            id=ast_finding.id,
+                            category=ast_finding.category,
+                            severity=ast_finding.severity,
+                            confidence=ast_finding.confidence,
+                            title=ast_finding.title,
+                            evidence_path=str(path),
+                            line=ast_finding.line,
+                            snippet=ast_finding.snippet,
+                            mitigation=ast_finding.mitigation,
+                        )
+                    )
+
             iocs.extend(_extract_iocs(path, analysis_text))
 
-            actions = _extract_actions(analysis_text)
-            if {"download", "execute"}.issubset(actions):
-                findings.append(
-                    Finding(
-                        id="CHN-001",
-                        category="malware_pattern",
-                        severity=Severity.CRITICAL,
-                        confidence=0.95,
-                        title="Dangerous action chain: download plus execute",
-                        evidence_path=str(path),
-                        snippet="download + execute actions detected",
-                        mitigation=MITIGATIONS.get("CHN-001"),
+            actions = _extract_actions(analysis_text, ruleset.action_patterns)
+            for chain_rule in ruleset.chain_rules:
+                if chain_rule.all_of.issubset(actions):
+                    findings.append(
+                        Finding(
+                            id=chain_rule.id,
+                            category=chain_rule.category,
+                            severity=chain_rule.severity,
+                            confidence=chain_rule.confidence,
+                            title=chain_rule.title,
+                            evidence_path=str(path),
+                            snippet=chain_rule.snippet or " + ".join(sorted(chain_rule.all_of)),
+                            mitigation=chain_rule.mitigation,
+                        )
                     )
-                )
-            if {"secret_access", "network"}.issubset(actions):
-                findings.append(
-                    Finding(
-                        id="CHN-002",
-                        category="exfiltration",
-                        severity=Severity.CRITICAL,
-                        confidence=0.92,
-                        title="Potential secret exfiltration chain",
-                        evidence_path=str(path),
-                        snippet="secret access + outbound network actions detected",
-                        mitigation=MITIGATIONS.get("CHN-002"),
-                    )
-                )
-            if {"privilege", "security_disable"}.issubset(actions):
-                findings.append(
-                    Finding(
-                        id="ABU-002",
-                        category="instruction_abuse",
-                        severity=Severity.HIGH,
-                        confidence=0.9,
-                        title="Elevated setup with security bypass",
-                        evidence_path=str(path),
-                        snippet="privilege escalation + security disable sequence detected",
-                        mitigation=MITIGATIONS.get("ABU-002"),
-                    )
-                )
 
             lower = path.name.lower()
             if lower == "requirements.txt":
@@ -532,7 +583,10 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                             title=f"Unpinned python dependency: {name}",
                             evidence_path=str(path),
                             snippet=spec,
-                            mitigation=MITIGATIONS.get("DEP-UNPIN"),
+                            mitigation=(
+                                "Pin exact dependency versions to improve reproducibility "
+                                "and reduce supply-chain risk."
+                            ),
                         )
                     )
             if lower == "package.json":
@@ -560,7 +614,33 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                                 title=f"Unpinned npm dependency: {name}",
                                 evidence_path=str(path),
                                 snippet=f"{name}: {version}",
-                                mitigation=MITIGATIONS.get("DEP-UNPIN"),
+                                mitigation=(
+                                    "Pin exact dependency versions to improve reproducibility "
+                                    "and reduce supply-chain risk."
+                                ),
+                            )
+                        )
+
+                scripts = _parse_package_scripts(text)
+                lifecycle_hooks = ("preinstall", "install", "postinstall", "prepare")
+                for hook in lifecycle_hooks:
+                    cmd = scripts.get(hook)
+                    if not cmd:
+                        continue
+                    if RISKY_NPM_SCRIPT_RE.search(cmd):
+                        findings.append(
+                            Finding(
+                                id="SUP-001",
+                                category="malware_pattern",
+                                severity=Severity.HIGH,
+                                confidence=0.88,
+                                title=f"Risky npm lifecycle script: {hook}",
+                                evidence_path=str(path),
+                                snippet=f"{hook}: {cmd[:220]}",
+                                mitigation=(
+                                    "Remove network/bootstrap execution from lifecycle hooks. "
+                                    "Use explicit reviewed setup commands instead."
+                                ),
                             )
                         )
 
@@ -595,7 +675,10 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                         title="Domain blocked by local policy",
                         evidence_path=ioc.source_path,
                         snippet=ioc.value,
-                        mitigation=MITIGATIONS.get("POL-IOC-BLOCK"),
+                        mitigation=(
+                            "Replace blocked destination with an approved domain "
+                            "or remove network dependency."
+                        ),
                     )
                 )
 
@@ -610,7 +693,10 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                         title="IOC matched local blocklist",
                         evidence_path=ioc.source_path,
                         snippet=ioc.value,
-                        mitigation=MITIGATIONS.get("IOC-001"),
+                        mitigation=(
+                            "Block install/use and investigate indicator reputation. "
+                            "Remove all references to this IOC."
+                        ),
                     )
                 )
 
@@ -624,16 +710,98 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
                     title=f"Vulnerable dependency: {dep.name}@{dep.version}",
                     evidence_path=dep.name,
                     snippet=dep.vulnerability_id,
-                    mitigation=MITIGATIONS.get("DEP-001"),
+                    mitigation="Upgrade to a non-vulnerable dependency version and refresh lockfiles.",
                 )
             )
+
+        if prepared.read_warnings:
+            findings.append(
+                Finding(
+                    id="SRC-READ-ERR",
+                    category="source_access",
+                    severity=Severity.LOW,
+                    confidence=1.0,
+                    title="Some linked sources could not be fetched",
+                    evidence_path=str(target),
+                    snippet=f"unreadable_links={len(prepared.read_warnings)}",
+                    mitigation=(
+                        "Verify linked source URLs are reachable and public. "
+                        "Unreachable links are not treated as malicious by default."
+                    ),
+                )
+            )
+
+        if prepared.policy_warnings:
+            findings.append(
+                Finding(
+                    id="URL-SKIP-POLICY",
+                    category="source_access",
+                    severity=Severity.LOW,
+                    confidence=1.0,
+                    title="Some linked sources were skipped by URL safety policy",
+                    evidence_path=str(target),
+                    snippet=f"skipped_links={len(prepared.policy_warnings)}",
+                    mitigation=(
+                        "Links skipped due to same-origin policy. "
+                        "Use --url-same-origin-only false to include cross-origin links when needed."
+                    ),
+                )
+            )
+
+        if ai_assist:
+            try:
+                ai_result = run_ai_assist(
+                    AIConfig(
+                        provider=ai_provider,
+                        model=ai_model,
+                        base_url=ai_base_url,
+                        timeout_seconds=ai_timeout_seconds,
+                        required=ai_required,
+                    ),
+                    target=str(target),
+                    root=prepared.root,
+                    files=files,
+                    findings=findings,
+                )
+                findings.extend(ai_result.findings)
+                ai_assessment = ai_result.assessment
+                if ai_report_out is not None:
+                    ai_report_out.parent.mkdir(parents=True, exist_ok=True)
+                    ai_report_out.write_text(ai_result.raw_response, encoding="utf-8")
+            except AIAssistError as exc:
+                if ai_required:
+                    raise ScanError(f"AI assist failed: {exc}") from exc
+                findings.append(
+                    Finding(
+                        id="AI-UNAVAILABLE",
+                        category="source_access",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title="AI assist unavailable",
+                        evidence_path=str(target),
+                        snippet=str(exc)[:220],
+                        mitigation=(
+                            "Configure AI provider settings/API key to enable semantic checks, "
+                            "or use local-only scanning."
+                        ),
+                    )
+                )
 
         score = 0
         for finding in findings:
             weight = policy.weights.get(finding.category, 1)
             score += SEVERITY_SCORE[finding.severity] * weight
 
+        ai_critical_block = any(
+            f.category == "ai_semantic_risk"
+            and f.severity == Severity.CRITICAL
+            and f.confidence >= policy.ai_block_min_confidence
+            for f in findings
+        )
+
         if any(f.id in policy.hard_block_rules for f in findings):
+            verdict = Verdict.BLOCK
+        elif policy.ai_block_on_critical and ai_critical_block:
             verdict = Verdict.BLOCK
         elif score >= policy.thresholds["block"]:
             verdict = Verdict.BLOCK
@@ -647,6 +815,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
             target=str(target),
             target_type=prepared.target_type,
             ecosystem_hints=detect_ecosystems(prepared.root),
+            rulepack_version=ruleset.version,
             policy_profile=policy.name,
             policy_source=policy_source,
             intel_sources=intel_sources,
@@ -660,6 +829,7 @@ def scan(target: Path, policy: Policy, policy_source: str) -> ScanReport:
             iocs=iocs,
             dependency_findings=dependency_findings,
             capabilities=capabilities,
+            ai_assessment=ai_assessment,
         )
     finally:
         if prepared.cleanup_dir is not None:
