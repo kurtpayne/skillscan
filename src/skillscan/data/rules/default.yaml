@@ -1,4 +1,4 @@
-version: "2026.02.09.1"
+version: "2026.02.09.2"
 
 static_rules:
   - id: MAL-001
@@ -41,6 +41,14 @@ static_rules:
     pattern: '(\.env|id_rsa|aws_access_key_id|browser.*cookies)'
     mitigation: Do not read secret files unless strictly required; use scoped secret providers instead.
 
+  - id: EXF-002
+    category: exfiltration
+    severity: high
+    confidence: 0.88
+    title: Cryptocurrency wallet file access
+    pattern: '(wallet\.dat|\.keystore|seed\.txt|mnemonic|private.*key\.json|\.wallet|ethkey|metamask)'
+    mitigation: Do not access wallet files or seed phrases; crypto operations should use secure key management and never expose private keys.
+
   - id: MAL-003
     category: malware_pattern
     severity: high
@@ -49,6 +57,14 @@ static_rules:
     pattern: '(source|bash)\s*<\(\s*(curl|wget)|powershell\s+-enc(?:odedcommand)?'
     mitigation: Remove subshell/encoded execution flows. Keep scripts explicit, reviewed, and non-obfuscated.
 
+  - id: MAL-004
+    category: malware_pattern
+    severity: high
+    confidence: 0.85
+    title: Dynamic code evaluation pattern
+    pattern: '\beval\(|(?:^|\s)exec\(|Function\([^)]*\)|vm\.runInNewContext|vm\.runInThisContext|__import__\('
+    mitigation: Avoid eval/exec flows that execute arbitrary code strings; use explicit functions and validated inputs instead.
+
   - id: OBF-001
     category: instruction_abuse
     severity: medium
@@ -56,6 +72,14 @@ static_rules:
     title: Bidirectional Unicode control character detected
     pattern: '[\u202A-\u202E\u2066-\u2069]'
     mitigation: Remove bidi control characters and verify displayed text matches executed intent.
+
+  - id: OBF-002
+    category: instruction_abuse
+    severity: medium
+    confidence: 0.8
+    title: Stealth execution pattern
+    pattern: 'CREATE_NO_WINDOW|nohup.*>/dev/null|&\s*>/dev/null\s*2>&1|\.bat\s+>nul\s+2>&1'
+    mitigation: Remove hidden/stealth execution flags and output redirection that obscure command behavior.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'
