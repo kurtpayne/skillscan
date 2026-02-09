@@ -35,6 +35,7 @@ def test_showcase_detection_rules() -> None:
     findings_27 = _scan("examples/showcase/27_github_actions_secrets_exfil").findings
     assert any(f.id == "EXF-004" for f in findings_27)
     assert any(f.id == "CHN-004" for f in findings_27)
+    assert any(f.id == "SUP-002" for f in _scan("examples/showcase/28_npx_registry_fallback").findings)
 
 
 def test_showcase_policy_block_domain() -> None:

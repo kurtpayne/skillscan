@@ -1,5 +1,29 @@
 # Pattern Updates - February 2026
 
+## 2026-02-09: npx Phantom Package / Registry Fallback Pattern
+
+**Sources:**
+- [Aikido - npx Confusion: Packages That Forgot to Claim Their Own Name](https://www.aikido.dev/blog/npx-confusion-unclaimed-package-names)
+- [The Hacker News - Compromised dYdX npm and PyPI Packages Deliver Wallet Stealers and RAT Malware](https://thehackernews.com/2026/02/compromised-dydx-npm-and-pypi-packages.html)
+
+**Event Summary:** Recent supply-chain reporting highlighted widespread abuse potential when `npx` commands reference package names that were never claimed. In that case, npm registry fallback can fetch and execute attacker-published code.
+
+**New Pattern Added:**
+
+### SUP-002: npx Registry Fallback Execution Without `--no-install`
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.86
+- **Pattern:** Detects `npx <package>` usage that lacks the `--no-install` safeguard on the same command line.
+- **Justification:** Aikido reported large-scale real-world execution volume of phantom `npx` package names, and The Hacker News linked the same abuse class in ongoing package compromise reporting.
+- **Mitigation:** Prefer explicit installs and use `npx --no-install` to prevent implicit registry fallback execution.
+
+**Version:** Rules updated from 2026.02.09.4 to 2026.02.09.5
+
+**Testing:** Added assertions in `tests/test_rules.py`, `tests/test_scan.py`, and showcase coverage in `tests/test_showcase_examples.py`.
+
+---
+
 ## 2026-02-09: GitHub Actions Secrets-Dump Exfil Pattern
 
 **Sources:**

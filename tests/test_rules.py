@@ -69,3 +69,9 @@ def test_new_patterns_2026_02_09() -> None:
     chn004 = next((r for r in compiled.chain_rules if r.id == "CHN-004"), None)
     assert chn004 is not None
     assert "gh_actions_secrets" in chn004.all_of
+
+    # SUP-002: npx fallback execution without --no-install
+    sup002 = next((r for r in compiled.static_rules if r.id == "SUP-002"), None)
+    assert sup002 is not None
+    assert sup002.pattern.search("npx openapi-generator-cli generate") is not None
+    assert sup002.pattern.search("npx --no-install openapi-generator-cli generate") is None

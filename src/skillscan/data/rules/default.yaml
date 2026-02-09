@@ -1,4 +1,4 @@
-version: "2026.02.09.4"
+version: "2026.02.09.5"
 
 static_rules:
   - id: MAL-001
@@ -96,6 +96,14 @@ static_rules:
     title: Stealth execution pattern
     pattern: 'CREATE_NO_WINDOW|nohup.*>/dev/null|&\s*>/dev/null\s*2>&1|\.bat\s+>nul\s+2>&1'
     mitigation: Remove hidden/stealth execution flags and output redirection that obscure command behavior.
+
+  - id: SUP-002
+    category: malware_pattern
+    severity: high
+    confidence: 0.86
+    title: npx registry fallback execution without --no-install
+    pattern: '\bnpx\s+(?![^\n]*--no-install\b)(?:@[a-z0-9._-]+/[a-z0-9._-]+|[a-z0-9._-]+)\b'
+    mitigation: Avoid implicit npx registry fallback. Prefer explicit local installs and use `npx --no-install` for command execution.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'
