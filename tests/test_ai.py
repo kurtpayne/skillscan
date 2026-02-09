@@ -6,8 +6,11 @@ from pathlib import Path
 from skillscan.ai import (
     AIAssistError,
     AIConfig,
+    AIProviderHTTPError,
     _build_snippets,
     _extract_json_object,
+    _is_model_unavailable_error,
+    _model_candidates,
     _resolve_timeout,
     load_dotenv,
     resolve_provider,
@@ -234,3 +237,75 @@ def test_run_ai_assist_gemini_provider(monkeypatch, tmp_path: Path) -> None:
     )
     assert result.assessment.provider == "gemini"
     assert result.findings[0].id == "AI-SEM-001"
+
+
+def test_model_candidates_dedupes_and_orders() -> None:
+    models = _model_candidates("openai", "gpt-5.2-codex")
+    assert models[0] == "gpt-5.2-codex"
+    assert "gpt-5.2" in models
+
+
+def test_model_unavailable_error_detection() -> None:
+    exc = AIAssistError("AI provider HTTP error 404: model not found")
+    assert _is_model_unavailable_error(exc)
+    assert not _is_model_unavailable_error(AIAssistError("network timeout"))
+
+
+def test_auto_downgrade_model_on_not_found(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    (tmp_path / "SKILL.md").write_text("text", encoding="utf-8")
+    calls: list[str] = []
+
+    def fake_openai_call(config, provider, model, prompt, api_key):
+        _ = config
+        _ = provider
+        _ = prompt
+        _ = api_key
+        calls.append(model)
+        if model == "gpt-5.2-codex":
+            raise AIAssistError("AI provider HTTP error 404: model not found")
+        return '{"summary":"ok","risks":[]}'
+
+    monkeypatch.setattr("skillscan.ai._openai_like_call", fake_openai_call)
+    result = run_ai_assist(
+        AIConfig(provider="openai"),
+        target=str(tmp_path),
+        root=tmp_path,
+        files=[tmp_path / "SKILL.md"],
+        findings=[],
+    )
+    assert calls[0] == "gpt-5.2-codex"
+    assert result.assessment.model != "gpt-5.2-codex"
+
+
+def test_auto_downgrade_failure_message_contains_model_guidance(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    (tmp_path / "SKILL.md").write_text("text", encoding="utf-8")
+
+    def fake_openai_call(config, provider, model, prompt, api_key):
+        _ = config
+        _ = provider
+        _ = model
+        _ = prompt
+        _ = api_key
+        raise AIAssistError("AI provider HTTP error 404: model does not exist")
+
+    monkeypatch.setattr("skillscan.ai._openai_like_call", fake_openai_call)
+    try:
+        run_ai_assist(
+            AIConfig(provider="openai"),
+            target=str(tmp_path),
+            root=tmp_path,
+            files=[tmp_path / "SKILL.md"],
+            findings=[],
+        )
+        assert False, "expected AIAssistError"
+    except AIAssistError as exc:
+        msg = str(exc)
+        assert "--ai-model" in msg
+        assert "SKILLSCAN_AI_MODEL" in msg
+
+
+def test_http_error_class_string() -> None:
+    exc = AIProviderHTTPError(status_code=404, detail='{"error":"model not found"}')
+    assert "404" in str(exc)

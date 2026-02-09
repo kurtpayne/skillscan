@@ -56,6 +56,12 @@ Default model resolution (when `--ai-model` and `SKILLSCAN_AI_MODEL` are unset):
 2. `anthropic`: `claude-opus-4-1-20250805`
 3. `gemini`: `gemini-3-pro-preview`
 
+Auto-downgrade behavior:
+
+1. SkillScan first tries the strongest default/provider-selected model.
+2. If provider returns a model-not-found/unsupported error, SkillScan retries with fallback models.
+3. If all candidates fail, SkillScan returns an explicit message to set `--ai-model` or `SKILLSCAN_AI_MODEL`.
+
 ## Prompt
 
 Source of truth: `src/skillscan/ai.py` (`SYSTEM_PROMPT`).

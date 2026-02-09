@@ -90,6 +90,12 @@ SKILLSCAN_AI_API_KEY=...
 # SKILLSCAN_AI_BASE_URL=https://api.openai.com
 ```
 
+Model fallback behavior:
+
+1. SkillScan tries the strongest default model first.
+2. On model-not-found/unsupported provider errors, it auto-downgrades to fallback models.
+3. If no model works, it prints guidance to set `--ai-model` or `SKILLSCAN_AI_MODEL`.
+
 Save JSON report:
 
 ```bash

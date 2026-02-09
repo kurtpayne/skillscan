@@ -93,6 +93,15 @@ class AIAssistError(Exception):
     pass
 
 
+@dataclass
+class AIProviderHTTPError(AIAssistError):
+    status_code: int
+    detail: str
+
+    def __str__(self) -> str:
+        return f"AI provider HTTP error {self.status_code}: {self.detail[:300]}"
+
+
 def load_dotenv(path: Path = Path(".env")) -> None:
     if not path.exists():
         return
@@ -143,6 +152,40 @@ def resolve_model(provider: str, configured: str | None) -> str:
     return defaults.get(provider, "gpt-5.2-codex")
 
 
+def _model_fallback_chain(provider: str) -> list[str]:
+    chains = {
+        "openai": ["gpt-5.2-codex", "gpt-5.2", "gpt-5.1", "gpt-5"],
+        "openai_compatible": ["gpt-5.2-codex", "gpt-5.2", "gpt-5.1", "gpt-5"],
+        "anthropic": ["claude-opus-4-1-20250805", "claude-sonnet-4-20250514"],
+        "gemini": ["gemini-3-pro-preview", "gemini-2.5-pro", "gemini-2.5-flash"],
+    }
+    return chains.get(provider, [])
+
+
+def _model_candidates(provider: str, requested: str) -> list[str]:
+    ordered = [requested] + _model_fallback_chain(provider)
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for model in ordered:
+        if model and model not in seen:
+            seen.add(model)
+            deduped.append(model)
+    return deduped
+
+
+def _is_model_unavailable_error(exc: AIAssistError) -> bool:
+    text = str(exc).lower()
+    model_tokens = (
+        "model",
+        "not found",
+        "does not exist",
+        "unsupported",
+        "unknown model",
+        "invalid model",
+    )
+    return all(token in text for token in ("model",)) and any(token in text for token in model_tokens[1:])
+
+
 def _resolve_api_key(provider: str) -> str | None:
     if _env("SKILLSCAN_AI_API_KEY"):
         return _env("SKILLSCAN_AI_API_KEY")
@@ -174,9 +217,9 @@ def _post_json(
     try:
         with request.urlopen(req, timeout=timeout_seconds) as resp:
             body = resp.read().decode("utf-8", errors="ignore")
-    except error.HTTPError as exc:  # pragma: no cover - covered via URLError path in tests
+    except error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="ignore")
-        raise AIAssistError(f"AI provider HTTP error {exc.code}: {detail[:300]}") from exc
+        raise AIProviderHTTPError(status_code=exc.code, detail=detail) from exc
     except error.URLError as exc:
         raise AIAssistError(f"AI provider network error: {exc.reason}") from exc
     try:
@@ -334,15 +377,38 @@ def run_ai_assist(
         snippets=_build_snippets(root, files),
     )
 
-    if provider in {"openai", "openai_compatible"}:
-        response_text = _openai_like_call(config, provider, model, prompt, api_key)
-    elif provider == "anthropic":
-        response_text = _anthropic_call(config, model, prompt, api_key)
-    elif provider == "gemini":
-        response_text = _gemini_call(config, model, prompt, api_key)
-    else:
+    if provider not in {"openai", "openai_compatible", "anthropic", "gemini"}:
         raise AIAssistError(
             f"Unsupported provider '{provider}'. Use openai, anthropic, gemini, or openai_compatible."
+        )
+
+    last_error: AIAssistError | None = None
+    selected_model: str = model
+    response_text: str | None = None
+    attempted = _model_candidates(provider, model)
+    for candidate_model in attempted:
+        try:
+            if provider in {"openai", "openai_compatible"}:
+                response_text = _openai_like_call(config, provider, candidate_model, prompt, api_key)
+            elif provider == "anthropic":
+                response_text = _anthropic_call(config, candidate_model, prompt, api_key)
+            else:
+                response_text = _gemini_call(config, candidate_model, prompt, api_key)
+            selected_model = candidate_model
+            break
+        except AIAssistError as exc:
+            last_error = exc
+            if _is_model_unavailable_error(exc):
+                continue
+            raise
+    if response_text is None:
+        tip = (
+            "Set --ai-model or SKILLSCAN_AI_MODEL to a model available in your provider account "
+            "and retry."
+        )
+        detail = str(last_error) if last_error else "unknown model selection error"
+        raise AIAssistError(
+            f"AI model selection failed for provider '{provider}' after trying {attempted}: {detail}. {tip}"
         )
 
     parsed_payload = _extract_json_object(response_text)
@@ -375,7 +441,7 @@ def run_ai_assist(
 
     assessment = AIAssessment(
         provider=provider,
-        model=model,
+        model=selected_model,
         summary=parsed.summary[:600],
         findings_added=len(ai_findings),
         prompt_version=PROMPT_VERSION,
