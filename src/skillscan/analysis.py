@@ -81,6 +81,28 @@ VulnVersionMap = dict[str, VulnRecord]
 VulnPackageMap = dict[str, VulnVersionMap]
 VulnDB = dict[str, VulnPackageMap]
 
+BYTECODE_SUFFIXES = {".pyc", ".pyo"}
+LIBRARY_SUFFIXES = {".so", ".dll", ".dylib", ".a"}
+EXECUTABLE_SUFFIXES = {".exe", ".msi", ".com"}
+KNOWN_BINARY_SUFFIXES = {
+    ".bin",
+    ".o",
+    ".obj",
+    ".class",
+    ".jar",
+    ".wasm",
+    ".pyz",
+    ".whl",
+}
+MACHO_MAGICS = (
+    b"\xfe\xed\xfa\xce",
+    b"\xce\xfa\xed\xfe",
+    b"\xfe\xed\xfa\xcf",
+    b"\xcf\xfa\xed\xfe",
+    b"\xca\xfe\xba\xbe",
+    b"\xbe\xba\xfe\xca",
+)
+
 
 @dataclass
 class PreparedTarget:
@@ -89,6 +111,19 @@ class PreparedTarget:
     cleanup_dir: tempfile.TemporaryDirectory[str] | None
     read_warnings: list[str]
     policy_warnings: list[str]
+
+
+@dataclass
+class BinaryArtifact:
+    path: Path
+    kind: str
+    detail: str
+
+
+@dataclass
+class FileInventory:
+    text_files: list[Path]
+    binary_artifacts: list[BinaryArtifact]
 
 
 class ScanError(Exception):
@@ -195,27 +230,59 @@ def prepare_target(
     raise ScanError("Unsupported target type")
 
 
-def iter_text_files(root: Path, max_files: int, max_bytes: int) -> list[Path]:
+def _read_head(path: Path, limit: int = 4096) -> bytes:
+    try:
+        with path.open("rb") as fh:
+            return fh.read(limit)
+    except OSError:
+        return b""
+
+
+def _classify_non_text(path: Path) -> BinaryArtifact | None:
+    suffix = path.suffix.lower()
+    if "__pycache__" in path.parts or suffix in BYTECODE_SUFFIXES:
+        return BinaryArtifact(path=path, kind="python_bytecode", detail="compiled python bytecode artifact")
+    if suffix in LIBRARY_SUFFIXES:
+        return BinaryArtifact(path=path, kind="binary_library", detail="compiled library artifact")
+    if suffix in EXECUTABLE_SUFFIXES:
+        return BinaryArtifact(path=path, kind="executable_binary", detail="known executable extension")
+
+    head = _read_head(path)
+    if not head:
+        return None
+    if head.startswith(b"\x7fELF") or head.startswith(b"MZ") or head.startswith(MACHO_MAGICS):
+        return BinaryArtifact(path=path, kind="executable_binary", detail="executable binary header")
+    if suffix in KNOWN_BINARY_SUFFIXES:
+        return BinaryArtifact(path=path, kind="binary_blob", detail="binary extension")
+    if b"\x00" in head:
+        return BinaryArtifact(path=path, kind="binary_blob", detail="contains NUL bytes")
+    return None
+
+
+def iter_text_files(root: Path, max_files: int, max_bytes: int) -> FileInventory:
     files: list[Path] = []
+    binary_artifacts: list[BinaryArtifact] = []
     total_bytes = 0
+    total_files = 0
     for path in root.rglob("*"):
         if not path.is_file():
-            continue
-        if "__pycache__" in path.parts:
-            continue
-        if path.suffix.lower() in {".pyc", ".so", ".dll", ".dylib", ".exe", ".bin"}:
             continue
         try:
             size = path.stat().st_size
         except OSError:
             continue
+        total_files += 1
         total_bytes += size
         if total_bytes > max_bytes:
             raise ScanError("Scan size exceeded max_bytes policy limit")
-        files.append(path)
-        if len(files) > max_files:
+        if total_files > max_files:
             raise ScanError("Scan file count exceeded max_files policy limit")
-    return files
+        classification = _classify_non_text(path)
+        if classification is not None:
+            binary_artifacts.append(classification)
+            continue
+        files.append(path)
+    return FileInventory(text_files=files, binary_artifacts=binary_artifacts)
 
 
 def _safe_read_text(path: Path) -> str:
@@ -444,6 +511,62 @@ def _merge_user_intel(ioc_db: IOCDB, vuln_db: VulnDB) -> tuple[IOCDB, VulnDB, li
     return ioc_db, vuln_db, sources
 
 
+def _binary_kind_template(kind: str) -> tuple[str, Severity, str, str]:
+    if kind == "executable_binary":
+        return (
+            "BIN-001",
+            Severity.HIGH,
+            "Executable binary artifact present",
+            "Review and verify binary provenance and signatures before trust or execution.",
+        )
+    if kind == "binary_library":
+        return (
+            "BIN-002",
+            Severity.MEDIUM,
+            "Compiled library artifact present",
+            "Verify shared/static library provenance and hash against trusted release artifacts.",
+        )
+    if kind == "binary_blob":
+        return (
+            "BIN-003",
+            Severity.MEDIUM,
+            "Binary blob artifact present",
+            "Inspect binary payload purpose and source; prefer transparent source artifacts when possible.",
+        )
+    return (
+        "BIN-004",
+        Severity.LOW,
+        "Compiled Python bytecode artifact present",
+        (
+            "Prefer scanning source files with bytecode provenance; "
+            "review for hidden or mismatched source content."
+        ),
+    )
+
+
+def _binary_artifact_findings(artifacts: list[BinaryArtifact]) -> list[Finding]:
+    grouped: dict[str, list[BinaryArtifact]] = {}
+    for item in artifacts:
+        grouped.setdefault(item.kind, []).append(item)
+    findings: list[Finding] = []
+    for kind, items in grouped.items():
+        rule_id, severity, title, mitigation = _binary_kind_template(kind)
+        sample = ", ".join(str(item.path) for item in items[:3])
+        findings.append(
+            Finding(
+                id=rule_id,
+                category="binary_artifact",
+                severity=severity,
+                confidence=0.9,
+                title=title,
+                evidence_path=str(items[0].path),
+                snippet=f"count={len(items)} sample={sample}",
+                mitigation=mitigation,
+            )
+        )
+    return findings
+
+
 def _ip_in_cidrs(ip_value: str, cidrs: list[str]) -> bool:
     try:
         ip_obj = ipaddress.ip_address(ip_value)
@@ -483,7 +606,8 @@ def scan(
     )
     try:
         ruleset: CompiledRulePack = load_compiled_builtin_rulepack()
-        files = iter_text_files(prepared.root, policy.limits["max_files"], policy.limits["max_bytes"])
+        inventory = iter_text_files(prepared.root, policy.limits["max_files"], policy.limits["max_bytes"])
+        files = inventory.text_files
         findings: list[Finding] = []
         iocs: list[IOC] = []
         capabilities: list[Capability] = []
@@ -493,6 +617,7 @@ def scan(
         vuln_db = _load_builtin_vuln_db()
         ioc_db = _load_builtin_ioc_db()
         ioc_db, vuln_db, intel_sources = _merge_user_intel(ioc_db, vuln_db)
+        findings.extend(_binary_artifact_findings(inventory.binary_artifacts))
 
         for path in files:
             text = _safe_read_text(path)

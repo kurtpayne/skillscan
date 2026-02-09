@@ -23,6 +23,7 @@ weights:
   exfiltration: 3
   dependency_vulnerability: 2
   threat_intel: 3
+  binary_artifact: 1
 hard_block_rules:
   - MAL-001
   - IOC-001

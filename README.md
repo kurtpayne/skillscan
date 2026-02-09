@@ -20,17 +20,18 @@ Default policy is `strict`.
 
 1. Offline-first local scanning.
 2. Archive-safe extraction and static analysis.
-3. Malware and instruction-abuse pattern detection.
-4. Instruction hardening pipeline (Unicode normalization, zero-width stripping, bounded base64 decode, action-chain checks).
-5. IOC extraction with local intel matching.
-6. Dependency vulnerability and unpinned-version checks.
-7. Policy profiles (`strict`, `balanced`, `permissive`) + custom policies.
-8. Pretty terminal output + JSON reports.
-9. Built-in examples and compromised OpenClaw-style fixtures.
-10. Auto-refresh managed intel feeds (default checks every scan, 1-hour max age).
-11. Versioned YAML rulepack for flexible detection updates (`src/skillscan/data/rules/default.yaml`).
-12. Adversarial regression corpus with expected verdicts (`tests/adversarial/expectations.json`).
-13. Optional AI semantic checks for nuanced instruction-layer risks (`--ai-assist`).
+3. Binary artifact classification and flagging (executables/libraries/bytecode/blobs).
+4. Malware and instruction-abuse pattern detection.
+5. Instruction hardening pipeline (Unicode normalization, zero-width stripping, bounded base64 decode, action-chain checks).
+6. IOC extraction with local intel matching.
+7. Dependency vulnerability and unpinned-version checks.
+8. Policy profiles (`strict`, `balanced`, `permissive`) + custom policies.
+9. Pretty terminal output + JSON reports.
+10. Built-in examples and compromised OpenClaw-style fixtures.
+11. Auto-refresh managed intel feeds (default checks every scan, 1-hour max age).
+12. Versioned YAML rulepack for flexible detection updates (`src/skillscan/data/rules/default.yaml`).
+13. Adversarial regression corpus with expected verdicts (`tests/adversarial/expectations.json`).
+14. Optional AI semantic checks for nuanced instruction-layer risks (`--ai-assist`).
 
 ## Install
 

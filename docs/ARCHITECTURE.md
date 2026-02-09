@@ -3,7 +3,7 @@
 ## High-level flow
 
 1. Input path resolution and archive-safe extraction.
-2. Text file iteration with binary/cache filtering.
+2. Text file iteration plus binary artifact classification (`BIN-*` findings).
 3. Instruction hardening (Unicode normalization, zero-width stripping, bounded base64 decoding).
 4. Pattern and action-chain analysis for malware and instruction abuse.
 5. IOC extraction and local intel correlation.
@@ -30,6 +30,7 @@
 - Built-in policy YAML: `src/skillscan/data/policies/`
 - Built-in intel JSON: `src/skillscan/data/intel/`
 - Built-in rules YAML: `src/skillscan/data/rules/default.yaml`
+- Built-in AST flow YAML: `src/skillscan/data/rules/ast_flows.yaml`
 - Runtime intel config: `~/.skillscan/intel_sources.json`
 - Runtime copied intel files: `~/.skillscan/intel/`
 

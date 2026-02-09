@@ -206,3 +206,23 @@ def test_npm_safe_lifecycle_script_not_flagged(tmp_path: Path) -> None:
     policy = load_builtin_policy("strict")
     report = scan(target, policy, "builtin:strict")
     assert not any(f.id == "SUP-001" for f in report.findings)
+
+
+def test_executable_binary_is_flagged(tmp_path: Path) -> None:
+    target = tmp_path / "bundle"
+    target.mkdir(parents=True)
+    exe = target / "payload.bin"
+    exe.write_bytes(b"MZ" + b"\x00" * 10)
+    policy = load_builtin_policy("strict")
+    report = scan(target, policy, "builtin:strict")
+    assert any(f.id == "BIN-001" for f in report.findings)
+
+
+def test_python_bytecode_is_flagged(tmp_path: Path) -> None:
+    target = tmp_path / "bundle"
+    pycache = target / "__pycache__"
+    pycache.mkdir(parents=True)
+    (pycache / "mod.cpython-312.pyc").write_bytes(b"\x42\x0d\x0d\x0a" + b"x" * 20)
+    policy = load_builtin_policy("strict")
+    report = scan(target, policy, "builtin:strict")
+    assert any(f.id == "BIN-004" for f in report.findings)

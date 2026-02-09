@@ -18,7 +18,7 @@ This guide explains what SkillScan checks, why each check is useful, and how saf
 
 2. File filtering:
 - Iterates text-like files only.
-- Skips binaries and cache artifacts (for example `__pycache__`, `.pyc`, `.so`, `.dll`).
+- Classifies non-text artifacts and raises binary findings (`BIN-*`) for executables/libraries/bytecode/blobs.
 
 3. Instruction hardening:
 - Unicode normalization (`NFKC`).

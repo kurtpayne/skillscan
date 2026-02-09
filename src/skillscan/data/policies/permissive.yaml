@@ -9,6 +9,7 @@ weights:
   exfiltration: 1
   dependency_vulnerability: 1
   threat_intel: 2
+  binary_artifact: 1
 hard_block_rules: []
 allow_domains: []
 block_domains: []

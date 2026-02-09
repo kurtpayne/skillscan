@@ -6,6 +6,7 @@ Rule content is defined in:
 
 - `src/skillscan/data/rules/default.yaml`
 - `src/skillscan/data/rules/exfil_channels.yaml`
+- `src/skillscan/data/rules/ast_flows.yaml`
 
 The scanner compiles this YAML at runtime via `src/skillscan/rules.py`.
 
@@ -28,8 +29,14 @@ Current built-in IDs:
 15. `MAL-003` (high): subshell downloader execution / encoded PowerShell execution patterns.
 16. `OBF-001` (medium): bidirectional Unicode control characters (Trojan Source style obfuscation).
 17. `SUP-001` (high): risky npm lifecycle install script (preinstall/install/postinstall/prepare).
-18. `AI-SEM-*` (severity from model output): optional AI semantic risk findings (only with `--ai-assist`).
-19. `AI-UNAVAILABLE` (low): optional AI assist failed but scan continued in local-only mode.
+18. `AST-001` (critical): constructed/secret-tainted input reaches Python execution sink.
+19. `AST-002` (critical): secret-tainted input reaches Python network sink.
+20. `BIN-001` (high): executable binary artifact detected in scanned target.
+21. `BIN-002` (medium): compiled library artifact detected in scanned target.
+22. `BIN-003` (medium): binary blob artifact detected in scanned target.
+23. `BIN-004` (low): Python bytecode/cache artifact detected in scanned target.
+24. `AI-SEM-*` (severity from model output): optional AI semantic risk findings (only with `--ai-assist`).
+25. `AI-UNAVAILABLE` (low): optional AI assist failed but scan continued in local-only mode.
 
 ## Instruction hardening pipeline
 
@@ -60,8 +67,14 @@ SkillScan now processes instruction text through a deterministic hardening pipel
 15. `MAL-003`: Remove subshell/encoded execution patterns and require explicit, reviewed commands.
 16. `OBF-001`: Strip bidi controls and verify text rendering equals actual execution content.
 17. `SUP-001`: Remove network/bootstrap actions from npm lifecycle hooks and use explicit setup steps.
-18. `AI-SEM-*`: Validate semantic risk evidence and apply mitigation steps before trusting the artifact.
-19. `AI-UNAVAILABLE`: Configure AI provider credentials or continue with deterministic local-only coverage.
+18. `AST-001`: Remove dynamic execution flows where constructed or secret-linked values reach execution sinks.
+19. `AST-002`: Remove secret-to-network dataflow and enforce explicit allowlisted egress paths.
+20. `BIN-001`: Treat executable artifacts as high-risk supply-chain content pending provenance validation.
+21. `BIN-002`: Validate compiled library hashes/signatures against trusted release metadata.
+22. `BIN-003`: Manually inspect binary blobs and replace with transparent source artifacts when possible.
+23. `BIN-004`: Confirm bytecode corresponds to reviewed source and cannot hide unreviewed logic.
+24. `AI-SEM-*`: Validate semantic risk evidence and apply mitigation steps before trusting the artifact.
+25. `AI-UNAVAILABLE`: Configure AI provider credentials or continue with deterministic local-only coverage.
 
 ## Capability inference rules
 
