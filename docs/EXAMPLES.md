@@ -29,6 +29,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `21_npm_lifecycle_abuse` | Risky npm lifecycle script (`preinstall` etc.) | `SUP-001` |
 | `22_prompt_injection` | Prompt override/jailbreak language in instructions | `PINJ-001` |
 | `23_trojan_source_bidi` | Bidirectional Unicode obfuscation marker | `OBF-001` |
+| `24_binary_artifact` | Executable binary artifact present in bundle | `BIN-001` |
 
 ## Commands
 

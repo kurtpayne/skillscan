@@ -25,6 +25,7 @@ Each folder demonstrates one major detection or behavior.
 21. `21_npm_lifecycle_abuse`: malicious npm lifecycle bootstrap (`SUP-001`)
 22. `22_prompt_injection`: instruction override/jailbreak patterns (`PINJ-001`)
 23. `23_trojan_source_bidi`: bidi Unicode obfuscation markers (`OBF-001`)
+24. `24_binary_artifact`: executable binary artifact classification (`BIN-001`)
 
 ## Run examples
 

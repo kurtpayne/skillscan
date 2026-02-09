@@ -102,6 +102,85 @@ Render saved report:
 skillscan explain ./report.json
 ```
 
+## Highlighted Examples
+
+### 1. Download-and-execute chain (critical)
+
+```console
+$ skillscan scan examples/showcase/01_download_execute --fail-on never
+╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
+│ Target: examples/showcase/01_download_execute                                │
+│ Policy: strict                                                               │
+│ Score: 360                                                                   │
+│ Findings: 2                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Top Findings:
+- MAL-001 (critical) Download-and-execute chain
+- CHN-001 (critical) Dangerous action chain: download plus execute
+```
+
+### 2. Secret exfiltration chain (critical)
+
+```console
+$ skillscan scan examples/showcase/15_secret_network_chain --fail-on never
+╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
+│ Target: examples/showcase/15_secret_network_chain                            │
+│ Policy: strict                                                               │
+│ Score: 285                                                                   │
+│ Findings: 2                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Top Findings:
+- EXF-001 (high) Sensitive credential file access
+- CHN-002 (critical) Potential secret exfiltration chain
+```
+
+### 3. npm lifecycle supply-chain abuse
+
+```console
+$ skillscan scan examples/showcase/21_npm_lifecycle_abuse --fail-on never
+╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
+│ Target: examples/showcase/21_npm_lifecycle_abuse                             │
+│ Policy: strict                                                               │
+│ Score: 465                                                                   │
+│ Findings: 3                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Top Findings:
+- MAL-001 (critical) Download-and-execute chain
+- CHN-001 (critical) Dangerous action chain: download plus execute
+- SUP-001 (high) Risky npm lifecycle script: preinstall
+```
+
+### 4. Executable binary artifact detection
+
+```console
+$ skillscan scan examples/showcase/24_binary_artifact --fail-on never
+╭─────────────────────────────── Verdict: WARN ────────────────────────────────╮
+│ Target: examples/showcase/24_binary_artifact                                 │
+│ Policy: strict                                                               │
+│ Score: 35                                                                    │
+│ Findings: 1                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Top Findings:
+- BIN-001 (high) Executable binary artifact present
+```
+
+### 5. AI semantic assist (opt-in)
+
+```console
+$ skillscan scan examples/showcase/20_ai_semantic_risk --ai-assist --no-auto-intel --fail-on never
+╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
+│ Target: examples/showcase/20_ai_semantic_risk                                │
+│ Policy: strict                                                               │
+│ Score: 60                                                                    │
+│ Findings: 1                                                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+Top Findings:
+- AI-SEM-001 (critical) semantic credential-harvesting risk
+AI Assist:
+- Provider: openai
+- Model: gpt-4o-mini
+```
+
 ## Command Summary
 
 - `skillscan scan <path>`
