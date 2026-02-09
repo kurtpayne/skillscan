@@ -38,7 +38,7 @@ Default policy is `strict`.
 ### Option A: convenience installer (curl|bash)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/your-org/skillscan/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/kurtpayne/skillscan/main/scripts/install.sh | bash
 ```
 
 Set `SKILLSCAN_REPO_URL` first if you are using a fork/private location.
