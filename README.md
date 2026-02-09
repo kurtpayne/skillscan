@@ -263,6 +263,16 @@ skillscan intel sync --force
 6. AI semantic-only sample: `examples/showcase/20_ai_semantic_risk`
 7. OpenClaw-compromised-style sample: `tests/fixtures/malicious/openclaw_compromised_like`
 
+## Cross-Platform Skill Bundles
+
+Starter bundles for OpenClaw/ClawHub, Claude-style skills, and OpenAI Actions are in:
+
+- `integrations/openclaw/`
+- `integrations/claude/`
+- `integrations/openai/`
+
+See `docs/PLATFORM_SKILLS.md` for setup and rollout guidance.
+
 ## Testing
 
 ```bash
