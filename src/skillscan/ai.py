@@ -135,12 +135,12 @@ def resolve_model(provider: str, configured: str | None) -> str:
     if configured:
         return configured
     defaults = {
-        "openai": "gpt-4o-mini",
-        "openai_compatible": "gpt-4o-mini",
-        "anthropic": "claude-3-5-sonnet-latest",
-        "gemini": "gemini-2.0-flash",
+        "openai": "gpt-5.2-codex",
+        "openai_compatible": "gpt-5.2-codex",
+        "anthropic": "claude-opus-4-1-20250805",
+        "gemini": "gemini-3-pro-preview",
     }
-    return defaults.get(provider, "gpt-4o-mini")
+    return defaults.get(provider, "gpt-5.2-codex")
 
 
 def _resolve_api_key(provider: str) -> str | None:

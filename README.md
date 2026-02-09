@@ -84,7 +84,7 @@ AI settings are industry-aligned and support `.env`:
 
 ```bash
 SKILLSCAN_AI_PROVIDER=openai
-SKILLSCAN_AI_MODEL=gpt-4o-mini
+SKILLSCAN_AI_MODEL=gpt-5.2-codex
 SKILLSCAN_AI_API_KEY=...
 # Optional:
 # SKILLSCAN_AI_BASE_URL=https://api.openai.com
@@ -178,7 +178,7 @@ Top Findings:
 - AI-SEM-001 (critical) semantic credential-harvesting risk
 AI Assist:
 - Provider: openai
-- Model: gpt-4o-mini
+- Model: gpt-5.2-codex
 ```
 
 ## Command Summary

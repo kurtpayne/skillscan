@@ -22,7 +22,7 @@ Deterministic local rules are strong for explicit abuse strings and code pattern
 skillscan scan <target> \
   --ai-assist \
   --ai-provider auto \
-  --ai-model gpt-4o-mini \
+  --ai-model gpt-5.2-codex \
   --ai-timeout-seconds 20
 ```
 
@@ -49,6 +49,12 @@ Provider fallback keys:
 3. Gemini: `GEMINI_API_KEY` or `GOOGLE_API_KEY`
 
 `.env` is auto-loaded if present in current working directory.
+
+Default model resolution (when `--ai-model` and `SKILLSCAN_AI_MODEL` are unset):
+
+1. `openai` / `openai_compatible`: `gpt-5.2-codex`
+2. `anthropic`: `claude-opus-4-1-20250805`
+3. `gemini`: `gemini-3-pro-preview`
 
 ## Prompt
 
