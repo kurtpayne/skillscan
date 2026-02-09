@@ -27,3 +27,28 @@ def test_ast_flow_config_loads() -> None:
     assert "os.getenv" in cfg.secret_source_calls
     assert "eval" in cfg.exec_sink_calls
     assert "AST-001" in cfg.rules_by_id
+
+
+def test_new_patterns_2026_02_09() -> None:
+    """Test new patterns added from Feb 2026 dYdX supply chain attack."""
+    compiled = load_compiled_builtin_rulepack()
+    
+    # EXF-002: Crypto wallet file access
+    exf002 = next((r for r in compiled.static_rules if r.id == "EXF-002"), None)
+    assert exf002 is not None
+    assert exf002.pattern.search("wallet.dat") is not None
+    assert exf002.pattern.search(".keystore") is not None
+    assert exf002.pattern.search("mnemonic") is not None
+    
+    # MAL-004: Dynamic code evaluation
+    mal004 = next((r for r in compiled.static_rules if r.id == "MAL-004"), None)
+    assert mal004 is not None
+    assert mal004.pattern.search("eval(code)") is not None
+    assert mal004.pattern.search("exec(payload)") is not None
+    assert mal004.pattern.search("Function('return x')") is not None
+    
+    # OBF-002: Stealth execution patterns
+    obf002 = next((r for r in compiled.static_rules if r.id == "OBF-002"), None)
+    assert obf002 is not None
+    assert obf002.pattern.search("CREATE_NO_WINDOW") is not None
+    assert obf002.pattern.search("nohup cmd >/dev/null") is not None
