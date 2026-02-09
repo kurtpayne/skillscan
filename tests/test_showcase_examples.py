@@ -31,6 +31,7 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "SUP-001" for f in _scan("examples/showcase/21_npm_lifecycle_abuse").findings)
     assert any(f.id == "PINJ-001" for f in _scan("examples/showcase/22_prompt_injection").findings)
     assert any(f.id == "OBF-001" for f in _scan("examples/showcase/23_trojan_source_bidi").findings)
+    assert any(f.id == "EXF-003" for f in _scan("examples/showcase/26_metadata_image_beacon").findings)
 
 
 def test_showcase_policy_block_domain() -> None:

@@ -1,4 +1,4 @@
-version: "2026.02.09.2"
+version: "2026.02.09.3"
 
 static_rules:
   - id: MAL-001
@@ -48,6 +48,14 @@ static_rules:
     title: Cryptocurrency wallet file access
     pattern: '(wallet\.dat|\.keystore|seed\.txt|mnemonic|private.*key\.json|\.wallet|ethkey|metamask)'
     mitigation: Do not access wallet files or seed phrases; crypto operations should use secure key management and never expose private keys.
+
+  - id: EXF-003
+    category: exfiltration
+    severity: high
+    confidence: 0.84
+    title: Markdown image beacon exfiltration pattern
+    pattern: '!\[[^\]]*\]\(https?://[^)]+\?(?:[^)]*)(?:data|dump|exfil|token|key)=\{?[a-zA-Z_][\w-]*\}?[^)]*\)'
+    mitigation: Do not include instruction-driven external image beacons with interpolated data placeholders; treat metadata/context text as untrusted.
 
   - id: MAL-003
     category: malware_pattern

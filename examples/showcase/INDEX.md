@@ -26,6 +26,8 @@ Each folder demonstrates one major detection or behavior.
 22. `22_prompt_injection`: instruction override/jailbreak patterns (`PINJ-001`)
 23. `23_trojan_source_bidi`: bidi Unicode obfuscation markers (`OBF-001`)
 24. `24_binary_artifact`: executable binary artifact classification (`BIN-001`)
+25. `25_wallet_eval_stealth`: wallet-targeting + dynamic eval + stealth execution markers (`EXF-002`, `MAL-004`, `OBF-002`)
+26. `26_metadata_image_beacon`: metadata-injected markdown image beacon with interpolated exfil marker (`EXF-003`)
 
 ## Run examples
 
