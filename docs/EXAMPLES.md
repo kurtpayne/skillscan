@@ -30,6 +30,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `22_prompt_injection` | Prompt override/jailbreak language in instructions | `PINJ-001` |
 | `23_trojan_source_bidi` | Bidirectional Unicode obfuscation marker | `OBF-001` |
 | `24_binary_artifact` | Executable binary artifact present in bundle | `BIN-001` |
+| `25_wallet_eval_stealth` | Wallet file targeting + dynamic eval + stealth execution markers | `EXF-002`, `MAL-004`, `OBF-002` |
 
 ## Commands
 
