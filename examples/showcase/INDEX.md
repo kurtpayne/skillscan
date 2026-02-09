@@ -28,6 +28,7 @@ Each folder demonstrates one major detection or behavior.
 24. `24_binary_artifact`: executable binary artifact classification (`BIN-001`)
 25. `25_wallet_eval_stealth`: wallet-targeting + dynamic eval + stealth execution markers (`EXF-002`, `MAL-004`, `OBF-002`)
 26. `26_metadata_image_beacon`: metadata-injected markdown image beacon with interpolated exfil marker (`EXF-003`)
+27. `27_github_actions_secrets_exfil`: GitHub Actions full-secrets expansion with outbound POST (`EXF-004`, `CHN-004`)
 
 ## Run examples
 
@@ -37,4 +38,5 @@ skillscan scan examples/showcase/05_ioc_match --fail-on never
 skillscan scan examples/showcase/09_policy_block_domain --policy examples/policies/showcase_block_domain.yaml --fail-on never
 skillscan scan examples/showcase/20_ai_semantic_risk --ai-assist --fail-on never
 skillscan scan examples/showcase/21_npm_lifecycle_abuse --fail-on never
+skillscan scan examples/showcase/27_github_actions_secrets_exfil --fail-on never
 ```
