@@ -30,6 +30,7 @@ Each folder demonstrates one major detection or behavior.
 26. `26_metadata_image_beacon`: metadata-injected markdown image beacon with interpolated exfil marker (`EXF-003`)
 27. `27_github_actions_secrets_exfil`: GitHub Actions full-secrets expansion with outbound POST (`EXF-004`, `CHN-004`)
 28. `28_npx_registry_fallback`: npx execution without `--no-install` safeguard (`SUP-002`)
+29. `29_claude_sed_path_bypass`: piped `echo | sed` redirection into `.claude/` or parent paths (`SUP-003`)
 
 ## Run examples
 
@@ -41,4 +42,5 @@ skillscan scan examples/showcase/20_ai_semantic_risk --ai-assist --fail-on never
 skillscan scan examples/showcase/21_npm_lifecycle_abuse --fail-on never
 skillscan scan examples/showcase/27_github_actions_secrets_exfil --fail-on never
 skillscan scan examples/showcase/28_npx_registry_fallback --fail-on never
+skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 ```

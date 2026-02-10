@@ -1,5 +1,27 @@
 # Pattern Updates - February 2026
 
+## 2026-02-10: Piped `echo|sed` Scoped-Write Bypass Pattern
+
+**Sources:**
+- [GitHub Advisory Database - CVE-2026-25723](https://github.com/advisories/GHSA-mhg7-666j-cqg4)
+- [NVD - CVE-2026-25723](https://nvd.nist.gov/vuln/detail/CVE-2026-25723)
+
+**Event Summary:** GitHub and NVD documented a command-injection/write-scope bypass in Claude Code where piped `echo | sed` operations could bypass intended write restrictions and redirect output into sensitive paths such as `.claude/` or outside the project root.
+
+**New Pattern Added:**
+
+### SUP-003: Piped sed write to out-of-scope or agent config path
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects `echo ... | sed ... >` redirection targeting `.claude/` and `../` style out-of-scope paths.
+- **Justification:** Directly aligned to CVE-2026-25723 described behavior (piped sed with redirected write bypass).
+- **Mitigation:** Replace shell rewrite/redirection primitives with scoped file APIs and path allowlists.
+
+**Version:** Rules updated from 2026.02.09.5 to 2026.02.10.1
+
+**Testing:** Added coverage in `tests/test_rules.py`, `tests/test_scan.py`, and showcase validation in `tests/test_showcase_examples.py`.
+
 ## 2026-02-09: npx Phantom Package / Registry Fallback Pattern
 
 **Sources:**

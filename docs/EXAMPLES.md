@@ -34,6 +34,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `26_metadata_image_beacon` | Metadata-injected markdown image URL beacon with interpolated exfil placeholder | `EXF-003` |
 | `27_github_actions_secrets_exfil` | GitHub Actions full secrets context expansion with outbound transfer | `EXF-004`, `CHN-004` |
 | `28_npx_registry_fallback` | `npx` command without `--no-install` guard (implicit registry fallback execution risk) | `SUP-002` |
+| `29_claude_sed_path_bypass` | `echo ... | sed ... >` redirection into `.claude/` or parent paths (`../`) to bypass scoped-write controls | `SUP-003` |
 
 ## Commands
 

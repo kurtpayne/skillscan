@@ -75,3 +75,10 @@ def test_new_patterns_2026_02_09() -> None:
     assert sup002 is not None
     assert sup002.pattern.search("npx openapi-generator-cli generate") is not None
     assert sup002.pattern.search("npx --no-install openapi-generator-cli generate") is None
+
+    # SUP-003: piped sed write-path bypass primitive
+    sup003 = next((r for r in compiled.static_rules if r.id == "SUP-003"), None)
+    assert sup003 is not None
+    assert sup003.pattern.search("echo foo | sed 's/a/b/' > .claude/settings.json") is not None
+    assert sup003.pattern.search("echo foo | sed 's/a/b/' > ../outside.txt") is not None
+    assert sup003.pattern.search("echo foo | sed 's/a/b/' > docs/output.txt") is None

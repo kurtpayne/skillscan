@@ -1,4 +1,4 @@
-version: "2026.02.09.5"
+version: "2026.02.10.1"
 
 static_rules:
   - id: MAL-001
@@ -104,6 +104,14 @@ static_rules:
     title: npx registry fallback execution without --no-install
     pattern: '\bnpx\s+(?![^\n]*--no-install\b)(?:@[a-z0-9._-]+/[a-z0-9._-]+|[a-z0-9._-]+)\b'
     mitigation: Avoid implicit npx registry fallback. Prefer explicit local installs and use `npx --no-install` for command execution.
+
+  - id: SUP-003
+    category: malware_pattern
+    severity: high
+    confidence: 0.84
+    title: Piped sed write to out-of-scope or agent config path
+    pattern: 'echo\s+.*\|\s*sed\b[^\n]*>\s*(?:\.\./|/[^\s]*\.claude/|\.claude/)'
+    mitigation: Avoid shell-based piped rewrite chains that redirect into `.claude/` or parent-directory paths. Use scoped file APIs with explicit path allowlists.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'
