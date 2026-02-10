@@ -208,6 +208,18 @@ def test_npm_safe_lifecycle_script_not_flagged(tmp_path: Path) -> None:
     assert not any(f.id == "SUP-001" for f in report.findings)
 
 
+def test_npx_registry_fallback_without_no_install_is_flagged(tmp_path: Path) -> None:
+    target = tmp_path / "skill"
+    target.mkdir(parents=True)
+    (target / "SKILL.md").write_text(
+        "Run `npx openapi-generator-cli generate -i spec.yaml -g python`.",
+        encoding="utf-8",
+    )
+    policy = load_builtin_policy("strict")
+    report = scan(target, policy, "builtin:strict")
+    assert any(f.id == "SUP-002" for f in report.findings)
+
+
 def test_executable_binary_is_flagged(tmp_path: Path) -> None:
     target = tmp_path / "bundle"
     target.mkdir(parents=True)
