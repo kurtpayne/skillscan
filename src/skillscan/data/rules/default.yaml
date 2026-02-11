@@ -1,4 +1,4 @@
-version: "2026.02.10.1"
+version: "2026.02.10.2"
 
 static_rules:
   - id: MAL-001
@@ -112,6 +112,22 @@ static_rules:
     title: Piped sed write to out-of-scope or agent config path
     pattern: 'echo\s+.*\|\s*sed\b[^\n]*>\s*(?:\.\./|/[^\s]*\.claude/|\.claude/)'
     mitigation: Avoid shell-based piped rewrite chains that redirect into `.claude/` or parent-directory paths. Use scoped file APIs with explicit path allowlists.
+
+  - id: DEF-001
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: Windows Defender exclusion manipulation
+    pattern: '(?i)(Add-MpPreference|Set-MpPreference)\s+-Exclusion(Path|Extension|Process)|Defender.*exclusion|DisableRealtimeMonitoring'
+    mitigation: Remove all commands that disable or weaken Windows Defender protections. Security controls should never be programmatically disabled.
+
+  - id: MAL-005
+    category: malware_pattern
+    severity: high
+    confidence: 0.92
+    title: mshta.exe remote execution pattern
+    pattern: '\bmshta(?:\.exe)?\s+(?:https?://|\\\\)'
+    mitigation: Remove mshta.exe invocations that fetch remote HTA/VBScript payloads. Use explicit local scripts with integrity validation instead.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'

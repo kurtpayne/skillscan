@@ -31,6 +31,7 @@ Each folder demonstrates one major detection or behavior.
 27. `27_github_actions_secrets_exfil`: GitHub Actions full-secrets expansion with outbound POST (`EXF-004`, `CHN-004`)
 28. `28_npx_registry_fallback`: npx execution without `--no-install` safeguard (`SUP-002`)
 29. `29_claude_sed_path_bypass`: piped `echo | sed` redirection into `.claude/` or parent paths (`SUP-003`)
+30. `30_metro4shell_defender_bypass`: Windows Defender exclusion manipulation + mshta remote execution (`DEF-001`, `MAL-005`, `CHN-001`)
 
 ## Run examples
 
