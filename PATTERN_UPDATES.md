@@ -1,6 +1,40 @@
 # Pattern Updates - February 2026
 
-## 2026-02-10: Piped `echo|sed` Scoped-Write Bypass Pattern
+## 2026-02-10 (2): Windows Defender Exclusion + mshta Remote Execution Patterns
+
+**Sources:**
+- [VulnCheck - Metro4Shell: CVE-2025-11953 Exploitation in the Wild](https://www.vulncheck.com/blog/metro4shell_eitw)
+- [The Hacker News - Hackers Exploit Metro4Shell RCE Flaw in React Native CLI npm Package](https://thehackernews.com/2026/02/hackers-exploit-metro4shell-rce-flaw-in.html)
+- [CISA KEV - CVE-2025-11953](https://www.cisa.gov/known-exploited-vulnerabilities-catalog?field_cve=CVE-2025-11953)
+- [Malwarebytes - Fake CAPTCHA websites hijack your clipboard to install information stealers](https://www.malwarebytes.com/blog/news/2025/03/fake-captcha-websites-hijack-your-clipboard-to-install-information-stealers)
+
+**Event Summary:** Active exploitation of CVE-2025-11953 (Metro4Shell) observed since December 2025, added to CISA KEV catalog Feb 5, 2026. Attackers deliver Base64-encoded PowerShell that disables Windows Defender via `Add-MpPreference -ExclusionPath` and `Set-MpPreference -DisableRealtimeMonitoring`. Separate campaign uses CAPTCHA-based clipboard hijacking to trick users into running `mshta.exe` commands fetching remote HTA/VBScript payloads.
+
+**New Patterns Added:**
+
+### DEF-001: Windows Defender Exclusion Manipulation
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.95
+- **Pattern:** Detects PowerShell `Add-MpPreference`/`Set-MpPreference` with `-Exclusion*` or `-DisableRealtimeMonitoring` flags.
+- **Justification:** Core anti-analysis technique in Metro4Shell payloads and other Windows malware campaigns; programmatic security control disablement is never legitimate in skill/tool contexts.
+- **Mitigation:** Remove all commands that disable or weaken Windows Defender protections.
+
+### MAL-005: mshta.exe Remote Execution Pattern
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.92
+- **Pattern:** Detects `mshta` or `mshta.exe` invocations with `http://`, `https://`, or `\\` (UNC) paths.
+- **Justification:** Widespread in clipboard hijacking campaigns; mshta is a Living-off-the-Land Binary (LOLBin) frequently abused to execute remote scripts without traditional download steps.
+- **Mitigation:** Remove mshta.exe invocations that fetch remote HTA/VBScript payloads.
+
+**Version:** Rules updated from 2026.02.10.1 to 2026.02.10.2
+
+**Testing:** Added assertions in `tests/test_rules.py` (test_new_patterns_2026_02_10), showcase example `30_metro4shell_defender_bypass`.
+
+---
+
+## 2026-02-10 (1): Piped `echo|sed` Scoped-Write Bypass Pattern
 
 **Sources:**
 - [GitHub Advisory Database - CVE-2026-25723](https://github.com/advisories/GHSA-mhg7-666j-cqg4)
