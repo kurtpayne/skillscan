@@ -35,6 +35,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `27_github_actions_secrets_exfil` | GitHub Actions full secrets context expansion with outbound transfer | `EXF-004`, `CHN-004` |
 | `28_npx_registry_fallback` | `npx` command without `--no-install` guard (implicit registry fallback execution risk) | `SUP-002` |
 | `29_claude_sed_path_bypass` | `echo ... | sed ... >` redirection into `.claude/` or parent paths (`../`) to bypass scoped-write controls | `SUP-003` |
+| `31_clickfix_powershell_iex` | PowerShell web request piped to in-memory execution (`iwr/irm` + `iex`) seen in ClickFix-style lures | `MAL-006` |
 
 ## Commands
 

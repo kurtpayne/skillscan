@@ -1,4 +1,4 @@
-version: "2026.02.10.2"
+version: "2026.02.11.1"
 
 static_rules:
   - id: MAL-001
@@ -128,6 +128,14 @@ static_rules:
     title: mshta.exe remote execution pattern
     pattern: '\bmshta(?:\.exe)?\s+(?:https?://|\\\\)'
     mitigation: Remove mshta.exe invocations that fetch remote HTA/VBScript payloads. Use explicit local scripts with integrity validation instead.
+
+  - id: MAL-006
+    category: malware_pattern
+    severity: high
+    confidence: 0.91
+    title: PowerShell web request piped to Invoke-Expression
+    pattern: '(?i)\b(?:iwr|irm|invoke-webrequest|invoke-restmethod)\b[^\n]{0,220}\|\s*(?:iex|invoke-expression)\b|\b(?:iex|invoke-expression)\b[^\n]{0,220}\b(?:iwr|irm|invoke-webrequest|invoke-restmethod)\b'
+    mitigation: Remove web-request-to-Invoke-Expression execution chains. Download reviewed scripts to disk, validate integrity, and run with explicit local paths.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'

