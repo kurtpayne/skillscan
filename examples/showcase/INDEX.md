@@ -34,6 +34,7 @@ Each folder demonstrates one major detection or behavior.
 30. `30_metro4shell_defender_bypass`: Windows Defender exclusion manipulation + mshta remote execution (`DEF-001`, `MAL-005`, `CHN-001`)
 31. `31_clickfix_powershell_iex`: PowerShell web request piped to in-memory execution (`MAL-006`)
 32. `32_npm_shell_bootstrap`: npm preinstall/postinstall shell bootstrap via curl/wget/PowerShell (`SUP-004`)
+33. `33_byovd_security_killer`: BYOVD driver/service markers and AV-killer toolkit references (`MAL-007`)
 
 ## Run examples
 

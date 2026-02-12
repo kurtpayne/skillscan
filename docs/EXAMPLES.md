@@ -37,6 +37,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `29_claude_sed_path_bypass` | `echo ... | sed ... >` redirection into `.claude/` or parent paths (`../`) to bypass scoped-write controls | `SUP-003` |
 | `31_clickfix_powershell_iex` | PowerShell web request piped to in-memory execution (`iwr/irm` + `iex`) seen in ClickFix-style lures | `MAL-006` |
 | `32_npm_shell_bootstrap` | npm `preinstall`/`postinstall` shell bootstrap commands (`curl`/`wget`/PowerShell) | `SUP-004` |
+| `33_byovd_security_killer` | BYOVD vulnerable-driver service creation + AV/EDR-killer toolkit markers | `MAL-007` |
 
 ## Commands
 

@@ -136,3 +136,16 @@ def test_new_patterns_2026_02_11() -> None:
         is not None
     )
     assert sup004.pattern.search('"prepare": "node scripts/build.js"') is None
+
+
+def test_new_patterns_2026_02_12() -> None:
+    """Test BYOVD security-killer markers from recent ransomware reporting."""
+    compiled = load_compiled_builtin_rulepack()
+
+    mal007 = next((r for r in compiled.static_rules if r.id == "MAL-007"), None)
+    assert mal007 is not None
+    assert mal007.pattern.search("sc create nseckrnl type= kernel start= demand") is not None
+    assert mal007.pattern.search("Using AuKill to terminate Defender services") is not None
+    assert mal007.pattern.search("poortry driver deployed") is not None
+    assert mal007.pattern.search("ghostdriver module") is not None
+    assert mal007.pattern.search("driver toolkit") is None
