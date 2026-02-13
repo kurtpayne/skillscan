@@ -1,5 +1,37 @@
 # Pattern Updates - February 2026
 
+## 2026-02-13 (1): pull_request_target Untrusted Head Checkout Pattern
+
+**Sources:**
+- [GitHub Security Advisory - GHSA-h25v-8c87-rvm8 (Secrets exfiltration via `pull_request_target`)](https://github.com/spotipy-dev/spotipy/security/advisories/GHSA-h25v-8c87-rvm8)
+- [NVD - CVE-2025-47928](https://nvd.nist.gov/vuln/detail/CVE-2025-47928)
+
+**Event Summary:** Public advisory and NVD records describe a workflow anti-pattern where `pull_request_target` jobs check out untrusted fork PR head refs (`github.event.pull_request.head.ref` / `head.sha`). This allows attacker-controlled code to run with base-repository token/secrets context.
+
+**New Patterns Added:**
+
+### EXF-005: GitHub Actions untrusted PR head checkout reference
+- **Category:** exfiltration
+- **Severity:** high
+- **Confidence:** 0.91
+- **Pattern:** Detects `ref:` / `repository:` references to `github.event.pull_request.head.*` in workflow content.
+- **Justification:** This is the exploit-enabling checkout marker highlighted by GHSA-h25v-8c87-rvm8 / CVE-2025-47928.
+- **Mitigation:** Do not check out untrusted PR head refs in privileged workflows.
+
+### CHN-005: pull_request_target with untrusted PR head checkout
+- **Category:** exfiltration
+- **Severity:** critical
+- **Confidence:** 0.93
+- **Pattern:** Chains `pull_request_target` event markers with `github.event.pull_request.head.*` checkout markers.
+- **Justification:** Improves precision by requiring both privileged trigger context and untrusted checkout indicators.
+- **Mitigation:** Use unprivileged `pull_request` jobs for untrusted code, and avoid secret-bearing contexts for fork-controlled refs.
+
+**Version:** Rules updated from 2026.02.12.1 to 2026.02.13.1
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_02_13`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/34_pr_target_checkout_exfil`.
+
+---
+
 ## 2026-02-12 (1): BYOVD Security-Killer Toolkit Marker
 
 **Sources:**
