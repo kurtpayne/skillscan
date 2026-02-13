@@ -1,4 +1,4 @@
-version: "2026.02.13.1"
+version: "2026.02.13.2"
 
 static_rules:
   - id: MAL-001
@@ -160,6 +160,14 @@ static_rules:
     title: BYOVD security-killer toolkit marker
     pattern: '(?i)\b(?:nseckrnl|truesightkiller|aukill|poortry|ghostdriver|warp\s*avkiller)\b|\bsc\s+create\s+(?:nseckrnl|truesightkiller|aukill|poortry|ghostdriver)\b'
     mitigation: Remove BYOVD-related tool/driver references and service-creation commands. Never include guidance that disables EDR/AV through vulnerable drivers.
+
+  - id: MAL-008
+    category: malware_pattern
+    severity: high
+    confidence: 0.9
+    title: Discord Electron debugger credential interception marker
+    pattern: '(?is)(?:webContents[\s\S]{0,80}debugger[\s\S]{0,120}(?:attach|on|sendCommand)[\s\S]{0,900}(?:Network\.(?:getResponseBody|getRequestPostData)|/login|/register|/mfa(?:/totp)?|codes-verification)|Network\.(?:getResponseBody|getRequestPostData)[\s\S]{0,240}(?:/login|/register|/mfa(?:/totp)?|codes-verification))'
+    mitigation: Remove Electron debugger network-interception hooks that capture credentials, MFA data, or tokens from Discord endpoints.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'

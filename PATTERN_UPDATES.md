@@ -1,5 +1,29 @@
 # Pattern Updates - February 2026
 
+## 2026-02-13 (2): Discord Electron Debugger Credential Interception Marker
+
+**Sources:**
+- [JFrog Security Research - How a Complex Multi Payload Infostealer Hid in NPM Disguised as 'Console Visibility'](https://research.jfrog.com/post/duer-js-malicious-package/)
+- [The Hacker News - Lazarus Campaign Plants Malicious Packages in npm and PyPI Ecosystems](https://thehackernews.com/2026/02/lazarus-campaign-plants-malicious.html)
+
+**Event Summary:** Recent npm malware reporting (including `duer-js`) documented Discord Desktop hijacking behavior where attacker code hooks Electron `webContents.debugger`, intercepts auth/MFA-related network events (`/login`, `/register`, `/mfa`, `codes-verification`), and extracts credentials/tokens for exfiltration.
+
+**New Pattern Added:**
+
+### MAL-008: Discord Electron debugger credential interception marker
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.90
+- **Pattern:** Detects `webContents.debugger` interception hooks (`attach`/`on`) and credential/MFA interception markers (`Network.getResponseBody` / `Network.getRequestPostData` with `/login`, `/register`, `/mfa`, `codes-verification`).
+- **Justification:** This is a concrete behavior family in currently active npm infostealer campaigns targeting Discord/Electron clients.
+- **Mitigation:** Remove debugger-based network interception code and any credential/token capture flows.
+
+**Version:** Rules updated from 2026.02.13.1 to 2026.02.13.2
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_02_13_patch2`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/35_discord_debugger_token_theft`.
+
+---
+
 ## 2026-02-13 (1): pull_request_target Untrusted Head Checkout Pattern
 
 **Sources:**

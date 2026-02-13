@@ -170,3 +170,24 @@ def test_new_patterns_2026_02_13() -> None:
     assert chn005 is not None
     assert "gh_pr_target" in chn005.all_of
     assert "gh_pr_head_checkout" in chn005.all_of
+
+
+def test_new_patterns_2026_02_13_patch2() -> None:
+    """Test Discord Electron debugger credential interception markers."""
+    compiled = load_compiled_builtin_rulepack()
+
+    mal008 = next((r for r in compiled.static_rules if r.id == "MAL-008"), None)
+    assert mal008 is not None
+    assert (
+        mal008.pattern.search(
+            'mainWindow["webContents"]["debugger"].attach("1.3"); Network.getResponseBody /login'
+        )
+        is not None
+    )
+    assert (
+        mal008.pattern.search(
+            "Network.getRequestPostData ... /mfa/totp"
+        )
+        is not None
+    )
+    assert mal008.pattern.search('mainWindow.webContents.send("ok")') is None

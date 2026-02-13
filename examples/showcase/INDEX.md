@@ -36,6 +36,7 @@ Each folder demonstrates one major detection or behavior.
 32. `32_npm_shell_bootstrap`: npm preinstall/postinstall shell bootstrap via curl/wget/PowerShell (`SUP-004`)
 33. `33_byovd_security_killer`: BYOVD driver/service markers and AV-killer toolkit references (`MAL-007`)
 34. `34_pr_target_checkout_exfil`: `pull_request_target` workflow checking out untrusted PR head refs (`EXF-005`, `CHN-005`)
+35. `35_discord_debugger_token_theft`: Discord Electron debugger network interception markers used for credential/token theft (`MAL-008`)
 
 ## Run examples
 
