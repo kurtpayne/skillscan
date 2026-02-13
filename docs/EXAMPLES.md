@@ -39,6 +39,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `32_npm_shell_bootstrap` | npm `preinstall`/`postinstall` shell bootstrap commands (`curl`/`wget`/PowerShell) | `SUP-004` |
 | `33_byovd_security_killer` | BYOVD vulnerable-driver service creation + AV/EDR-killer toolkit markers | `MAL-007` |
 | `34_pr_target_checkout_exfil` | `pull_request_target` workflow that checks out untrusted PR head refs (`head.ref`/`head.sha`) | `EXF-005`, `CHN-005` |
+| `35_discord_debugger_token_theft` | Discord Electron `webContents.debugger` hook intercepting auth/MFA network traffic (`/login`, `/mfa`, `codes-verification`) | `MAL-008` |
 
 ## Commands
 
