@@ -1,5 +1,54 @@
 # Pattern Updates - February 2026
 
+## 2026-02-12 (1): BYOVD Security-Killer Toolkit Marker
+
+**Sources:**
+- [Security Affairs - Reynolds ransomware uses BYOVD to disable security before encryption](https://securityaffairs.com/187869/security/reynolds-ransomware-uses-byovd-to-disable-security-before-encryption.html)
+- [NVD - CVE-2025-68947 (NSecKrnl vulnerable driver)](https://nvd.nist.gov/vuln/detail/CVE-2025-68947)
+
+**Event Summary:** Recent ransomware reporting described payloads embedding BYOVD components that load vulnerable signed drivers (NSecKrnl / CVE-2025-68947) and kill AV/EDR processes before encryption. In skill/tool artifacts, direct references to these toolkit names and driver-service creation commands are high-signal indicators of malicious intent.
+
+**New Pattern Added:**
+
+### MAL-007: BYOVD security-killer toolkit marker
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.87
+- **Pattern:** Detects known BYOVD/AV-killer markers (`nseckrnl`, `TrueSightKiller`, `AuKill`, `Poortry`, `GhostDriver`, `Warp AVKiller`) and explicit `sc create` service creation for those names.
+- **Justification:** Matches observed defense-evasion tradecraft in current ransomware operations while remaining narrowly scoped to low-noise strings.
+- **Mitigation:** Remove BYOVD-related tool/driver references and service-creation guidance from skills/tools.
+
+**Version:** Rules updated from 2026.02.11.2 to 2026.02.12.1
+
+**Testing:** Added assertions in `tests/test_rules.py::test_new_patterns_2026_02_12`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/33_byovd_security_killer`.
+
+---
+
+## 2026-02-11 (2): npm Lifecycle Shell-Bootstrap Pattern
+
+**Sources:**
+- [GitHub Advisory Database - CVE-2025-10894 (Malicious versions of Nx)](https://github.com/advisories/GHSA-cxm3-wv7p-598c)
+- [StepSecurity - Shai-Hulud: Self-Replicating Worm Compromises 500+ NPM Packages](https://www.stepsecurity.io/blog/ctrl-tinycolor-and-40-npm-packages-compromised)
+- [Zscaler ThreatLabz - Shai-Hulud V2 Poses Risk to NPM Supply Chain](https://www.zscaler.com/blogs/security-research/shai-hulud-v2-poses-risk-npm-supply-chain)
+
+**Event Summary:** Recent npm supply-chain incidents repeatedly use `preinstall`/`postinstall` hooks as execution pivots for shell/bootstrap commands (`curl`, `wget`, `iwr`, `powershell`) to fetch or launch second-stage payloads during dependency install.
+
+**New Pattern Added:**
+
+### SUP-004: npm preinstall/postinstall shell bootstrap pattern
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.89
+- **Pattern:** Detects `package.json` `preinstall`/`postinstall` script values containing shell/bootstrap primitives such as `curl`, `wget`, `iwr/irm`, `powershell`, `cmd /c`, `bash -c`, or `sh -c`.
+- **Justification:** Aligns to observed lifecycle-hook abuse in both targeted package compromises and broad worm-like npm propagation campaigns.
+- **Mitigation:** Remove shell/bootstrap execution from install lifecycle hooks; move setup to explicit, reviewed commands.
+
+**Version:** Rules updated from 2026.02.11.1 to 2026.02.11.2
+
+**Testing:** Added assertions in `tests/test_rules.py::test_new_patterns_2026_02_11`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/32_npm_shell_bootstrap`.
+
+---
+
 ## 2026-02-10 (2): Windows Defender Exclusion + mshta Remote Execution Patterns
 
 **Sources:**

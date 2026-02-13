@@ -1,4 +1,4 @@
-version: "2026.02.11.1"
+version: "2026.02.12.1"
 
 static_rules:
   - id: MAL-001
@@ -136,6 +136,22 @@ static_rules:
     title: PowerShell web request piped to Invoke-Expression
     pattern: '(?i)\b(?:iwr|irm|invoke-webrequest|invoke-restmethod)\b[^\n]{0,220}\|\s*(?:iex|invoke-expression)\b|\b(?:iex|invoke-expression)\b[^\n]{0,220}\b(?:iwr|irm|invoke-webrequest|invoke-restmethod)\b'
     mitigation: Remove web-request-to-Invoke-Expression execution chains. Download reviewed scripts to disk, validate integrity, and run with explicit local paths.
+
+  - id: SUP-004
+    category: malware_pattern
+    severity: high
+    confidence: 0.89
+    title: npm preinstall/postinstall shell bootstrap pattern
+    pattern: '(?i)"(?:preinstall|postinstall)"\s*:\s*"[^"\n]{0,300}(?:curl|wget|iwr|irm|invoke-webrequest|invoke-restmethod|powershell(?:\.exe)?|cmd(?:\.exe)?\s*/c|bash\s+-c|sh\s+-c)[^"\n]*"'
+    mitigation: Remove shell/bootstrap execution from npm preinstall/postinstall hooks. Use explicit reviewed setup steps outside lifecycle scripts.
+
+  - id: MAL-007
+    category: malware_pattern
+    severity: high
+    confidence: 0.87
+    title: BYOVD security-killer toolkit marker
+    pattern: '(?i)\b(?:nseckrnl|truesightkiller|aukill|poortry|ghostdriver|warp\s*avkiller)\b|\bsc\s+create\s+(?:nseckrnl|truesightkiller|aukill|poortry|ghostdriver)\b'
+    mitigation: Remove BYOVD-related tool/driver references and service-creation commands. Never include guidance that disables EDR/AV through vulnerable drivers.
 
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'

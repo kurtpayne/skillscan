@@ -38,6 +38,8 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "SUP-002" for f in _scan("examples/showcase/28_npx_registry_fallback").findings)
     assert any(f.id == "SUP-003" for f in _scan("examples/showcase/29_claude_sed_path_bypass").findings)
     assert any(f.id == "MAL-006" for f in _scan("examples/showcase/31_clickfix_powershell_iex").findings)
+    assert any(f.id == "SUP-004" for f in _scan("examples/showcase/32_npm_shell_bootstrap").findings)
+    assert any(f.id == "MAL-007" for f in _scan("examples/showcase/33_byovd_security_killer").findings)
 
 
 def test_showcase_policy_block_domain() -> None:
