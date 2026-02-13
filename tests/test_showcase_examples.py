@@ -40,6 +40,9 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-006" for f in _scan("examples/showcase/31_clickfix_powershell_iex").findings)
     assert any(f.id == "SUP-004" for f in _scan("examples/showcase/32_npm_shell_bootstrap").findings)
     assert any(f.id == "MAL-007" for f in _scan("examples/showcase/33_byovd_security_killer").findings)
+    findings_34 = _scan("examples/showcase/34_pr_target_checkout_exfil").findings
+    assert any(f.id == "EXF-005" for f in findings_34)
+    assert any(f.id == "CHN-005" for f in findings_34)
 
 
 def test_showcase_policy_block_domain() -> None:

@@ -149,3 +149,24 @@ def test_new_patterns_2026_02_12() -> None:
     assert mal007.pattern.search("poortry driver deployed") is not None
     assert mal007.pattern.search("ghostdriver module") is not None
     assert mal007.pattern.search("driver toolkit") is None
+
+
+def test_new_patterns_2026_02_13() -> None:
+    """Test pull_request_target + untrusted PR-head checkout pattern."""
+    compiled = load_compiled_builtin_rulepack()
+
+    exf005 = next((r for r in compiled.static_rules if r.id == "EXF-005"), None)
+    assert exf005 is not None
+    assert exf005.pattern.search("ref: ${{ github.event.pull_request.head.sha }}") is not None
+    assert (
+        exf005.pattern.search("repository: ${{ github.event.pull_request.head.repo.full_name }}")
+        is not None
+    )
+    assert exf005.pattern.search("ref: refs/heads/main") is None
+
+    assert "gh_pr_target" in compiled.action_patterns
+    assert "gh_pr_head_checkout" in compiled.action_patterns
+    chn005 = next((r for r in compiled.chain_rules if r.id == "CHN-005"), None)
+    assert chn005 is not None
+    assert "gh_pr_target" in chn005.all_of
+    assert "gh_pr_head_checkout" in chn005.all_of

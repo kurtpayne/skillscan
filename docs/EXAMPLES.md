@@ -38,6 +38,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `31_clickfix_powershell_iex` | PowerShell web request piped to in-memory execution (`iwr/irm` + `iex`) seen in ClickFix-style lures | `MAL-006` |
 | `32_npm_shell_bootstrap` | npm `preinstall`/`postinstall` shell bootstrap commands (`curl`/`wget`/PowerShell) | `SUP-004` |
 | `33_byovd_security_killer` | BYOVD vulnerable-driver service creation + AV/EDR-killer toolkit markers | `MAL-007` |
+| `34_pr_target_checkout_exfil` | `pull_request_target` workflow that checks out untrusted PR head refs (`head.ref`/`head.sha`) | `EXF-005`, `CHN-005` |
 
 ## Commands
 

@@ -1,4 +1,4 @@
-version: "2026.02.12.1"
+version: "2026.02.13.1"
 
 static_rules:
   - id: MAL-001
@@ -64,6 +64,14 @@ static_rules:
     title: GitHub Actions full secrets context dump
     pattern: '\$\{\{\s*toJSON\(\s*secrets\s*\)\s*\}\}'
     mitigation: Never serialize full GitHub Actions secrets context; pass only minimally scoped values required for a specific step.
+
+  - id: EXF-005
+    category: exfiltration
+    severity: high
+    confidence: 0.91
+    title: GitHub Actions untrusted PR head checkout reference
+    pattern: 'ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.(?:sha|ref)\s*\}\}|repository:\s*\$\{\{\s*github\.event\.pull_request\.head\.repo\.full_name\s*\}\}'
+    mitigation: Avoid checking out `github.event.pull_request.head.*` in privileged workflows. Use `pull_request` for untrusted code, or gate privileged jobs and use immutable trusted refs.
 
   - id: MAL-003
     category: malware_pattern
@@ -159,6 +167,8 @@ action_patterns:
   secret_access: '(\.env|id_rsa|aws_access_key_id|ssh key|credentials?)'
   network: 'https?://|webhook|post\b|upload|socket|requests\.'
   gh_actions_secrets: '\$\{\{\s*(?:toJSON\(\s*secrets\s*\)|secrets\.[A-Za-z_][A-Za-z0-9_]*)\s*\}\}'
+  gh_pr_target: '\bpull_request_target\b'
+  gh_pr_head_checkout: '\$\{\{\s*github\.event\.pull_request\.head\.(?:sha|ref|repo\.full_name)\s*\}\}'
   privilege: '\bsudo\b|run as administrator|elevat'
   security_disable: 'disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)'
 
@@ -189,6 +199,15 @@ chain_rules:
     all_of: [gh_actions_secrets, network]
     snippet: GitHub Actions secrets context + network/exfil markers detected
     mitigation: Remove full secrets-context expansion and block outbound transfer of CI/CD secrets.
+
+  - id: CHN-005
+    category: exfiltration
+    severity: critical
+    confidence: 0.93
+    title: "pull_request_target with untrusted PR head checkout"
+    all_of: [gh_pr_target, gh_pr_head_checkout]
+    snippet: pull_request_target + github.event.pull_request.head.* checkout markers detected
+    mitigation: Do not combine `pull_request_target` with checkout of untrusted PR head refs. Use unprivileged `pull_request` jobs for untrusted code.
 
   - id: ABU-002
     category: instruction_abuse
