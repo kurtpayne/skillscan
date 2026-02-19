@@ -225,3 +225,24 @@ def test_new_patterns_2026_02_19() -> None:
     assert exf007.pattern.search("gateway.auth.token") is not None
     assert exf007.pattern.search("privateKeyPem") is not None
     assert exf007.pattern.search("docs/readme.md") is None
+
+
+def test_new_patterns_2026_02_19_patch2() -> None:
+    """Test pull_request_target PR metadata interpolation command-injection markers."""
+    compiled = load_compiled_builtin_rulepack()
+
+    exf008 = next((r for r in compiled.static_rules if r.id == "EXF-008"), None)
+    assert exf008 is not None
+    assert (
+        exf008.pattern.search(
+            "run: |\n  payload='${{ github.event.pull_request.title }}'\n  bash -lc \"$payload\""
+        )
+        is not None
+    )
+    assert exf008.pattern.search("run: echo safe") is None
+
+    assert "gh_pr_untrusted_meta" in compiled.action_patterns
+    chn006 = next((r for r in compiled.chain_rules if r.id == "CHN-006"), None)
+    assert chn006 is not None
+    assert "gh_pr_target" in chn006.all_of
+    assert "gh_pr_untrusted_meta" in chn006.all_of
