@@ -440,3 +440,13 @@ def test_new_patterns_2026_02_25() -> None:
     assert chn008 is not None
     assert "gh_pr_target" in chn008.all_of
     assert "gh_unpinned_action_ref" in chn008.all_of
+
+
+def test_new_patterns_2026_02_25_patch2() -> None:
+    """Test VS Code tasks.json folderOpen autorun marker."""
+    compiled = load_compiled_builtin_rulepack()
+
+    mal012 = next((r for r in compiled.static_rules if r.id == "MAL-012"), None)
+    assert mal012 is not None
+    assert mal012.pattern.search('{"runOptions":{"runOn":"folderOpen"}}') is not None
+    assert mal012.pattern.search('{"runOptions":{"runOn":"default"}}') is None

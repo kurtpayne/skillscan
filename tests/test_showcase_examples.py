@@ -64,6 +64,8 @@ def test_showcase_detection_rules() -> None:
     findings_47 = _scan("examples/showcase/47_pr_target_unpinned_action").findings
     assert any(f.id == "MAL-011" for f in findings_47)
     assert any(f.id == "CHN-008" for f in findings_47)
+    findings_48 = _scan("examples/showcase/48_vscode_tasks_folderopen_autorun").findings
+    assert any(f.id == "MAL-012" for f in findings_48)
 
 
 def test_showcase_policy_block_domain() -> None:

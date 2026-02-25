@@ -1,5 +1,15 @@
 # Rule Updates
 
+## 2026-02-25
+
+- Added `MAL-012` (high): **VS Code task autorun-on-folder-open marker**.
+- Rationale: recent GitHub Codespaces research highlighted abuse of repository-supplied VS Code configuration files where tasks auto-run on folder open with no additional prompts, enabling command execution and token/secret theft chains.
+- This rule flags explicit `runOn: folderOpen` task autorun markers so reviewers can block or gate repository-defined auto-execution behavior.
+
+Sources:
+- Infosecurity Magazine (2026-02-22), *Malicious Commands in GitHub Codespaces Enable RCE*: https://www.infosecurity-magazine.com/news/malicious-commands-in-github/
+- Orca Security (2026-02), *Hacking GitHub Codespaces: RCE & Supply Chain Risks*: https://orca.security/resources/blog/hacking-github-codespaces-rce-supply-chain-attack/
+
 ## 2026-02-18
 
 - Added `SUP-005` (high): **npm preinstall/postinstall inline Node eval pattern**.
