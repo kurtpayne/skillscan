@@ -52,6 +52,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `45_mcp_tool_prompt_injection` | MCP tool description embeds hidden credential file collection plus “do not mention” context exfiltration instructions | `EXF-009` |
 | `46_pr_target_cache_key_poisoning` | `pull_request_target` workflow derives `actions/cache` key from untrusted PR metadata, enabling cache-poisoning pivot risk in privileged CI context | `EXF-010`, `CHN-007` |
 | `47_pr_target_unpinned_action` | `pull_request_target` workflow uses third-party GitHub Actions pinned to mutable tags/branches (for example `@v4`, `@main`) instead of immutable full SHAs, increasing tag-retarget supply-chain risk | `MAL-011`, `CHN-008` |
+| `48_vscode_tasks_folderopen_autorun` | Repository-supplied VS Code `tasks.json` task uses `runOn: folderOpen` and an auto-executed shell/bootstrap command, enabling code execution when a workspace is opened | `MAL-012` |
 
 ## Commands
 
