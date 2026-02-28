@@ -72,6 +72,8 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "ABU-003" for f in findings_50)
     findings_51 = _scan("examples/showcase/51_double_extension_lnk_masquerade").findings
     assert any(f.id == "MAL-014" for f in findings_51)
+    findings_52 = _scan("examples/showcase/52_codespaces_schema_exfil").findings
+    assert any(f.id == "EXF-011" for f in findings_52)
 
 
 def test_showcase_policy_block_domain() -> None:
