@@ -1,4 +1,4 @@
-version: "2026.02.28.1"
+version: "2026.02.28.2"
 
 static_rules:
   - id: MAL-001
@@ -317,6 +317,15 @@ static_rules:
     pattern: '(?i)\b[\w .-]+\.(?:jpe?g|png|gif|bmp|webp|mp4|mov|avi|mkv|pdf|docx?|xlsx?|pptx?)\.lnk\b'
     mitigation: Treat media/document-looking `.lnk` files as suspicious. Block or quarantine double-extension shortcut artifacts and require verified non-shortcut originals.
 
+
+  - id: MAL-015
+    category: malware_pattern
+    severity: high
+    confidence: 0.85
+    title: Claude Code hooks shell command execution marker
+    pattern: '(?is)"hooks"\s*:\s*\{[\s\S]{0,2000}"(?:PreToolUse|PostToolUse|UserPromptSubmit|SessionStart)"[\s\S]{0,800}"command"\s*:\s*"(?:bash|sh|zsh|powershell|pwsh|cmd(?:\.exe)?|python3?\s+-c|node\s+-e)[^"\n]{0,240}'
+    mitigation: Treat repository-scoped Claude Code hooks as untrusted. Remove auto-executed shell commands from `.claude/settings.json` and require explicit, reviewed local scripts.
+
 action_patterns:
   download: '\b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://'
   execute: '\b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b'
@@ -330,6 +339,8 @@ action_patterns:
   gh_unpinned_action_ref: '(?im)^\s*-?\s*uses:\s*[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@(?![0-9a-f]{40}\b)[^\s#]+'
   privilege: '\bsudo\b|run as administrator|elevat'
   security_disable: 'disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)'
+  claude_hooks_marker: '(?i)"hooks"\s*:\s*\{|"(?:PreToolUse|PostToolUse|UserPromptSubmit|SessionStart)"'
+  hook_shell_command_field: '(?i)"command"\s*:\s*"(?:bash|sh|zsh|powershell|pwsh|cmd(?:\.exe)?|python3?\s+-c|node\s+-e)[^"\n]{0,240}"'
 
 chain_rules:
   - id: CHN-001
@@ -404,6 +415,15 @@ chain_rules:
     all_of: [gh_pr_target, gh_unpinned_action_ref]
     snippet: pull_request_target + third-party action reference pinned to mutable tag/branch detected
     mitigation: In pull_request_target workflows, pin third-party actions to full 40-char commit SHAs and review upstream provenance before updates.
+
+  - id: CHN-009
+    category: malware_pattern
+    severity: high
+    confidence: 0.87
+    title: "Repository hook configuration with shell-command payload"
+    all_of: [claude_hooks_marker, hook_shell_command_field]
+    snippet: hook configuration marker + shell-capable command payload detected
+    mitigation: Treat repository hook configuration as untrusted and block shell-capable `command` payloads unless explicitly reviewed and approved.
 
 capability_patterns:
   shell_execution: '\b(subprocess|os\.system|bash|powershell)\b'

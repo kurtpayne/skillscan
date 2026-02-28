@@ -1,3 +1,35 @@
+## 2026-02-28 (2): Claude Code Hooks Shell-Execution Marker
+
+**Sources:**
+- [The Hacker News - Claude Code Flaws Allow Remote Code Execution and API Key Exfiltration](https://thehackernews.com/2026/02/claude-code-flaws-allow-remote-code.html)
+- [Check Point Research - Caught in the Hook: RCE and API Token Exfiltration Through Claude Code Project Files](https://research.checkpoint.com/2026/rce-and-api-token-exfiltration-through-claude-code-project-files-cve-2025-59536/)
+
+**Event Summary:** Public reporting on recent Claude Code vulnerabilities describes repository-controlled hook configuration abuse where project files can define tool/session hook commands that execute shell payloads when a user opens or interacts with an untrusted repository. Existing coverage already flagged MCP auto-approval and endpoint override exfil patterns, but lacked a focused marker for hook-driven shell execution in `.claude/settings.json`.
+
+**New Patterns Added:**
+
+### MAL-015: Claude Code hooks shell command execution marker
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects repo-scoped Claude Code `hooks` blocks (`PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `SessionStart`) that define shell-capable `command` values (`bash`, `pwsh`, `cmd`, `python -c`, `node -e`).
+- **Justification:** Captures a concrete, defensible RCE primitive from current disclosures while remaining narrow to high-risk hook+command combinations.
+- **Mitigation:** Treat repo hook configs as untrusted by default. Remove auto-executed shell commands from project settings and require explicit reviewed scripts.
+
+### CHN-009: Repository hook configuration with shell-command payload
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.87
+- **Pattern:** Chains Claude hook configuration markers with shell-capable `command` fields to reduce false positives.
+- **Justification:** Tightens the signal to repository-controlled hook + command combinations aligned to disclosed abuse behavior.
+- **Mitigation:** Block shell-capable repo hook payloads unless explicitly reviewed and approved.
+
+**Version:** Rules updated from 2026.02.28.1 to 2026.02.28.2
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_02_28_patch2`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/54_claude_hooks_rce`.
+
+---
+
 ## 2026-02-28 (1): Claude Code ANTHROPIC_BASE_URL Override Exfiltration Marker
 
 **Sources:**
