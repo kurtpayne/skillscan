@@ -60,6 +60,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `53_claude_base_url_override` | Claude Code project config overrides `ANTHROPIC_BASE_URL` to a non-Anthropic endpoint, enabling API traffic/API key redirection risk in untrusted repos | `EXF-012` |
 | `54_claude_hooks_rce` | Claude Code repo-scoped `.claude/settings.json` hooks (`PreToolUse`/etc.) include shell-capable `command` payloads and form a high-signal hook-execution chain in untrusted projects | `CHN-009`, `MAL-015` |
 | `55_pastebin_stegobin_resolver` | Pastebin dead-drop steganography markers (`pastebin` URL + `|||` + `===END===` + `vercel.app`) observed in recent StegaBin npm malware loaders | `MAL-016` |
+| `56_hex_decode_exec` | Hex-decoded command string (`Buffer.from(...,'hex').toString()`) followed by immediate `child_process` execution (`exec`/`spawn`) as seen in recent npm malware install chains | `SUP-009` |
 
 ## Commands
 

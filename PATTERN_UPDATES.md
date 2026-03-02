@@ -1,3 +1,28 @@
+## 2026-03-02 (2): Hex-Decoded Command Execution Marker in npm Malware Install Chains
+
+**Sources:**
+- [Tenable - New Malicious npm Package "ambar-src" Targets Developers with Open Source Malware](https://www.tenable.com/blog/cybersecurity-research-faq-new-malicious-npm-package-ambar-src)
+- [The Hacker News - Malicious NuGet Packages Stole ASP.NET Data; npm Package Dropped Malware](https://thehackernews.com/2026/02/malicious-nuget-packages-stole-aspnet.html)
+- [GitHub Advisory Database - GHSA-qjgj-mrv7-24f7 (ambar-src)](https://github.com/advisories/GHSA-qjgj-mrv7-24f7)
+
+**Event Summary:** Recent reporting on the `ambar-src` npm campaign describes install-time malware that hid OS-specific one-liners as long hex strings, decoded them at runtime, then executed the decoded command. Existing SkillScan rules already covered lifecycle shell bootstraps and inline `node -e`, but lacked a focused marker for obfuscated `Buffer.from(..., 'hex').toString()` + immediate process execution patterns in JavaScript install scripts.
+
+**New Pattern Added:**
+
+### SUP-009: Hex-decoded command string execution marker
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.86
+- **Pattern:** Detects long hex decode via `Buffer.from(..., 'hex').toString()` followed shortly by `exec`/`execSync`/`spawn`/`spawnSync` invocation.
+- **Justification:** High-signal indicator of command-obfuscation behavior in supply-chain malware loaders with lower noise than generic `Buffer.from` or generic `exec` matching alone.
+- **Mitigation:** Reject install/setup scripts that decode opaque command blobs and execute them directly. Require reviewed plaintext scripts and explicit command allowlists.
+
+**Version:** Rules updated from 2026.03.02.1 to 2026.03.02.2
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_03_02_patch2`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/56_hex_decode_exec`.
+
+---
+
 ## 2026-02-28 (2): Claude Code Hooks Shell-Execution Marker
 
 **Sources:**
