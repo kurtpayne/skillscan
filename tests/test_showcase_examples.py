@@ -80,6 +80,8 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "CHN-009" for f in findings_54)
     findings_55 = _scan("examples/showcase/55_pastebin_stegobin_resolver").findings
     assert any(f.id == "MAL-016" for f in findings_55)
+    findings_56 = _scan("examples/showcase/56_hex_decode_exec").findings
+    assert any(f.id == "SUP-009" for f in findings_56)
 
 
 def test_showcase_policy_block_domain() -> None:

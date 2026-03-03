@@ -585,3 +585,26 @@ def test_new_patterns_2026_03_02() -> None:
         )
         is None
     )
+
+
+def test_new_patterns_2026_03_02_patch2() -> None:
+    """Test hex-decoded command string execution marker."""
+    compiled = load_compiled_builtin_rulepack()
+
+    sup009 = next((r for r in compiled.static_rules if r.id == "SUP-009"), None)
+    assert sup009 is not None
+    assert (
+        sup009.pattern.search(
+            "const { exec } = require('child_process'); "
+            "const cmd = Buffer.from('68656c6c6f2d74686572652d746869732d69732d612d6c6f6e672d6865782d"
+            "7061796c6f6164', 'hex').toString(); "
+            "exec(cmd);"
+        )
+        is not None
+    )
+    assert (
+        sup009.pattern.search(
+            "const decoded = Buffer.from('68656c6c6f', 'hex').toString(); console.log(decoded);"
+        )
+        is None
+    )

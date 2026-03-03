@@ -1,4 +1,4 @@
-version: "2026.03.02.1"
+version: "2026.03.02.2"
 
 static_rules:
   - id: MAL-001
@@ -241,6 +241,14 @@ static_rules:
     title: npm lifecycle mutable @latest dependency install pattern
     pattern: '(?i)"(?:preinstall|postinstall)"\s*:\s*"[^"\n]{0,300}\bnpm\s+(?:install|i)\b(?![^"\n]*(?:\s-g\b|\s--global\b))[^"\n]*@[^\s"\n]*latest\b[^"\n]*"'
     mitigation: Avoid `npm install ...@latest` inside install lifecycle hooks. Use pinned versions and explicit user-initiated install/update steps outside preinstall/postinstall.
+
+  - id: SUP-009
+    category: malware_pattern
+    severity: high
+    confidence: 0.86
+    title: Hex-decoded command string execution marker
+    pattern: '(?is)Buffer\.from\(\s*[''\"]?[0-9a-f]{40,}[''\"]?\s*,\s*[''\"]hex[''\"]\s*\)\.toString\([^\n]{0,80}\)[\s\S]{0,220}\b(?:exec|execSync|spawn|spawnSync)\s*\('
+    mitigation: Treat install/setup scripts that decode long hex strings and immediately execute them as suspicious. Replace with reviewed, plaintext commands in version-controlled scripts.
 
   - id: EXF-009
     category: exfiltration
