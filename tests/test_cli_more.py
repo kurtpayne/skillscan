@@ -320,7 +320,7 @@ def test_scan_deprecated_extended_ai_alias(monkeypatch) -> None:
     assert calls["kwargs"]["ai_assist"] is True
 
 
-def test_scan_policy_file_sarif_stdout_and_scan_error(monkeypatch, tmp_path: Path) -> None:
+def test_scan_policy_file_sarif_stdout_and_outfile_and_scan_error(monkeypatch, tmp_path: Path) -> None:
     policy = tmp_path / "policy.yaml"
     policy.write_text(
         yaml.safe_dump(
@@ -385,6 +385,27 @@ def test_scan_policy_file_sarif_stdout_and_scan_error(monkeypatch, tmp_path: Pat
     )
     assert result.exit_code == 0
     assert '"version": "2.1.0"' in result.stdout
+
+    sarif_out = tmp_path / "report.sarif"
+    out_result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--policy",
+            str(policy),
+            "--format",
+            "sarif",
+            "--out",
+            str(sarif_out),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert out_result.exit_code == 0
+    assert "Wrote report to" in out_result.stdout
+    assert sarif_out.exists()
 
     from skillscan.analysis import ScanError
 
