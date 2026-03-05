@@ -100,6 +100,8 @@ Save JSON report:
 
 ```bash
 skillscan scan ./examples/suspicious_skill --format json --out report.json --fail-on never
+# SARIF output for GitHub code scanning
+skillscan scan ./examples/suspicious_skill --format sarif --out skillscan.sarif --fail-on never
 ```
 
 Render saved report:

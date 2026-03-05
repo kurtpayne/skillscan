@@ -23,6 +23,7 @@ from skillscan.intel import (
 from skillscan.intel_update import sync_managed
 from skillscan.policies import BUILTIN_PROFILES, load_builtin_policy, load_policy_file, policy_summary
 from skillscan.render import render_report
+from skillscan.sarif import report_to_sarif
 
 app = typer.Typer(help="SkillScan: standalone AI skill security analyzer")
 policy_app = typer.Typer(help="Policy operations")
@@ -44,7 +45,7 @@ def scan_cmd(
         "strict", "--policy-profile", "--profile", help="Built-in policy profile"
     ),
     policy_file: Path | None = typer.Option(None, "--policy", help="Custom policy file"),
-    format: str = typer.Option("text", "--format", help="Output format: text|json"),
+    format: str = typer.Option("text", "--format", help="Output format: text|json|sarif"),
     out: Path | None = typer.Option(None, "--out", help="Write report to file"),
     fail_on: str = typer.Option("block", "--fail-on", help="Exit non-zero on warn or block"),
     auto_intel: bool = typer.Option(True, "--auto-intel/--no-auto-intel", help="Auto-refresh managed intel"),
@@ -100,8 +101,8 @@ def scan_cmd(
             f"Expected one of: {', '.join(BUILTIN_PROFILES)}"
         )
         raise typer.Exit(2)
-    if format not in {"text", "json"}:
-        console.print("[bold red]Invalid --format:[/] expected text or json")
+    if format not in {"text", "json", "sarif"}:
+        console.print("[bold red]Invalid --format:[/] expected text, json, or sarif")
         raise typer.Exit(2)
     if fail_on not in {"warn", "block", "never"}:
         console.print("[bold red]Invalid --fail-on:[/] expected warn, block, or never")
@@ -152,6 +153,13 @@ def scan_cmd(
 
     if format == "json":
         payload = report.to_json()
+        if out:
+            out.write_text(payload, encoding="utf-8")
+            console.print(f"Wrote report to {out}")
+        else:
+            console.print(payload)
+    elif format == "sarif":
+        payload = json.dumps(report_to_sarif(report), indent=2)
         if out:
             out.write_text(payload, encoding="utf-8")
             console.print(f"Wrote report to {out}")

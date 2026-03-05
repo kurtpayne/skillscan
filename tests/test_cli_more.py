@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import yaml
 from typer.testing import CliRunner
 
 from skillscan.cli import app
@@ -316,3 +317,125 @@ def test_scan_deprecated_extended_ai_alias(monkeypatch) -> None:
     )
     assert result.exit_code == 0
     assert calls["kwargs"]["ai_assist"] is True
+
+
+def test_scan_policy_file_sarif_stdout_and_outfile_and_scan_error(monkeypatch, tmp_path: Path) -> None:
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        yaml.safe_dump(
+            {
+                "name": "tmp",
+                "description": "tmp",
+                "thresholds": {"warn": 10, "block": 20},
+                "weights": {"malware_pattern": 1},
+                "hard_block_rules": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    def fake_scan(_target, _policy, policy_source, **_kwargs):
+        return __import__("skillscan.models", fromlist=["ScanReport"]).ScanReport.model_validate(
+            {
+                "metadata": {
+                    "scanner_version": "0.1.0",
+                    "target": "tests/fixtures/benign/basic_skill",
+                    "target_type": "directory",
+                    "ecosystem_hints": ["generic"],
+                    "rulepack_version": "x",
+                    "policy_profile": "strict",
+                    "policy_source": policy_source,
+                    "intel_sources": [],
+                },
+                "verdict": "allow",
+                "score": 0,
+                "findings": [
+                    {
+                        "id": "MED-001",
+                        "category": "misc",
+                        "severity": "medium",
+                        "confidence": 0.7,
+                        "title": "test",
+                        "evidence_path": "a.txt",
+                        "line": 1,
+                        "snippet": "x",
+                    }
+                ],
+                "iocs": [],
+                "dependency_findings": [],
+                "capabilities": [],
+            }
+        )
+
+    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--policy",
+            str(policy),
+            "--format",
+            "sarif",
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert '"version": "2.1.0"' in result.stdout
+
+    sarif_out = tmp_path / "report.sarif"
+    out_result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--policy",
+            str(policy),
+            "--format",
+            "sarif",
+            "--out",
+            str(sarif_out),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert out_result.exit_code == 0
+    assert "Wrote report to" in out_result.stdout
+    assert sarif_out.exists()
+
+    from skillscan.analysis import ScanError
+
+    monkeypatch.setattr("skillscan.cli.scan", lambda *_a, **_k: (_ for _ in ()).throw(ScanError("boom")))
+    failed = runner.invoke(
+        app,
+        ["scan", "tests/fixtures/benign/basic_skill", "--fail-on", "never", "--no-auto-intel"],
+    )
+    assert failed.exit_code == 2
+    assert "Scan failed" in failed.stdout
+
+
+def test_scan_text_out_and_intel_enable_disable_fail(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr("skillscan.cli.set_enabled", lambda _name, _enabled: False)
+    en = runner.invoke(app, ["intel", "enable", "missing"])
+    dis = runner.invoke(app, ["intel", "disable", "missing"])
+    assert en.exit_code == 1
+    assert dis.exit_code == 1
+
+    out = tmp_path / "out.json"
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--out",
+            str(out),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert out.exists()
