@@ -13,7 +13,7 @@ from skillscan.models import (
     Severity,
     Verdict,
 )
-from skillscan.render import _finding_narrative, render_report
+from skillscan.render import _category_counts, _finding_narrative, _recommended_actions, render_report
 
 
 def _base_metadata() -> ScanMetadata:
@@ -61,6 +61,54 @@ def test_finding_narrative() -> None:
     assert next_action == "explicit fix"
 
 
+
+def test_recommended_actions_and_categories() -> None:
+    findings = [
+        Finding(
+            id="ABU-001",
+            category="instruction_abuse",
+            severity=Severity.MEDIUM,
+            confidence=0.7,
+            title="a",
+            evidence_path="a",
+            snippet="x",
+            mitigation="do A",
+        ),
+        Finding(
+            id="ABU-002",
+            category="instruction_abuse",
+            severity=Severity.HIGH,
+            confidence=0.8,
+            title="b",
+            evidence_path="b",
+            snippet="y",
+            mitigation="do B",
+        ),
+        Finding(
+            id="MAL-001",
+            category="malware_pattern",
+            severity=Severity.CRITICAL,
+            confidence=0.9,
+            title="c",
+            evidence_path="c",
+            snippet="z",
+            mitigation="do B",
+        ),
+    ]
+    report = ScanReport(
+        metadata=_base_metadata(),
+        verdict=Verdict.BLOCK,
+        score=99,
+        findings=findings,
+        iocs=[],
+        dependency_findings=[],
+        capabilities=[],
+    )
+    actions = _recommended_actions(report)
+    assert actions == ["do A", "do B"]
+    cats = _category_counts(report)
+    assert cats[0] == ("instruction_abuse", 2)
+
 def test_render_report_full_sections() -> None:
     report = ScanReport(
         metadata=_base_metadata(),
@@ -105,3 +153,5 @@ def test_render_report_full_sections() -> None:
     assert "Network Indicators" in output
     assert "Dependency Vulnerabilities" in output
     assert "AI Assist" in output
+    assert "Finding Categories" in output
+    assert "Recommended Actions" in output

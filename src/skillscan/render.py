@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -19,6 +21,24 @@ def _finding_narrative(finding: Finding) -> tuple[str, str, str]:
     next_action = finding.mitigation or "Review the flagged snippet and remove/contain risky behavior"
     return why, impact, next_action
 
+
+
+
+def _recommended_actions(report: ScanReport, limit: int = 3) -> list[str]:
+    actions: list[str] = []
+    for finding in report.findings:
+        _, _, next_action = _finding_narrative(finding)
+        next_action = next_action.strip()
+        if next_action and next_action not in actions:
+            actions.append(next_action)
+        if len(actions) >= limit:
+            break
+    return actions
+
+
+def _category_counts(report: ScanReport) -> list[tuple[str, int]]:
+    counts = Counter(f.category for f in report.findings)
+    return sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
 
 def render_report(report: ScanReport, console: Console | None = None) -> None:
     console = console or Console()
@@ -61,6 +81,20 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
         )
     if report.findings:
         console.print(findings)
+
+    categories = _category_counts(report)
+    if categories:
+        cat = Table(title="Finding Categories")
+        cat.add_column("Category", style="magenta")
+        cat.add_column("Count", justify="right")
+        for name, count in categories:
+            cat.add_row(name, str(count))
+        console.print(cat)
+
+    actions = _recommended_actions(report)
+    if actions:
+        action_lines = "\n".join(f"{idx+1}. {line}" for idx, line in enumerate(actions))
+        console.print(Panel(action_lines, title="Recommended Actions"))
 
     if report.ai_assessment is not None:
         ai_summary = (
