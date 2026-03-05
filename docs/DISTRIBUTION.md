@@ -6,12 +6,12 @@ This document describes supported ways to install and operate SkillScan in local
 
 | Path | Best for | Command |
 |---|---|---|
-| PyPI (planned) | End users / CI | `pip install skillscan` |
-| Docker (planned) | Reproducible CI, isolated runtime | `docker run --rm -v "$PWD:/work" <image> scan /work` |
-| Source/dev (current) | Contributors | `pip install -e '.[dev]'` |
-| Convenience script (current) | Quick local bootstrap | `curl -fsSL .../scripts/install.sh \| bash` |
+| PyPI | End users / CI | `pip install skillscan` |
+| Docker | Reproducible CI, isolated runtime | `docker run --rm -v "$PWD:/work" <image> scan /work` |
+| Source/dev | Contributors | `pip install -e '.[dev]'` |
+| Convenience script | Quick local bootstrap | `curl -fsSL .../scripts/install.sh \| bash` |
 
-> Note: PyPI and DockerHub publication are tracked in roadmap issues and may be in-progress.
+> Release automation is wired through GitHub Actions tag workflows (`release-pypi.yml`, `release-docker.yml`).
 
 ---
 
@@ -42,9 +42,7 @@ If using a fork/private location, set `SKILLSCAN_REPO_URL` first.
 
 ---
 
-## Planned PyPI Install (Issue #43)
-
-Once PyPI publishing is enabled:
+## PyPI Install
 
 ```bash
 pip install skillscan
@@ -59,9 +57,7 @@ pip install "skillscan==X.Y.Z"
 
 ---
 
-## Planned Docker Usage (Issue #44)
-
-Once DockerHub publishing is enabled:
+## Docker Usage
 
 ```bash
 docker run --rm -v "$PWD:/work" <image>:<tag> skillscan scan /work --fail-on never
@@ -122,6 +118,15 @@ docker pull <image>:<previous-tag>
 ```
 
 ---
+
+## Release Automation Notes
+
+- PyPI publish runs on `v*` tags via `.github/workflows/release-pypi.yml`.
+- Docker multi-arch publish runs on `v*` tags via `.github/workflows/release-docker.yml`.
+- Required GitHub secrets for Docker publish:
+  - `DOCKERHUB_USERNAME`
+  - `DOCKERHUB_TOKEN`
+- PyPI publish is configured for trusted publishing (`id-token: write`) with environment `pypi`.
 
 ## CI Recommendations
 
