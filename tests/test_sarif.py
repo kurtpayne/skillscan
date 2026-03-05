@@ -4,8 +4,8 @@ from skillscan.models import Finding, ScanMetadata, ScanReport, Severity, Verdic
 from skillscan.sarif import report_to_sarif
 
 
-def test_report_to_sarif_basic() -> None:
-    report = ScanReport(
+def _base_report(findings: list[Finding]) -> ScanReport:
+    return ScanReport(
         metadata=ScanMetadata(
             scanner_version="0.1.0",
             target="examples/showcase/01_download_execute",
@@ -18,7 +18,16 @@ def test_report_to_sarif_basic() -> None:
         ),
         verdict=Verdict.BLOCK,
         score=80,
-        findings=[
+        findings=findings,
+        iocs=[],
+        dependency_findings=[],
+        capabilities=[],
+    )
+
+
+def test_report_to_sarif_basic() -> None:
+    report = _base_report(
+        [
             Finding(
                 id="MAL-001",
                 category="malware_pattern",
@@ -30,10 +39,7 @@ def test_report_to_sarif_basic() -> None:
                 snippet="curl ... | bash",
                 mitigation="Do not execute remote scripts directly",
             )
-        ],
-        iocs=[],
-        dependency_findings=[],
-        capabilities=[],
+        ]
     )
 
     sarif = report_to_sarif(report)
@@ -48,3 +54,32 @@ def test_report_to_sarif_basic() -> None:
         "examples/showcase/01_download_execute/SKILL.md"
     )
     assert result["locations"][0]["physicalLocation"]["region"]["startLine"] == 3
+
+
+def test_report_to_sarif_level_mapping() -> None:
+    report = _base_report(
+        [
+            Finding(
+                id="LOW-001",
+                category="misc",
+                severity=Severity.LOW,
+                confidence=0.7,
+                title="Low severity marker",
+                evidence_path="a.txt",
+                snippet="low",
+            ),
+            Finding(
+                id="MED-001",
+                category="misc",
+                severity=Severity.MEDIUM,
+                confidence=0.7,
+                title="Medium severity marker",
+                evidence_path="b.txt",
+                snippet="medium",
+            ),
+        ]
+    )
+
+    sarif = report_to_sarif(report)
+    levels = [r["level"] for r in sarif["runs"][0]["results"]]
+    assert levels == ["note", "warning"]
