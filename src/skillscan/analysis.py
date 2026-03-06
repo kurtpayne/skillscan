@@ -611,6 +611,7 @@ def scan(
     ai_report_out: Path | None = None,
     clamav: bool = False,
     clamav_timeout_seconds: int = 30,
+    rulepack_channel: str = "stable",
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -620,7 +621,7 @@ def scan(
         url_same_origin_only=url_same_origin_only,
     )
     try:
-        ruleset: CompiledRulePack = load_compiled_builtin_rulepack()
+        ruleset: CompiledRulePack = load_compiled_builtin_rulepack(channel=rulepack_channel)
         inventory = iter_text_files(
             prepared.root,
             policy.limits["max_files"],

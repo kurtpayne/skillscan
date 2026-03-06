@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 from skillscan.detectors.ast_flows import load_compiled_ast_flow_config
-from skillscan.rules import load_builtin_rulepack, load_compiled_builtin_rulepack
+from skillscan.rules import (
+    _filter_rule_files_for_channel,
+    load_builtin_rulepack,
+    load_compiled_builtin_rulepack,
+)
 
 
 def test_builtin_rulepack_loads() -> None:
@@ -694,3 +698,29 @@ def test_new_patterns_2026_03_06_patch2() -> None:
     assert mal019 is not None
     assert mal019.pattern.search("vendor/scrypt-js/version.js") is not None
     assert mal019.pattern.search("vendor/scrypt-js/version.jsx") is None
+
+
+def test_rulepack_channel_filtering() -> None:
+    class _P:
+        def __init__(self, name: str):
+            self.name = name
+
+    files = [
+        _P("default.yaml"),
+        _P("overlay.stable.yaml"),
+        _P("new.preview.yaml"),
+        _P("exp.labs.yaml"),
+    ]
+
+    stable = _filter_rule_files_for_channel(files, "stable")
+    preview = _filter_rule_files_for_channel(files, "preview")
+    labs = _filter_rule_files_for_channel(files, "labs")
+
+    assert [f.name for f in stable] == ["default.yaml", "overlay.stable.yaml"]
+    assert [f.name for f in preview] == ["default.yaml", "overlay.stable.yaml", "new.preview.yaml"]
+    assert [f.name for f in labs] == [
+        "default.yaml",
+        "overlay.stable.yaml",
+        "new.preview.yaml",
+        "exp.labs.yaml",
+    ]
