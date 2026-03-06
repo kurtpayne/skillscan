@@ -65,6 +65,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `58_tool_autoapprove_pkg_install` | Tool/extension auto-approve command settings include package-install commands (`npm/pnpm/yarn/bun install`), reducing user-consent guardrails before install-time script execution | `ABU-004` |
 | `59_mcp_global_config_injection` | Repository/setup instructions write `mcpServers` entries directly into user-home assistant config files (`~/.cursor/mcp.json`, `~/.claude/settings.json`, etc.) with executable server commands | `EXF-013` |
 | `60_glob_cmd_shell_injection` | `glob` CLI command execution mode (`-c`/`--cmd`) on untrusted filenames, where shell metacharacters in file paths can trigger arbitrary command execution | `MAL-018` |
+| `61_bracket_glob_secret_path_bypass` | Bracket-glob obfuscation of sensitive file paths (for example `/etc/pass[w]d`, `/etc/shad[o]w`, `~/.ssh/id_r[s]a`) used to bypass literal denylist checks in shell/tool security guards | `EXF-014` |
 
 ## Commands
 

@@ -90,6 +90,8 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXF-013" for f in findings_59)
     findings_60 = _scan("examples/showcase/60_glob_cmd_shell_injection").findings
     assert any(f.id == "MAL-018" for f in findings_60)
+    findings_61 = _scan("examples/showcase/61_bracket_glob_secret_path_bypass").findings
+    assert any(f.id == "EXF-014" for f in findings_61)
 
 
 def test_showcase_policy_block_domain() -> None:
