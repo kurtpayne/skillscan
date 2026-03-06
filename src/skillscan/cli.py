@@ -102,6 +102,11 @@ def scan_cmd(
         "--ai-report-out",
         help="Write raw AI JSON response to file for review/audit",
     ),
+    rulepack_channel: str = typer.Option(
+        "stable",
+        "--rulepack-channel",
+        help="Rulepack channel: stable|preview|labs",
+    ),
     suppressions: Path | None = typer.Option(
         None,
         "--suppressions",
@@ -147,6 +152,9 @@ def scan_cmd(
     if ai_timeout_seconds < 1:
         console.print("[bold red]Invalid --ai-timeout-seconds:[/] expected >= 1")
         raise typer.Exit(2)
+    if rulepack_channel not in {"stable", "preview", "labs"}:
+        console.print("[bold red]Invalid --rulepack-channel:[/] expected stable, preview, or labs")
+        raise typer.Exit(2)
     if clamav_timeout_seconds < 1:
         console.print("[bold red]Invalid --clamav-timeout-seconds:[/] expected >= 1")
         raise typer.Exit(2)
@@ -182,6 +190,7 @@ def scan_cmd(
             ai_report_out=ai_report_out,
             clamav=clamav,
             clamav_timeout_seconds=clamav_timeout_seconds,
+            rulepack_channel=rulepack_channel,
         )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")

@@ -100,16 +100,39 @@ def _load_yaml_rule_file(raw: str) -> RulePack:
     return RulePack.model_validate(parsed)
 
 
-def load_builtin_rulepack() -> RulePack:
+def _filter_rule_files_for_channel(files: list, channel: str) -> list:
+    # stable: base rules + stable-tagged overlays
+    # preview: stable + preview overlays
+    # labs: stable + preview + labs overlays
+    if channel not in {"stable", "preview", "labs"}:
+        raise ValueError(f"Unknown rulepack channel: {channel}")
+
+    def include(name: str) -> bool:
+        if not name.endswith(".yaml"):
+            return False
+        if name.endswith(".labs.yaml"):
+            return channel == "labs"
+        if name.endswith(".preview.yaml"):
+            return channel in {"preview", "labs"}
+        if name.endswith(".stable.yaml"):
+            return channel in {"stable", "preview", "labs"}
+        # channel-agnostic/base file
+        return True
+
+    return [p for p in files if include(p.name)]
+
+
+def load_builtin_rulepack(channel: str = "stable") -> RulePack:
     rules_dir = resources.files("skillscan.data.rules")
     files = sorted([p for p in rules_dir.iterdir() if p.name.endswith(".yaml")], key=lambda p: p.name)
+    files = _filter_rule_files_for_channel(files, channel)
     rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in files]
     return _merge_rulepacks(rulepacks)
 
 
-@lru_cache(maxsize=1)
-def load_compiled_builtin_rulepack() -> CompiledRulePack:
-    rp = load_builtin_rulepack()
+@lru_cache(maxsize=3)
+def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
+    rp = load_builtin_rulepack(channel=channel)
     static_rules = [
         CompiledStaticRule(
             id=r.id,

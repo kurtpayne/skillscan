@@ -90,6 +90,9 @@ def test_scan_invalid_options() -> None:
     invalid_ai_timeout = runner.invoke(app, ["scan", target, "--ai-timeout-seconds", "0"])
     assert invalid_ai_timeout.exit_code == 2
 
+    invalid_rulepack_channel = runner.invoke(app, ["scan", target, "--rulepack-channel", "beta"])
+    assert invalid_rulepack_channel.exit_code == 2
+
     invalid_clamav_timeout = runner.invoke(app, ["scan", target, "--clamav-timeout-seconds", "0"])
     assert invalid_clamav_timeout.exit_code == 2
 
@@ -374,6 +377,49 @@ def test_scan_deprecated_extended_ai_alias(monkeypatch) -> None:
     )
     assert result.exit_code == 0
     assert calls["kwargs"]["ai_assist"] is True
+
+
+def test_scan_passes_rulepack_channel(monkeypatch) -> None:
+    calls: dict[str, object] = {}
+
+    def fake_scan(target, policy, policy_source, **kwargs):
+        calls["kwargs"] = kwargs
+        return __import__("skillscan.models", fromlist=["ScanReport"]).ScanReport.model_validate(
+            {
+                "metadata": {
+                    "scanner_version": "0.1.0",
+                    "target": str(target),
+                    "target_type": "directory",
+                    "ecosystem_hints": ["generic"],
+                    "rulepack_version": "x",
+                    "policy_profile": "strict",
+                    "policy_source": policy_source,
+                    "intel_sources": [],
+                },
+                "verdict": "allow",
+                "score": 0,
+                "findings": [],
+                "iocs": [],
+                "dependency_findings": [],
+                "capabilities": [],
+            }
+        )
+
+    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--rulepack-channel",
+            "preview",
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert calls["kwargs"]["rulepack_channel"] == "preview"
 
 
 def test_scan_policy_file_sarif_stdout_and_outfile_and_scan_error(monkeypatch, tmp_path: Path) -> None:
