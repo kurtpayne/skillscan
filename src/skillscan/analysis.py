@@ -17,6 +17,7 @@ from typing import cast
 
 from skillscan import __version__
 from skillscan.ai import AIAssistError, AIConfig, run_ai_assist
+from skillscan.clamav import scan_paths as clamav_scan_paths
 from skillscan.detectors.ast_flows import detect_python_ast_flows
 from skillscan.ecosystems import detect_ecosystems
 from skillscan.intel import load_store
@@ -608,6 +609,8 @@ def scan(
     ai_timeout_seconds: int = 20,
     ai_required: bool = False,
     ai_report_out: Path | None = None,
+    clamav: bool = False,
+    clamav_timeout_seconds: int = 30,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -636,6 +639,39 @@ def scan(
         ioc_db = _load_builtin_ioc_db()
         ioc_db, vuln_db, intel_sources = _merge_user_intel(ioc_db, vuln_db)
         findings.extend(_binary_artifact_findings(inventory.binary_artifacts))
+
+        if clamav:
+            clamav_result = clamav_scan_paths(prepared.root, timeout_seconds=clamav_timeout_seconds)
+            if not clamav_result.available:
+                findings.append(
+                    Finding(
+                        id="AV-UNAVAILABLE",
+                        category="artifact_malware",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title="ClamAV unavailable",
+                        evidence_path=str(prepared.root),
+                        snippet=(clamav_result.message or "ClamAV unavailable")[:220],
+                        mitigation="Install ClamAV (`clamscan`) or disable --clamav for this run.",
+                    )
+                )
+            else:
+                for detection in clamav_result.detections:
+                    findings.append(
+                        Finding(
+                            id="AV-001",
+                            category="artifact_malware",
+                            severity=Severity.HIGH,
+                            confidence=0.9,
+                            title="ClamAV malware detection",
+                            evidence_path=detection.path,
+                            snippet=detection.signature[:220],
+                            mitigation=(
+                                "Treat detected artifact as malicious and "
+                                "remove/quarantine before execution."
+                            ),
+                        )
+                    )
 
         for path in files:
             text = _safe_read_text(path)

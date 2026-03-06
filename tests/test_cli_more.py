@@ -90,6 +90,9 @@ def test_scan_invalid_options() -> None:
     invalid_ai_timeout = runner.invoke(app, ["scan", target, "--ai-timeout-seconds", "0"])
     assert invalid_ai_timeout.exit_code == 2
 
+    invalid_clamav_timeout = runner.invoke(app, ["scan", target, "--clamav-timeout-seconds", "0"])
+    assert invalid_clamav_timeout.exit_code == 2
+
 
 def test_scan_fail_on_warn_and_block() -> None:
     warn_result = runner.invoke(
