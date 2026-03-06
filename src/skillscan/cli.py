@@ -26,6 +26,7 @@ from skillscan.junit import report_to_junit_xml
 from skillscan.policies import BUILTIN_PROFILES, load_builtin_policy, load_policy_file, policy_summary
 from skillscan.render import render_report
 from skillscan.sarif import report_to_sarif
+from skillscan.suppressions import apply_suppressions
 
 app = typer.Typer(help="SkillScan: standalone AI skill security analyzer")
 policy_app = typer.Typer(help="Policy operations")
@@ -101,6 +102,16 @@ def scan_cmd(
         "--ai-report-out",
         help="Write raw AI JSON response to file for review/audit",
     ),
+    suppressions: Path | None = typer.Option(
+        None,
+        "--suppressions",
+        help="Suppression file (YAML) with id/reason/expires and optional evidence_path/line",
+    ),
+    strict_suppressions: bool = typer.Option(
+        False,
+        "--strict-suppressions/--no-strict-suppressions",
+        help="Fail scan when suppression file contains expired entries",
+    ),
 ) -> None:
     load_dotenv()
     if extended_ai_checks is not None:
@@ -161,6 +172,18 @@ def scan_cmd(
         console.print(f"[bold red]Scan failed:[/] {exc}")
         raise typer.Exit(2)
 
+    expired_suppressions = 0
+    if suppressions is not None:
+        if not suppressions.exists():
+            console.print(f"[bold red]Suppressions file not found:[/] {suppressions}")
+            raise typer.Exit(2)
+        result = apply_suppressions(report.findings, suppressions)
+        report.findings = result.findings
+        expired_suppressions = result.expired_count
+        console.print(
+            f"[dim]suppressions applied={result.suppressed_count} expired={result.expired_count}[/dim]"
+        )
+
     if format == "json":
         payload = report.to_json()
         if out:
@@ -194,6 +217,10 @@ def scan_cmd(
         if out:
             out.write_text(report.to_json(), encoding="utf-8")
             console.print(f"[cyan]Saved JSON report:[/] {out}")
+
+    if strict_suppressions and expired_suppressions > 0:
+        console.print("[bold red]Expired suppressions found in strict mode[/]")
+        raise typer.Exit(1)
 
     if fail_on == "warn" and report.verdict.value in {"warn", "block"}:
         raise typer.Exit(1)

@@ -1,0 +1,85 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+
+import yaml  # type: ignore[import-untyped]
+
+from skillscan.models import Finding
+
+
+@dataclass
+class SuppressionEntry:
+    id: str
+    reason: str
+    expires: str
+    evidence_path: str | None = None
+    line: int | None = None
+
+
+@dataclass
+class SuppressionResult:
+    findings: list[Finding]
+    suppressed_count: int
+    expired_count: int
+
+
+def _parse_date_utc(value: str) -> datetime:
+    return datetime.fromisoformat(f"{value}T00:00:00+00:00")
+
+
+def _load_entries(path: Path) -> list[SuppressionEntry]:
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not data:
+        return []
+    items = data if isinstance(data, list) else data.get("suppressions", [])
+    entries: list[SuppressionEntry] = []
+    for item in items:
+        entries.append(
+            SuppressionEntry(
+                id=item["id"],
+                reason=item["reason"],
+                expires=item["expires"],
+                evidence_path=item.get("evidence_path"),
+                line=item.get("line"),
+            )
+        )
+    return entries
+
+
+def _matches(entry: SuppressionEntry, finding: Finding) -> bool:
+    if entry.id != finding.id:
+        return False
+    if entry.evidence_path and entry.evidence_path != finding.evidence_path:
+        return False
+    if entry.line is not None and entry.line != finding.line:
+        return False
+    return True
+
+
+def apply_suppressions(findings: list[Finding], path: Path) -> SuppressionResult:
+    entries = _load_entries(path)
+    now = datetime.now(UTC)
+
+    active: list[SuppressionEntry] = []
+    expired_count = 0
+    for entry in entries:
+        if _parse_date_utc(entry.expires) < now:
+            expired_count += 1
+            continue
+        active.append(entry)
+
+    filtered: list[Finding] = []
+    suppressed_count = 0
+    for finding in findings:
+        if any(_matches(entry, finding) for entry in active):
+            suppressed_count += 1
+            continue
+        filtered.append(finding)
+
+    return SuppressionResult(
+        findings=filtered,
+        suppressed_count=suppressed_count,
+        expired_count=expired_count,
+    )

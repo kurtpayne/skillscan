@@ -471,6 +471,52 @@ def test_scan_policy_file_sarif_stdout_and_outfile_and_scan_error(monkeypatch, t
     assert "Scan failed" in failed.stdout
 
 
+def test_scan_with_suppressions_and_strict_expiry(tmp_path: Path) -> None:
+    suppressions = tmp_path / "suppressions.yaml"
+    suppressions.write_text(
+        """
+- id: ABU-001
+  reason: accepted risk
+  expires: 2099-01-01
+- id: ABU-999
+  reason: expired marker
+  expires: 2020-01-01
+""".strip(),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "examples/showcase/03_instruction_abuse",
+            "--suppressions",
+            str(suppressions),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "suppressions applied=" in result.stdout
+
+    strict_result = runner.invoke(
+        app,
+        [
+            "scan",
+            "examples/showcase/03_instruction_abuse",
+            "--suppressions",
+            str(suppressions),
+            "--strict-suppressions",
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert strict_result.exit_code == 1
+    assert "Expired suppressions" in strict_result.stdout
+
+
 def test_scan_text_out_and_intel_enable_disable_fail(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setattr("skillscan.cli.set_enabled", lambda _name, _enabled: False)
     en = runner.invoke(app, ["intel", "enable", "missing"])
