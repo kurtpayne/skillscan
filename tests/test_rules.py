@@ -672,3 +672,15 @@ def test_new_patterns_2026_03_05_patch2() -> None:
     assert mal018.pattern.search('npx glob -c echo "**/*"') is not None
     assert mal018.pattern.search('glob --cmd "echo" "src/**/*.ts"') is not None
     assert mal018.pattern.search('glob "src/**/*.ts"') is None
+
+
+def test_new_patterns_2026_03_06() -> None:
+    """Test bracket-glob obfuscated sensitive path marker."""
+    compiled = load_compiled_builtin_rulepack()
+
+    exf014 = next((r for r in compiled.static_rules if r.id == "EXF-014"), None)
+    assert exf014 is not None
+    assert exf014.pattern.search("cat /etc/pass[w]d") is not None
+    assert exf014.pattern.search("cat /etc/shad[o]w") is not None
+    assert exf014.pattern.search("cat ~/.ssh/id_r[s]a") is not None
+    assert exf014.pattern.search("cat /etc/passwd") is None

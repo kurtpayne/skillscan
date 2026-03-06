@@ -1,3 +1,27 @@
+## 2026-03-06 (1): Bracket-Glob Sensitive Path Obfuscation Marker
+
+**Sources:**
+- [GitHub Advisory Database - GHSA-5wp8-q9mx-8jx8](https://github.com/advisories/GHSA-5wp8-q9mx-8jx8)
+- [zeptoclaw Advisory - Shell allowlist/blocklist bypass](https://github.com/qhkm/zeptoclaw/security/advisories/GHSA-5wp8-q9mx-8jx8)
+
+**Event Summary:** GHSA-5wp8-q9mx-8jx8 documents bypasses in shell guard logic where literal path blocklists can be evaded by bracket-glob obfuscation (for example `/etc/pass[w]d`). Existing SkillScan rules matched direct sensitive paths but did not include this evasive variant.
+
+**New Pattern Added:**
+
+### EXF-014: Bracket-glob obfuscated sensitive path marker
+- **Category:** exfiltration
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects bracket-glob variants of high-risk secret paths (`/etc/pass[w]d`, `/etc/shad[o]w`, `~/.ssh/id_r[s]a`) commonly used to evade literal denylist checks.
+- **Justification:** High-signal marker tied to a concrete, recent advisory and narrowly scoped to sensitive-path obfuscation behavior with low expected false positives.
+- **Mitigation:** Normalize/resolve glob metacharacters before path denylist checks and reject obfuscated sensitive path access attempts.
+
+**Version:** Rules updated from 2026.03.05.2 to 2026.03.06.1
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_03_06`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/61_bracket_glob_secret_path_bypass`.
+
+---
+
 ## 2026-03-05 (2): node-glob CLI `-c/--cmd` Shell Injection Sink Marker
 
 **Sources:**
