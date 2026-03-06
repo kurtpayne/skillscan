@@ -112,6 +112,16 @@ def scan_cmd(
         "--strict-suppressions/--no-strict-suppressions",
         help="Fail scan when suppression file contains expired entries",
     ),
+    clamav: bool = typer.Option(
+        False,
+        "--clamav/--no-clamav",
+        help="Enable optional ClamAV artifact scanning stage",
+    ),
+    clamav_timeout_seconds: int = typer.Option(
+        30,
+        "--clamav-timeout-seconds",
+        help="ClamAV scan timeout in seconds",
+    ),
 ) -> None:
     load_dotenv()
     if extended_ai_checks is not None:
@@ -136,6 +146,9 @@ def scan_cmd(
         raise typer.Exit(2)
     if ai_timeout_seconds < 1:
         console.print("[bold red]Invalid --ai-timeout-seconds:[/] expected >= 1")
+        raise typer.Exit(2)
+    if clamav_timeout_seconds < 1:
+        console.print("[bold red]Invalid --clamav-timeout-seconds:[/] expected >= 1")
         raise typer.Exit(2)
 
     if policy_file:
@@ -167,6 +180,8 @@ def scan_cmd(
             ai_timeout_seconds=ai_timeout_seconds,
             ai_required=ai_required,
             ai_report_out=ai_report_out,
+            clamav=clamav,
+            clamav_timeout_seconds=clamav_timeout_seconds,
         )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")

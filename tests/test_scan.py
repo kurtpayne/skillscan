@@ -95,6 +95,22 @@ def test_url_scan_read_warning(monkeypatch) -> None:
     assert any(f.id == "SRC-READ-ERR" for f in report.findings)
 
 
+def test_clamav_unavailable_adds_finding(monkeypatch, tmp_path: Path) -> None:
+    target = tmp_path / "skill"
+    target.mkdir(parents=True)
+    (target / "SKILL.md").write_text("benign", encoding="utf-8")
+
+    class _ClamResult:
+        available = False
+        detections = []
+        message = "missing clamscan"
+
+    monkeypatch.setattr("skillscan.analysis.clamav_scan_paths", lambda *_a, **_k: _ClamResult())
+    policy = load_builtin_policy("strict")
+    report = scan(target, policy, "builtin:strict", clamav=True)
+    assert any(f.id == "AV-UNAVAILABLE" for f in report.findings)
+
+
 def test_ai_assist_adds_semantic_findings(monkeypatch, tmp_path: Path) -> None:
     target = tmp_path / "skill"
     target.mkdir(parents=True)
