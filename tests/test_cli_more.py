@@ -760,6 +760,34 @@ def test_scan_baseline_option_validation_errors(tmp_path: Path) -> None:
     assert "set --delta-format json" in json_without_delta_json_result.stdout
 
 
+def test_scan_with_suppressions_no_expired_ids_line(tmp_path: Path) -> None:
+    suppressions = tmp_path / "suppressions.yaml"
+    suppressions.write_text(
+        """
+- id: ABU-001
+  reason: accepted risk
+  expires: 2099-01-01
+""".strip(),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "examples/showcase/03_instruction_abuse",
+            "--suppressions",
+            str(suppressions),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "suppressions total=" in result.stdout
+    assert "expired suppression ids:" not in result.stdout
+
+
 def test_scan_invalid_suppressions_file_reports_error(tmp_path: Path) -> None:
     suppressions = tmp_path / "bad-suppressions.yaml"
     suppressions.write_text(

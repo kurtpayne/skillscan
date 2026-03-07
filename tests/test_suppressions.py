@@ -198,3 +198,35 @@ def test_apply_suppressions_missing_required_fields_raises(tmp_path: Path) -> No
 
     with pytest.raises(ValueError, match="missing required field"):
         apply_suppressions(findings, sup)
+
+
+def test_apply_suppressions_top_level_mapping_must_contain_list(tmp_path: Path) -> None:
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text("suppressions: bad", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must be a list"):
+        apply_suppressions([], sup)
+
+
+def test_apply_suppressions_entry_must_be_mapping(tmp_path: Path) -> None:
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text("- nope", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must be a mapping"):
+        apply_suppressions([], sup)
+
+
+def test_apply_suppressions_line_must_be_integer(tmp_path: Path) -> None:
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text(
+        """
+- id: ABU-001
+  reason: bad line
+  expires: 2099-01-01
+  line: one
+""".strip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="line' must be an integer"):
+        apply_suppressions([], sup)
