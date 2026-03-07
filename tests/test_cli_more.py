@@ -631,3 +631,73 @@ def test_scan_text_out_and_intel_enable_disable_fail(monkeypatch, tmp_path: Path
     )
     assert result.exit_code == 0
     assert out.exists()
+
+
+def test_benchmark_command_outputs_json_and_passes_thresholds(monkeypatch, tmp_path: Path) -> None:
+    class _F:
+        def __init__(self, id: str):
+            self.id = id
+
+    class _R:
+        def __init__(self, ids: list[str]):
+            self.findings = [_F(i) for i in ids]
+
+    def fake_scan(target, _policy, _policy_source, **_kwargs):
+        if target == "a":
+            return _R(["MAL-001", "EXF-001"])
+        return _R(["SAFE-001"])
+
+    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
+
+    manifest = tmp_path / "bench.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {"target": "a", "expected_ids": ["MAL-001"], "forbidden_ids": ["BAD-001"]},
+                    {"target": "b", "expected_ids": [], "forbidden_ids": ["MAL-001"]},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "benchmark",
+            str(manifest),
+            "--format",
+            "json",
+            "--min-precision",
+            "0.9",
+            "--min-recall",
+            "1.0",
+        ],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["tp"] == 1
+    assert payload["fp"] == 0
+    assert payload["fn"] == 0
+
+
+def test_benchmark_command_fails_threshold_gate(monkeypatch, tmp_path: Path) -> None:
+    class _F:
+        def __init__(self, id: str):
+            self.id = id
+
+    class _R:
+        def __init__(self, ids: list[str]):
+            self.findings = [_F(i) for i in ids]
+
+    monkeypatch.setattr("skillscan.cli.scan", lambda *_a, **_k: _R([]))
+
+    manifest = tmp_path / "bench.json"
+    manifest.write_text(
+        json.dumps({"cases": [{"target": "x", "expected_ids": ["MAL-001"], "forbidden_ids": []}]}),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(app, ["benchmark", str(manifest), "--min-recall", "1.0"])
+    assert result.exit_code == 1
