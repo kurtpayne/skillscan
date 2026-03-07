@@ -701,3 +701,67 @@ def test_benchmark_command_fails_threshold_gate(monkeypatch, tmp_path: Path) -> 
 
     result = runner.invoke(app, ["benchmark", str(manifest), "--min-recall", "1.0"])
     assert result.exit_code == 1
+
+
+def test_benchmark_command_validation_errors(tmp_path: Path) -> None:
+    manifest = tmp_path / "bench.json"
+    manifest.write_text(json.dumps({"cases": []}), encoding="utf-8")
+
+    bad_profile = runner.invoke(app, ["benchmark", str(manifest), "--policy-profile", "bad"])
+    assert bad_profile.exit_code == 2
+
+    bad_format = runner.invoke(app, ["benchmark", str(manifest), "--format", "xml"])
+    assert bad_format.exit_code == 2
+
+    bad_min_precision = runner.invoke(app, ["benchmark", str(manifest), "--min-precision", "1.5"])
+    assert bad_min_precision.exit_code == 2
+
+    bad_min_recall = runner.invoke(app, ["benchmark", str(manifest), "--min-recall", "-0.1"])
+    assert bad_min_recall.exit_code == 2
+
+
+def test_benchmark_command_manifest_and_case_validation(tmp_path: Path) -> None:
+    bad_manifest = tmp_path / "bad.json"
+    bad_manifest.write_text(json.dumps({"cases": {"target": "x"}}), encoding="utf-8")
+    result = runner.invoke(app, ["benchmark", str(bad_manifest)])
+    assert result.exit_code == 2
+
+    bad_case = tmp_path / "bad_case.json"
+    bad_case.write_text(json.dumps({"cases": [{"expected_ids": ["MAL-001"]}]}), encoding="utf-8")
+    result = runner.invoke(app, ["benchmark", str(bad_case)])
+    assert result.exit_code == 2
+
+
+def test_benchmark_command_scan_error_and_text_output(monkeypatch, tmp_path: Path) -> None:
+    manifest = tmp_path / "bench.json"
+    manifest.write_text(
+        json.dumps(
+            {
+                "cases": [
+                    {"target": "x", "expected_ids": [], "forbidden_ids": []},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    from skillscan.analysis import ScanError
+
+    def fail_scan(*_a, **_k):
+        raise ScanError("boom")
+
+    monkeypatch.setattr("skillscan.cli.scan", fail_scan)
+    err = runner.invoke(app, ["benchmark", str(manifest)])
+    assert err.exit_code == 2
+
+    class _R:
+        findings = []
+
+    def ok_scan(_target, _policy, _policy_source, **kwargs):
+        assert kwargs["ai_assist"] is True
+        return _R()
+
+    monkeypatch.setattr("skillscan.cli.scan", ok_scan)
+    ok = runner.invoke(app, ["benchmark", str(manifest), "--ai-assist", "--format", "text"])
+    assert ok.exit_code == 0
+    assert "benchmark cases=1" in ok.stdout
