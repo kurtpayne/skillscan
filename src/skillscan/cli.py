@@ -44,6 +44,12 @@ def _finding_key(finding: dict) -> tuple[str, str, int | None]:
     )
 
 
+def _safe_ratio(numerator: int, denominator: int) -> float:
+    if denominator <= 0:
+        return 1.0
+    return numerator / denominator
+
+
 @app.command("version")
 def version() -> None:
     console.print(f"skillscan {__version__}")
@@ -264,6 +270,112 @@ def explain_cmd(report: Path = typer.Argument(..., exists=True, readable=True)) 
     from skillscan.models import ScanReport
 
     render_report(ScanReport.model_validate(data), console=console)
+
+
+@app.command("benchmark")
+def benchmark_cmd(
+    manifest: Path = typer.Argument(..., exists=True, readable=True, help="Benchmark manifest JSON"),
+    policy_profile: str = typer.Option(
+        "strict", "--policy-profile", "--profile", help="Built-in policy profile"
+    ),
+    format: str = typer.Option("text", "--format", help="Output format: text|json"),
+    min_precision: float = typer.Option(0.0, "--min-precision", help="Fail if precision falls below value"),
+    min_recall: float = typer.Option(0.0, "--min-recall", help="Fail if recall falls below value"),
+    ai_assist: bool = typer.Option(
+        False,
+        "--ai-assist/--no-ai-assist",
+        help="Include optional AI semantic pass during benchmark",
+    ),
+) -> None:
+    if policy_profile not in BUILTIN_PROFILES:
+        console.print(
+            f"[bold red]Invalid --policy-profile:[/] {policy_profile}. "
+            f"Expected one of: {', '.join(BUILTIN_PROFILES)}"
+        )
+        raise typer.Exit(2)
+    if format not in {"text", "json"}:
+        console.print("[bold red]Invalid --format:[/] expected text or json")
+        raise typer.Exit(2)
+    if not (0.0 <= min_precision <= 1.0):
+        console.print("[bold red]Invalid --min-precision:[/] expected 0.0 to 1.0")
+        raise typer.Exit(2)
+    if not (0.0 <= min_recall <= 1.0):
+        console.print("[bold red]Invalid --min-recall:[/] expected 0.0 to 1.0")
+        raise typer.Exit(2)
+
+    policy = load_builtin_policy(policy_profile)
+    policy_source = f"builtin:{policy_profile}"
+
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    cases = data.get("cases", [])
+    if not isinstance(cases, list):
+        console.print("[bold red]Invalid manifest:[/] 'cases' must be a list")
+        raise typer.Exit(2)
+
+    tp = 0
+    fp = 0
+    fn = 0
+    case_results: list[dict] = []
+
+    for idx, case in enumerate(cases, 1):
+        target = case.get("target")
+        if not isinstance(target, str):
+            console.print(f"[bold red]Invalid case #{idx}:[/] missing string 'target'")
+            raise typer.Exit(2)
+        expected_ids = set(case.get("expected_ids", []))
+        forbidden_ids = set(case.get("forbidden_ids", []))
+
+        try:
+            report = scan(
+                target,
+                policy,
+                policy_source,
+                ai_assist=ai_assist,
+            )
+        except (ScanError, ValueError) as exc:
+            console.print(f"[bold red]Benchmark scan failed for {target}:[/] {exc}")
+            raise typer.Exit(2)
+
+        found_ids = {f.id for f in report.findings}
+        matched = expected_ids & found_ids
+        missing = expected_ids - found_ids
+        unexpected = forbidden_ids & found_ids
+
+        tp += len(matched)
+        fn += len(missing)
+        fp += len(unexpected)
+
+        case_results.append(
+            {
+                "target": target,
+                "matched": sorted(matched),
+                "missing": sorted(missing),
+                "unexpected": sorted(unexpected),
+            }
+        )
+
+    precision = _safe_ratio(tp, tp + fp)
+    recall = _safe_ratio(tp, tp + fn)
+    payload = {
+        "cases": len(cases),
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "precision": round(precision, 4),
+        "recall": round(recall, 4),
+        "results": case_results,
+    }
+
+    if format == "json":
+        console.print(json.dumps(payload, indent=2))
+    else:
+        console.print(
+            f"benchmark cases={payload['cases']} precision={payload['precision']:.4f} "
+            f"recall={payload['recall']:.4f} tp={tp} fp={fp} fn={fn}"
+        )
+
+    if precision < min_precision or recall < min_recall:
+        raise typer.Exit(1)
 
 
 @app.command("diff")
