@@ -36,6 +36,7 @@ from skillscan.models import (
 )
 from skillscan.remote import RemoteFetchError, fetch_remote_target, is_url_target
 from skillscan.rules import CompiledRulePack, load_compiled_builtin_rulepack
+from skillscan.semantic_local import local_prompt_injection_findings
 
 URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
 IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
@@ -698,6 +699,8 @@ def scan(
                             )
                         )
                         break
+
+            findings.extend(local_prompt_injection_findings(path, analysis_text))
 
             for capability_name, pattern in ruleset.capability_patterns:
                 if pattern.search(analysis_text):

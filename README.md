@@ -31,7 +31,8 @@ Default policy is `strict`.
 11. Auto-refresh managed intel feeds (default checks every scan, 1-hour max age).
 12. Versioned YAML rulepack for flexible detection updates (`src/skillscan/data/rules/default.yaml`).
 13. Adversarial regression corpus with expected verdicts (`tests/adversarial/expectations.json`).
-14. Optional AI semantic checks for nuanced instruction-layer risks (`--ai-assist`).
+14. Default-on local semantic prompt-injection classifier (`PINJ-SEM-001`, NLTK/classical features, no external API).
+15. Optional AI semantic checks for nuanced instruction-layer risks (`--ai-assist`).
 
 ## Install
 
@@ -209,6 +210,8 @@ AI Assist:
 See full command docs: `docs/COMMANDS.md`.
 
 See distribution/install matrix: `docs/DISTRIBUTION.md`.
+
+Prompt-injection corpus ingestion and benchmarking plan: `docs/PROMPT_INJECTION_CORPUS.md`.
 
 ## AI Assist
 
