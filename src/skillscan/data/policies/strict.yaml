@@ -6,6 +6,7 @@ thresholds:
 weights:
   malware_pattern: 3
   instruction_abuse: 2
+  prompt_injection_semantic: 2
   exfiltration: 3
   dependency_vulnerability: 2
   threat_intel: 3

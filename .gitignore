@@ -2,6 +2,8 @@
 __pycache__/
 .pytest_cache/
 .mypy_cache/
+
+tests/benchmark/generated_prompt_injection/
 .ruff_cache/
 .cache/
 *.pyc
