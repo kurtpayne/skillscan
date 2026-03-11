@@ -1,3 +1,27 @@
+## 2026-03-09 (2): Multi-Target Developer Credential Harvest List Marker
+
+**Sources:**
+- [JFrog - GhostClaw Unmasked: A Malicious npm Package Impersonating OpenClaw to Steal Everything](https://research.jfrog.com/post/ghostclaw-unmasked/)
+- [The Hacker News - Malicious npm Package Posing as OpenClaw Installer Deploys RAT, Steals macOS Credentials](https://thehackernews.com/2026/03/malicious-npm-package-posing-as.html)
+
+**Event Summary:** March 2026 reporting on the GhostClaw npm campaign shows bundled credential-harvest lists that collect multiple developer auth stores in one pass (for example `~/.npmrc`, `~/.git-credentials`, and GitHub CLI `~/.config/gh/hosts.yml`) before upload/exfiltration. Existing SkillScan coverage flagged individual secret files, but did not include a focused marker for this specific multi-target developer-token harvest pattern.
+
+**New Pattern Added:**
+
+### EXF-015: Multi-target developer credential file harvest list marker
+- **Category:** exfiltration
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects co-occurrence of `.npmrc`, `.git-credentials`, and GitHub CLI `hosts.yml` path markers within a short content window.
+- **Justification:** The combined path-set is a high-signal token-harvest indicator from current malware reporting and produces lower noise than matching any single path alone.
+- **Mitigation:** Treat combined developer credential file collection as credential theft behavior, remove unauthorized collection logic, and rotate exposed tokens.
+
+**Version:** Rules updated from 2026.03.09.1 to 2026.03.09.2
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_03_09_patch2`, showcase validation in `tests/test_showcase_examples.py`, and fixture `examples/showcase/65_dev_credential_harvest_list`.
+
+---
+
 ## 2026-03-06 (3): VS Code Hidden-Whitespace Task Command Marker
 
 **Sources:**

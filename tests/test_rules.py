@@ -750,6 +750,21 @@ def test_new_patterns_2026_03_09() -> None:
     assert "gh_pr_ref_meta" in chn010.all_of
 
 
+def test_new_patterns_2026_03_09_patch2() -> None:
+    """Test multi-target developer credential file harvest list marker."""
+    compiled = load_compiled_builtin_rulepack()
+
+    exf015 = next((r for r in compiled.static_rules if r.id == "EXF-015"), None)
+    assert exf015 is not None
+    assert (
+        exf015.pattern.search(
+            "targets: ~/.npmrc, ~/.git-credentials, ~/.config/gh/hosts.yml; upload: https://collector.example/upload"
+        )
+        is not None
+    )
+    assert exf015.pattern.search("cat ~/.npmrc") is None
+
+
 def test_rulepack_channel_filtering() -> None:
     class _P:
         def __init__(self, name: str):
