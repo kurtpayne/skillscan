@@ -99,6 +99,8 @@ def test_showcase_detection_rules() -> None:
     findings_64 = _scan("examples/showcase/64_pr_target_branch_ref_injection").findings
     assert any(f.id == "MAL-021" for f in findings_64)
     assert any(f.id == "CHN-010" for f in findings_64)
+    findings_65 = _scan("examples/showcase/65_dev_credential_harvest_list").findings
+    assert any(f.id == "EXF-015" for f in findings_65)
 
 
 def test_showcase_policy_block_domain() -> None:
