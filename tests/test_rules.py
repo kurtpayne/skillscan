@@ -811,3 +811,26 @@ def test_rulepack_channel_filtering_skips_non_yaml() -> None:
     files = [_P("notes.txt"), _P("default.yaml")]
     stable = _filter_rule_files_for_channel(files, "stable")
     assert [f.name for f in stable] == ["default.yaml"]
+
+
+def test_new_patterns_2026_03_11() -> None:
+    """Test MCP tool-name collision hijack wording markers (CVE-2026-30856 lineage)."""
+    compiled = load_compiled_builtin_rulepack()
+
+    abu005 = next((r for r in compiled.static_rules if r.id == "ABU-005"), None)
+    assert abu005 is not None
+    assert abu005.pattern.search("tool name collision in MCP client") is not None
+    assert abu005.pattern.search("mcp_{service}_{tool}") is not None
+    assert abu005.pattern.search("overwrites a legitimate one (e.g., tavily_extract)") is not None
+    assert abu005.pattern.search("normal MCP registry docs") is None
+
+
+def test_new_patterns_2026_03_11_patch2() -> None:
+    """Test bash parameter-expansion command smuggling marker (CVE-2026-29783 lineage)."""
+    compiled = load_compiled_builtin_rulepack()
+
+    mal022 = next((r for r in compiled.static_rules if r.id == "MAL-022"), None)
+    assert mal022 is not None
+    assert mal022.pattern.search('echo ${a="$"}${b="$a(touch /tmp/pwned)"}${b@P}') is not None
+    assert mal022.pattern.search('echo ${HOME:-$(whoami)}') is not None
+    assert mal022.pattern.search('echo ${HOME:-/tmp}') is None
