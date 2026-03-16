@@ -45,4 +45,11 @@ Use this checklist before creating a `vX.Y.Z` tag.
   - [ ] wheel + sdist + SHA256SUMS
   - [ ] Python SBOM (`sbom-python.cdx.json`)
   - [ ] Docker SBOM (`sbom-docker.spdx.json`)
+  - [ ] Python support signatures (`sbom-python.cdx.json.sig/.pem`, `SHA256SUMS.sig/.pem`)
+  - [ ] Docker SBOM signatures (`sbom-docker.spdx.json.sig/.pem`)
 - [ ] SBOM validation step passed in workflows (`scripts/validate_sbom.py`)
+- [ ] cosign verification checks pass for:
+  - [ ] `cosign verify-blob` (Python SBOM)
+  - [ ] `cosign verify-blob` (SHA256SUMS)
+  - [ ] `cosign verify` (container image)
+  - [ ] `cosign verify-attestation --type spdxjson` (container SBOM attestation)
