@@ -63,6 +63,13 @@ def test_new_patterns_2026_02_09() -> None:
     assert obf002.pattern.search("CREATE_NO_WINDOW") is not None
     assert obf002.pattern.search("nohup cmd >/dev/null") is not None
 
+    # OBF-003: Unicode PUA/variation selectors adjacent to dynamic execution sinks
+    obf003 = next((r for r in compiled.static_rules if r.id == "OBF-003"), None)
+    assert obf003 is not None
+    assert obf003.pattern.search("eval(payload)\ufe0f\ufe0f") is not None
+    assert obf003.pattern.search("\ufe0f\ufe0fFunction('return x')") is not None
+    assert obf003.pattern.search("const note = 'harmless\ufe0f\ufe0f text'") is None
+
     # EXF-004: GitHub Actions full secrets context dump
     exf004 = next((r for r in compiled.static_rules if r.id == "EXF-004"), None)
     assert exf004 is not None

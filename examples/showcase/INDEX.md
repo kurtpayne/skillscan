@@ -86,3 +86,4 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 67. `67_bash_param_expansion_smuggling`: bash parameter-expansion command smuggling patterns (for example `${var@P}` and `${VAR:-$(cmd)}`) associated with CVE-2026-29783 / GHSA-g8r9-g2v8-jv6f (`MAL-022`)
 68. `68_password_validation_harvest`: cross-platform system password validation calls (`dscl -authonly`, PowerShell `ValidateCredentials`, `su -c true`) observed in installer-style credential-harvest malware (`MAL-023`)
 69. `69_cloudformation_adminrole_bootstrap`: CloudFormation deployment snippets combining `CAPABILITY_IAM`/`CAPABILITY_NAMED_IAM` with direct `AdministratorAccess` attachment (`arn:aws:iam::aws:policy/AdministratorAccess`) as a high-risk cloud privilege-escalation marker (`MAL-024`)
+70. `70_pua_eval_obfuscation`: Unicode variation-selector/PUA clusters adjacent to dynamic execution sinks (`eval`, `exec`, `Function`) indicating obfuscation-assisted code execution (`OBF-003`)
