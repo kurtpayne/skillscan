@@ -1,4 +1,4 @@
-version: "2026.03.14.1"
+version: "2026.03.16.1"
 
 static_rules:
   - id: MAL-001
@@ -120,6 +120,14 @@ static_rules:
     title: Stealth execution pattern
     pattern: 'CREATE_NO_WINDOW|nohup.*>/dev/null|&\s*>/dev/null\s*2>&1|\.bat\s+>nul\s+2>&1'
     mitigation: Remove hidden/stealth execution flags and output redirection that obscure command behavior.
+
+  - id: OBF-003
+    category: instruction_abuse
+    severity: high
+    confidence: 0.87
+    title: Unicode PUA obfuscation near dynamic execution sink
+    pattern: '(?:[\uFE00-\uFE0F\U000E0100-\U000E01EF]{2,}.{0,80}(?:eval\(|\bexec\(|Function\()|(?:eval\(|\bexec\(|Function\().{0,80}[\uFE00-\uFE0F\U000E0100-\U000E01EF]{2,})'
+    mitigation: Treat Unicode variation-selector/PUA clusters near dynamic execution sinks as obfuscation. Normalize Unicode and reject hidden-control payloads before execution.
 
   - id: SUP-002
     category: malware_pattern
