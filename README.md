@@ -37,7 +37,7 @@ Default policy is `strict`.
 ## Distribution Status
 
 - Source/dev install: supported now
-- PyPI install (`pip install skillscan`): supported via tag releases (`vX.Y.Z`)
+- PyPI install (`pip install skillscan-security`): supported via tag releases (`vX.Y.Z`)
 - Docker image (`kurtpayne/skillscan`): supported via tag releases (`vX.Y.Z` + `latest`)
 
 Release process and prerequisites: `docs/RELEASE_CHECKLIST.md` and `docs/RELEASE_ONBOARDING.md`.
