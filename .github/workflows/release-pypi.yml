@@ -49,6 +49,9 @@ jobs:
       - name: Generate Python dependency SBOM (CycloneDX)
         run: cyclonedx-py environment --of JSON --output-file dist/sbom-python.cdx.json
 
+      - name: Validate Python SBOM
+        run: python scripts/validate_sbom.py --cyclonedx dist/sbom-python.cdx.json
+
       - name: Smoke install from built wheel
         run: |
           python -m venv /tmp/skillscan-smoke

@@ -45,3 +45,4 @@ Use this checklist before creating a `vX.Y.Z` tag.
   - [ ] wheel + sdist + SHA256SUMS
   - [ ] Python SBOM (`sbom-python.cdx.json`)
   - [ ] Docker SBOM (`sbom-docker.spdx.json`)
+- [ ] SBOM validation step passed in workflows (`scripts/validate_sbom.py`)

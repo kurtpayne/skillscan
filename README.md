@@ -297,12 +297,13 @@ See `docs/PLATFORM_SKILLS.md` for setup and rollout guidance.
 ## Testing
 
 ```bash
-pytest -q
-ruff check src tests
-mypy src
+./scripts/run_tests.sh test
+./scripts/run_tests.sh lint
+./scripts/run_tests.sh type
+./scripts/run_tests.sh check
 ```
 
-Or run all checks:
+Or run via Makefile:
 
 ```bash
 make check
