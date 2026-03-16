@@ -135,6 +135,10 @@ See also: `docs/RELEASE_ONBOARDING.md` for first-time account and publisher setu
 - Release artifacts include SBOMs:
   - Python dependencies: `sbom-python.cdx.json` (CycloneDX)
   - Docker image: `sbom-docker.spdx.json` (SPDX JSON)
+- Release workflows generate Sigstore/cosign keyless signatures:
+  - Python support artifacts: `sbom-python.cdx.json.sig/.pem`, `SHA256SUMS.sig/.pem`
+  - Docker SBOM artifact: `sbom-docker.spdx.json.sig/.pem`
+  - Container image signatures + SBOM attestation are published to the registry (OCI referrers).
 
 ## CI Recommendations
 
@@ -167,3 +171,37 @@ Tune policy limits (`max_files`, `max_bytes`, timeout) and avoid scanning giant 
 
 ### Non-deterministic results from optional AI assist
 Keep AI assist off in strict deterministic CI paths, or pin provider/model and document expected behavior.
+
+### Verify release signatures/attestations
+Use `cosign` to verify release artifacts and container provenance:
+
+```bash
+# Verify signed Python SBOM blob
+cosign verify-blob \
+  --certificate dist/sbom-python.cdx.json.pem \
+  --signature dist/sbom-python.cdx.json.sig \
+  --certificate-identity-regexp "https://github.com/.+" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  dist/sbom-python.cdx.json
+
+# Verify signed checksum file blob
+cosign verify-blob \
+  --certificate dist/SHA256SUMS.pem \
+  --signature dist/SHA256SUMS.sig \
+  --certificate-identity-regexp "https://github.com/.+" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  dist/SHA256SUMS
+
+# Verify signed container image
+cosign verify \
+  --certificate-identity-regexp "https://github.com/.+" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  kurtpayne/skillscan-security:vX.Y.Z
+
+# Verify SBOM attestation on container image
+cosign verify-attestation \
+  --type spdxjson \
+  --certificate-identity-regexp "https://github.com/.+" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+  kurtpayne/skillscan-security:vX.Y.Z
+```
