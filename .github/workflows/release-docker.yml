@@ -66,6 +66,7 @@ jobs:
           image: ${{ secrets.DOCKERHUB_USERNAME }}/skillscan:${{ github.ref_name }}
           format: spdx-json
           output-file: sbom-docker.spdx.json
+          upload-release-assets: false
 
       - name: Validate Docker SBOM
         run: python scripts/validate_sbom.py --spdx sbom-docker.spdx.json
