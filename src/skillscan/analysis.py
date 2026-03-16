@@ -506,7 +506,7 @@ def _merge_user_intel(ioc_db: IOCDB, vuln_db: VulnDB) -> tuple[IOCDB, VulnDB, li
             continue
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
-        except Exception:
+        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
             continue
         if source.kind == "ioc" and isinstance(payload, dict):
             for key in ("domains", "ips", "urls", "cidrs"):

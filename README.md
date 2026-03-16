@@ -34,6 +34,14 @@ Default policy is `strict`.
 14. Default-on local semantic prompt-injection classifier (`PINJ-SEM-001`, NLTK/classical features, no external API).
 15. Optional AI semantic checks for nuanced instruction-layer risks (`--ai-assist`).
 
+## Distribution Status
+
+- Source/dev install: supported now
+- PyPI install (`pip install skillscan`): supported via tag releases (`vX.Y.Z`)
+- Docker image (`kurtpayne/skillscan`): supported via tag releases (`vX.Y.Z` + `latest`)
+
+Release process and prerequisites: `docs/RELEASE_CHECKLIST.md` and `docs/RELEASE_ONBOARDING.md`.
+
 ## Install
 
 ### Option A: convenience installer (curl|bash)
@@ -328,6 +336,9 @@ Shell script uninstall is also provided at `scripts/uninstall.sh`.
 - Rules and scoring: `docs/RULES.md`
 - AI assist: `docs/AI_ASSIST.md`
 - Comprehensive examples: `docs/EXAMPLES.md`
+- Distribution: `docs/DISTRIBUTION.md`
+- Release onboarding: `docs/RELEASE_ONBOARDING.md`
+- Release checklist: `docs/RELEASE_CHECKLIST.md`
 
 ## License
 

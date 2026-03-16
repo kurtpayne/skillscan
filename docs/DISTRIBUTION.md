@@ -7,7 +7,7 @@ This document describes supported ways to install and operate SkillScan in local
 | Path | Best for | Command |
 |---|---|---|
 | PyPI | End users / CI | `pip install skillscan` |
-| Docker | Reproducible CI, isolated runtime | `docker run --rm -v "$PWD:/work" <image> scan /work` |
+| Docker | Reproducible CI, isolated runtime | `docker run --rm -v "$PWD:/work" kurtpayne/skillscan:<tag> scan /work` |
 | Source/dev | Contributors | `pip install -e '.[dev]'` |
 | Convenience script | Quick local bootstrap | `curl -fsSL .../scripts/install.sh \| bash` |
 
@@ -49,6 +49,8 @@ pip install skillscan
 skillscan version
 ```
 
+Published by: `kurtpayne` (PyPI trusted publishing from `kurtpayne/skillscan`).
+
 Pin a specific version in CI:
 
 ```bash
@@ -60,11 +62,11 @@ pip install "skillscan==X.Y.Z"
 ## Docker Usage
 
 ```bash
-docker run --rm -v "$PWD:/work" <image>:<tag> skillscan scan /work --fail-on never
+docker run --rm -v "$PWD:/work" kurtpayne/skillscan:<tag> scan /work --fail-on never
 ```
 
 Expected tags:
-- `<tag>` = semver release
+- `<tag>` = `vX.Y.Z`
 - `latest` = latest stable release
 
 ---
@@ -125,10 +127,14 @@ See also: `docs/RELEASE_ONBOARDING.md` for first-time account and publisher setu
 
 - PyPI publish runs on `v*` tags via `.github/workflows/release-pypi.yml`.
 - Docker multi-arch publish runs on `v*` tags via `.github/workflows/release-docker.yml`.
+- Both release workflows validate that tag `vX.Y.Z` matches `project.version` in `pyproject.toml`.
 - Required GitHub secrets for Docker publish:
   - `DOCKERHUB_USERNAME`
   - `DOCKERHUB_TOKEN`
 - PyPI publish is configured for trusted publishing (`id-token: write`) with environment `pypi`.
+- Release artifacts include SBOMs:
+  - Python dependencies: `sbom-python.cdx.json` (CycloneDX)
+  - Docker image: `sbom-docker.spdx.json` (SPDX JSON)
 
 ## CI Recommendations
 

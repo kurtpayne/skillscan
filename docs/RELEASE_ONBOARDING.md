@@ -2,22 +2,28 @@
 
 Use this once to complete external account setup before first tagged release.
 
+## Canonical publish targets
+
+- PyPI package: `skillscan`
+- Docker image: `kurtpayne/skillscan`
+
 ## 1) Docker Hub
 
-1. Create/login Docker Hub account/org.
-2. Create repository: `skillscan`.
-3. Create access token with push scope.
+1. Sign in to Docker Hub account `kurtpayne`.
+2. Create repository: `skillscan` (public).
+3. Create an access token with read/write scope.
 4. Add GitHub repo secrets:
-   - `DOCKERHUB_USERNAME`
-   - `DOCKERHUB_TOKEN`
+   - `DOCKERHUB_USERNAME` = `kurtpayne`
+   - `DOCKERHUB_TOKEN` = `<dockerhub-access-token>`
 
 ## 2) PyPI Trusted Publishing
 
-1. Create/login PyPI account.
-2. Configure Trusted Publisher for repo `kurtpayne/skillscan`:
+1. Sign in to PyPI account `kurtpayne`.
+2. Create the project if needed (first publish can create it).
+3. Configure Trusted Publisher for repo `kurtpayne/skillscan`:
    - Workflow: `.github/workflows/release-pypi.yml`
    - Environment: `pypi`
-3. (Recommended) Repeat on TestPyPI first for dry run.
+4. (Recommended) Repeat on TestPyPI first for dry run.
 
 ## 3) First release procedure
 
@@ -31,7 +37,10 @@ Use this once to complete external account setup before first tagged release.
    - `Release Docker`
 5. Validate installs:
    - `pip install skillscan==X.Y.Z`
-   - `docker pull <docker-user>/skillscan:vX.Y.Z`
+   - `docker pull kurtpayne/skillscan:vX.Y.Z`
+6. Verify SBOM artifacts were generated and uploaded:
+   - Python: `sbom-python.cdx.json`
+   - Docker: `sbom-docker.spdx.json`
 
 ## 4) Rollback
 

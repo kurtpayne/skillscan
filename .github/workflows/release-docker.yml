@@ -14,6 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate tag matches project version
+        run: |
+          PROJECT_VERSION=$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          data = tomllib.loads(Path('pyproject.toml').read_text())
+          print(data['project']['version'])
+          PY
+          )
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PROJECT_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag/version mismatch: tag=$TAG_VERSION pyproject=$PROJECT_VERSION"
+            exit 1
+          fi
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -36,6 +51,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build and push multi-arch image
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -43,3 +59,16 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate Docker image SBOM (SPDX JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/skillscan:${{ github.ref_name }}
+          format: spdx-json
+          output-file: sbom-docker.spdx.json
+
+      - name: Upload Docker SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-sbom
+          path: sbom-docker.spdx.json
