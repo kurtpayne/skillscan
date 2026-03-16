@@ -43,6 +43,10 @@ Default policy is `strict`.
 
 Release process and prerequisites: `docs/RELEASE_CHECKLIST.md` and `docs/RELEASE_ONBOARDING.md`.
 
+SBOMs:
+- Python CycloneDX SBOM is included in release artifacts (`sbom-python.cdx.json`).
+- Docker SPDX SBOM is uploaded as a GitHub Actions artifact in `Release Docker` runs (`sbom-docker.spdx.json`).
+
 ## Install
 
 ### Option A: convenience installer (curl|bash)
@@ -341,6 +345,7 @@ Shell script uninstall is also provided at `scripts/uninstall.sh`.
 - Distribution: `docs/DISTRIBUTION.md`
 - Release onboarding: `docs/RELEASE_ONBOARDING.md`
 - Release checklist: `docs/RELEASE_CHECKLIST.md`
+- Release verification (v0.2.3): `docs/RELEASE_VERIFICATION_0.2.3.md`
 
 ## License
 
