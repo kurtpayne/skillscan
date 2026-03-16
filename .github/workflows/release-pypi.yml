@@ -23,13 +23,34 @@ jobs:
       - name: Install build + dev deps
         run: |
           python -m pip install --upgrade pip
-          pip install -e '.[dev]' build
+          pip install -e '.[dev]' build cyclonedx-bom
+
+      - name: Validate tag matches project version
+        run: |
+          PROJECT_VERSION=$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          data = tomllib.loads(Path('pyproject.toml').read_text())
+          print(data['project']['version'])
+          PY
+          )
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PROJECT_VERSION" != "$TAG_VERSION" ]; then
+            echo "Tag/version mismatch: tag=$TAG_VERSION pyproject=$PROJECT_VERSION"
+            exit 1
+          fi
 
       - name: Run tests
         run: pytest -q
 
       - name: Build sdist + wheel
         run: python -m build
+
+      - name: Generate Python dependency SBOM (CycloneDX)
+        run: cyclonedx-py environment --of JSON --output-file dist/sbom-python.cdx.json
+
+      - name: Validate Python SBOM
+        run: python scripts/validate_sbom.py --cyclonedx dist/sbom-python.cdx.json
 
       - name: Smoke install from built wheel
         run: |
@@ -44,11 +65,21 @@ jobs:
           cd dist
           sha256sum * > SHA256SUMS
 
-      - name: Upload dist artifacts
+      - name: Upload package artifacts
         uses: actions/upload-artifact@v4
         with:
           name: python-dist
-          path: dist/
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+
+      - name: Upload release support artifacts (checksums + SBOM)
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-release-support
+          path: |
+            dist/SHA256SUMS
+            dist/sbom-python.cdx.json
 
   publish:
     needs: build-and-test
@@ -57,7 +88,7 @@ jobs:
       name: pypi
       url: https://pypi.org/p/skillscan
     steps:
-      - name: Download dist artifacts
+      - name: Download package artifacts
         uses: actions/download-artifact@v4
         with:
           name: python-dist
@@ -72,10 +103,16 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     steps:
-      - name: Download dist artifacts
+      - name: Download package artifacts
         uses: actions/download-artifact@v4
         with:
           name: python-dist
+          path: dist/
+
+      - name: Download release support artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-release-support
           path: dist/
 
       - name: Create GitHub release
