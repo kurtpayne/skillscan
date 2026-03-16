@@ -307,6 +307,7 @@ Or run via Makefile:
 
 ```bash
 make check
+make verify-release
 ```
 
 ## Uninstall
