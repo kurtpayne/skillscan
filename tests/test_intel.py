@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from skillscan.analysis import _merge_user_intel
 from skillscan.intel import (
     IntelSource,
     IntelStore,
@@ -84,3 +85,20 @@ def test_upsert_and_clear_runtime(monkeypatch, tmp_path: Path) -> None:
 
     clear_runtime(keep_data=False)
     assert not data_dir().exists()
+
+
+def test_merge_user_intel_ignores_unreadable_source(monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setenv("SKILLSCAN_HOME", str(tmp_path / ".skillscan"))
+
+    unreadable_path = tmp_path / "not-a-json-file"
+    unreadable_path.mkdir()
+    upsert_source("broken", "ioc", unreadable_path, enabled=True)
+
+    ioc_db: dict[str, list[str]] = {"domains": [], "ips": [], "urls": [], "cidrs": []}
+    vuln_db: dict[str, dict[str, dict[str, object]]] = {}
+
+    merged_ioc_db, merged_vuln_db, sources = _merge_user_intel(ioc_db, vuln_db)
+
+    assert merged_ioc_db == ioc_db
+    assert merged_vuln_db == vuln_db
+    assert "user:broken" not in sources
