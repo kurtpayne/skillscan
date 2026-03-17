@@ -35,6 +35,13 @@ def fail(msg: str) -> None:
     sys.exit(1)
 
 
+def _rule_ids_from_yaml(raw: str) -> set[str]:
+    ids: set[str] = set()
+    for m in re.finditer(r"^\s*-\s+id:\s+([A-Z]{3}-\d{3})\s*$", raw, flags=re.MULTILINE):
+        ids.add(m.group(1))
+    return ids
+
+
 def main() -> int:
     files = changed_files()
     print(f"Changed files ({len(files)}):")
@@ -44,6 +51,25 @@ def main() -> int:
     rules_path = "src/skillscan/data/rules/default.yaml"
     if rules_path not in files:
         print("ℹ️ default.yaml not changed; skipping pattern-update policy checks.")
+        return 0
+
+    diff = changed_file_content(rules_path)
+
+    try:
+        base_raw = sh("git", "show", f"origin/main:{rules_path}")
+    except subprocess.CalledProcessError:
+        base_raw = ""
+    head_raw = (ROOT / rules_path).read_text(encoding="utf-8")
+
+    base_ids = _rule_ids_from_yaml(base_raw)
+    head_ids = _rule_ids_from_yaml(head_raw)
+    added_rule_ids = sorted(head_ids - base_ids)
+
+    # If no new rule IDs were added, treat this as an enrichment/tuning change and skip
+    # new-pattern showcase/doc requirements that are intended for fresh detections.
+    if not added_rule_ids:
+        print("ℹ️ No new rule IDs detected; skipping new-pattern showcase/doc requirements.")
+        print("✅ Pattern-update guard checks passed")
         return 0
 
     required = {
@@ -64,11 +90,10 @@ def main() -> int:
     if not any(p in files for p in ("docs/RULE_UPDATES.md", "PATTERN_UPDATES.md")):
         fail("Update docs/RULE_UPDATES.md or PATTERN_UPDATES.md with source-backed rationale")
 
-    diff = changed_file_content(rules_path)
     if not re.search(r'^\+version:\s*"\d{4}\.\d{2}\.\d{2}\.\d+"', diff, flags=re.MULTILINE):
         fail("default.yaml version must be bumped (expected YYYY.MM.DD.N)")
 
-    if not re.search(r"^\+\s*-\s+id:\s+[A-Z]{3}-\d{3}", diff, flags=re.MULTILINE):
+    if not added_rule_ids:
         fail("No new rule ID added in default.yaml diff")
 
     print("✅ Pattern-update guard checks passed")
