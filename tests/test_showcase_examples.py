@@ -113,6 +113,30 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "OBF-003" for f in findings_70)
     findings_71 = _scan("examples/showcase/71_azure_mcp_resourceid_url_token_leak").findings
     assert any(f.id == "EXF-016" for f in findings_71)
+    findings_72 = _scan("examples/showcase/72_mcp_tool_description_poisoning").findings
+    assert any(f.id == "MAL-025" for f in findings_72)
+    findings_73 = _scan("examples/showcase/73_stealth_instruction_concealment").findings
+    assert any(f.id == "ABU-006" for f in findings_73)
+    findings_74 = _scan("examples/showcase/74_cross_server_mcp_invocation").findings
+    assert any(f.id == "ABU-007" for f in findings_74)
+    findings_75 = _scan("examples/showcase/75_docker_socket_mount").findings
+    assert any(f.id == "MAL-026" for f in findings_75)
+    findings_76 = _scan("examples/showcase/76_privileged_container_execution").findings
+    assert any(f.id == "MAL-027" for f in findings_76)
+    findings_77 = _scan("examples/showcase/77_host_network_manipulation").findings
+    assert any(f.id == "MAL-028" for f in findings_77)
+    findings_78 = _scan("examples/showcase/78_mcp_poison_credential_exfil_chain").findings
+    assert any(f.id == "MAL-025" for f in findings_78)
+    assert any(f.id == "CHN-011" for f in findings_78)
+    findings_79 = _scan("examples/showcase/79_stealth_network_exfil_chain").findings
+    assert any(f.id == "ABU-006" for f in findings_79)
+    assert any(f.id == "CHN-012" for f in findings_79)
+    findings_80 = _scan("examples/showcase/80_container_escape_host_mount_chain").findings
+    assert any(f.id == "MAL-026" for f in findings_80)
+    assert any(f.id == "CHN-013" for f in findings_80)
+    findings_81 = _scan("examples/showcase/81_container_escape_secret_access_chain").findings
+    assert any(f.id == "MAL-027" for f in findings_81) or any(f.id == "MAL-026" for f in findings_81)
+    assert any(f.id == "CHN-014" for f in findings_81)
 
 
 def test_showcase_policy_block_domain() -> None:

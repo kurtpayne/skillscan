@@ -76,7 +76,16 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `69_cloudformation_adminrole_bootstrap` | CloudFormation snippets that combine IAM-creation capabilities (`CAPABILITY_IAM` / `CAPABILITY_NAMED_IAM`) with direct `AdministratorAccess` policy attachment in bootstrap role creation flows | `MAL-024` |
 | `70_pua_eval_obfuscation` | Unicode variation-selector / PUA clusters adjacent to dynamic execution sinks (`eval`, `exec`, `Function`) indicating obfuscation-assisted execution risk | `OBF-003` |
 | `71_azure_mcp_resourceid_url_token_leak` | Azure MCP tool abuse pattern where `resourceId` / `resourceIdentifier` is set to an arbitrary URL and wording indicates managed identity token capture/exfiltration risk | `EXF-016` |
-
+| `72_mcp_tool_description_poisoning` | MCP tool description containing hidden `<IMPORTANT>` instruction block that directs the LLM to read credential files and exfiltrate data, as documented by Invariant Labs | `MAL-025` |
+| `73_stealth_instruction_concealment` | Instructions that direct the agent to conceal actions from the user ("hide these steps", "background telemetry", "do not mention") while performing data collection | `ABU-006` |
+| `74_cross_server_mcp_invocation` | Tool description that instructs the LLM to invoke tools from other MCP servers (whatsapp-mcp, slack-mcp) for cross-server data exfiltration | `ABU-007` |
+| `75_docker_socket_mount` | Container configuration that mounts the Docker socket (`/var/run/docker.sock`), enabling container escape and full host control | `MAL-026` |
+| `76_privileged_container_execution` | Container run with `--privileged`, `--cap-add=SYS_ADMIN`, and disabled AppArmor, combined with sensitive host path mount | `MAL-027`, `CHN-013` |
+| `77_host_network_manipulation` | Skill that modifies `/etc/hosts` and manipulates iptables rules to redirect HTTPS traffic, enabling DNS hijacking and traffic interception | `MAL-028` |
+| `78_mcp_poison_credential_exfil_chain` | MCP tool poisoning combined with credential file access (`~/.aws/credentials`, `~/.ssh/id_rsa`) and network exfiltration — full attack chain | `MAL-025`, `CHN-011` |
+| `79_stealth_network_exfil_chain` | Stealth instruction concealment combined with outbound network upload — covert data exfiltration chain | `ABU-006`, `CHN-012` |
+| `80_container_escape_host_mount_chain` | Privileged container with Docker socket mount and sensitive host path mounts (`/etc/shadow`, `/root/.ssh`, `/proc`) — full container escape chain | `MAL-026`, `CHN-013` |
+| `81_container_escape_secret_access_chain` | Privileged container with AWS credential environment variables and `.env` file access — container escape with credential theft chain | `MAL-027`, `CHN-014` |
 ## Commands
 
 ```bash
