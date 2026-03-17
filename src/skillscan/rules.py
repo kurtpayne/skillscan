@@ -11,6 +11,22 @@ from pydantic import BaseModel, Field
 from skillscan.models import Severity
 
 
+class RuleTechnique(BaseModel):
+    id: str
+    name: str | None = None
+
+
+class RuleMetadata(BaseModel):
+    version: str | None = None
+    status: str | None = None
+    techniques: list[RuleTechnique] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+    applies_to: dict[str, list[str]] = Field(default_factory=dict)
+    lifecycle: dict[str, str | list[str]] = Field(default_factory=dict)
+    quality: dict[str, str | float] = Field(default_factory=dict)
+    references: list[str] = Field(default_factory=list)
+
+
 class StaticRule(BaseModel):
     id: str
     category: str
@@ -19,6 +35,7 @@ class StaticRule(BaseModel):
     title: str
     pattern: str
     mitigation: str | None = None
+    metadata: RuleMetadata | None = None
 
 
 class ChainRule(BaseModel):
