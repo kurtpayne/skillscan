@@ -913,4 +913,9 @@ def test_new_patterns_2026_03_16() -> None:
         )
         is not None
     )
-    assert exf016.pattern.search("resourceId=/subscriptions/abc/resourceGroups/rg/providers/Microsoft") is None
+    assert (
+        exf016.pattern.search(
+            "resourceId=/subscriptions/abc/resourceGroups/rg/providers/Microsoft"
+        )
+        is None
+    )
