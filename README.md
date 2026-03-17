@@ -334,6 +334,20 @@ skillscan uninstall --keep-data
 
 Shell script uninstall is also provided at `scripts/uninstall.sh`.
 
+## CI/CD Integration
+
+SkillScan provides a reusable GitHub Actions workflow for scanning skill artifacts in CI pipelines with native SARIF upload to the GitHub Security tab.
+
+```yaml
+jobs:
+  skillscan:
+    uses: kurtpayne/skillscan-security/.github/workflows/skillscan-scan.yml@main
+    with:
+      scan-path: ./skills
+```
+
+See `docs/GITHUB_ACTIONS.md` for full documentation and examples.
+
 ## Documentation
 
 - PRD: `docs/PRD.md`
@@ -346,6 +360,7 @@ Shell script uninstall is also provided at `scripts/uninstall.sh`.
 - Rules and scoring: `docs/RULES.md`
 - AI assist: `docs/AI_ASSIST.md`
 - Comprehensive examples: `docs/EXAMPLES.md`
+- GitHub Actions integration: `docs/GITHUB_ACTIONS.md`
 - Distribution: `docs/DISTRIBUTION.md`
 - Release onboarding: `docs/RELEASE_ONBOARDING.md`
 - Release checklist: `docs/RELEASE_CHECKLIST.md`
