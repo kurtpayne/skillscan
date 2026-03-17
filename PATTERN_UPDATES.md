@@ -1,3 +1,92 @@
+## 2026-03-17 (1): MCP Attack Patterns, Social Engineering Chains, and Container Escape Rules
+
+**Sources:**
+- [Invariant Labs - MCP Tool Poisoning Attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks)
+- [Invariant Labs - WhatsApp MCP Cross-Server Exploit](https://invariantlabs.ai/blog/whatsapp-mcp-exploited)
+- [OWASP Agentic Top 10 in Practice (Amine Raji)](https://aminrj.com/posts/owasp-agentic-top-10-in-practice/)
+- [Unit 42 - Container Escape Techniques](https://unit42.paloaltonetworks.com/container-escape-techniques/)
+- [Red Canary - Container Escape Detection](https://redcanary.com/threat-detection-report/techniques/container-escapes/)
+
+**Event Summary:** Multiple documented attack patterns targeting MCP-based agent systems and containerized AI workloads have emerged in early 2026. Invariant Labs demonstrated tool description poisoning via hidden `<IMPORTANT>` instruction blocks, cross-server tool invocation attacks exploiting MCP's flat namespace, and rug-pull attacks where server behavior mutates after initial approval. Separately, container escape techniques combining privileged execution with host path mounts and Docker socket access continue to be exploited in CI/CD environments. This update adds 10 new rules (6 static, 4 chain) across three categories.
+
+**New Patterns Added:**
+
+### MAL-025: MCP tool description poisoning via hidden instruction block
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.92
+- **Pattern:** Detects `<IMPORTANT>` tags containing action verbs (read, access, send, exfil, forward, upload, post) in tool descriptions.
+- **Justification:** Direct detection of the canonical MCP tool poisoning attack documented by Invariant Labs. The `<IMPORTANT>` block pattern is the primary vector for embedding hidden instructions in tool descriptions.
+
+### ABU-006: Stealth instruction concealment from user
+- **Category:** instruction_abuse
+- **Severity:** high
+- **Confidence:** 0.88
+- **Pattern:** Detects phrases that instruct the agent to hide actions from the user ("do not mention", "hide this step", "background telemetry", "don't let the user see").
+- **Justification:** Core social engineering technique observed in all three documented MCP attacks. The attacker instructs the LLM to conceal malicious operations from the human operator.
+
+### ABU-007: Cross-server MCP tool invocation instruction
+- **Category:** instruction_abuse
+- **Severity:** high
+- **Confidence:** 0.86
+- **Pattern:** Detects instructions that reference tools from named MCP servers (whatsapp-mcp, slack-mcp, github-mcp, etc.) in a cross-invocation context.
+- **Justification:** Directly targets the cross-server poisoning attack where a malicious server's tool description instructs the LLM to call tools from other connected servers.
+
+### MAL-026: Docker socket mount or access pattern
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.90
+- **Pattern:** Detects Docker socket mount patterns (`docker.sock`, `-v /var/run/docker.sock`).
+- **Justification:** Docker socket access from within a container provides full control over the Docker daemon and enables container escape to the host.
+
+### MAL-027: Privileged container execution or dangerous capability grant
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.87
+- **Pattern:** Detects `--privileged`, `--cap-add=ALL/SYS_ADMIN/SYS_PTRACE/NET_ADMIN`, and disabled security profiles.
+- **Justification:** Privileged containers have unrestricted access to host devices and kernel capabilities, enabling full host compromise.
+
+### MAL-028: Host network infrastructure manipulation
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects writes to `/etc/hosts` and `/etc/resolv.conf`, iptables rule manipulation, and IP route changes.
+- **Justification:** Network infrastructure modification enables DNS hijacking, traffic interception, and man-in-the-middle attacks from within a skill.
+
+### CHN-011: MCP tool poisoning with credential exfiltration chain
+- **Category:** exfiltration
+- **Severity:** critical
+- **Confidence:** 0.93
+- **Chain:** mcp_tool_poison + secret_access
+- **Justification:** Combines the tool poisoning vector with credential file access, matching the full Invariant Labs attack chain.
+
+### CHN-012: Stealth concealment with network exfiltration chain
+- **Category:** exfiltration
+- **Severity:** critical
+- **Confidence:** 0.91
+- **Chain:** stealth_conceal + network
+- **Justification:** Detects the combination of user-concealment instructions with outbound network activity, indicating covert data exfiltration.
+
+### CHN-013: Container escape with host path mount chain
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.92
+- **Chain:** container_escape + host_path_mount
+- **Justification:** Privileged container execution combined with sensitive host path mounts enables full host filesystem compromise.
+
+### CHN-014: Container escape with secret access chain
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.90
+- **Chain:** container_escape + secret_access
+- **Justification:** Privileged container access combined with credential harvesting enables host credential theft via container breakout.
+
+**Version:** Rules updated from 2026.03.17.1 to 2026.03.17.2
+
+**Testing:** Added coverage in `tests/test_showcase_examples.py` and fixtures `examples/showcase/72_mcp_tool_description_poisoning` through `examples/showcase/81_container_escape_secret_access_chain`.
+
+---
+
 ## 2026-03-15 (1): CloudFormation Admin-Role Bootstrap Marker via CAPABILITY_IAM
 
 **Sources:**

@@ -1,4 +1,4 @@
-version: 2026.03.17.1
+version: 2026.03.17.2
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -1652,6 +1652,186 @@ static_rules:
       benchmark_set: core-static-v1
     references:
     - https://docs.openclaw.ai
+- id: MAL-025
+  category: malware_pattern
+  severity: critical
+  confidence: 0.92
+  title: MCP tool description poisoning via hidden instruction block
+  pattern: (?is)<IMPORTANT>[\s\S]{0,2000}(?:read|access|send|exfil|forward|upload|post)[\s\S]{0,500}</IMPORTANT>
+  mitigation: Reject MCP tool descriptions containing hidden instruction blocks (<IMPORTANT> tags). Tool descriptions should
+    contain only documentation, not executable instructions for the LLM.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-025
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    - mcp
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks
+- id: ABU-006
+  category: instruction_abuse
+  severity: high
+  confidence: 0.88
+  title: Stealth instruction concealment from user
+  pattern: (?i)(?:do not (?:mention|tell|reveal|show|display|inform)|hide (?:this|these|the above) (?:step|action|instruction|operation)|(?:this is|these are) background (?:telemetry|operation|process)|(?:don't|do not) (?:let|allow) the user (?:see|know|notice))
+  mitigation: Remove instructions that direct the agent to conceal actions from the user. All agent operations should be
+    transparent and auditable.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: ABUSE-006
+      name: Instruction abuse behavior
+    tags:
+    - instruction_abuse
+    - abu
+    - mcp
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks
+- id: ABU-007
+  category: instruction_abuse
+  severity: high
+  confidence: 0.86
+  title: Cross-server MCP tool invocation instruction
+  pattern: (?i)(?:call|invoke|use|execute|run)\s+(?:the\s+)?(?:\w+_mcp|\w+-mcp)\s*(?:server)?(?:'s)?\s+(?:\w+)\s*\(|(?:from|via|using)\s+(?:the\s+)?(?:whatsapp|slack|github|filesystem|docker|email|gmail|outlook)[-_]?(?:mcp)?\s+(?:server|tool)
+  mitigation: Reject tool descriptions that instruct the LLM to invoke tools from other MCP servers. Each server should
+    only reference its own tools.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: ABUSE-007
+      name: Instruction abuse behavior
+    tags:
+    - instruction_abuse
+    - abu
+    - mcp
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.86
+      benchmark_set: core-static-v1
+    references:
+    - https://invariantlabs.ai/blog/whatsapp-mcp-exploited
+- id: MAL-026
+  category: malware_pattern
+  severity: critical
+  confidence: 0.90
+  title: Docker socket mount or access pattern
+  pattern: (?i)(?:docker\.sock|/var/run/docker\.sock|--mount[^\n]{0,100}docker\.sock|-v\s+[^\s]*docker\.sock)
+  mitigation: Never mount or access the Docker socket from within a skill or agent. Docker socket access provides full
+    control over the host and enables container escape.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-026
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    - container_escape
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://unit42.paloaltonetworks.com/container-escape-techniques/
+- id: MAL-027
+  category: malware_pattern
+  severity: high
+  confidence: 0.87
+  title: Privileged container execution or dangerous capability grant
+  pattern: (?i)(?:--privileged|--cap-add[=\s]+(?:ALL|SYS_ADMIN|SYS_PTRACE|NET_ADMIN|DAC_OVERRIDE)|--security-opt[=\s]+(?:no-new-privileges\s*[:=]\s*false|apparmor\s*[:=]\s*unconfined|seccomp\s*[:=]\s*unconfined))
+  mitigation: Do not run containers with --privileged or dangerous capability grants. Use the minimum required capabilities
+    and enforce seccomp/AppArmor profiles.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-027
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    - container_escape
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.87
+      benchmark_set: core-static-v1
+    references:
+    - https://unit42.paloaltonetworks.com/container-escape-techniques/
+- id: MAL-028
+  category: malware_pattern
+  severity: high
+  confidence: 0.85
+  title: Host network infrastructure manipulation
+  pattern: (?i)(?:(?:>|>>|tee|write|echo)\s*[^\n]{0,60}/etc/(?:hosts|resolv\.conf)|iptables\s+(?:-[AIDRF]|--(?:append|insert|delete|replace|flush))|ip\s+route\s+(?:add|del|replace|change)|\bip6?tables\b[^\n]{0,100}(?:DNAT|SNAT|MASQUERADE|REDIRECT))
+  mitigation: Do not modify host network configuration files (/etc/hosts, /etc/resolv.conf) or firewall rules from within
+    a skill. These operations can enable DNS hijacking and traffic interception.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-028
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    - container_escape
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://redcanary.com/threat-detection-report/techniques/container-escapes/
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
@@ -1668,6 +1848,10 @@ action_patterns:
   security_disable: disable (security|defender|av|antivirus)|turn off (security|defender|av|antivirus)
   claude_hooks_marker: (?i)"hooks"\s*:\s*\{|"(?:PreToolUse|PostToolUse|UserPromptSubmit|SessionStart)"
   hook_shell_command_field: (?i)"command"\s*:\s*"(?:bash|sh|zsh|powershell|pwsh|cmd(?:\.exe)?|python3?\s+-c|node\s+-e)[^"\n]{0,240}"
+  mcp_tool_poison: (?i)(?s:<IMPORTANT>[\s\S]{0,2000}</IMPORTANT>)|(?:do not mention|hide this|background telemetry)[^\n]{0,120}(?:read|access|send|exfil|forward)
+  stealth_conceal: (?i)(?:do not (?:mention|tell|reveal|show)|hide (?:this|these|the above) (?:step|action)|(?:this is|these are) background (?:telemetry|operation))
+  container_escape: (?i)(?:docker\.sock|--privileged|--cap-add[=\s]+(?:ALL|SYS_ADMIN)|nsenter\s+|chroot\s+/host)
+  host_path_mount: (?i)(?:-v\s+/(?:etc|root|home|var/run|proc|sys)[:/]|--mount[^\n]{0,100}(?:type=bind|source=/(?:etc|root|home|proc|sys)))
 chain_rules:
 - id: CHN-001
   category: malware_pattern
@@ -1775,6 +1959,50 @@ chain_rules:
   snippet: pull_request_target + branch/ref metadata interpolation marker detected
   mitigation: Do not combine `pull_request_target` with direct shell/script interpolation of PR branch/ref values. Quote safely,
     avoid shell evaluation, and run untrusted PR data in unprivileged workflows.
+- id: CHN-011
+  category: exfiltration
+  severity: critical
+  confidence: 0.93
+  title: MCP tool poisoning with credential exfiltration chain
+  all_of:
+  - mcp_tool_poison
+  - secret_access
+  snippet: MCP tool description poisoning + credential/secret access markers detected
+  mitigation: Reject MCP tool descriptions that contain hidden instruction blocks combined with credential access patterns.
+    This is a documented tool-poisoning exfiltration attack.
+- id: CHN-012
+  category: exfiltration
+  severity: critical
+  confidence: 0.91
+  title: Stealth concealment with network exfiltration chain
+  all_of:
+  - stealth_conceal
+  - network
+  snippet: stealth instruction concealment + outbound network markers detected
+  mitigation: Remove instructions that conceal agent actions from the user while performing network operations. This pattern
+    indicates covert data exfiltration.
+- id: CHN-013
+  category: malware_pattern
+  severity: critical
+  confidence: 0.92
+  title: Container escape with host path mount chain
+  all_of:
+  - container_escape
+  - host_path_mount
+  snippet: container escape mechanism + sensitive host path mount detected
+  mitigation: Do not combine privileged container execution with sensitive host path mounts. This enables full host compromise
+    from within a container.
+- id: CHN-014
+  category: malware_pattern
+  severity: critical
+  confidence: 0.90
+  title: Container escape with secret access chain
+  all_of:
+  - container_escape
+  - secret_access
+  snippet: container escape mechanism + credential/secret access markers detected
+  mitigation: Do not combine privileged container access with credential harvesting. This enables host credential theft
+    via container breakout.
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b
