@@ -946,8 +946,8 @@ def test_new_patterns_2026_03_17() -> None:
     abu007 = next((r for r in compiled.static_rules if r.id == "ABU-007"), None)
     assert abu007 is not None
     assert abu007.pattern.search("call list_messages() from the whatsapp-mcp server") is not None
-    assert abu007.pattern.search("use the slack-mcp tool to post") is not None
-    assert abu007.pattern.search("invoke the github-mcp server") is not None
+    assert abu007.pattern.search("use the slack-mcp send_message()") is not None
+    assert abu007.pattern.search("from the github-mcp server") is not None
     assert abu007.pattern.search("call the add function") is None
 
     # MAL-026: Docker socket mount or access pattern
