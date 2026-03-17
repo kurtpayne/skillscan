@@ -86,6 +86,7 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `79_stealth_network_exfil_chain` | Stealth instruction concealment combined with outbound network upload — covert data exfiltration chain | `ABU-006`, `CHN-012` |
 | `80_container_escape_host_mount_chain` | Privileged container with Docker socket mount and sensitive host path mounts (`/etc/shadow`, `/root/.ssh`, `/proc`) — full container escape chain | `MAL-026`, `CHN-013` |
 | `81_container_escape_secret_access_chain` | Privileged container with AWS credential environment variables and `.env` file access — container escape with credential theft chain | `MAL-027`, `CHN-014` |
+| `82_solana_rpc_c2_resolution` | Solana blockchain RPC `getSignaturesForAddress` transaction-memo lookup used as dead-drop C2 channel to resolve and execute remote payloads (GlassWorm Wave 5) | `MAL-029` |
 ## Commands
 
 ```bash

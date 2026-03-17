@@ -972,3 +972,29 @@ def test_new_patterns_2026_03_17() -> None:
     assert mal028.pattern.search("iptables -A PREROUTING -t nat -p tcp") is not None
     assert mal028.pattern.search("ip route add 10.0.0.0/8 via 192.168.1.1") is not None
     assert mal028.pattern.search("ping 8.8.8.8") is None
+
+
+def test_new_patterns_2026_03_17_patch2() -> None:
+    """Test Solana RPC blockchain C2 resolution marker from GlassWorm Wave 5 reporting."""
+    compiled = load_compiled_builtin_rulepack()
+
+    mal029 = next((r for r in compiled.static_rules if r.id == "MAL-029"), None)
+    assert mal029 is not None
+    assert (
+        mal029.pattern.search(
+            "const sigs = await conn.getSignaturesForAddress(addr, { limit: 1 });"
+        )
+        is not None
+    )
+    assert (
+        mal029.pattern.search(
+            "const sigs = await conn.getConfirmedSignaturesForAddress2(addr);"
+        )
+        is not None
+    )
+    assert (
+        mal029.pattern.search(
+            "const balance = await conn.getBalance(addr);"
+        )
+        is None
+    )
