@@ -146,3 +146,17 @@ skillscan rule list --tag exfiltration
 ```
 
 This metadata is additive and backward-compatible: existing rules continue to function unchanged even if they do not yet define metadata.
+
+### Technique ID naming convention
+
+Technique IDs should use a stable uppercase prefix and a 3-digit suffix:
+
+- `EXFIL-001`, `EXFIL-016`
+- `EVASION-001`, `EXEC-004`
+- `SUPPLY-002`, `ABUSE-005`
+
+Format guidance: `^[A-Z][A-Z0-9_-]*-\d{3}$`
+
+Keep rule IDs and technique IDs separate:
+- Rule ID = detector implementation identity (for example `OBF-003`)
+- Technique ID = taxonomy identity (for example `EVASION-003`)
