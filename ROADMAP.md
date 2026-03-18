@@ -1,254 +1,224 @@
-# SkillScan Roadmap (Beyond Pattern Adds)
+# SkillScan Security — Roadmap
 
-This roadmap focuses on product value beyond adding more static rules.
-
-## North Star
-
-Make SkillScan the easiest and most trusted way to gate AI-skill/tool risk in local dev and CI:
-
-- **Fast to adopt** (`pip` + Docker + CI templates)
-- **Actionable outputs** (explainability, low-noise scoring)
-- **Broader coverage** (content + artifacts + workflow abuse)
-- **Operationally reliable** (versioned releases, compatibility guarantees)
+*Last updated: March 2026. Reflects a full codebase audit conducted at v0.3.1.*
 
 ---
 
-## Milestone 0 — Foundation & Packaging (2 weeks)
+## Current State (v0.3.1)
 
-### Epic A: Distribution Hardening
+The scanner is a functioning, well-structured Python CLI with a clean separation between the detection engine, rule data, and output layer. The core architecture is sound and the test suite (30 test files, ~5,500 lines) covers the main detection paths well. The following is an honest accounting of where things stand.
 
-#### Issue A1 — PyPI publishing pipeline
-- Add automated release on git tag.
-- Build/test wheels in CI.
-- Sign artifacts (or provide checksums + provenance notes).
+**What works well.** The static rule engine is reliable and deterministic. The instruction hardening pipeline (Unicode normalization, zero-width stripping, bounded base64 decode) handles the most common obfuscation vectors. The policy engine is flexible and the three built-in profiles cover the main operator personas. The SARIF/JUnit/JSON output formats are complete and CI-ready. The corpus pipeline and Modal-based fine-tune workflow are operational. Ruff, mypy, and the adversarial regression suite all pass cleanly.
 
-**Acceptance criteria**
-- `pip install skillscan-security` works on Linux/macOS.
-- Tagged release publishes package and release notes.
-- Install time from clean machine < 5 minutes.
+**Honest gaps.** The IOC and vulnerability databases are extremely thin: 11 domains, 7 IPs, 0 CIDRs, 3 URLs in the IOC DB; 2 Python packages and 2 npm packages in the vuln DB. These numbers make the intel layer largely decorative at present. The ML corpus is at 115 examples (54 benign / 61 injection) — the fine-tuned adapter exists and runs, but the training set is too small to trust the model's precision on out-of-distribution inputs. The `docs/DETECTION_MODEL.md` referenced in Milestone 4 does not exist yet. The VS Code extension scaffold is present but unpublished. The `window_lines` proximity constraint for chain rules is not implemented. PINJ-GRAPH-004 (cross-skill tool escalation) is referenced in docs but not implemented.
 
-#### Issue A2 — DockerHub multi-arch image
-- Build `linux/amd64` and `linux/arm64` images.
-- Keep image minimal (slim/distroless where feasible).
-- Add documented bind-mount scan examples.
-
-**Acceptance criteria**
-- `docker run ... skillscan-security scan /work` works on both arches.
-- Published tags map to app versions.
-- Startup + first scan docs validated in CI smoke job.
-
-#### Issue A3 — Distribution docs refresh
-- Add dedicated `docs/DISTRIBUTION.md`.
-- Include install matrix (`pip`, `docker`, source).
-- Add upgrade + rollback guidance.
-
-**Acceptance criteria**
-- New user can choose an install path in < 2 minutes.
-- Docs include copy-paste commands for all supported paths.
+| Area | Status |
+|---|---|
+| Static rule engine | Solid — 69 static + 15 chain rules across 3 packs |
+| Chain rule evaluation | Works, but no proximity constraint (whole-document match) |
+| Instruction hardening | Complete |
+| Policy engine | Complete — 3 profiles + custom YAML |
+| IOC database | Thin — 21 entries total |
+| Vuln database | Thin — 4 package/version entries |
+| ML detection | Operational but undertrained (115 examples) |
+| Skill graph detector | 3 of 4 planned rules implemented |
+| AI assist | Works — Anthropic/OpenAI/Ollama providers |
+| SARIF / JUnit / JSON output | Complete |
+| VS Code extension | Scaffolded, not published |
+| Pre-commit hook | Published (`skillscan-security>=0.3.1`) |
+| Docker image | Published (`kurtpayne/skillscan-security:v0.3.1`) |
+| PyPI package | Published (`skillscan-security==0.3.1`) |
+| Homebrew formula | Scaffolded, not submitted to homebrew-core |
+| `docs/DETECTION_MODEL.md` | Does not exist |
+| Test coverage | Good on core paths; ML, remote, and ClamAV tests use mocks |
 
 ---
 
-## Milestone 1 — CI Adoption & Explainability (2–3 weeks)
+## Milestone 5 — Intel & Vuln DB Depth (1 week)
 
-### Epic B: CI-Native Integrations
+The intel layer is the most visibly thin part of the project. A scanner that finds 11 IOC domains looks like a demo, not a tool. This milestone makes the bundled data credible.
 
-#### Issue B1 — SARIF export
-- Add `--format sarif` output.
-- Map rule IDs/severity/confidence to SARIF schema.
+### Issue H1 — Expand IOC database to a defensible baseline
 
-**Acceptance criteria**
-- SARIF validates and uploads in GitHub code scanning.
-- Findings preserve stable IDs and source locations.
+The current IOC DB has 11 domains and 7 IPs. The target is 150+ domains, 50+ IPs, and 10+ CIDRs sourced from public threat intelligence feeds (abuse.ch URLhaus, PhishTank, OpenPhish, Feodo Tracker, and the existing GlassWorm/PylangGhost campaign data). The automated `signature-update` agent (runs twice daily) should be the primary growth mechanism going forward, but the initial seeding should be done manually to establish a credible baseline.
 
-#### Issue B2 — JUnit/compact CI output
-- Add JUnit-compatible summary mode.
-- Add compact non-interactive terminal mode for CI logs.
+**Acceptance criteria:** IOC DB contains ≥150 domains, ≥50 IPs, ≥10 CIDRs. All entries have a `source` and `added` field. The `ioc_db.json` schema is extended to support per-entry provenance.
 
-**Acceptance criteria**
-- CI can fail on configured thresholds with concise output.
-- JUnit report consumable by common CI dashboards.
+### Issue H2 — Expand vulnerability database to cover the top MCP ecosystem packages
 
-### Epic C: Explainability & Triage UX
+The vuln DB covers 2 Python packages and 2 npm packages. The target is coverage of the 20 most-installed MCP-adjacent packages in both ecosystems, sourced from OSV.dev and the GitHub Advisory Database. The `@awslabs/aws-api-mcp-server` CVE-2026-4270 entry already exists — this milestone adds the surrounding ecosystem.
 
-#### Issue C1 — Finding narratives
-- Add “why fired” + “likely impact” + “next action” per finding.
-- Group related findings into a chain narrative where applicable.
+**Acceptance criteria:** Vuln DB covers ≥20 packages across Python and npm. Each entry includes CVE/GHSA ID, affected version range, fixed version, and CVSS score. A CI step validates that all vuln DB entries have a corresponding CVE/GHSA reference.
 
-**Acceptance criteria**
-- Top findings show root-cause context without reading raw regex.
-- At least 3 chain examples produce grouped explanations.
+### Issue H3 — Automated IOC/vuln DB update agent (twice-daily)
 
-#### Issue C2 — Confidence labels
-- Add confidence bands (`experimental`, `medium`, `high`).
-- Include confidence guidance in docs.
+The `signature-update` agent should run on a schedule (twice daily) and update `ioc_db.json` and `vuln_db.json` from the configured public feeds. It should open a PR with a diff summary rather than committing directly to main, so the pattern-update-guard workflow can validate hygiene before merge.
 
-**Acceptance criteria**
-- Reports consistently render confidence bands.
-- Policy supports optional confidence minimum for blocking.
+**Acceptance criteria:** Agent runs on schedule. PRs include a structured diff summary (entries added/removed/changed). The pattern-update-guard workflow validates the PR before merge.
 
 ---
 
-## Milestone 2 — Detection Breadth (3–4 weeks)
-
-### Epic D: Prompt-Injection Semantic Assist (Hybrid)
-
-#### Issue D1 — Non-blocking semantic pass
-- Add optional NLP/LLM-assisted prompt-injection classifier.
-- Keep deterministic rules as primary; semantic findings additive.
-
-**Acceptance criteria**
-- Semantic mode is opt-in and clearly labeled.
-- Reports include evidence snippets, not opaque verdicts.
-- No default hard-blocks from semantic-only findings.
-
-#### Issue D2 — Evaluation harness
-- Build benchmark set for injection/abuse examples.
-- Track precision/recall drift across releases.
-
-**Acceptance criteria**
-- Benchmark command exists and runs in CI nightly.
-- Regression threshold alerts on quality degradation.
-
-### Epic E: Artifact Scanning Adapters
-
-#### Issue E1 — ClamAV optional adapter
-- Add optional ClamAV scan stage for extracted artifacts.
-- Merge ClamAV indicators into SkillScan report model.
-
-**Acceptance criteria**
-- Adapter can be toggled on/off by CLI flag.
-- Missing ClamAV fails gracefully with explicit guidance.
-- Findings map to distinct category (`artifact_malware` or similar).
-
-#### Issue E2 — File-type aware scanning policy
-- Add policy knobs for binary scanning scope/limits.
-- Improve archive traversal and artifact-type classification.
-
-**Acceptance criteria**
-- Users can tune binary scan depth/size/time limits.
-- No major scan-time regression (>20%) on standard fixture corpus.
-
----
-
-## Milestone 3 — Team-Scale Operations (2–3 weeks)
-
-### Epic F: Baselines, Suppressions, and Rulepack Channels
-
-#### Issue F1 — Baseline/diff mode
-- Add baseline report compare mode to highlight new risks only.
-
-**Acceptance criteria**
-- Users can compare `HEAD` vs baseline report in one command.
-- Delta output clearly separates new/resolved findings.
-
-#### Issue F2 — Suppression workflow with expiry
-- Add suppression file with reason + expiration date.
-- Warn on expired suppressions.
-
-**Acceptance criteria**
-- Suppressions are auditable and time-bounded.
-- Expired suppressions fail CI in strict mode (configurable).
-
-#### Issue F3 — Rulepack channels
-- Introduce `stable`, `preview`, `labs` channels for rule updates.
-
-**Acceptance criteria**
-- Users can pin channel/version.
-- Release notes indicate promoted/experimental rules.
-
----
-
-## Proposed PR Sequence (Small, Mergeable)
-
-1. `docs: add ROADMAP.md and distribution architecture notes`
-2. `build: add PyPI publish workflow + versioning guardrails`
-3. `build: add Docker multi-arch publish workflow`
-4. `feat(cli): add SARIF exporter`
-5. `feat(cli): add JUnit/compact CI output`
-6. `feat(report): add finding explainability blocks`
-7. `feat(policy): confidence thresholds + labels`
-8. `feat(ai): add optional prompt-injection semantic assist`
-9. `test: add semantic benchmark harness`
-10. `feat(adapter): add optional ClamAV integration`
-11. `feat(cli): baseline diff mode`
-12. `feat(policy): suppression file with expiry`
-13. `feat(rulepack): channel support stable/preview/labs`
-
----
-
-## Milestone 4 — Chain Rule Quality & Precision (2 weeks)
+## Milestone 6 — Chain Rule Precision (2 weeks)
 
 *Sourced from external review, March 2026.*
 
-### Epic G: Chain Rule Confidence Model
+### Issue G1 — Document and validate chain confidence uplift rationale
 
-#### Issue G1 — Document and validate chain confidence uplift rationale
+CHN-002 (0.92) correctly exceeds its constituent EXF-001 (0.90) because co-occurrence of `secret_access` + `network` is a stronger intent signal than either pattern alone. CHN-001 (0.95) matches its constituent MAL-001 (0.95) because the static rule already encodes the conjunction in a single regex — no uplift is warranted. This asymmetry is correct but undocumented.
 
-The review confirmed that CHN-002 (0.92) correctly exceeds its constituent EXF-001 (0.90) because co-occurrence of `secret_access` + `network` is a stronger intent signal than either pattern alone. However, CHN-001 (0.95) matches its constituent MAL-001 (0.95) — no uplift — because the static rule already encodes the conjunction (`curl|wget` + `bash|sh` in a single regex). This asymmetry is correct but undocumented.
+Add an optional `confidence_rationale` field to `ChainRule` (surfaced in `rule list --format json`). Document the uplift policy in `CONTRIBUTING.md`. Add a CI lint step that warns when a new chain rule's confidence falls below its highest-confidence constituent.
 
-- Add a `confidence_rationale` field to `ChainRule` (optional string, surfaced in `rule list --format json`).
-- Document the uplift policy in `CONTRIBUTING.md`: chain confidence should exceed the max constituent confidence when co-occurrence adds intent signal; it should match when the static rule already encodes the conjunction.
-- Add a CI lint step that flags chain rules where `confidence < max(constituent static rule confidences)` as a warning.
+**Acceptance criteria:** All 15 chain rules have a `confidence_rationale` value. CI warns on confidence regression. `rule list --format json` includes the field.
 
-**Acceptance criteria**
-- All 14 chain rules have a `confidence_rationale` value.
-- CI warns when a new chain rule's confidence is lower than its highest-confidence constituent.
-- `rule list --format json` includes `confidence_rationale`.
+### Issue G2 — action_patterns dual-use audit and static rule gap analysis
 
-#### Issue G2 — action_patterns dual-use audit and static rule gap analysis
+`action_patterns` serves two roles: the substrate for chain detection, and a softer detection layer that can fire chain rules without any individual static rule triggering. A bare `https://` URL + a `.env` reference hits CHN-002 but does not trigger EXF-001. This is intentional but creates an undocumented detection surface.
 
-The review identified that `action_patterns` serves two roles simultaneously: (1) the substrate for chain detection, and (2) a softer, broader set of patterns that can fire chain rules without triggering any individual static rule. For example, a bare `https://` URL + a `.env` reference hits CHN-002 but does not trigger EXF-001 (which requires a more specific credential file pattern).
+Audit all 19 `action_patterns` entries and classify each as `static_backed` or `chain_only`. For chain-only paths, decide explicitly: promote to a standalone static rule, keep with a documented rationale, or tighten the pattern. Document in `docs/DETECTION_MODEL.md`.
 
-This is not a bug — it is intentional design — but it is undocumented and creates an invisible detection surface that is harder to audit.
+**Acceptance criteria:** Every `action_patterns` entry is classified. `docs/DETECTION_MODEL.md` exists and covers the detection model. No new entries are added without classification.
 
-- Audit all `action_patterns` entries against the static rule set and document which patterns have no static-rule equivalent (i.e., are chain-only detection paths).
-- For each chain-only path, decide explicitly: (a) promote to a standalone static rule at lower severity, (b) keep as chain-only with a documented rationale, or (c) tighten the pattern to reduce false-positive surface.
-- Add a `chain_only_paths` section to `docs/DETECTION_MODEL.md` listing these paths and their rationale.
+### Issue G3 — Proximity constraint (window_lines) for chain rules
 
-**Acceptance criteria**
-- Every `action_patterns` entry is classified as `static_backed` or `chain_only` in the detection model docs.
-- At least one chain-only path is either promoted to a static rule or has a documented precision estimate.
-- No new `action_patterns` entries are added without a classification.
+The engine fires chain rules when constituent patterns appear anywhere in the full file text, regardless of distance. CHN-001 fires if `curl` appears on line 3 and `bash` appears on line 200, even if unrelated. This is a documented false-positive source for long skills.
 
-#### Issue G3 — Proximity constraint support for chain rules
+Add an optional `window_lines: int` field to `ChainRule` (YAML schema + Pydantic model + engine). When set, the engine only fires if all constituent patterns match within a sliding window of that many lines. CHN-001 and CHN-002 are the first candidates (suggested: 30–50 lines), validated against the benchmark corpus before committing to values.
 
-The current engine evaluates chain rules by checking whether all required action patterns appear anywhere in the full file text (`_extract_actions` does a whole-document `pattern.search`). CHN-001 fires if `curl` appears on line 3 and `bash` appears on line 200, even if they are unrelated. This is a documented false-positive source, particularly in long skills with multiple unrelated sections.
+**Acceptance criteria:** `window_lines` is parsed and respected by the engine. Existing rules without the field are unaffected. CHN-001 and CHN-002 have validated `window_lines` values. False-positive rate on the benign corpus does not increase.
 
-The `ChainRule` model and YAML schema have no `max_distance_lines` or `window_lines` field. The engine has no windowed-matching path.
+---
 
-- Add an optional `window_lines: int` field to `ChainRule` (YAML and Pydantic model). When absent, behaviour is unchanged (whole-document match). When present, the engine only fires the chain rule if all constituent patterns match within a sliding window of that many lines.
-- Update `_extract_actions` (or introduce a new `_extract_actions_windowed` variant) to return per-line match positions, enabling window evaluation.
-- Add `window_lines` to CHN-001 and CHN-002 as the first candidates (suggested: 30–50 lines), with benchmark validation before setting values.
-- Update `docs/DETECTION_MODEL.md` with the windowed-matching semantics.
+## Milestone 7 — Corpus Growth & Model Quality (2 weeks)
 
-**Acceptance criteria**
-- `window_lines` is parsed from YAML and stored on `CompiledChainRule`.
-- Engine respects the window when the field is set; existing rules without the field are unaffected.
-- At least CHN-001 and CHN-002 have `window_lines` values validated against the benchmark corpus.
-- False-positive rate on the benign corpus does not increase after adding window constraints.
+The ML adapter is trained on 115 examples. That is enough to demonstrate the pipeline works, not enough to trust the model's precision in production. The target is 300+ examples with a documented evaluation protocol.
+
+### Issue I1 — Corpus expansion to 300+ examples
+
+The current corpus has 54 benign and 61 injection examples. The benign side is almost entirely synthetic (50 of 54 examples from `seed_corpus.py`). The injection side has good diversity (43 hand-crafted + adversarial cases) but is thin on real-world examples.
+
+Priority additions: (1) real benign skills scraped from ClawHub and skills.sh — these are the most important because synthetic benign examples may not capture the full distribution of legitimate skill patterns; (2) additional injection variants for the attack classes that are currently underrepresented (indirect injection via external data, multi-turn memory poisoning, YAML block scalar injection).
+
+**Acceptance criteria:** Corpus reaches ≥300 examples. Benign/injection ratio stays within 45/55–55/45. At least 50 benign examples are from real-world sources (not synthetic). CORPUS_CARD.md is updated.
+
+### Issue I2 — Evaluation protocol and held-out test set
+
+There is no held-out evaluation set and no documented precision/recall numbers for the fine-tuned adapter. The model card on HuggingFace references the base model's 95.25% accuracy on a 20k held-out set, not the fine-tuned adapter's performance on the SkillScan-specific distribution.
+
+Reserve 20% of the corpus as a held-out test set before fine-tuning. Add an evaluation step to `finetune_modal.py` that computes precision, recall, F1, and false-positive rate on the held-out set and writes results to `corpus/EVAL_RESULTS.md`. Gate fine-tune pushes on F1 ≥ 0.90 on the held-out set.
+
+**Acceptance criteria:** Held-out set exists and is excluded from training. `corpus/EVAL_RESULTS.md` is generated on each fine-tune run. F1 gate is enforced in the corpus-sync workflow.
+
+### Issue I3 — graph_injection corpus coverage
+
+The `corpus/graph_injection/` directory exists with examples for PINJ-GRAPH-001/002/003 but these examples are not included in the ML training corpus. They should be: graph injection attacks are a distinct semantic class that the base model has not seen.
+
+**Acceptance criteria:** All `graph_injection/` examples are included in the training corpus with label `injection`. Corpus manifest reflects the addition.
+
+---
+
+## Milestone 8 — Skill Graph Completion (1 week)
+
+### Issue J1 — PINJ-GRAPH-004: cross-skill tool escalation detection
+
+The skill graph detector currently covers remote `.md` loading (PINJ-GRAPH-001), high-risk tool grants without declared purpose (PINJ-GRAPH-002), and memory file write instructions (PINJ-GRAPH-003). PINJ-GRAPH-004 — cross-skill tool escalation, where a skill invokes another skill and the invoked skill has higher tool permissions than the invoking skill — is referenced in docs and the CHANGELOG but not implemented.
+
+The detection logic requires comparing tool grants across a multi-skill scan context. The `skill_graph.py` detector already has `_SKILL_REF_RE` for detecting skill references; the missing piece is a second pass that resolves referenced skills within the scan target and compares their tool grants.
+
+**Acceptance criteria:** PINJ-GRAPH-004 fires when a skill references another skill that grants a higher-risk tool than the referencing skill declares. The rule is covered by at least two adversarial fixtures and one benign fixture. The adversarial suite expectations are updated.
+
+### Issue J2 — Skill graph corpus examples for PINJ-GRAPH-004
+
+Add adversarial fixtures for PINJ-GRAPH-004 to `tests/adversarial/cases/` and `corpus/graph_injection/`. Update `tests/adversarial/expectations.json`.
+
+---
+
+## Milestone 9 — VS Code Extension Publish (1 week)
+
+The extension scaffold in `editors/vscode/` is complete: TypeScript source, SARIF parsing, inline diagnostics, status bar, and a marketplace publish workflow. The only blockers are a registered publisher ID and a `VSCE_PAT` secret.
+
+### Issue K1 — Publish to VS Code Marketplace
+
+Register the `skillscan` publisher on the VS Code Marketplace. Add `VSCE_PAT` to repo secrets. Trigger the publish workflow. The extension should install cleanly and show inline diagnostics on SKILL.md files.
+
+**Acceptance criteria:** Extension is live on the VS Code Marketplace. Install count is tracked. The `editors/vscode/README.md` is updated with install instructions.
+
+### Issue K2 — Extension auto-update on rule sync
+
+When the user runs `skillscan rule sync`, the extension should detect the updated rules and re-run diagnostics on open files without requiring a VS Code restart.
+
+**Acceptance criteria:** Diagnostics refresh automatically after `skillscan rule sync` completes. No VS Code restart required.
+
+---
+
+## Milestone 10 — Detection Model Documentation (3 days)
+
+The roadmap has referenced `docs/DETECTION_MODEL.md` since Milestone 4. It does not exist. This is the single most important missing document for external contributors and security reviewers.
+
+### Issue L1 — Write docs/DETECTION_MODEL.md
+
+The document should cover: the detection pipeline stages and their order; the static rule schema and confidence calibration policy; the chain rule schema, uplift rationale policy, and (once implemented) windowed-matching semantics; the `action_patterns` classification table (`static_backed` vs `chain_only`); the local semantic classifier (NLTK/Porter stemmer, feature categories, scoring); the ML detector (base model, fine-tune pipeline, staleness policy); the AI assist layer (provider config, prompt version, snippet limits, policy integration); and the policy scoring model (severity weights, threshold semantics, hard-block rules).
+
+**Acceptance criteria:** `docs/DETECTION_MODEL.md` exists and covers all seven detection layers. It is linked from `README.md` and `CONTRIBUTING.md`. The `action_patterns` classification table is complete.
+
+---
+
+## Milestone 11 — Hardening & Operational Maturity (ongoing)
+
+These items do not have a fixed milestone but should be addressed before a v1.0 release.
+
+**Test coverage for ML and remote paths.** The `test_ml_detector.py` and `test_remote.py` tests use mocks throughout. At least one integration test per module should run against real artifacts (gated behind a `--integration` marker and skipped in standard CI).
+
+**ClamAV integration test.** `test_clamav.py` mocks the `clamscan` binary. The Docker image includes ClamAV and enables it by default; there should be at least one end-to-end test that runs inside the Docker image and verifies ClamAV findings appear in the report.
+
+**Suppression file expiry enforcement in CI.** The suppression module supports expiry dates but there is no CI step that warns when suppressions are approaching expiry. Add a `skillscan suppress check` subcommand that exits non-zero when any active suppression expires within 30 days.
+
+**Homebrew formula submission.** The formula in `packaging/homebrew/` is scaffolded but not submitted to homebrew-core or a tap. Submit to a `homebrew-skillscan` tap as a first step; homebrew-core submission can follow after v1.0.
+
+**Release smoke test.** The release checklist references smoke tests but there is no automated post-release verification. Add a workflow that triggers on published releases, installs from PyPI and Docker Hub, and runs `skillscan scan tests/fixtures/malicious/openclaw_compromised_like` with an expected `block` verdict.
+
+**`docs/DETECTION_MODEL.md` referenced but missing.** Covered in Milestone 10.
+
+---
+
+## Deprioritized / Deferred
+
+The following items from earlier roadmap drafts are explicitly deprioritized until the above milestones are complete.
+
+**SaaS control plane / multi-tenant API.** Out of scope per PRD. Revisit post-v1.0 if adoption warrants it.
+
+**Automatic code remediation.** Out of scope per PRD. The scanner's job is to surface findings, not rewrite code.
+
+**Public signing and transparency log workflow.** The SBOM pipeline (CycloneDX + cosign) is already in place. Full Sigstore/Rekor integration can wait until the project has meaningful downstream consumers.
+
+**Channel support (stable/preview/labs).** The rule sync mechanism works against `main`. Channel support adds complexity without clear benefit at the current scale.
+
+**Baseline diff mode as a separate milestone.** `skillscan diff` is already implemented. The remaining work (suppression file integration with diff output) is a small feature, not a milestone.
 
 ---
 
 ## Risks & Guardrails
 
-- **False positives from semantic detection**
-  - Guardrail: semantic findings are advisory by default; require evidence snippets.
+**False positives from semantic detection.** Guardrail: semantic findings are advisory by default; require evidence snippets; ML findings are gated at 0.70 threshold.
 
-- **Performance regressions from extra scanners**
-  - Guardrail: strict budgets (timeout, bytes, files), benchmark gates in CI.
+**Performance regressions from extra scanners.** Guardrail: strict budgets (timeout, bytes, files), benchmark gates in CI.
 
-- **Distribution drift / broken installs**
-  - Guardrail: release smoke tests for `pip` and Docker on each tag.
+**Distribution drift / broken installs.** Guardrail: release smoke tests for `pip` and Docker on each tag (Milestone 11).
 
-- **Complexity creep**
-  - Guardrail: keep features optional and policy-driven; preserve deterministic core.
+**Complexity creep.** Guardrail: keep features optional and policy-driven; preserve deterministic core.
+
+**Thin intel data making the scanner look like a demo.** Guardrail: Milestone 5 is the highest-priority milestone. Do not ship v0.4.0 without credible IOC and vuln DB depth.
 
 ---
 
 ## Success Metrics
 
-- Time-to-first-scan: < 5 minutes for `pip` or Docker path.
-- CI adoption: SARIF/JUnit used in at least one reference pipeline.
-- Quality: lower noisy-findings rate release-over-release.
-- Coverage: measurable increase in high-signal detections beyond static pattern adds.
-- Usability: analysts can action top findings without opening source files in most cases.
+| Metric | Current | Target (v0.4.0) | Target (v1.0) |
+|---|---|---|---|
+| IOC DB entries | 21 | 200+ | 500+ (automated) |
+| Vuln DB packages | 4 | 20+ | 50+ |
+| ML corpus size | 115 | 300+ | 500+ |
+| ML adapter F1 (held-out) | unknown | ≥0.90 | ≥0.93 |
+| Static + chain rules | 84 | 90+ | 100+ |
+| Adversarial cases | 25 | 35+ | 50+ |
+| VS Code extension | scaffolded | published | 100+ installs |
+| Time-to-first-scan | &lt;5 min | &lt;3 min | &lt;2 min |
