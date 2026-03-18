@@ -35,10 +35,12 @@ policy_app = typer.Typer(help="Policy operations")
 intel_app = typer.Typer(help="Local intel operations")
 rule_app = typer.Typer(help="Rule metadata/query operations")
 corpus_app = typer.Typer(help="Training corpus management")
+model_app = typer.Typer(help="ML model management (download, update, status)")
 app.add_typer(policy_app, name="policy")
 app.add_typer(intel_app, name="intel")
 app.add_typer(rule_app, name="rule")
 app.add_typer(corpus_app, name="corpus")
+app.add_typer(model_app, name="model")
 console = Console()
 
 
@@ -136,6 +138,43 @@ def rule_list(
         g = ",".join(tags_row) if tags_row else "-"
         console.print(f"{row['id']} [{row['severity']}] {row['title']}")
         console.print(f"  category={row['category']} techniques={t} tags={g}")
+
+
+@rule_app.command("sync")
+def rule_sync(
+    force: bool = typer.Option(False, "--force", help="Force download even if rules are fresh"),
+    ttl: int = typer.Option(3600, "--ttl", help="Cache TTL in seconds"),
+) -> None:
+    """Pull the latest rule signatures from GitHub without reinstalling the package."""
+    from skillscan.rules_sync import sync_rules
+
+    result = sync_rules(force=force, ttl=ttl)
+    if result.updated:
+        console.print(f"[green]Updated:[/] {', '.join(result.updated)}")
+    if result.skipped:
+        console.print(f"[dim]Skipped (fresh):[/] {', '.join(result.skipped)}")
+    if result.errors:
+        console.print(f"[red]Errors:[/] {', '.join(result.errors)}")
+        raise typer.Exit(1)
+    if not result.updated and not result.errors:
+        console.print("[dim]Rules are up to date.[/]")
+
+
+@rule_app.command("status")
+def rule_status() -> None:
+    """Show the current rule signature versions (bundled vs. user-local)."""
+    from skillscan.rules_sync import USER_RULES_DIR, user_rules_version
+
+    rp = load_builtin_rulepack(channel="stable")
+    bundled_version = rp.version.split("+")[0]
+    user_version = user_rules_version()
+    console.print(f"Bundled rules version : {bundled_version}")
+    if user_version:
+        console.print(f"User-local version    : {user_version} ({USER_RULES_DIR})")
+    else:
+        console.print("User-local rules      : not synced (run 'skillscan rule sync')")
+    total = len(rp.static_rules)
+    console.print(f"Total static rules    : {total}")
 
 
 @app.command("scan")
@@ -302,7 +341,12 @@ def scan_cmd(
                 f"[dim]intel refresh updated={stats['updated']} "
                 f"skipped={stats['skipped']} errors={stats['errors']}[/dim]"
             )
+    # Auto-sync rule signatures (signature-as-data layer, same TTL as intel)
+    from skillscan.rules_sync import maybe_sync_rules
 
+    rules_result = maybe_sync_rules(max_age_seconds=intel_max_age_minutes * 60)
+    if rules_result.updated:
+        console.print(f"[dim]rules refresh updated={len(rules_result.updated)}[/dim]")
     try:
         report = scan(
             target,
@@ -780,6 +824,79 @@ def corpus_record_finetune(
     mgr = CorpusManager(corpus_dir=corpus_dir)
     mgr.record_finetune(checkpoint)
     console.print(f"[green]Recorded fine-tune checkpoint:[/green] {checkpoint}")
+
+
+# ---------------------------------------------------------------------------
+# Model commands
+# ---------------------------------------------------------------------------
+
+
+@model_app.command("sync")
+def model_sync_cmd(
+    repo_id: str = typer.Option(
+        "kurtpayne/skillscan-deberta-adapter",
+        "--repo",
+        help="HuggingFace Hub repo ID for the LoRA adapter",
+    ),
+    force: bool = typer.Option(False, "--force", help="Re-download even if already up to date"),
+) -> None:
+    """Download or update the ML prompt-injection adapter from HuggingFace Hub.
+
+    This is the only way to download the model — it is never auto-downloaded.
+    The adapter is stored in ~/.skillscan/models/adapter/ (~50 MB).
+    """
+    from skillscan.model_sync import sync_model
+
+    console.print(f"[bold]Syncing ML adapter from[/bold] {repo_id}...")
+    result = sync_model(repo_id=repo_id, force=force, progress=True)
+    if result.success:
+        if result.downloaded:
+            console.print(
+                f"[green]\u2713 Downloaded adapter v{result.version}[/green] "
+                f"({result.bytes_downloaded // 1024} KB) — {result.message}"
+            )
+        else:
+            console.print(f"[green]\u2713 {result.message}[/green]")
+    else:
+        console.print(f"[red]\u2717 Sync failed:[/red] {result.message}")
+        raise typer.Exit(1)
+
+
+@model_app.command("status")
+def model_status_cmd(
+    repo_id: str = typer.Option(
+        "kurtpayne/skillscan-deberta-adapter",
+        "--repo",
+        help="HuggingFace Hub repo ID for the LoRA adapter",
+    ),
+    check_remote: bool = typer.Option(False, "--check-remote", help="Check HF Hub for updates"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """Show the status of the locally cached ML adapter."""
+    import json as _json
+
+    from skillscan.model_sync import get_model_status
+
+    status = get_model_status(repo_id=repo_id, check_remote=check_remote)
+    if json_output:
+        data = {
+            "installed": status.installed,
+            "version": status.version,
+            "age_days": status.age_days,
+            "sha256": status.sha256,
+            "repo_id": status.repo_id,
+            "stale": status.stale,
+            "warn": status.warn,
+            "update_available": status.update_available,
+            "remote_version": status.remote_version,
+        }
+        console.print(_json.dumps(data, indent=2))
+    else:
+        console.print(status.summary())
+        if status.stale:
+            console.print("[yellow]Run: skillscan model sync[/yellow]")
+        elif status.warn:
+            console.print("[dim]Run: skillscan model sync (optional)[/dim]")
 
 
 if __name__ == "__main__":

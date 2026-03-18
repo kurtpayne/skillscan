@@ -166,19 +166,48 @@ def _chunk_text(text: str, max_chars: int = 1800) -> list[str]:
 def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     """Run the ML classifier on *text* and return zero or one Finding.
 
-    Returns an empty list if:
-    - The ML backend is not installed (silently skipped).
-    - No chunk scores above the injection threshold.
-
-    Returns a single Finding with id PINJ-ML-001 if injection is detected.
+    Behaviour:
+    - ML backend not installed → ERROR finding (PINJ-ML-UNAVAIL) with install
+      instructions. Never silently skips.
+    - Model age > 30 days → PINJ-ML-STALE LOW finding appended to results.
+    - Model age 7–30 days → WARNING logged (not a finding).
+    - No chunk scores above threshold → empty list.
+    - Injection detected → PINJ-ML-001 finding.
     """
     if not text.strip():
         return []
 
+    # --- Model age / staleness check ---
+    from skillscan.model_sync import check_model_age_finding, get_model_status
+    model_status = get_model_status()
+    age_findings: list[Finding] = []
+    if model_status.installed:
+        if model_status.stale:
+            stale = check_model_age_finding()
+            if stale:
+                age_findings.append(
+                    Finding(
+                        id="PINJ-ML-STALE",
+                        category="prompt_injection_ml",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title=str(stale["message"]),
+                        evidence_path=str(path),
+                        snippet=f"Model age: {stale['age_days']:.0f} days (threshold: 30 days)",
+                        mitigation="Run: skillscan model sync",
+                    )
+                )
+        elif model_status.warn:
+            logger.warning(
+                "ML model is %.0f days old (>7 days). "
+                "Run `skillscan model sync` to update.",
+                model_status.age_days,
+            )
+
     pipe, backend = _get_pipeline()
 
     if backend == "unavailable":
-        # Emit a low-severity informational finding so users know ML is off.
+        # ML extras not installed — error with clear install instructions.
         return [
             Finding(
                 id="PINJ-ML-UNAVAIL",
@@ -194,7 +223,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                     "'skillscan-security[ml]' for the PyTorch backend."
                 ),
             )
-        ]
+        ] + age_findings
 
     assert pipe is not None, "pipe should be set when backend != 'unavailable'"
     chunks = _chunk_text(text)
