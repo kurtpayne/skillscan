@@ -208,7 +208,7 @@ def run_finetune(
         weight_decay=0.01,
         logging_steps=10,
         save_strategy="epoch",
-        evaluation_strategy="no",
+        eval_strategy="no",
         load_best_model_at_end=False,
         report_to="none",
         fp16=torch.cuda.is_available(),
