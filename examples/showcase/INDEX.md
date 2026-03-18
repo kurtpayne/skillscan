@@ -98,3 +98,4 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 79. `79_stealth_network_exfil_chain`: stealth instruction concealment combined with outbound network upload — covert data exfiltration chain (`ABU-006`, `CHN-012`)
 80. `80_container_escape_host_mount_chain`: privileged container with Docker socket mount and sensitive host path mounts — full container escape chain (`MAL-026`, `CHN-013`)
 81. `81_container_escape_secret_access_chain`: privileged container with AWS credential environment variables and `.env` file access — container escape with credential theft chain (`MAL-027`, `CHN-014`)
+82. `82_solana_rpc_c2_resolution`: Solana blockchain RPC `getSignaturesForAddress` transaction-memo lookup used as dead-drop C2 channel to resolve and execute remote payloads, as seen in GlassWorm Wave 5 (`MAL-029`)

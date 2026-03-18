@@ -1,5 +1,35 @@
 ## 2026-03-17 (1): MCP Attack Patterns, Social Engineering Chains, and Container Escape Rules
 
+## 2026-03-17 — GlassWorm Wave 5, PylangGhost RAT, CVE-2026-4270
+
+**Sources:**
+- [Koi Security — GlassWorm Hits MCP: 5th Wave with New Delivery Techniques](https://www.koi.ai/blog/glassworm-hits-mcp-5th-wave-with-new-delivery-techniques)
+- [Aikido — GlassWorm Strikes React Native Packages](https://www.aikido.dev/blog/glassworm-strikes-react-packages-phone-numbers)
+- [CyberPress — PylangGhost RAT Hits npm Supply Chain](https://cyberpress.org/pylangghost-hits-npm-supplychain/)
+- [NVD — CVE-2026-4270](https://nvd.nist.gov/vuln/detail/CVE-2026-4270)
+
+**Event Summary:** The GlassWorm campaign expanded into the MCP ecosystem (Wave 5, reported 2026-03-16). Typosquatted npm packages such as `@iflow-mcp/watercrawl-watercrawl-mcp` and backdoored React Native packages (`react-native-country-select@0.3.91`, `react-native-international-phone-number@0.11.8`) use a novel Solana blockchain RPC dead-drop technique: the malware calls `getSignaturesForAddress` to read on-chain transaction memos containing encoded C2 URLs, then fetches and executes the decoded payload. Separately, a DPRK-linked campaign delivers PylangGhost RAT via npm packages (`react-refresh-update`, `@jaime9008/math-service`) with C2 at `173.211.46.22:8080` and staging domain `malicanbur.pro`. Additionally, CVE-2026-4270 was published for `@awslabs/aws-api-mcp-server` (path traversal, CVSS 6.8, fixed in 1.3.9).
+
+**New Patterns Added:**
+
+### MAL-029: Solana RPC blockchain C2 resolution marker
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.90
+- **Pattern:** Detects `getSignaturesForAddress` / `getConfirmedSignaturesForAddress2` Solana RPC calls combined with `memo`/`logMessages` field access and subsequent execution sinks (`eval`, `exec`, `spawn`, `fetch`, etc.), or `@solana/web3` imports combined with the same RPC+memo pattern.
+- **Justification:** Direct detection of the blockchain-based C2 dead-drop technique documented in GlassWorm Wave 5. The attacker stores encoded C2 URLs in Solana transaction memos and resolves them at install time, making the C2 infrastructure immutable and censorship-resistant.
+
+**IOC Updates:**
+- **IPs added:** `45.32.150.251`, `45.32.151.157`, `70.34.242.255` (GlassWorm staging servers), `173.211.46.22` (PylangGhost C2)
+- **Domains added:** `malicanbur.pro` (PylangGhost staging domain)
+
+**Vulnerability DB Updates:**
+- **CVE-2026-4270:** `@awslabs/aws-api-mcp-server` path traversal (affected >= 0.2.14, fixed in 1.3.9, severity: medium)
+
+---
+
+## 2026-03-17 — MCP Tool Poisoning, Container Escape Techniques
+
 **Sources:**
 - [Invariant Labs - MCP Tool Poisoning Attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks)
 - [Invariant Labs - WhatsApp MCP Cross-Server Exploit](https://invariantlabs.ai/blog/whatsapp-mcp-exploited)

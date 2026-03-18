@@ -137,6 +137,8 @@ def test_showcase_detection_rules() -> None:
     findings_81 = _scan("examples/showcase/81_container_escape_secret_access_chain").findings
     assert any(f.id == "MAL-027" for f in findings_81) or any(f.id == "MAL-026" for f in findings_81)
     assert any(f.id == "CHN-014" for f in findings_81)
+    findings_82 = _scan("examples/showcase/82_solana_rpc_c2_resolution").findings
+    assert any(f.id == "MAL-029" for f in findings_82)
 
 
 def test_showcase_policy_block_domain() -> None:

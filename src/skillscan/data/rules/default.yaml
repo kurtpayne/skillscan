@@ -1,4 +1,4 @@
-version: "2026.03.17.2"
+version: "2026.03.17.3"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -1832,6 +1832,37 @@ static_rules:
       benchmark_set: core-static-v1
     references:
     - https://redcanary.com/threat-detection-report/techniques/container-escapes/
+- id: MAL-029
+  category: malware_pattern
+  severity: critical
+  confidence: 0.90
+  title: Solana RPC blockchain C2 resolution marker
+  pattern: (?i)(?:getSignaturesForAddress|getConfirmedSignaturesForAddress2)|(?:solana|@solana/web3)[^\n]{0,120}(?:getSignaturesForAddress|getConfirmedSignaturesForAddress2)
+  mitigation: Treat Solana RPC transaction-memo lookups combined with code execution or network
+    fetch as a blockchain-based C2 dead-drop channel. Remove install-time Solana RPC resolution
+    logic and block outbound execution of decoded payloads.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-029
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-17'
+      last_modified: '2026-03-17'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://www.koi.ai/blog/glassworm-hits-mcp-5th-wave-with-new-delivery-techniques
+    - https://www.aikido.dev/blog/glassworm-strikes-react-packages-phone-numbers
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
