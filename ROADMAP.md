@@ -274,6 +274,57 @@ The Success Metrics table uses numbers from before v0.3.2. See the updated table
 
 ---
 
+## Milestone 14 — Public Scan Feed (2 weeks)
+
+A live feed of scan results for popular public skills, surfaced on the website. The goal is to make SkillScan's detection coverage tangible to visitors — showing real findings on real skills is more persuasive than any benchmark table.
+
+### Execution model options
+
+The feed is fundamentally a batch job that (1) discovers popular skills from public registries, (2) scans each one with SkillScan, (3) stores the results as a static JSON file, and (4) serves that file to the website. The website is currently a static frontend with no backend, so the execution model must be chosen carefully.
+
+| Option | How it works | Pros | Cons |
+|---|---|---|---|
+| **GitHub Actions cron + static JSON** | A scheduled workflow runs `skillscan scan` on a curated list of skills, writes `feed.json` to the `gh-pages` or `main` branch, website fetches it as a CDN asset | Zero infra, no cost, fits current static architecture | Cron runs are visible in the public repo; JSON file grows over time |
+| **Modal batch job** | Reuse the existing Modal fine-tune infrastructure; a daily Modal function scrapes registries, scans, and writes `feed.json` to S3 or a public Gist | Isolated execution, no repo noise, can handle larger skill sets | Requires Modal account and S3/Gist write credentials |
+| **Website backend upgrade** | Upgrade the website to `web-db-user`, add a server route that proxies scan requests and stores results in the DB; a cron job on the server runs the feed refresh | Full control, can add filtering/search/pagination | Requires backend upgrade, ongoing hosting cost, more complexity |
+| **Manus scheduled task** | A Manus agent runs on a daily schedule, scans a curated list, commits `feed.json` to the repo | Reuses existing Manus workflow, no new infra | Dependent on Manus availability; not self-contained |
+
+**Recommended approach (Phase 1):** GitHub Actions cron + static JSON. A workflow in the `skillscan-security` repo runs daily, scans a curated list of ~50 popular skills from ClawHub and skills.sh, and writes `public/feed.json` to the website repo (or a CDN-hosted Gist). The website fetches this file on page load and renders the feed. This requires no backend and no new infrastructure.
+
+**Phase 2 (if feed grows beyond ~200 skills):** Move to Modal batch job writing to S3, with the website fetching from the CDN URL. The website upgrade to `web-db-user` is only warranted if the feed needs server-side filtering, user-submitted scan requests, or per-skill history.
+
+### Issue F1 — Curated skill list and registry scraper
+
+Build a script (`scripts/scrape_registries.py`) that fetches the top-N skills from ClawHub and skills.sh by install count or star count. The script should output a manifest (`data/popular_skills.json`) with skill name, registry URL, raw file URL, and last-seen metadata. The manifest is committed to the repo and updated weekly by the cron job.
+
+**Acceptance criteria:** Manifest covers ≥50 skills across both registries. Each entry has a `raw_url` that `skillscan scan` can consume directly. The scraper handles rate limits and missing skills gracefully.
+
+### Issue F2 — Daily scan cron job and feed JSON
+
+A GitHub Actions workflow (`.github/workflows/scan-feed.yml`) runs daily, iterates over `data/popular_skills.json`, runs `skillscan scan <raw_url> --format json --fail-on never` for each skill, and writes the aggregated results to `data/scan_feed.json`. The feed JSON schema should include: skill name, registry, raw URL, scan timestamp, verdict, top findings (rule ID + severity + message), and score.
+
+The feed file is committed back to the repo (or uploaded to a CDN). The website fetches it from a fixed URL.
+
+**Acceptance criteria:** Workflow runs on schedule and on manual trigger. Feed JSON is valid and parseable. Stale entries (skills removed from registry) are pruned after 7 days. The workflow does not fail the entire run if a single skill scan errors.
+
+### Issue F3 — Website feed page
+
+Add a new `/feed` page to the website that fetches `scan_feed.json` and renders it as a live table: skill name, registry badge, verdict badge (allow/warn/block), top finding, score, and scan timestamp. Include a summary bar showing the distribution of verdicts across all scanned skills (e.g., "42 allow · 6 warn · 2 block").
+
+The feed should auto-refresh on page load (no polling). A "last updated" timestamp should be visible. Skills with `block` verdicts should be visually prominent.
+
+**Acceptance criteria:** Feed page loads and renders within 2 seconds on a cold load. Verdict distribution summary is accurate. The page degrades gracefully if the feed JSON is unavailable (shows last-known data or a clear error state). Mobile layout is usable.
+
+### Issue F4 — Privacy and responsible disclosure guardrails
+
+Scanning public skills and publishing results raises two concerns: (1) false positives that unfairly flag a legitimate skill author, and (2) amplifying findings for malicious skills that are still live.
+
+Guardrails: only scan skills from public registries with explicit public listings (not private or unlisted); display findings at the rule-category level (e.g., "download-and-execute pattern detected") rather than quoting the exact matching text; include a "dispute this finding" link that opens a GitHub issue template; add a `SCAN_FEED_POLICY.md` document explaining the methodology and dispute process.
+
+**Acceptance criteria:** Feed page links to `SCAN_FEED_POLICY.md`. Findings display category-level descriptions, not raw matched text. Dispute link is present on each finding row.
+
+---
+
 ## Deprioritized / Deferred
 
 The following items from earlier roadmap drafts are explicitly deprioritized until the above milestones are complete.
