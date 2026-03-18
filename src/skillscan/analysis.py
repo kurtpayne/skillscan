@@ -616,6 +616,7 @@ def scan(
     clamav_timeout_seconds: int = 30,
     ml_detect: bool = False,
     rulepack_channel: str = "stable",
+    graph_scan: bool = False,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -935,6 +936,10 @@ def scan(
                     ),
                 )
             )
+
+        if graph_scan:
+            from skillscan.detectors.skill_graph import skill_graph_findings
+            findings.extend(skill_graph_findings(prepared.root))
 
         if ai_assist:
             try:

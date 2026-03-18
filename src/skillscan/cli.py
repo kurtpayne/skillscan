@@ -273,6 +273,17 @@ def scan_cmd(
             "Also configurable via SKILLSCAN_ML_DETECT env var."
         ),
     ),
+    graph_scan: bool = typer.Option(
+        False,
+        "--graph/--no-graph",
+        envvar="SKILLSCAN_GRAPH",
+        help=(
+            "Enable skill graph analysis: detects cross-skill invocation abuse, "
+            "remote Markdown loading (PINJ-GRAPH-001), undocumented high-risk tool grants "
+            "(PINJ-GRAPH-002), and memory/config file poisoning (PINJ-GRAPH-003). "
+            "Also configurable via SKILLSCAN_GRAPH env var."
+        ),
+    ),
     baseline_report: Path | None = typer.Option(
         None,
         "--baseline-report",
@@ -366,6 +377,7 @@ def scan_cmd(
             clamav_timeout_seconds=clamav_timeout_seconds,
             ml_detect=ml_detect,
             rulepack_channel=rulepack_channel,
+            graph_scan=graph_scan,
         )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
