@@ -81,7 +81,7 @@ to the specific git commit used for training.
 
 | Date | Corpus Size | Benign | Injection | Corpus SHA (first 16) | Model Version | Commit |
 |------|-------------|--------|-----------|----------------------|---------------|--------|
-| *(first run pending)* | 111 | 54 | 57 | `c68ec511fbd186b0` | — | [`29b05e5`](https://github.com/kurtpayne/skillscan-security/commit/29b05e5594fbe8fd3bb249ceca490da760548583) |
+| 2026-03-18 | 113 | 54 | 57 | `60f3a2d3e77a5d2e` | 113-3ep | [`d644f44`](https://github.com/kurtpayne/skillscan-security/commit/d644f44974f79887f66fe75577ee9637adb0d898) |
 
 ---
 
