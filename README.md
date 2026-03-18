@@ -1,12 +1,15 @@
-# SkillScan
+# SkillScan Security
 
-[![CI](https://github.com/kurtpayne/skillscan/actions/workflows/ci.yml/badge.svg)](https://github.com/kurtpayne/skillscan/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/kurtpayne/skillscan/actions/workflows/codeql.yml/badge.svg)](https://github.com/kurtpayne/skillscan/actions/workflows/codeql.yml)
-[![Coverage](https://codecov.io/gh/kurtpayne/skillscan/graph/badge.svg)](https://codecov.io/gh/kurtpayne/skillscan)
+[![CI](https://github.com/kurtpayne/skillscan-security/actions/workflows/ci.yml/badge.svg)](https://github.com/kurtpayne/skillscan-security/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/kurtpayne/skillscan-security/actions/workflows/codeql.yml/badge.svg)](https://github.com/kurtpayne/skillscan-security/actions/workflows/codeql.yml)
+[![PyPI](https://img.shields.io/pypi/v/skillscan-security.svg)](https://pypi.org/project/skillscan-security/)
+[![Docker Hub](https://img.shields.io/docker/v/kurtpayne/skillscan-security?label=docker)](https://hub.docker.com/r/kurtpayne/skillscan-security)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
 
-SkillScan is a standalone CLI security analyzer for AI skills and tool bundles.
+Security scanner for AI agent skills and MCP tool bundles. Part of the [SkillScan](https://skillscan.sh) project.
+
+SkillScan Security is a standalone CLI security analyzer for AI skills and tool bundles.
 
 It scans local artifacts (code + markdown instructions), detects risky patterns, and returns deterministic verdicts:
 
@@ -365,6 +368,14 @@ See `docs/GITHUB_ACTIONS.md` for full documentation and examples.
 - Release onboarding: `docs/RELEASE_ONBOARDING.md`
 - Release checklist: `docs/RELEASE_CHECKLIST.md`
 - Release verification (v0.2.3): `docs/RELEASE_VERIFICATION_0.2.3.md`
+
+## Related
+
+- **[skillscan-lint](https://github.com/kurtpayne/skillscan-lint)** — Quality linter for AI agent skills: readability, clarity, graph integrity
+- **[skills.sh](https://skills.sh)** — Community registry of AI agent skills
+- **[ClawHub](https://clawhub.ai)** — MCP skill marketplace
+- **[Docker Hub](https://hub.docker.com/r/kurtpayne/skillscan-security)** — `docker pull kurtpayne/skillscan-security`
+- **[PyPI](https://pypi.org/project/skillscan-security/)** — `pip install skillscan-security`
 
 ## License
 

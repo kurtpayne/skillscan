@@ -56,6 +56,21 @@
 
 ---
 
+## 2026-03-17 — v0.3.1: Skill Graph Analysis, ML Pipeline, and Distribution Channels
+
+**Summary:** v0.3.1 ships three new structural detection rules (`PINJ-GRAPH-001/002/003`) for skill graph analysis, ML-based prompt injection detection via a DeBERTa-v3-base LoRA adapter (ONNX INT8, 111-example corpus), `skillscan model` and `skillscan rule` command groups, a reusable GitHub Actions workflow, pre-commit hook, and VS Code extension scaffold. The signature-as-data architecture is now fully operational: rules, IOCs, and the ONNX model are versioned data artifacts updated independently of the scanner binary.
+
+**New Rules:**
+- `PINJ-GRAPH-001` — Skill loads a remote `.md` file at runtime (dead-drop instruction injection, HIGH)
+- `PINJ-GRAPH-002` — Skill grants `Bash`/`Computer`/`Shell` tool without a declared purpose section (MEDIUM)
+- `PINJ-GRAPH-003` — Skill instructs agent to write memory files (`SOUL.md`, `MEMORY.md`, `AGENTS.md`, `.claude/settings.json`) (CRITICAL)
+
+**ML Model:** `kurtpayne/skillscan-deberta-adapter` on HuggingFace — DeBERTa-v3-base LoRA, ONNX INT8, trained on 111 labeled examples (54 benign / 57 injection). Enable with `skillscan scan --ml-detect` after `skillscan model sync`.
+
+**Version:** Rules updated from 2026.03.17.2 to 2026.03.17.3
+
+---
+
 ## 2026-03-17 (1): MCP Attack Patterns, Social Engineering Chains, and Container Escape Rules
 
 ## 2026-03-17 — GlassWorm Wave 5, PylangGhost RAT, CVE-2026-4270

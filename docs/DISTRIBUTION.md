@@ -8,8 +8,10 @@ This document describes supported ways to install and operate SkillScan in local
 |---|---|---|
 | PyPI | End users / CI | `pip install skillscan-security` |
 | Docker | Reproducible CI, isolated runtime | `docker run --rm -v "$PWD:/work" kurtpayne/skillscan-security:<tag> scan /work` |
+| Pre-commit | Local dev gate on every commit | `.pre-commit-hooks.yaml` (see below) |
+| GitHub Actions (reusable) | Third-party CI with zero config | `uses: kurtpayne/skillscan-security/.github/workflows/skillscan-reusable.yml@main` |
+| VS Code extension | IDE inline diagnostics | `editors/vscode/` or VS Code Marketplace |
 | Source/dev | Contributors | `pip install -e '.[dev]'` |
-| Convenience script | Quick local bootstrap | `curl -fsSL .../scripts/install.sh \| bash` |
 
 > Release automation is wired through GitHub Actions tag workflows (`release-pypi.yml`, `release-docker.yml`).
 
@@ -139,6 +141,37 @@ See also: `docs/RELEASE_ONBOARDING.md` for first-time account and publisher setu
   - Python support artifacts: `sbom-python.cdx.json.sig/.pem`, `SHA256SUMS.sig/.pem`
   - Docker SBOM artifact: `sbom-docker.spdx.json.sig/.pem`
   - Container image signatures + SBOM attestation are published to the registry (OCI referrers).
+
+## Pre-commit Hook
+
+Add to `.pre-commit-config.yaml` in any repo to gate commits:
+
+```yaml
+repos:
+  - repo: https://github.com/kurtpayne/skillscan-security
+    rev: v0.3.1
+    hooks:
+      - id: skillscan-security
+        args: [--fail-on, warn]
+```
+
+Run `pre-commit install` once, then every `git commit` automatically scans staged skill files.
+
+## GitHub Actions (Reusable Workflow)
+
+Call from any repo without installing anything — results appear in the GitHub Security tab as SARIF findings:
+
+```yaml
+jobs:
+  security:
+    uses: kurtpayne/skillscan-security/.github/workflows/skillscan-reusable.yml@main
+    with:
+      fail-on: warn          # block | warn | info
+      paths: "skills/"       # path(s) to scan
+      extra-args: "--ml-detect --graph"
+```
+
+Outputs: `verdict` (`allow`/`warn`/`block`) and `finding-count` for downstream job conditions.
 
 ## CI Recommendations
 

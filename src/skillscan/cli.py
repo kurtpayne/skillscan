@@ -273,6 +273,17 @@ def scan_cmd(
             "Also configurable via SKILLSCAN_ML_DETECT env var."
         ),
     ),
+    graph_scan: bool = typer.Option(
+        False,
+        "--graph/--no-graph",
+        envvar="SKILLSCAN_GRAPH",
+        help=(
+            "Enable skill graph analysis: detects cross-skill invocation abuse, "
+            "remote Markdown loading (PINJ-GRAPH-001), undocumented high-risk tool grants "
+            "(PINJ-GRAPH-002), and memory/config file poisoning (PINJ-GRAPH-003). "
+            "Also configurable via SKILLSCAN_GRAPH env var."
+        ),
+    ),
     baseline_report: Path | None = typer.Option(
         None,
         "--baseline-report",
@@ -366,6 +377,7 @@ def scan_cmd(
             clamav_timeout_seconds=clamav_timeout_seconds,
             ml_detect=ml_detect,
             rulepack_channel=rulepack_channel,
+            graph_scan=graph_scan,
         )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
@@ -414,33 +426,33 @@ def scan_cmd(
             out.write_text(payload, encoding="utf-8")
             console.print(f"Wrote report to {out}")
         else:
-            console.print(payload)
+            typer.echo(payload)
     elif format == "sarif":
         payload = json.dumps(report_to_sarif(report), indent=2)
         if out:
             out.write_text(payload, encoding="utf-8")
             console.print(f"Wrote report to {out}")
         else:
-            console.print(payload)
+            typer.echo(payload)
     elif format == "junit":
         payload = report_to_junit_xml(report)
         if out:
             out.write_text(payload, encoding="utf-8")
             console.print(f"Wrote report to {out}")
         else:
-            console.print(payload)
+            typer.echo(payload)
     elif format == "compact":
         payload = report_to_compact_text(report)
         if out:
             out.write_text(payload, encoding="utf-8")
             console.print(f"Wrote report to {out}")
         else:
-            console.print(payload)
+            typer.echo(payload)
     else:
         render_report(report, console=console)
         if delta_payload is not None:
             if delta_format == "json":
-                console.print(json.dumps(delta_payload, indent=2))
+                typer.echo(json.dumps(delta_payload, indent=2))
             else:
                 console.print(
                     Panel(
@@ -578,7 +590,7 @@ def benchmark_cmd(
     }
 
     if format == "json":
-        console.print(json.dumps(payload, indent=2))
+        typer.echo(json.dumps(payload, indent=2))
     else:
         console.print(
             f"benchmark cases={payload['cases']} precision={payload['precision']:.4f} "
@@ -623,9 +635,8 @@ def diff_cmd(
     }
 
     if format == "json":
-        console.print(json.dumps(payload, indent=2))
+        typer.echo(json.dumps(payload, indent=2))
         return
-
     console.print(
         Panel(
             (

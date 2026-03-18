@@ -123,9 +123,7 @@
     "prompt_injection/pi42_eval_math_helper.md": "2da09f65ce34fa8ed4e05650d74b7d832ee6fdb014bc4d0129c3eb5b68f575a3",
     "prompt_injection/pi43_media_directive_injection.md": "07c30722b516770a16707e84ceca4bfa0d5c75d3da860965c94e1db923ec44d8"
   },
-  "last_finetune": {
-    "timestamp": "",
-    "corpus_size_at_finetune": 0,
-    "model_checkpoint": ""
-  }
+  "last_finetune": "2026-03-18T03:16:18.032306+00:00",
+  "last_finetune_corpus_size": 119,
+  "adapter_repo": "kurtpayne/skillscan-deberta-adapter"
 }
