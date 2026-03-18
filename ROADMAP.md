@@ -176,6 +176,59 @@ Make SkillScan the easiest and most trusted way to gate AI-skill/tool risk in lo
 
 ---
 
+## Milestone 4 — Chain Rule Quality & Precision (2 weeks)
+
+*Sourced from external review, March 2026.*
+
+### Epic G: Chain Rule Confidence Model
+
+#### Issue G1 — Document and validate chain confidence uplift rationale
+
+The review confirmed that CHN-002 (0.92) correctly exceeds its constituent EXF-001 (0.90) because co-occurrence of `secret_access` + `network` is a stronger intent signal than either pattern alone. However, CHN-001 (0.95) matches its constituent MAL-001 (0.95) — no uplift — because the static rule already encodes the conjunction (`curl|wget` + `bash|sh` in a single regex). This asymmetry is correct but undocumented.
+
+- Add a `confidence_rationale` field to `ChainRule` (optional string, surfaced in `rule list --format json`).
+- Document the uplift policy in `CONTRIBUTING.md`: chain confidence should exceed the max constituent confidence when co-occurrence adds intent signal; it should match when the static rule already encodes the conjunction.
+- Add a CI lint step that flags chain rules where `confidence < max(constituent static rule confidences)` as a warning.
+
+**Acceptance criteria**
+- All 14 chain rules have a `confidence_rationale` value.
+- CI warns when a new chain rule's confidence is lower than its highest-confidence constituent.
+- `rule list --format json` includes `confidence_rationale`.
+
+#### Issue G2 — action_patterns dual-use audit and static rule gap analysis
+
+The review identified that `action_patterns` serves two roles simultaneously: (1) the substrate for chain detection, and (2) a softer, broader set of patterns that can fire chain rules without triggering any individual static rule. For example, a bare `https://` URL + a `.env` reference hits CHN-002 but does not trigger EXF-001 (which requires a more specific credential file pattern).
+
+This is not a bug — it is intentional design — but it is undocumented and creates an invisible detection surface that is harder to audit.
+
+- Audit all `action_patterns` entries against the static rule set and document which patterns have no static-rule equivalent (i.e., are chain-only detection paths).
+- For each chain-only path, decide explicitly: (a) promote to a standalone static rule at lower severity, (b) keep as chain-only with a documented rationale, or (c) tighten the pattern to reduce false-positive surface.
+- Add a `chain_only_paths` section to `docs/DETECTION_MODEL.md` listing these paths and their rationale.
+
+**Acceptance criteria**
+- Every `action_patterns` entry is classified as `static_backed` or `chain_only` in the detection model docs.
+- At least one chain-only path is either promoted to a static rule or has a documented precision estimate.
+- No new `action_patterns` entries are added without a classification.
+
+#### Issue G3 — Proximity constraint support for chain rules
+
+The current engine evaluates chain rules by checking whether all required action patterns appear anywhere in the full file text (`_extract_actions` does a whole-document `pattern.search`). CHN-001 fires if `curl` appears on line 3 and `bash` appears on line 200, even if they are unrelated. This is a documented false-positive source, particularly in long skills with multiple unrelated sections.
+
+The `ChainRule` model and YAML schema have no `max_distance_lines` or `window_lines` field. The engine has no windowed-matching path.
+
+- Add an optional `window_lines: int` field to `ChainRule` (YAML and Pydantic model). When absent, behaviour is unchanged (whole-document match). When present, the engine only fires the chain rule if all constituent patterns match within a sliding window of that many lines.
+- Update `_extract_actions` (or introduce a new `_extract_actions_windowed` variant) to return per-line match positions, enabling window evaluation.
+- Add `window_lines` to CHN-001 and CHN-002 as the first candidates (suggested: 30–50 lines), with benchmark validation before setting values.
+- Update `docs/DETECTION_MODEL.md` with the windowed-matching semantics.
+
+**Acceptance criteria**
+- `window_lines` is parsed from YAML and stored on `CompiledChainRule`.
+- Engine respects the window when the field is set; existing rules without the field are unaffected.
+- At least CHN-001 and CHN-002 have `window_lines` values validated against the benchmark corpus.
+- False-positive rate on the benign corpus does not increase after adding window constraints.
+
+---
+
 ## Risks & Guardrails
 
 - **False positives from semantic detection**
