@@ -1,0 +1,81 @@
+name: Intel DB Update
+
+on:
+  schedule:
+    # 06:00 and 18:00 UTC daily
+    - cron: "0 6,18 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force update even if DBs are fresh"
+        required: false
+        default: "false"
+        type: string
+
+jobs:
+  update-intel:
+    name: Refresh IOC & Vuln DBs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install package
+        run: pip install -e ".[dev]" --quiet
+
+      - name: Seed IOC DB
+        run: python scripts/seed_ioc_db.py
+
+      - name: Seed Vuln DB
+        run: python scripts/seed_vuln_db.py
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --stat src/skillscan/data/intel/
+          CHANGED=$(git diff --name-only src/skillscan/data/intel/ | wc -l | tr -d ' ')
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "Intel files changed: $CHANGED"
+
+      - name: Open PR if DBs changed
+        if: steps.diff.outputs.changed != '0'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore(intel): refresh IOC and vuln DBs [skip ci]"
+          branch: "chore/intel-update-${{ github.run_id }}"
+          title: "chore(intel): refresh IOC and vuln DBs"
+          body: |
+            Automated twice-daily intel DB refresh.
+
+            **Changes:**
+            - `ioc_db.json`: re-seeded from URLhaus hosts, Feodo Tracker IPs, Spamhaus DROP CIDRs
+            - `vuln_db.json`: re-seeded from OSV.dev for top MCP-adjacent packages
+
+            This PR was opened automatically by the `intel-update` workflow.
+            Review the diff and merge if the changes look reasonable.
+          labels: "intel,automated"
+          author: "skillscan-bot <bot@skillscan.sh>"
+          committer: "skillscan-bot <bot@skillscan.sh>"
+          delete-branch: true
+
+      - name: No changes
+        if: steps.diff.outputs.changed == '0'
+        run: echo "Intel DBs are up to date — no PR needed."
+
+      - name: Post summary
+        if: always()
+        run: |
+          echo "### Intel DB Update" >> $GITHUB_STEP_SUMMARY
+          echo "IOC DB: $(python3 -c \"import json; db=json.load(open('src/skillscan/data/intel/ioc_db.json')); print(len(db.get('domains',[])), 'domains,', len(db.get('ips',[])), 'IPs,', len(db.get('cidrs',[])), 'CIDRs')\")" >> $GITHUB_STEP_SUMMARY
+          echo "Vuln DB: $(python3 -c \"import json; db=json.load(open('src/skillscan/data/intel/vuln_db.json')); py=db.get('python',{}); npm=db.get('npm',{}); print(len(py)+len(npm), 'packages,', sum(len(v) for v in py.values())+sum(len(v) for v in npm.values()), 'versions')\")" >> $GITHUB_STEP_SUMMARY
