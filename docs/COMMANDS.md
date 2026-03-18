@@ -21,6 +21,8 @@ Options:
 - `--ai-timeout-seconds`: AI request timeout (default 20)
 - `--ai-required/--ai-optional`: fail scan if AI assist fails (default optional)
 - `--ai-report-out`: write raw AI JSON output to file
+- `--ml-detect/--no-ml-detect`: enable ML-based prompt injection detection using the local ONNX model (default disabled; requires `skillscan model sync` first)
+- `--graph/--no-graph`: enable skill graph analysis — detects remote instruction loads, unsafe tool grants, and memory poisoning chains across all SKILL.md files in the scan root (default disabled)
 
 Examples:
 
@@ -30,6 +32,7 @@ skillscan scan ./artifact.zip --format json --out report.json
 skillscan scan ./artifact --profile balanced --fail-on never
 skillscan scan "https://github.com/blader/humanizer/blob/main/SKILL.md?plain=1"
 skillscan scan ./examples/showcase/20_ai_semantic_risk --ai-assist --ai-provider openai --fail-on never
+skillscan scan ./skills/ --ml-detect --graph --format json --out report.json
 ```
 
 ## `skillscan explain <report.json>`
@@ -69,6 +72,32 @@ Commands:
 - `disable <name>`
 - `rebuild`
 - `sync [--force] [--max-age-minutes N]`
+
+## `skillscan model`
+
+Manage the local ML model used by `--ml-detect`.
+
+Subcommands:
+- `sync [--force]`: download or update the ONNX INT8 model from HuggingFace. Safe to run repeatedly — skips if already current.
+- `status`: show installed model version, download date, and staleness. The scanner emits `PINJ-ML-STALE` when the model is older than 30 days.
+
+```bash
+skillscan model sync
+skillscan model status
+```
+
+## `skillscan rule`
+
+Manage the local rulepack.
+
+Subcommands:
+- `sync [--force]`: pull the latest rulepack from the managed channel.
+- `status`: show current rulepack version, rule count, and age.
+
+```bash
+skillscan rule sync
+skillscan rule status
+```
 
 ## `skillscan uninstall`
 
