@@ -67,55 +67,60 @@ jobs:
           commit_user_email: "bot@skillscan.sh"
 
   fine-tune:
-    name: Fine-tune DeBERTa (conditional)
+    name: Fine-tune DeBERTa on Modal GPU (conditional)
     needs: corpus-sync
     if: |
       needs.corpus-sync.outputs.should_retrain == 'true' ||
       github.event.inputs.force_retrain == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 240
+    timeout-minutes: 60   # Modal handles the actual GPU time; this is just the dispatcher
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
-
-      - name: Install ML dependencies
-        run: pip install -e ".[ml]" --quiet
-
-      - name: Run fine-tune
+      - name: Install Modal + minimal dependencies
+        run: pip install modal -e ".[dev]" --quiet
+      - name: Configure Modal credentials
+        run: |
+          python - <<'EOF'
+          import json, os, pathlib
+          creds_dir = pathlib.Path.home() / ".modal"
+          creds_dir.mkdir(parents=True, exist_ok=True)
+          creds = {
+              "token_id": os.environ["MODAL_TOKEN_ID"],
+              "token_secret": os.environ["MODAL_TOKEN_SECRET"],
+          }
+          (creds_dir / "credentials.json").write_text(json.dumps(creds))
+          print("Modal credentials configured")
+          EOF
+        env:
+          MODAL_TOKEN_ID: <LaTex>${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: $</LaTex>{{ secrets.MODAL_TOKEN_SECRET }}
+      - name: Dispatch fine-tune to Modal GPU
         id: finetune
         run: |
           FORCE_FLAG=""
-          if [ "${{ github.event.inputs.force_retrain }}" = "true" ]; then
+          if [ "<LaTex>${{ github.event.inputs.force_retrain }}" = "true" ]; then
             FORCE_FLAG="--force"
           fi
-          python scripts/finetune.py \
-            --output-dir checkpoints/ \
-            --epochs 3 \
-            --batch-size 8 \
-            --max-length 256 \
-            $FORCE_FLAG
+          modal run scripts/finetune_modal.py $</LaTex>FORCE_FLAG
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-
-      - name: Upload checkpoint artifact
-        uses: actions/upload-artifact@v4
+          HF_TOKEN: <LaTex>${{ secrets.HF_TOKEN }}
+          MODAL_TOKEN_ID: $</LaTex>{{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      - name: Commit updated CORPUS_CARD.md and manifest
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: deberta-ft-checkpoint-${{ github.run_id }}
-          path: checkpoints/
-          retention-days: 30
-
+          commit_message: "chore(corpus): update CORPUS_CARD.md after fine-tune [skip ci]"
+          file_pattern: "corpus/CORPUS_CARD.md corpus/manifest.json"
+          commit_user_name: "skillscan-bot"
+          commit_user_email: "bot@skillscan.sh"
       - name: Post summary
         if: always()
         run: |
           echo "### Fine-tune Result" >> $GITHUB_STEP_SUMMARY
-          echo "Corpus delta: ${{ needs.corpus-sync.outputs.summary }}" >> $GITHUB_STEP_SUMMARY
-          if [ -f checkpoints/*/finetune_summary.json ]; then
-            echo '```json' >> $GITHUB_STEP_SUMMARY
-            cat checkpoints/*/finetune_summary.json >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "Corpus delta: <LaTex>${{ needs.corpus-sync.outputs.summary }}" >> $</LaTex>GITHUB_STEP_SUMMARY
+          echo "Model pushed to: https://huggingface.co/kurtpayne/skillscan-deberta-adapter" >> $GITHUB_STEP_SUMMARY
