@@ -202,9 +202,32 @@ Flip the default: `graph_scan=True` when the scan target is a directory, `graph_
 
 ---
 
-## Milestone 9 — VS Code Extension Publish (1 week)
+## Milestone 8.5 — skillscan-lint SARIF Output & Unified Extension (1 week)
 
-The extension scaffold in `editors/vscode/` is complete: TypeScript source, SARIF parsing, inline diagnostics, status bar, and a marketplace publish workflow. The only blockers are a registered publisher ID and a `VSCE_PAT` secret.
+The VS Code extension in `skillscan-security` is built around SARIF — it runs `skillscan scan --format sarif` and parses the result. `skillscan-lint` (the companion quality linter, separate repo and PyPI package) currently outputs `rich`, `compact`, and `json` formats but not SARIF. Without SARIF output from the linter, the extension cannot surface lint findings alongside security findings in the same inline diagnostic panel.
+
+The goal of this milestone is to ship a unified extension that runs both tools and shows everything in one place, before the marketplace publish. A split install story (two separate extensions, or security-only on first publish) would undercut the value proposition for skill authors.
+
+### Issue KP1 — Add SARIF formatter to skillscan-lint
+
+Add a `--format sarif` option to `skillscan-lint` (in the `kurtpayne/skillscan-lint` repo). The SARIF output should map lint findings to SARIF `result` objects: `ruleId` from `finding.rule_id`, `level` from `finding.severity` (`error` → `error`, `warning` → `warning`, `info` → `note`), `message.text` from `finding.message`, and `physicalLocation` from `finding.path` + `finding.line`. The `tool.driver.rules` array should enumerate all active lint rules with their descriptions.
+
+The SARIF schema should match the version already used by `skillscan scan --format sarif` so the extension can parse both outputs with the same parser.
+
+**Acceptance criteria:** `skillscan-lint --format sarif <path>` produces valid SARIF 2.1.0. Output is parseable by the existing SARIF parser in the VS Code extension. At least one test in `skillscan-lint` validates the SARIF schema. The `--format` help text and `docs/` are updated.
+
+### Issue KP2 — Wire skillscan-lint into the VS Code extension
+
+Update `editors/vscode/` in `skillscan-security` to run `skillscan-lint --format sarif` alongside `skillscan scan --format sarif` on each file save. Merge the two SARIF result streams before populating the diagnostic collection. Lint findings should be visually distinguished from security findings (e.g., a different source label: `skillscan-security` vs `skillscan-lint`).
+
+The extension should degrade gracefully if `skillscan-lint` is not installed: show a one-time info notification suggesting install, but do not block security diagnostics.
+
+**Acceptance criteria:** Both tools run on file save. Findings from each tool are labeled with their source. Extension works correctly when only one tool is installed. `editors/vscode/README.md` documents both tool dependencies.
+
+---
+
+## Milestone 9 — VS Code Extension Publish (1 week)
+The extension scaffold in `editors/vscode/` is complete: TypeScript source, SARIF parsing, inline diagnostics, status bar, and a marketplace publish workflow. After Milestone 8.5, the extension will surface both security findings (`skillscan scan`) and quality findings (`skillscan-lint`) in a single install. The only remaining blockers are a registered publisher ID and a `VSCE_PAT` secret.
 
 ### Issue K1 — Publish to VS Code Marketplace
 
