@@ -1,0 +1,31 @@
+name: Update source index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+
+permissions:
+  contents: write
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate index.txt
+        run: git ls-files src/ > index.txt
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.txt
+          if git diff --cached --quiet; then
+            echo "index.txt unchanged, nothing to commit"
+          else
+            git commit -m "chore: update source index [skip ci]"
+            git push
+          fi
