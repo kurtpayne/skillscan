@@ -377,9 +377,14 @@ Preferred approach: a standalone `skillscan-report` wrapper script (not a new su
 ---
 
 ## Milestone 9 — Editor Extension Publish (1 week)
+
+> **Deferred to end of roadmap.** Blocked on Milestone 8.5 (SARIF wiring) and the org migration (K0). Will be scheduled after Milestone 19.
+
 The extension scaffold in `editors/vscode/` is complete: TypeScript source, SARIF parsing, inline diagnostics, status bar, and a publish workflow. After Milestone 8.5, the extension will surface both security findings (`skillscan scan`) and quality findings (`skillscan-lint`) in a single install. The primary targets are Zed and JetBrains; the VS Code Marketplace is deprioritized due to a broken publisher registration process.
 
 ### Issue K0 — Org migration to skillscan-dev
+
+> **Deferred to end of roadmap.** Scheduled after Milestone 19 to avoid mid-development namespace churn.
 
 Migrate all projects to the `skillscan-dev` GitHub org so the PyPI package names, Docker Hub namespace, and editor extension publisher IDs are consistent from day one.
 
@@ -687,6 +692,55 @@ The container accepts `--skills` (one or more paths), `--prompt` (the input to s
 
 ---
 
+## Milestone 19 — Ongoing Corpus Expansion (repeatable process)
+
+*Added March 2026. Process established during corpus expansion sprint (v0.3.2 → v0.4.0).*
+
+The ML detection layer's quality ceiling is determined by corpus size and diversity. The initial corpus (115 examples) was too small to trust the model's precision on out-of-distribution inputs. Milestone 19 is not a one-time deliverable — it is a repeatable process that runs in parallel with other milestones and is gated by quality review, not volume targets.
+
+### Current Corpus State (March 2026)
+
+| Source | Count | Location |
+|---|---|---|
+| Real-world benign (GitHub scrape) | ~250 | `skillscan-corpus/benign/github/` |
+| Adversarial augmented variants | ~151 | `skillscan-corpus/adversarial/augmented/` |
+| SE (social engineering) variants | ~50 | `skillscan-corpus/adversarial/se/` |
+| Hard negatives | ~20 | `skillscan-corpus/benign/hard_negatives/` |
+| Original hand-crafted examples | ~115 | `skillscan-corpus/` (various) |
+| Held-out evaluation set | 126 | `skillscan-corpus/eval/` |
+| **Total** | **~860** | public: ~580, private: ~280 |
+
+### Issue CE1 — Repeatable scrape-and-augment cycle
+
+The process is documented in `docs/CORPUS_EXPANSION.md`. The scripts are:
+- `scripts/scrape_github_skills.py` — GitHub API scraper (stars>5, deduplication, quality filtering)
+- `scripts/augment_corpus.py` — adversarial augmentation (injects jailbreak patterns into benign skills)
+- `scripts/reserve_eval_set.py` — stratified 20% held-out evaluation set reservation
+
+Run this cycle when the corpus delta threshold (50 examples or 10%) is crossed to trigger a new fine-tune run. The corpus-sync workflow in CI automates the trigger.
+
+**Acceptance criteria:** Each expansion round is documented with source, methodology, and quality review notes. The held-out eval set is refreshed with `reserve_eval_set.py` after each expansion. The corpus delta triggers a Modal fine-tune run automatically.
+
+### Issue CE2 — Adversarial coverage expansion
+
+Priority adversarial categories to expand:
+1. **Evasion variants** — obfuscated injections that bypass static rules (Unicode homoglyphs, steganographic whitespace, multi-turn payload assembly)
+2. **SE (social engineering)** — authority impersonation, urgency framing, trust escalation across skill chains
+3. **Graph attack fixtures** — cross-skill tool escalation, taint propagation, circular dependency exploitation
+4. **Hard negatives** — legitimate skills that superficially resemble malicious patterns (security tools, pen-test helpers, CTF skills)
+
+Target: 200 adversarial examples per category by v1.0.
+
+**Acceptance criteria:** Each category has ≥50 examples in the private corpus. Augmentation scripts are parameterized to generate category-specific variants. Quality review checklist in `docs/CORPUS_EXPANSION.md` is followed for each batch.
+
+### Issue CE3 — Held-out eval integration and F1 tracking
+
+The held-out eval set (126 examples) exists but has not yet been used in a fine-tune run. The next fine-tune run should report F1, precision, and recall against the held-out set and commit the metrics to `docs/MODEL_METRICS.md`. This is the primary quality gate for corpus expansion — expansion rounds that do not improve F1 should be reviewed for quality issues before the next round.
+
+**Acceptance criteria:** Fine-tune run reports F1 ≥ 0.90 against held-out eval set. Metrics are committed to `docs/MODEL_METRICS.md` after each run. A regression in F1 blocks the next corpus expansion round until the cause is identified.
+
+---
+
 ## Deprioritized / Deferred
 The following items from earlier roadmap drafts are explicitly deprioritized until the above milestones are complete.
 
@@ -730,8 +784,8 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 |---|---|---|---|
 | IOC DB entries | 2,031 (493 domains, 8 IPs, 1,527 CIDRs, 3 URLs) | 5,000+ (automated) | 20,000+ |
 | Vuln DB packages | 27 (23 Python + 4 npm) | 50+ | 150+ |
-| ML corpus size | 138 (54 benign + 84 injection/SE/graph) | 300+ | 500+ |
-| ML adapter F1 (held-out) | unknown (no held-out set yet) | ≥0.90 | ≥0.93 |
+| ML corpus size | ~860 combined (580 public + ~280 private) | 1,200+ | 2,000+ |
+| ML adapter F1 (held-out) | unknown (eval set seeded, next run will measure) | ≥0.90 | ≥0.93 |
 | Static + chain rules | 85 (70 static + 15 chain) | 95+ | 120+ |
 | Adversarial cases | 25 | 40+ | 60+ |
 | Time-to-first-scan | <5 min | <3 min | <2 min |
