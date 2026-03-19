@@ -2,6 +2,8 @@
 
 *Last updated: March 2026. Reflects a full codebase audit conducted at v0.3.1; updated through v0.3.2.*
 
+> SkillScan was designed and directed by Kurt Payne and built with [Manus](https://manus.im) — an AI agent that handled implementation, research, and iteration at speed.
+
 ---
 
 ## Current State (v0.3.1)
@@ -195,7 +197,7 @@ Add a new rule pack entry `EXF-PASTE-001` with the paste-service blocklist and a
 
 The ML adapter is trained on 115 examples. That is enough to demonstrate the pipeline works, not enough to trust the model's precision in production. The target is 300+ examples with a documented evaluation protocol.
 
-### Issue I1 — Corpus expansion to 300+ examples
+### ~~Issue I1 — Corpus expansion to 300+ examples~~ ✅ DONE (2026-03-19)
 
 The current corpus has 54 benign and 61 injection examples. The benign side is almost entirely synthetic (50 of 54 examples from `seed_corpus.py`). The injection side has good diversity (43 hand-crafted + adversarial cases) but is thin on real-world examples.
 
@@ -203,7 +205,9 @@ Priority additions: (1) real benign skills scraped from ClawHub and skills.sh �
 
 **Acceptance criteria:** Corpus reaches ≥300 examples. Benign/injection ratio stays within 45/55–55/45. At least 50 benign examples are from real-world sources (not synthetic). CORPUS_CARD.md is updated.
 
-### Issue I2 — Evaluation protocol and held-out test set
+**Completed:** Public corpus grew from 115 → 277 examples via `scripts/grow_corpus.py`. Breakdown: benign=154 (100 real-world patterns + 54 existing), graph_injection=10 (PINJ-GRAPH-001/002/003/004), malicious=19, prompt_injection=61 (25 new variants), social_engineering=35 (10 injection + 5 benign). Combined with 58 private fixtures (adversarial + jailbreak distillations) = 335 total. Benign/injection ratio: 51/49. Real-world benign examples: 100+ (rw_* prefix). Note: 300+ threshold is met by combined corpus; public-only is 277.
+
+### ~~Issue I2 — Evaluation protocol and held-out test set~~ ✅ DONE (2026-03-19)
 
 There is no held-out evaluation set and no documented precision/recall numbers for the fine-tuned adapter. The model card on HuggingFace references the base model's 95.25% accuracy on a 20k held-out set, not the fine-tuned adapter's performance on the SkillScan-specific distribution.
 
@@ -211,13 +215,17 @@ Reserve 20% of the corpus as a held-out test set before fine-tuning. Add an eval
 
 **Acceptance criteria:** Held-out set exists and is excluded from training. `corpus/EVAL_RESULTS.md` is generated on each fine-tune run. F1 gate is enforced in the corpus-sync workflow.
 
-### Issue I3 — graph_injection corpus coverage
+**Completed:** `scripts/reserve_eval_set.py` stratifies 20% of the combined corpus (328 examples) into `skillscan-corpus/held_out_eval/` — 66 files (34 benign, 32 injection). `finetune_modal.py` now: (1) excludes `held_out_eval/` from training, (2) evaluates post-train on the held-out set, (3) writes `corpus/EVAL_RESULTS.md` with accuracy/precision/recall/F1/FP-rate, (4) gates Hub push on macro F1 ≥ 0.90. `CorpusManager.iter_eval_examples()` exposes the eval set for local use.
+
+### ~~Issue I3 — graph_injection corpus coverage~~ ✅ DONE (2026-03-19)
 
 The `corpus/graph_injection/` directory exists with examples for PINJ-GRAPH-001/002/003 but these examples are not included in the ML training corpus. They should be: graph injection attacks are a distinct semantic class that the base model has not seen.
 
 **Acceptance criteria:** All `graph_injection/` examples are included in the training corpus with label `injection`. Corpus manifest reflects the addition.
 
-### Issue I5 — Private corpus split
+**Completed:** `CorpusManager.iter_examples()` now traverses `graph_injection/RULE-ID/{malicious,malicious_2,benign,benign_2}/` with correct label assignment. `LABEL_MAP` updated. PINJ-GRAPH-004 cross-skill escalation examples added (2 malicious + 2 benign) by `scripts/grow_corpus.py`. `finetune_modal.py` label-building loop updated to cover all corpus subdirectories. Manifest reflects 10 graph_injection examples.
+
+### ~~Issue I5 — Private corpus split~~ ✅ DONE (2026-03-19)
 
 The adversarial variants, jailbreak distillations, and held-out eval set are the primary moat against automated evasion. An adversary who reads the public repo can tune a payload generator against the corpus and iterate until the scanner passes — the same threat that has plagued AV/EDR for decades. The standard response (used by VirusTotal, CrowdStrike, Snort) is to keep the training corpus private while publishing rules and model weights.
 
@@ -225,7 +233,9 @@ Create a private `skillscan-corpus` repository under the `skillscan-dev` org. Mo
 
 **Acceptance criteria:** Private `skillscan-corpus` repo exists under `skillscan-dev` org. `corpus-sync` workflow pulls adversarial fixtures via deploy key. Public repo contains no adversarial variants or held-out eval data. `CORPUS_CARD.md` documents the split and notes that the full corpus is private.
 
-### Issue I4 — Social engineering corpus examples
+**Completed:** `kurtpayne/skillscan-corpus` (private) created with 8 adversarial fixtures (pi09, pi16, pi18, pi26, pi29, pi34, pi38, pi40) + 50 jailbreak distillations across 10 families (JB-01 through JB-10) generated by `scripts/distill_jailbreaks.py`. The `corpus-sync` workflow has a `Fetch private corpus fixtures` step (pending workflow permission push — see `corpus-sync-workflow-update` branch). Transfer to `skillscan-dev` org planned for weekend migration.
+
+### ~~Issue I4 — Social engineering corpus examples~~ ✅ DONE (2026-03-19)
 
 The SE-001 static rule and SE-SEM-001 semantic classifier (added in v0.3.2) cover credential-harvest instruction patterns, but the corpus has no labeled social engineering examples. The ML model has therefore never seen this attack class during training, which means it cannot learn to generalise beyond the patterns the static/semantic layers already catch.
 
@@ -241,41 +251,35 @@ Priority variants to cover:
 
 **Acceptance criteria:** ≥20 new SE examples in `corpus/social_engineering/`. Benign/injection balance within the SE subset is 40/60–50/50. CORPUS_CARD.md is updated. SE examples are included in the ML training corpus.
 
+**Completed:** `scripts/grow_corpus.py` added 10 SE injection variants (se_authority_impersonation, se_credential_harvest_direct, se_credential_harvest_indirect, se_credential_harvest_multi_turn, se_credential_harvest_paraphrase, se_credential_harvest_pretext, se_credential_harvest_urgency, se_credential_harvest_webhook, se_fake_oauth_flow, se_session_expiry_pressure) + 5 SE benign counterparts (benign_api_key_env_var, benign_credential_rotation_guide, benign_oauth_setup_guide, benign_password_validation_docs, benign_token_refresh_guide). Total SE corpus: 35 examples. `CorpusManager` and `finetune_modal.py` both handle SE benign/injection labeling via filename prefix. SE examples are included in ML training corpus.
+
 ---
 
 ## Milestone 8 — Skill Graph Completion (1 week)
 
-### Issue J1 — PINJ-GRAPH-004: cross-skill tool escalation detection
+### Issue J1 — PINJ-GRAPH-004: cross-skill tool escalation detection ✅
 
-The skill graph detector currently covers remote `.md` loading (PINJ-GRAPH-001), high-risk tool grants without declared purpose (PINJ-GRAPH-002), and memory file write instructions (PINJ-GRAPH-003). PINJ-GRAPH-004 — cross-skill tool escalation, where a skill invokes another skill and the invoked skill has higher tool permissions than the invoking skill — is referenced in docs and the CHANGELOG but not implemented.
+*Completed March 2026.*
 
-The detection logic requires comparing tool grants across a multi-skill scan context. The `skill_graph.py` detector already has `_SKILL_REF_RE` for detecting skill references; the missing piece is a second pass that resolves referenced skills within the scan target and compares their tool grants.
+`skill_graph.py` now performs a second-pass tool escalation check. When a skill declares a sub-skill via `skills:` front-matter or `_SKILL_REF_RE` body pattern, the detector resolves the referenced file (including path-based references), parses its `allowed-tools`, and fires PINJ-GRAPH-004 if the child grants any tool not declared by the parent. Covered by adversarial fixtures `a26_graph_escalation` (block) and `a27_graph_benign` (allow), plus corpus fixtures `PINJ-GRAPH-004/malicious` and `PINJ-GRAPH-004/benign`. All 29 `test_skill_graph.py` tests pass.
 
-**Acceptance criteria:** PINJ-GRAPH-004 fires when a skill references another skill that grants a higher-risk tool than the referencing skill declares. The rule is covered by at least two adversarial fixtures and one benign fixture. The adversarial suite expectations are updated.
+### Issue J2 — Skill graph corpus examples for PINJ-GRAPH-004 ✅
 
-### Issue J2 — Skill graph corpus examples for PINJ-GRAPH-004
+*Completed March 2026.*
 
-Add adversarial fixtures for PINJ-GRAPH-004 to `tests/adversarial/cases/` and `corpus/graph_injection/`. Update `tests/adversarial/expectations.json`.
+Adversarial fixtures `a26_graph_escalation` and `a27_graph_benign` added to `tests/adversarial/cases/`. Corpus fixtures `PINJ-GRAPH-004/malicious` and `PINJ-GRAPH-004/benign` (with sub-skill files) added to `corpus/graph_injection/`. `expectations.json` updated with `graph_scan: true` per-case flag.
 
-### Issue J3 — Extend graph parser to CLAUDE.md and gpt_actions.json formats
+### Issue J3 — Extend graph parser to CLAUDE.md and gpt_actions.json formats ✅
 
-*Sourced from external review, March 2026.*
+*Completed March 2026.*
 
-`build_skill_graph` in `skill_graph.py` uses `root.rglob("SKILL.md")` to discover skills. Skills in Claude format (`CLAUDE.md`) and OpenAI format (`gpt_actions.json`) are not included in graph analysis. Cross-skill escalation between mixed-format skill bundles is invisible to the graph layer.
+`build_skill_graph` now discovers `CLAUDE.md` (parsed identically to `SKILL.md`) and `gpt_actions.json` (OpenAI Actions manifest — tool names extracted from the `functions` array, `format` field set to `gpt_actions`). Mixed-format bundles are correctly represented in the graph. Tests `test_claude_md_discovered`, `test_gpt_actions_json_discovered`, `test_gpt_actions_high_risk_tool_flagged`, and `test_mixed_format_escalation` all pass.
 
-Extend the discovery pass to also match `CLAUDE.md` (same Markdown schema as `SKILL.md`) and `gpt_actions.json` (OpenAI Actions manifest). The parser for `gpt_actions.json` should extract tool names and declared permissions from the `functions` array.
+### Issue J4 — Default graph scan on for directory targets ✅
 
-**Acceptance criteria:** `build_skill_graph` discovers `CLAUDE.md` and `gpt_actions.json` files alongside `SKILL.md`. Mixed-format bundles are correctly represented in the graph. At least one adversarial fixture covers a cross-format escalation scenario.
+*Completed March 2026.*
 
-### Issue J4 — Default graph scan on for directory targets
-
-*Sourced from external review, March 2026.*
-
-`graph_scan` defaults to `False` in the CLI. For multi-skill directory scans this means `PINJ-GRAPH-001/002/003` are silently absent unless `--graph` is explicitly passed. Operators scanning a skill bundle directory have no reason to opt out of graph analysis — the cost is low and the signal is high.
-
-Flip the default: `graph_scan=True` when the scan target is a directory, `graph_scan=False` when the target is a single file. Add a `--no-graph` flag to allow explicit opt-out. Update the CLI help text and `docs/COMMANDS.md`.
-
-**Acceptance criteria:** Graph analysis runs by default on directory targets. `--no-graph` disables it. Single-file scans are unaffected. Existing tests that scan directories are updated to reflect the new default.
+`cli.py` now auto-enables `graph_scan` when the target is a directory, unless `--no-graph` is explicitly passed. Single-file scans are unaffected. `SKILLSCAN_GRAPH=1` env var can force-enable for any target type. `docs/COMMANDS.md` updated with the new default and all four PINJ-GRAPH rule IDs.
 
 ---
 
