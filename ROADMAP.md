@@ -36,6 +36,75 @@ The scanner is a functioning, well-structured Python CLI with a clean separation
 
 ---
 
+## Product Architecture & Ecosystem Vision
+
+*Added March 2026 following strategic review.*
+
+### End State Goal
+
+SkillScan is the **canonical offline trust layer for the AI agent skill ecosystem**. Before any skill is loaded into an agent runtime — whether in CI, in a developer's editor, or at the registry gate — SkillScan answers the full question: *should I trust this skill?*
+
+That question has three orthogonal dimensions:
+
+| Dimension | Question | Tool |
+|---|---|---|
+| **Safety** | Is this skill trying to do something malicious? | `skillscan-security` |
+| **Quality** | Will this skill work correctly with an LLM agent? | `skillscan-lint` |
+| **Provenance** | Is this skill what it claims to be, and has it changed? | `skillscan-provenance` (planned) |
+
+The tools are composable: they share a common data model (`skillscan-core`), produce compatible output formats (SARIF, JSON), and are orchestrated by a thin wrapper (`skillscan-report`) that produces a unified CI report. A VS Code extension surfaces all three dimensions inline. A public feed shows the trust posture of popular skills in the wild.
+
+### The Static Analysis Ceiling — A Design Principle
+
+Static offline analysis has a hard ceiling. Almost all of the highest-value gaps — runtime behavior prediction, indirect injection from external content fetched at runtime, temporal and conditional payloads, MCP server infrastructure trust — require either dynamic execution or infrastructure-level signals. These are not gaps we can close with better regex or a larger corpus.
+
+**This is a feature, not a limitation.** The offline/private/deterministic positioning is the reason teams trust SkillScan in security-sensitive environments. We own the offline trust layer completely and are honest about where dynamic analysis begins. We do not half-build dynamic capabilities that would require phoning home, cloud execution, or user key management we cannot control.
+
+The one exception is `skillscan-sandbox` (Milestone 18): a Docker container that runs a skill through a local agent with a fully instrumented tool environment. The user supplies the model credentials and the input prompt; we supply the canary environment, the tripwires, and the detection layer. The execution is entirely local. This is the only dynamic capability that stays within the offline/private paradigm.
+
+### Tool Architecture
+
+```
+skillscan-core          shared graph model, front-matter parser, SKILL.md schema,
+                        fingerprinting, diff engine
+                        ↓                    ↓                    ↓
+skillscan-security      skillscan-lint       skillscan-provenance
+malicious intent        quality and          behavioral diff,
+detection               LLM-effectiveness    permission scope,
+(static rules,          analysis             similarity hashing,
+ML, IOC/vuln DB)                             identity/signing
+                        ↓                    ↓                    ↓
+                        skillscan-report     (unified CI report wrapper)
+                        ↓
+                        VS Code extension    public feed    skillscan-sandbox
+```
+
+### Tractable Near-Term Additions (Staying Within Offline Static Paradigm)
+
+The following gaps are implementable without dynamic execution and address real attack vectors that neither current tool covers. They form the basis of Milestones 15–17:
+
+**Behavioral diff detection.** Skills change over time. A malicious update to a trusted skill is one of the most realistic supply chain attacks and is completely invisible to both current tools. `skillscan diff` today compares scan report JSON files — it does not diff the skill instructions themselves. A semantic diff of two versions of a SKILL.md file, highlighting instruction-level changes and flagging security-relevant additions, is the missing capability.
+
+**Permission scope validation.** Skills declare `allowed-tools` but neither tool validates that the instructions are consistent with the declared scope. A skill that declares `allowed-tools: [read_file]` but whose instructions say "fetch this URL and write the result to disk" is claiming a narrower scope than it actually requires. This is a significant trust gap — registries show declared permissions but cannot verify they match actual behavior.
+
+**Instruction-level similarity hashing.** A malicious skill that is 95% identical to a popular trusted skill but with one added exfiltration instruction is invisible to both current tools. Instruction-level similarity hashing against a known-good registry would catch this. It is the prompt equivalent of package typosquatting detection.
+
+**Skill identity and fingerprinting.** A deterministic hash of the semantically significant parts of a skill — not the whole file, which changes with formatting — that lets you detect when a trusted skill has been modified. This is the foundation for behavioral drift detection and the provenance layer.
+
+### Gaps That Require Dynamic Analysis (Explicitly Out of Scope for Static Tools)
+
+The following gaps are real and acknowledged. They are not on the roadmap for the static tools because they cannot be addressed without crossing into dynamic execution or infrastructure-level signals:
+
+- **Runtime behavior prediction** — what will this skill actually do when an agent executes it with a real prompt? Requires sandboxed execution.
+- **Indirect prompt injection from external content** — a clean skill that fetches attacker-controlled content at runtime. Requires runtime observation.
+- **Temporal and conditional payloads** — "if today's date is after March 1st, also do X". Requires symbolic execution or LLM semantic reasoning.
+- **MCP server infrastructure trust** — is the MCP server itself trustworthy? Requires infrastructure-layer signals.
+- **Compositional safety at runtime** — skills that are safe individually but dangerous in combination when an agent chains them. Requires runtime observation of the full invocation graph.
+
+These are addressed by `skillscan-sandbox` (Milestone 18) within the constraints of the offline/local execution model.
+
+---
+
 ## Milestone 5 — Intel & Vuln DB Depth (1 week)
 
 The intel layer is the most visibly thin part of the project. A scanner that finds 11 IOC domains looks like a demo, not a tool. This milestone makes the bundled data credible.
@@ -458,10 +527,140 @@ Guardrails: only scan skills from public registries with explicit public listing
 
 **Acceptance criteria:** Feed page links to `SCAN_FEED_POLICY.md`. Findings display category-level descriptions, not raw matched text. Dispute link is present on each finding row.
 
+-----
+
+## Milestone 15 — skillscan-core Extraction (2 weeks)
+
+Both `skillscan-security` and `skillscan-lint` independently implement a skill graph builder, a front-matter parser, and a SKILL.md schema validator. These will diverge further as `skillscan-provenance` is added. A shared `skillscan-core` PyPI package is the prerequisite for the provenance layer and for any future tool in the ecosystem.
+
+### Issue SC1 — Extract shared graph model and front-matter parser
+
+Move `skillscan-security/src/skillscan/skill_graph.py` and the equivalent `skillscan-lint/src/skillscan_lint/detectors/graph.py` into a new `skillscan-core` package. The canonical graph model should support SKILL.md, CLAUDE.md, and `gpt_actions.json` discovery (see Issue J3 in Milestone 8). Both tools depend on `skillscan-core` as a PyPI dependency.
+
+**Acceptance criteria:** `skillscan-core` is a standalone PyPI package. Both `skillscan-security` and `skillscan-lint` import the graph model from `skillscan-core`. Front-matter parsing changes need to be made in one place. CI validates that both tools pass their test suites against the shared model.
+
+### Issue SC2 — Skill identity fingerprinting model
+
+Add a `skillscan_core.fingerprint(skill_path)` function that produces a deterministic hash of the semantically significant parts of a skill: the front-matter fields (`name`, `description`, `allowed-tools`, `version`) and the instruction body, normalized for whitespace and formatting. The hash must be stable across cosmetic changes (whitespace, comment rewording) but change when instructions are added, removed, or modified.
+
+This fingerprint is the foundation for behavioral drift detection (Milestone 16) and the provenance layer (Milestone 17).
+
+**Acceptance criteria:** `skillscan_core.fingerprint()` is deterministic. Cosmetic-only changes produce the same hash. Instruction changes produce a different hash. The function is tested with at least 10 fixture pairs (same hash expected / different hash expected).
+
+### Issue SC3 — SKILL.md schema validation
+
+Add a `skillscan_core.validate_schema(skill_path)` function that validates a skill file against the canonical SKILL.md schema: required fields, allowed field types, `allowed-tools` format, version string format. This replaces the ad-hoc validation currently scattered across both tools.
+
+**Acceptance criteria:** Schema validation catches missing required fields, malformed `allowed-tools` entries, and invalid version strings. Both tools use `skillscan_core.validate_schema()` instead of their own implementations.
+
+---
+
+## Milestone 16 — Behavioral Diff & Permission Scope Validation (2 weeks)
+
+The most tractable near-term additions to the offline static paradigm. Both address real supply chain attack vectors that neither current tool covers.
+
+### Issue BD1 — Instruction-level skill diff
+
+Extend `skillscan diff` to accept two skill files directly (not just scan report JSON files). When given two versions of a SKILL.md, the command should produce a structured diff of the instruction content: sections added, sections removed, instructions changed. Security-relevant changes (new tool references, new network calls, new credential access patterns, changes to `allowed-tools`) should be flagged with the relevant rule IDs from `skillscan-security`.
+
+This is the primary defense against malicious updates to trusted skills — a supply chain attack that is completely invisible to per-version static scanning.
+
+**Acceptance criteria:** `skillscan diff skill_v1.md skill_v2.md` produces a structured instruction diff. Security-relevant changes are flagged with rule IDs. Output is available in text and JSON formats. At least 5 adversarial fixtures cover the malicious-update scenario.
+
+### Issue BD2 — Permission scope validation rule
+
+Add a new rule category `PSV` (Permission Scope Violation) to `skillscan-security`. A PSV finding fires when a skill's instructions imply tool access that is not declared in `allowed-tools`. The detection approach: extract capability signals from the instruction body (network fetch patterns, filesystem write patterns, shell execution patterns) and compare against the declared `allowed-tools` list. A mismatch is a `warn` finding; a significant mismatch (e.g., shell execution declared nowhere but `subprocess.run` patterns present) is a `block` finding.
+
+**Acceptance criteria:** PSV-001 fires when instructions imply undeclared network access. PSV-002 fires when instructions imply undeclared filesystem write access. PSV-003 fires when instructions imply undeclared shell execution. At least 10 corpus fixtures cover PSV scenarios. The rule is documented in `docs/RULES.md`.
+
+### Issue BD3 — Skill fingerprint drift detection
+
+Using the fingerprint model from Milestone 15, add a `skillscan verify <skill_path> --baseline <fingerprint>` subcommand that checks whether a skill has changed since a known-good fingerprint was recorded. This is the building block for a trust-on-first-use (TOFU) model: record the fingerprint when a skill is first approved, and alert if it changes.
+
+**Acceptance criteria:** `skillscan verify` exits non-zero when the skill fingerprint does not match the baseline. Output includes which sections changed. Integrates with the suppression file so approved drifts can be acknowledged.
+
+---
+
+## Milestone 17 — Instruction-Level Similarity Hashing (2 weeks)
+
+A malicious skill that is 95% identical to a popular trusted skill but with one added exfiltration instruction is invisible to both current tools. This is the prompt equivalent of package typosquatting and it is a realistic attack vector as the skill ecosystem grows.
+
+### Issue SH1 — Known-good skill registry and similarity index
+
+Build a known-good skill registry from the public feed data (Milestone 14): a set of trusted skill fingerprints and their instruction embeddings. The similarity index uses locality-sensitive hashing (LSH) or MinHash over instruction n-grams to enable fast approximate nearest-neighbor lookup without requiring a model inference call.
+
+**Acceptance criteria:** Registry is built from the top-N skills in the public feed. Similarity lookup completes in <100ms for a single skill. The registry is updated automatically as part of the daily scan feed workflow.
+
+### Issue SH2 — Typosquatting detection rule
+
+Add a `TYP` (Typosquatting) rule category to `skillscan-security`. A TYP finding fires when a skill's instruction content is highly similar (above a configurable threshold, default 0.85) to a known-good skill in the registry but has a different name or author. The finding includes the name of the similar trusted skill and the similarity score.
+
+**Acceptance criteria:** TYP-001 fires on a skill that is a near-clone of a known-good skill with one added malicious instruction. False positive rate on a sample of 50 legitimate skills is below 5%. The threshold is configurable via policy file.
+
+### Issue SH3 — Cross-skill taint analysis (graph layer)
+
+Extend the skill graph detector to track data flowing between skills, not just dependency edges. Skill A reads a secret and passes it to skill B which posts it to a webhook — each skill looks clean in isolation. The taint analysis should flag chains where sensitive data (credential patterns, PII markers) flows from a read operation in one skill to a network send in another.
+
+This is the most complex item in this milestone and may be deferred to a follow-on PR if the graph model changes from Milestone 15 are not yet stable.
+
+**Acceptance criteria:** At least one chain rule fires on a two-skill fixture where skill A reads credentials and skill B exfiltrates them. The rule is documented. Single-skill scans are unaffected.
+
+---
+
+## Milestone 18 — skillscan-sandbox: Local Dynamic Analysis (4 weeks)
+
+The only dynamic analysis capability in the SkillScan ecosystem. A Docker container that runs a skill through a local agent with a fully instrumented tool environment. The execution is entirely local — the user supplies model credentials and an input prompt; we supply the canary environment, the tripwires, and the detection layer.
+
+This is the only capability that crosses the static analysis ceiling while remaining within the offline/private paradigm.
+
+### Design Principles
+
+- **User owns the scenario.** The user supplies: skill paths, an input prompt, and model credentials (API key or local Ollama endpoint). Everything else is owned by the container.
+- **We own the environment.** The container ships default system prompts tuned for common agent personas (coding agent, research agent, customer support agent), pre-built model configs for Claude, GPT-4o, Gemini, and Ollama, and a fully instrumented fake tool environment.
+- **Detection is behavioral, not textual.** The tripwires observe what the agent actually does, not what the skill says it will do. A skill that passes static analysis but attempts to read a canary SSH key file is a finding.
+- **Output is compatible with the rest of the stack.** The sandbox emits SARIF findings using the same schema as `skillscan-security`, so results feed into `skillscan-report` and the VS Code extension.
+
+### Issue SB1 — Canary environment and tripwire taxonomy
+
+Design and implement the instrumented fake tool environment:
+- Fake filesystem with canary files: `~/.ssh/id_rsa`, `~/.aws/credentials`, `~/.env`, `/etc/passwd`, `/etc/shadow` (fake content, monitored for reads)
+- Fake network layer: logs all outbound call attempts, checks destinations against the IOC DB, blocks actual network egress
+- Tool call auditor: compares actual tool calls against the skill's declared `allowed-tools`, flags violations as PSV findings
+- Turn counter: flags behavior that only appears after N turns (temporal payload detection)
+
+The tripwire taxonomy maps to the existing finding schema: canary reads → EXF/MAL class, undeclared network calls → IOC/EXF class, permission scope violations → PSV class.
+
+**Acceptance criteria:** Container runs in isolation with no actual network egress. All canary file reads are detected and reported. Tool call auditing covers all standard MCP tool types. Output is valid SARIF.
+
+### Issue SB2 — Default system prompts and model configs
+
+Ship default YAML configurations for:
+- System prompts: `coding-agent.yml`, `research-agent.yml`, `customer-support-agent.yml`
+- Model configs: `claude-3-5-sonnet.yml`, `gpt-4o.yml`, `gemini-1-5-pro.yml`, `ollama.yml` (local, no API key required)
+
+The coding agent default is the highest-priority persona — it has filesystem and shell access and represents the worst-case attack surface.
+
+**Acceptance criteria:** All default configs are tested against at least one known-malicious skill fixture. The Ollama config works without any API key. Config format is documented.
+
+### Issue SB3 — CLI harness and Docker image
+
+The user interface:
+
+```bash
+skillscan-sandbox \
+  --skills ./skills/git-helper/ ./skills/file-manager/ \
+  --prompt "Help me commit my changes and push to origin" \
+  --key $ANTHROPIC_API_KEY
+  # or --model ollama/llama3.2 for local
+```
+
+The container accepts `--skills` (one or more paths), `--prompt` (the input to send to the agent), and either `--key` + optional `--model` (default: Claude) or `--model ollama/<name>` for local execution. Output is SARIF to stdout by default, with `--format json` and `--format text` options.
+
+**Acceptance criteria:** Container builds and runs on Linux/macOS/Windows (Docker Desktop). Multi-skill sessions are supported. Output integrates with `skillscan-report`. A `docker-compose.yml` example is provided for teams running multiple scans in CI.
+
 ---
 
 ## Deprioritized / Deferred
-
 The following items from earlier roadmap drafts are explicitly deprioritized until the above milestones are complete.
 
 **SaaS control plane / multi-tenant API.** Out of scope per PRD. Revisit post-v1.0 if adoption warrants it.
@@ -473,6 +672,8 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 **Channel support (stable/preview/labs).** The rule sync mechanism works against `main`. Channel support adds complexity without clear benefit at the current scale.
 
 **Baseline diff mode as a separate milestone.** `skillscan diff` is already implemented. The remaining work (suppression file integration with diff output) is a small feature, not a milestone.
+
+**Dynamic analysis beyond skillscan-sandbox.** Indirect prompt injection from external content fetched at runtime, temporal/conditional payload detection via symbolic execution, MCP server infrastructure trust validation, and compositional safety analysis across a live agent session are all real gaps. They require cloud execution, infrastructure-level signals, or LLM semantic reasoning that cannot be fully local. These are not on the roadmap for the static tools. If the project evolves toward a cloud-assisted tier, these are the first candidates.
 
 ---
 
@@ -492,7 +693,9 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 
 ## Success Metrics
 
-*Updated 2026-03-18 to reflect v0.3.2 actuals.*
+*Updated 2026-03-18 to reflect v0.3.2 actuals and expanded ecosystem vision.*
+
+### Detection Quality (skillscan-security)
 
 | Metric | Current (v0.3.2) | Target (v0.4.0) | Target (v1.0) |
 |---|---|---|---|
@@ -502,5 +705,19 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 | ML adapter F1 (held-out) | unknown (no held-out set yet) | ≥0.90 | ≥0.93 |
 | Static + chain rules | 85 (70 static + 15 chain) | 95+ | 120+ |
 | Adversarial cases | 25 | 40+ | 60+ |
-| VS Code extension | scaffolded | published | 100+ installs |
 | Time-to-first-scan | <5 min | <3 min | <2 min |
+
+### Ecosystem Coverage
+
+| Metric | Current | Target (v1.0) |
+|---|---|---|
+| VS Code extension | scaffolded | published, 100+ installs |
+| skillscan-lint SARIF output | not implemented | complete |
+| skillscan-core package | not extracted | PyPI published, used by both tools |
+| Skill fingerprinting | not implemented | complete (Milestone 15) |
+| Permission scope validation | not implemented | PSV-001/002/003 rules live (Milestone 16) |
+| Instruction-level diff | report JSON only | skill file diff with rule-flagged changes (Milestone 16) |
+| Similarity hashing / typosquatting | not implemented | TYP-001 rule live (Milestone 17) |
+| skillscan-sandbox | not started | Docker image published, Ollama support (Milestone 18) |
+| Public skill feed | placeholder page | daily cron, 50+ skills scanned (Milestone 14) |
+| Languages covered | Python/bash/GH Actions | + JS/TS/Ruby/Go/Rust (Milestone 10) |
