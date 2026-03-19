@@ -60,7 +60,7 @@ Static offline analysis has a hard ceiling. Almost all of the highest-value gaps
 
 **This is a feature, not a limitation.** The offline/private/deterministic positioning is the reason teams trust SkillScan in security-sensitive environments. We own the offline trust layer completely and are honest about where dynamic analysis begins. We do not half-build dynamic capabilities that would require phoning home, cloud execution, or user key management we cannot control.
 
-The one exception is `skillscan-sandbox` (Milestone 18): a Docker container that runs a skill through a local agent with a fully instrumented tool environment. The user supplies the model credentials and the input prompt; we supply the canary environment, the tripwires, and the detection layer. The execution is entirely local. This is the only dynamic capability that stays within the offline/private paradigm.
+The one exception is `skillscan-trace` (Milestone 18): a Docker container that runs a skill through a local agent with a fully instrumented tool environment. The user supplies the model credentials and the input prompt; we supply the canary environment, the tripwires, and the detection layer. The execution is entirely local. This is the only dynamic capability that stays within the offline/private paradigm.
 
 ### Tool Architecture
 
@@ -76,7 +76,7 @@ ML, IOC/vuln DB)                             identity/signing
                         ↓                    ↓                    ↓
                         skillscan-report     (unified CI report wrapper)
                         ↓
-                        VS Code extension    public feed    skillscan-sandbox
+                        VS Code extension    public feed    skillscan-trace
 ```
 
 ### Tractable Near-Term Additions (Staying Within Offline Static Paradigm)
@@ -101,7 +101,7 @@ The following gaps are real and acknowledged. They are not on the roadmap for th
 - **MCP server infrastructure trust** — is the MCP server itself trustworthy? Requires infrastructure-layer signals.
 - **Compositional safety at runtime** — skills that are safe individually but dangerous in combination when an agent chains them. Requires runtime observation of the full invocation graph.
 
-These are addressed by `skillscan-sandbox` (Milestone 18) within the constraints of the offline/local execution model.
+These are addressed by `skillscan-trace` (Milestone 18) within the constraints of the offline/local execution model.
 
 ---
 
@@ -216,6 +216,14 @@ Reserve 20% of the corpus as a held-out test set before fine-tuning. Add an eval
 The `corpus/graph_injection/` directory exists with examples for PINJ-GRAPH-001/002/003 but these examples are not included in the ML training corpus. They should be: graph injection attacks are a distinct semantic class that the base model has not seen.
 
 **Acceptance criteria:** All `graph_injection/` examples are included in the training corpus with label `injection`. Corpus manifest reflects the addition.
+
+### Issue I5 — Private corpus split
+
+The adversarial variants, jailbreak distillations, and held-out eval set are the primary moat against automated evasion. An adversary who reads the public repo can tune a payload generator against the corpus and iterate until the scanner passes — the same threat that has plagued AV/EDR for decades. The standard response (used by VirusTotal, CrowdStrike, Snort) is to keep the training corpus private while publishing rules and model weights.
+
+Create a private `skillscan-corpus` repository under the `skillscan-dev` org. Move adversarial variants, jailbreak distillation outputs, and the held-out eval set there. Update the `corpus-sync` GitHub Actions workflow to pull from the private repo via a deploy key (`CORPUS_DEPLOY_KEY` secret). The public repo retains obvious/illustrative malicious fixtures and all benign fixtures. The training pipeline in the public repo produces weights from the combined corpus; the weights are committed to the public repo as before.
+
+**Acceptance criteria:** Private `skillscan-corpus` repo exists under `skillscan-dev` org. `corpus-sync` workflow pulls adversarial fixtures via deploy key. Public repo contains no adversarial variants or held-out eval data. `CORPUS_CARD.md` documents the split and notes that the full corpus is private.
 
 ### Issue I4 — Social engineering corpus examples
 
@@ -366,6 +374,21 @@ Preferred approach: a standalone `skillscan-report` wrapper script (not a new su
 
 ## Milestone 9 — VS Code Extension Publish (1 week)
 The extension scaffold in `editors/vscode/` is complete: TypeScript source, SARIF parsing, inline diagnostics, status bar, and a marketplace publish workflow. After Milestone 8.5, the extension will surface both security findings (`skillscan scan`) and quality findings (`skillscan-lint`) in a single install. The only remaining blockers are a registered publisher ID and a `VSCE_PAT` secret.
+
+### Issue K0 — Org migration to skillscan-dev
+
+Before publishing to the VS Code Marketplace, migrate all projects to the `skillscan-dev` GitHub org so the publisher ID, PyPI package names, and Docker Hub namespace are consistent from day one. A publisher ID baked into a VS Code extension is permanent once installs accumulate.
+
+**Migration order:**
+1. Transfer GitHub repos (`skillscan-security`, `skillscan-lint`, `skillscan-website`) to `skillscan-dev` org. Update branch protection rules and secrets in the new org.
+2. Add `skillscan-dev` as PyPI maintainer on existing packages before revoking personal token. Regenerate `PYPI_API_TOKEN` scoped to the org.
+3. Create `skillscandev` Docker Hub org. Push existing images with new namespace tags. Add deprecation notice to old `kurtpayne/skillscan-*` images pointing to new namespace.
+4. Regenerate `VSCE_PAT` scoped to `skillscan-dev` publisher. Register `skillscan-dev` publisher on VS Code Marketplace using `dev@skillscan.sh`.
+5. Update `INDEX_PAT` to a PAT scoped to the new org. Update all README install instructions, DISTRIBUTION.md, and GitHub Actions workflow files to reference new namespaces.
+6. Add `CODEOWNERS` file pointing to `dev@skillscan.sh`.
+7. Update `data/scan_feed.json` raw CDN URL in the website and Issue F2 to reference the new org.
+
+**Acceptance criteria:** All repos live under `skillscan-dev` org. PyPI packages installable as `pip install skillscan-security` (same name, new publisher). Docker images pullable from `skillscandev/skillscan-security`. VS Code publisher registered as `skillscan-dev`. All CI workflows green after migration.
 
 ### Issue K1 — Publish to VS Code Marketplace
 
@@ -607,9 +630,11 @@ This is the most complex item in this milestone and may be deferred to a follow-
 
 ---
 
-## Milestone 18 — skillscan-sandbox: Local Dynamic Analysis (4 weeks)
+## Milestone 18 — skillscan-trace: Local Dynamic Execution Tracing (4 weeks)
 
-The only dynamic analysis capability in the SkillScan ecosystem. A Docker container that runs a skill through a local agent with a fully instrumented tool environment. The execution is entirely local — the user supplies model credentials and an input prompt; we supply the canary environment, the tripwires, and the detection layer.
+The only dynamic analysis capability in the SkillScan ecosystem. A Docker container that runs a skill through a local agent with a fully instrumented tool environment and records a structured execution trace. The execution is entirely local — the user supplies model credentials and an input prompt; we supply the canary environment, the tripwires, and the detection layer.
+
+The value is the **trace**, not the containment. We are not detonating malware in a sandbox — we are running a skill through a real model with a real prompt and recording every tool call, every file access, every network attempt, and every permission boundary crossing. The output is an execution trace annotated with findings. This is a different product story from a sandbox: scan first (static, fast, no credentials needed), trace if you want behavioral confirmation (dynamic, requires model access, produces richer evidence).
 
 This is the only capability that crosses the static analysis ceiling while remaining within the offline/private paradigm.
 
@@ -647,7 +672,7 @@ The coding agent default is the highest-priority persona — it has filesystem a
 The user interface:
 
 ```bash
-skillscan-sandbox \
+skillscan-trace \
   --skills ./skills/git-helper/ ./skills/file-manager/ \
   --prompt "Help me commit my changes and push to origin" \
   --key $ANTHROPIC_API_KEY
@@ -673,7 +698,7 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 
 **Baseline diff mode as a separate milestone.** `skillscan diff` is already implemented. The remaining work (suppression file integration with diff output) is a small feature, not a milestone.
 
-**Dynamic analysis beyond skillscan-sandbox.** Indirect prompt injection from external content fetched at runtime, temporal/conditional payload detection via symbolic execution, MCP server infrastructure trust validation, and compositional safety analysis across a live agent session are all real gaps. They require cloud execution, infrastructure-level signals, or LLM semantic reasoning that cannot be fully local. These are not on the roadmap for the static tools. If the project evolves toward a cloud-assisted tier, these are the first candidates.
+**Dynamic analysis beyond skillscan-trace.** Indirect prompt injection from external content fetched at runtime, temporal/conditional payload detection via symbolic execution, MCP server infrastructure trust validation, and compositional safety analysis across a live agent session are all real gaps. They require cloud execution, infrastructure-level signals, or LLM semantic reasoning that cannot be fully local. These are not on the roadmap for the static tools. If the project evolves toward a cloud-assisted tier, these are the first candidates.
 
 ---
 
@@ -718,6 +743,6 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 | Permission scope validation | not implemented | PSV-001/002/003 rules live (Milestone 16) |
 | Instruction-level diff | report JSON only | skill file diff with rule-flagged changes (Milestone 16) |
 | Similarity hashing / typosquatting | not implemented | TYP-001 rule live (Milestone 17) |
-| skillscan-sandbox | not started | Docker image published, Ollama support (Milestone 18) |
+| skillscan-trace | not started | Docker image published, Ollama support (Milestone 18) |
 | Public skill feed | placeholder page | daily cron, 50+ skills scanned (Milestone 14) |
 | Languages covered | Python/bash/GH Actions | + JS/TS/Ruby/Go/Rust (Milestone 10) |
