@@ -82,6 +82,21 @@
           "type": "string",
           "default": "",
           "description": "Path to a custom rules YAML file. Leave empty to use the bundled default ruleset."
+        },
+        "skillscan.enableLint": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run skillscan-lint alongside the security scanner and show quality findings. Requires skillscan-lint to be installed (pip install skillscan-lint). If not installed, a one-time notification is shown and security diagnostics continue normally."
+        },
+        "skillscan.lintExecutablePath": {
+          "type": "string",
+          "default": "skillscan-lint",
+          "description": "Path to the skillscan-lint executable. Defaults to 'skillscan-lint' on PATH."
+        },
+        "skillscan.lintConfigFile": {
+          "type": "string",
+          "default": "",
+          "description": "Path to a .skillscan-lint.toml config file for quality lint settings. Leave empty to use auto-discovery."
         }
       }
     },

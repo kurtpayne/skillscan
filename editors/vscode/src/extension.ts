@@ -1,11 +1,18 @@
 /**
  * SkillScan Security — VS Code Extension
  *
- * Runs `skillscan` on MCP skill files (SKILL.md, CLAUDE.md, *.yaml) and
- * surfaces findings as VS Code diagnostics (squiggles + Problems panel).
+ * Runs both `skillscan` (security) and `skillscan-lint` (quality) on MCP skill
+ * files (SKILL.md, CLAUDE.md, *.yaml) and surfaces findings as VS Code
+ * diagnostics (squiggles + Problems panel).
+ *
+ * Both tools produce SARIF 2.1.0 output. The two result streams are merged into
+ * a single DiagnosticCollection, with each finding tagged with its source tool
+ * (`skillscan` or `skillscan-lint`) so they are visually distinguishable.
  *
  * Design: thin shell wrapper — no bundled Python, no network calls.
  * The user must have `skillscan` installed (`pip install skillscan-security`).
+ * `skillscan-lint` is optional: if not installed, a one-time info notification
+ * is shown but security diagnostics continue to work normally.
  */
 
 import * as vscode from "vscode";
@@ -13,7 +20,7 @@ import { execFile } from "child_process";
 import * as path from "path";
 
 // ---------------------------------------------------------------------------
-// Types matching skillscan's --format sarif output
+// Types matching SARIF 2.1.0 output (subset used by this extension)
 // ---------------------------------------------------------------------------
 
 interface SarifResult {
@@ -23,7 +30,12 @@ interface SarifResult {
   locations?: Array<{
     physicalLocation?: {
       artifactLocation?: { uri: string };
-      region?: { startLine?: number; startColumn?: number; endLine?: number; endColumn?: number };
+      region?: {
+        startLine?: number;
+        startColumn?: number;
+        endLine?: number;
+        endColumn?: number;
+      };
     };
   }>;
 }
@@ -43,6 +55,9 @@ interface SarifLog {
 let diagnosticCollection: vscode.DiagnosticCollection;
 let statusBarItem: vscode.StatusBarItem;
 let outputChannel: vscode.OutputChannel;
+
+/** Set to true after the first time we warn the user that skillscan-lint is missing. */
+let lintNotFoundWarned = false;
 
 // ---------------------------------------------------------------------------
 // Activation
@@ -122,11 +137,15 @@ function isSkillFile(uri: vscode.Uri): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Scanning
+// Configuration helpers
 // ---------------------------------------------------------------------------
 
-function getExecutable(): string {
+function getSecurityExecutable(): string {
   return vscode.workspace.getConfiguration("skillscan").get<string>("executablePath", "skillscan");
+}
+
+function getLintExecutable(): string {
+  return vscode.workspace.getConfiguration("skillscan").get<string>("lintExecutablePath", "skillscan-lint");
 }
 
 function getExtraArgs(): string[] {
@@ -141,7 +160,11 @@ function getRulesPath(): string {
   return vscode.workspace.getConfiguration("skillscan").get<string>("rulesPath", "");
 }
 
-function buildArgs(target: string): string[] {
+function isLintEnabled(): boolean {
+  return vscode.workspace.getConfiguration("skillscan").get<boolean>("enableLint", true);
+}
+
+function buildSecurityArgs(target: string): string[] {
   const args = ["scan", target, "--format", "sarif"];
   const rulesPath = getRulesPath();
   if (rulesPath) {
@@ -151,9 +174,25 @@ function buildArgs(target: string): string[] {
   return args;
 }
 
-function severityToDiagnostic(level: string | undefined, failOn: string): vscode.DiagnosticSeverity {
+function buildLintArgs(target: string): string[] {
+  const args = ["scan", target, "--format", "sarif"];
+  const configFile = vscode.workspace.getConfiguration("skillscan").get<string>("lintConfigFile", "");
+  if (configFile) args.push("--config", configFile);
+  return args;
+}
+
+// ---------------------------------------------------------------------------
+// Severity mapping
+// ---------------------------------------------------------------------------
+
+function severityToDiagnostic(
+  level: string | undefined,
+  failOn: string
+): vscode.DiagnosticSeverity {
   const order = ["error", "warning", "note", "none"];
-  const failIdx = order.indexOf(failOn === "block" ? "error" : failOn === "warn" ? "warning" : "note");
+  const failIdx = order.indexOf(
+    failOn === "block" ? "error" : failOn === "warn" ? "warning" : "note"
+  );
   const levelIdx = order.indexOf(level ?? "warning");
   if (levelIdx <= failIdx) {
     return vscode.DiagnosticSeverity.Error;
@@ -164,80 +203,178 @@ function severityToDiagnostic(level: string | undefined, failOn: string): vscode
   return vscode.DiagnosticSeverity.Warning;
 }
 
-function scanFile(uri: vscode.Uri): void {
-  const exe = getExecutable();
-  const args = buildArgs(uri.fsPath);
+// ---------------------------------------------------------------------------
+// SARIF parsing
+// ---------------------------------------------------------------------------
+
+function parseSarifDiagnostics(
+  sarif: SarifLog,
+  failOn: string,
+  source: string,
+  ruleUrlBase: string
+): vscode.Diagnostic[] {
+  const diagnostics: vscode.Diagnostic[] = [];
+
+  for (const run of sarif.runs ?? []) {
+    for (const result of run.results ?? []) {
+      const loc = result.locations?.[0]?.physicalLocation;
+      const region = loc?.region;
+
+      const startLine = Math.max(0, (region?.startLine ?? 1) - 1);
+      const startCol = Math.max(0, (region?.startColumn ?? 1) - 1);
+      const endLine = Math.max(0, (region?.endLine ?? startLine + 1) - 1);
+      const endCol = region?.endColumn ? region.endColumn - 1 : startCol + 80;
+
+      const range = new vscode.Range(startLine, startCol, endLine, endCol);
+      const severity = severityToDiagnostic(result.level, failOn);
+      const message = `[${result.ruleId}] ${result.message.text}`;
+
+      const diag = new vscode.Diagnostic(range, message, severity);
+      diag.source = source;
+      diag.code = {
+        value: result.ruleId,
+        target: vscode.Uri.parse(`${ruleUrlBase}${result.ruleId.toLowerCase()}`),
+      };
+      diagnostics.push(diag);
+    }
+  }
+
+  return diagnostics;
+}
+
+// ---------------------------------------------------------------------------
+// Runner helpers
+// ---------------------------------------------------------------------------
+
+function runTool(
+  exe: string,
+  args: string[],
+  cwd: string | undefined
+): Promise<{ stdout: string; stderr: string; code: number | null; notFound: boolean }> {
+  return new Promise((resolve) => {
+    let stdout = "";
+    let stderr = "";
+
+    const proc = execFile(exe, args, { cwd }, (err, out, err2) => {
+      stdout = out;
+      stderr = err2;
+    });
+
+    proc.on("error", (err) => {
+      const notFound = (err as NodeJS.ErrnoException).code === "ENOENT";
+      resolve({ stdout: "", stderr: err.message, code: null, notFound });
+    });
+
+    proc.on("close", (code) => {
+      resolve({ stdout, stderr, code, notFound: false });
+    });
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Scanning
+// ---------------------------------------------------------------------------
+
+async function scanFile(uri: vscode.Uri): Promise<void> {
   const failOn = getFailOn();
+  const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
 
   statusBarItem.text = "$(sync~spin) SkillScan";
 
-  execFile(exe, args, { cwd: vscode.workspace.workspaceFolders?.[0]?.uri.fsPath }, (err, stdout, stderr) => {
-    statusBarItem.text = "$(shield) SkillScan";
+  // ── Security scan ──────────────────────────────────────────────────────
+  const secExe = getSecurityExecutable();
+  const secArgs = buildSecurityArgs(uri.fsPath);
+  const secResult = await runTool(secExe, secArgs, cwd);
 
-    if (stderr) {
-      outputChannel.appendLine(`[stderr] ${stderr}`);
+  if (secResult.stderr) {
+    outputChannel.appendLine(`[security stderr] ${secResult.stderr}`);
+  }
+
+  let secDiagnostics: vscode.Diagnostic[] = [];
+
+  if (secResult.notFound) {
+    vscode.window
+      .showErrorMessage(
+        `SkillScan: executable '${secExe}' not found. Run: pip install skillscan-security`,
+        "Install docs"
+      )
+      .then((choice) => {
+        if (choice === "Install docs") {
+          vscode.env.openExternal(vscode.Uri.parse("https://skillscan.sh/docs#install"));
+        }
+      });
+  } else if (secResult.stdout) {
+    try {
+      const sarif: SarifLog = JSON.parse(secResult.stdout);
+      secDiagnostics = parseSarifDiagnostics(
+        sarif,
+        failOn,
+        "skillscan",
+        "https://skillscan.sh/rules/"
+      );
+    } catch {
+      outputChannel.appendLine(`[parse error] Could not parse SARIF from skillscan`);
+      outputChannel.appendLine(secResult.stdout.slice(0, 500));
     }
+  }
 
-    // skillscan exits non-zero when findings are present — that's expected
-    if (err && !stdout) {
-      // Real error (e.g. executable not found)
-      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        vscode.window.showErrorMessage(
-          `SkillScan: executable '${exe}' not found. Run: pip install skillscan-security`,
-          "Install docs",
+  // ── Lint scan (optional) ───────────────────────────────────────────────
+  let lintDiagnostics: vscode.Diagnostic[] = [];
+
+  if (isLintEnabled()) {
+    const lintExe = getLintExecutable();
+    const lintArgs = buildLintArgs(uri.fsPath);
+    const lintResult = await runTool(lintExe, lintArgs, cwd);
+
+    if (lintResult.notFound) {
+      if (!lintNotFoundWarned) {
+        lintNotFoundWarned = true;
+        vscode.window.showInformationMessage(
+          `SkillScan: '${lintExe}' not found — quality lint findings will not appear. Install with: pip install skillscan-lint`,
+          "Install docs"
         ).then((choice) => {
           if (choice === "Install docs") {
-            vscode.env.openExternal(vscode.Uri.parse("https://skillscan.sh/docs#install"));
+            vscode.env.openExternal(vscode.Uri.parse("https://skillscan.sh/linter#installation"));
           }
         });
       }
-      diagnosticCollection.set(uri, []);
-      return;
-    }
-
-    try {
-      const sarif: SarifLog = JSON.parse(stdout);
-      const diagnostics: vscode.Diagnostic[] = [];
-
-      for (const run of sarif.runs ?? []) {
-        for (const result of run.results ?? []) {
-          const loc = result.locations?.[0]?.physicalLocation;
-          const region = loc?.region;
-
-          const startLine = Math.max(0, (region?.startLine ?? 1) - 1);
-          const startCol = Math.max(0, (region?.startColumn ?? 1) - 1);
-          const endLine = Math.max(0, (region?.endLine ?? startLine + 1) - 1);
-          const endCol = region?.endColumn ? region.endColumn - 1 : startCol + 80;
-
-          const range = new vscode.Range(startLine, startCol, endLine, endCol);
-          const severity = severityToDiagnostic(result.level, failOn);
-          const message = `[${result.ruleId}] ${result.message.text}`;
-
-          const diag = new vscode.Diagnostic(range, message, severity);
-          diag.source = "skillscan";
-          diag.code = {
-            value: result.ruleId,
-            target: vscode.Uri.parse(`https://skillscan.sh/rules/${result.ruleId.toLowerCase()}`),
-          };
-          diagnostics.push(diag);
+    } else {
+      if (lintResult.stderr) {
+        outputChannel.appendLine(`[lint stderr] ${lintResult.stderr}`);
+      }
+      if (lintResult.stdout) {
+        try {
+          const sarif: SarifLog = JSON.parse(lintResult.stdout);
+          lintDiagnostics = parseSarifDiagnostics(
+            sarif,
+            failOn,
+            "skillscan-lint",
+            "https://skillscan.sh/linter#"
+          );
+        } catch {
+          outputChannel.appendLine(`[parse error] Could not parse SARIF from skillscan-lint`);
+          outputChannel.appendLine(lintResult.stdout.slice(0, 500));
         }
       }
-
-      diagnosticCollection.set(uri, diagnostics);
-
-      const count = diagnostics.length;
-      if (count > 0) {
-        const errors = diagnostics.filter((d) => d.severity === vscode.DiagnosticSeverity.Error).length;
-        statusBarItem.text = `$(shield) SkillScan $(error)${errors > 0 ? errors : ""}`;
-        outputChannel.appendLine(`[${path.basename(uri.fsPath)}] ${count} finding(s)`);
-      } else {
-        statusBarItem.text = "$(shield) SkillScan $(check)";
-      }
-    } catch {
-      outputChannel.appendLine(`[parse error] Could not parse SARIF output from skillscan`);
-      outputChannel.appendLine(stdout.slice(0, 500));
     }
-  });
+  }
+
+  // ── Merge and publish ──────────────────────────────────────────────────
+  const allDiagnostics = [...secDiagnostics, ...lintDiagnostics];
+  diagnosticCollection.set(uri, allDiagnostics);
+
+  const count = allDiagnostics.length;
+  if (count > 0) {
+    const errors = allDiagnostics.filter(
+      (d) => d.severity === vscode.DiagnosticSeverity.Error
+    ).length;
+    statusBarItem.text = `$(shield) SkillScan $(error)${errors > 0 ? errors : ""}`;
+    outputChannel.appendLine(
+      `[${path.basename(uri.fsPath)}] ${secDiagnostics.length} security + ${lintDiagnostics.length} lint finding(s)`
+    );
+  } else {
+    statusBarItem.text = "$(shield) SkillScan $(check)";
+  }
 }
 
 function scanWorkspace(): void {
@@ -251,7 +388,9 @@ function scanWorkspace(): void {
 
   vscode.workspace.findFiles("**/{SKILL,CLAUDE}.md", "**/node_modules/**").then((uris) => {
     if (uris.length === 0) {
-      vscode.window.showInformationMessage("SkillScan: No SKILL.md or CLAUDE.md files found in workspace.");
+      vscode.window.showInformationMessage(
+        "SkillScan: No SKILL.md or CLAUDE.md files found in workspace."
+      );
       return;
     }
     outputChannel.appendLine(`[workspace scan] Found ${uris.length} skill file(s)`);
