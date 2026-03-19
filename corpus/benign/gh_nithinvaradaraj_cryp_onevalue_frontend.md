@@ -2,10 +2,11 @@
 name: onevalue-frontend
 description: Frontend development for OneValue Delivery Intelligence Console using Lovable, React, and Tahoe OS26 design system. Use when implementing UI components, dashboards, Google OAuth, real-time Supabase integration, or data visualization. Covers component architecture, design standards, authentication, and user experience patterns.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: nithinvaradaraj-crypto/OneValue-Console
 # corpus-url: https://github.com/nithinvaradaraj-crypto/OneValue-Console/blob/a7cef9aab6671e7eb2fea7df8e231f1dae6a6f90/onevalue-frontend-SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # OneValue Frontend Developer Skill

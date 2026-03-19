@@ -2,10 +2,11 @@
 name: job-application-agent-suite
 description: Build and run a multi-agent workflow for Korean job applications, especially self-introduction essays and cover letters. Use when users ask to analyze a target company/role, extract and map personal experiences, draft application answers, rewrite tone for a specific company, detect AI-like writing patterns, and run final submission checks.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: HyunWoo9930/job-application-agent-suite
 # corpus-url: https://github.com/HyunWoo9930/job-application-agent-suite/blob/e183fd87c6118b86673f34fc550c24e3646954a0/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Job Application Agent Suite

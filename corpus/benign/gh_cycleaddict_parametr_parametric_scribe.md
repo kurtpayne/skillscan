@@ -2,10 +2,11 @@
 name: parametric-scribe
 description: Enables "Time Machine" coding. Records tasks as a Recipe and allows intelligent replay/modification of history.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Cycleaddict/parametric-scribe
 # corpus-url: https://github.com/Cycleaddict/parametric-scribe/blob/a0837f29d8eb1c1a8709afc32913c9819e43fb47/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Parametric Scribe

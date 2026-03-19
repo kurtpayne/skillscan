@@ -3,10 +3,11 @@ name: dayz-dev
 description: DayZ Enforce Script development orchestrator. Dynamically fetches class APIs, script references, and mod documentation. Supports vanilla, Community Framework, and Expansion development for DayZ 1.28+.
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: DayZGhost/dayz-dev-plugin
 # corpus-url: https://github.com/DayZGhost/dayz-dev-plugin/blob/a6e39bedb4858e367a3163e38fa929bbd1c11ff5/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # DayZ Development

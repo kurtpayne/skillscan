@@ -24,10 +24,11 @@ metadata:
         - jq
     primaryEnv: APOLLO_API_KEY
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: LauchnerMedia/nexus-bdr
 # corpus-url: https://github.com/LauchnerMedia/nexus-bdr/blob/252cd2181443c64592e45990096f7d1da9284bbf/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Nexus BDR Agent

@@ -6,10 +6,11 @@ description: |
   running code in documents, or when the user mentions Pandoc filters, documentation processing, document
   transformation, or interactive documentation systems.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: iwillig/polydoc
 # corpus-url: https://github.com/iwillig/polydoc/blob/aadba9ab07dc40fcf0d22f3dbc621df6ca7208a9/POLYDOC_SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Polydoc - JVM-Native Pandoc Documentation System

@@ -8,10 +8,11 @@ metadata:
   documentation: https://github.com/DrJacky/claude-android-ninja
   tags: [android, kotlin, compose, mvvm, hilt, room, gradle, mobile]
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Drjacky/claude-android-ninja
 # corpus-url: https://github.com/Drjacky/claude-android-ninja/blob/cfcf69e3b1ccc9ecc03d0e1b095611086ae377a1/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 # Android Kotlin Compose Development
 

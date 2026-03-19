@@ -3,10 +3,11 @@ name: code-reviewer
 description: 这个 Skills 帮助进行代码审查，提供代码质量分析/在线报告预览、最佳实践建议和潜在问题识别。
 allowed-tools: Read, Write, Bash, WebFetch, NotebookEdit
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: lemon888yyy/ces
 # corpus-url: https://github.com/lemon888yyy/ces/blob/98b9f32bb0e962c173f19a098b58c3be3c1b07d4/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 代码审查专家 Skills

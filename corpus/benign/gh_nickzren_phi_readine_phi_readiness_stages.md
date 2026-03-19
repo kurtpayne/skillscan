@@ -7,10 +7,11 @@ metadata:
     homepage: https://github.com/nickzren/phi-readiness-stages
     skillKey: phi-readiness-stages
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: nickzren/phi-readiness-stages
 # corpus-url: https://github.com/nickzren/phi-readiness-stages/blob/a107b95e4eec6af915de762c7612f7e0573aca99/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # PHI Readiness Stages

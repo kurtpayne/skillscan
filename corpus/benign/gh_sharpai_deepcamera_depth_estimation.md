@@ -53,10 +53,11 @@ capabilities:
     script: scripts/transform.py
     description: "Real-time depth estimation overlay on live feed"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: SharpAI/DeepCamera
 # corpus-url: https://github.com/SharpAI/DeepCamera/blob/d51176f0e007f78cbde61d9c06b93111d017cf3c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Depth Estimation (Privacy)

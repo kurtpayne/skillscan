@@ -2,10 +2,11 @@
 name: myrag
 description: 開発で得た知見・教訓・ノウハウを SQLite ベクトルDB に蓄積し、応答時にベクトル検索で関連情報を取得する。「情報を記録したい」「過去の知見を検索したい」「学んだことを保存して」という依頼で起動。知識の蓄積・検索・活用の流れで進める。copilot-instructions.md や AGENTS.md の作成は対象外（agent-customization スキルを使用）。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: aokumablue/myrag
 # corpus-url: https://github.com/aokumablue/myrag/blob/560272e8809443dc1cd1fcf9aedfefd227c417fb/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Myrag

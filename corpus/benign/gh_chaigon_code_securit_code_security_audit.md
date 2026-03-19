@@ -9,10 +9,11 @@ description: >
   (4) 用户提到 security audit、vulnerability scan、代码审计、安全扫描、渗透测试前的代码审查
   (5) 用户要求检查 OWASP Top 10 相关问题
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: chaigon/code-security-audit-skill
 # corpus-url: https://github.com/chaigon/code-security-audit-skill/blob/3e3953a62d0dd3e35585bebd2cc328f7462d9ae5/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 代码安全审计

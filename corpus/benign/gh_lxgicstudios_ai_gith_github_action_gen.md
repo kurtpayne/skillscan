@@ -2,10 +2,11 @@
 name: github-action-gen
 description: Generate GitHub Actions workflows from plain English. Use when setting up CI.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: lxgicstudios/ai-github-action
 # corpus-url: https://github.com/lxgicstudios/ai-github-action/blob/9ac05c1a3258c0f5bd941b97150017140c6b5de1/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # GitHub Action Generator

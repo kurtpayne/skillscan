@@ -3,10 +3,11 @@ name: inference-difference
 description: "The Inference Difference is a transparent AI inference router that automatically selects the best model for each request based on complexity, domain, cost, and hardware constraints. Invoke when asked about routing decisions, model selection, inference costs, why a specific model was chosen, routing statistics, available models, or to inspect current routing state."
 metadata: { "openclaw": { "emoji": "✂️", "requires": {} } }
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: greatnorthernfishguy-hub/The-Inference-Difference
 # corpus-url: https://github.com/greatnorthernfishguy-hub/The-Inference-Difference/blob/33adbce6a7910ac7613ea4bf8e3eff9aa5e1997a/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # The Inference Difference (TID)

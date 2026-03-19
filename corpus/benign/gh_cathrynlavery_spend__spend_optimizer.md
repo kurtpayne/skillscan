@@ -2,10 +2,11 @@
 name: spend-optimizer
 description: Audit subscriptions AND optimize credit card rewards. Analyzes bank CSVs to find recurring charges, categorize spend, identify which card each charge should be on, and calculate potential rewards. Use when user says "audit subscriptions", "optimize my cards", "maximize rewards", or "analyze my spending". Outputs interactive HTML with subscription management and card optimization.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: cathrynlavery/spend-optimizer
 # corpus-url: https://github.com/cathrynlavery/spend-optimizer/blob/7986632a3b47d2ef7f6bd2565c5e26b5dc1dd693/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # spend-optimizer

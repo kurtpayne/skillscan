@@ -2,10 +2,11 @@
 name: cricket
 description: A brief description of what this skill does
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: tigeryash/cricket
 # corpus-url: https://github.com/tigeryash/cricket/blob/89fe34c523d4c6df9439c525ac8cb4fa96b6cca2/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # cricket

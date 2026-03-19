@@ -2,10 +2,11 @@
 name: voice-assistant-platform
 description: Multi-tenant, callable voice assistant platform for company-specific information.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: papdawin/customer-service-assistant
 # corpus-url: https://github.com/papdawin/customer-service-assistant/blob/b7c0112453f61640bd53a0664e985e433ea73039/skill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Voice Assistant Platform

@@ -2,10 +2,11 @@
 name: hact
 description: History-aware collaboration tuning for Codex projects. Use when asked to review past conversations/threads/sessions, summarize user preferences from project history, convert recurring patterns into guardrails or execution protocols, or update collaboration docs based on prior interaction evidence.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sidecus/hact
 # corpus-url: https://github.com/sidecus/hact/blob/cc13cde4b69cddb5b385471ad72fac0f668286f9/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # HACT

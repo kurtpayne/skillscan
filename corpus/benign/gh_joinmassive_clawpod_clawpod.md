@@ -5,10 +5,11 @@ allowed-tools: Bash(curl:*)
 homepage: https://clawpod.joinmassive.com
 metadata: {"openclaw":{"emoji":"🔓","homepage":"https://clawpod.joinmassive.com","primaryEnv":"MASSIVE_UNBLOCKER_TOKEN","requires":{"bins":["curl"],"env":["MASSIVE_UNBLOCKER_TOKEN"]}}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: joinmassive/clawpod
 # corpus-url: https://github.com/joinmassive/clawpod/blob/7e900790a79529c36ee2a06d807ebd74be3ef07d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Massive Unblocker

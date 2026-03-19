@@ -2,10 +2,11 @@
 name: ralph
 description: Autonomous agent for tackling big projects. Your AI analyzes your project, generates a PRD, you confirm, then Ralph executes automatically. Sessions persist with pause/resume and real-time monitoring.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sunshine-sutingjun/ralph
 # corpus-url: https://github.com/sunshine-sutingjun/ralph/blob/31a571435dead221404293dd023763eea8ac447d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Ralph - Autonomous Agent Skill

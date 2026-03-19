@@ -2,10 +2,11 @@
 name: better-skill-builder
 description: Build SKILL.md files for Claude Code, Codex, Amp, OpenCode. Production examples and patterns for skill structure, scripts, distribution, and making CLI tools AI-native.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: gmickel/better-skill-builder
 # corpus-url: https://github.com/gmickel/better-skill-builder/blob/9067d2c8333ddffddbb84245dfda0ca88e431411/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Building Agent Skills

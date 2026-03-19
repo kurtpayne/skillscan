@@ -2,10 +2,11 @@
 name: draw-io
 description: Create, edit, export, and review draw.io diagrams. Use for native .drawio XML generation, PNG/SVG/PDF export, SVG overlap, border-overlap, label-intrusion, label-rect, short-terminal, and text-overflow linting, layout adjustment, and AWS icon usage.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Sunwood-ai-labs/draw-io-skill
 # corpus-url: https://github.com/Sunwood-ai-labs/draw-io-skill/blob/e0de57b0d4541113efa0ff4c6952425119b3314a/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # draw.io Diagram Skill

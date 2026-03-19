@@ -5,10 +5,11 @@ description: >
   Triggers on 抓包/流量捕获/网络抓包, HAR 文件分析, websocket/ws 流量, TLS/SSL 分析,
   request replay/流量对比, and API discovery or network debugging requests.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: dtamade/fafafa-skills-capture-analytics
 # corpus-url: https://github.com/dtamade/fafafa-skills-capture-analytics/blob/ab09af2329c408eb4c778b7fd14f7a2481f881bf/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Capture Analytics

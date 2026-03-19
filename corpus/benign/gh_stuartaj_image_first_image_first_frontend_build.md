@@ -2,10 +2,11 @@
 name: image-first-frontend-build
 description: "Build UI features with an image-first workflow: generate a visual mockup first, implement the frontend to match it, then run a parity pass and fix differences. Use when users ask to build a new app/page/component or improve an existing frontend and want strong visual direction before coding."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: StuartAJ/image-first-frontend-build-skill
 # corpus-url: https://github.com/StuartAJ/image-first-frontend-build-skill/blob/d1252eddfe9530241c750ef554e8ae6629088f62/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Image First Frontend Build

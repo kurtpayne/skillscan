@@ -2,10 +2,11 @@
 name: nocfo
 description: Use NoCFO CLI for bookkeeping, invoicing, reporting, and schema introspection. Use when the user wants to query or update NoCFO data from an agent through terminal commands.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: nocfo/nocfo-ai-toolkit
 # corpus-url: https://github.com/nocfo/nocfo-ai-toolkit/blob/c7fda0cdea516307938418c0e82ab0425ad882f8/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # NoCFO CLI Skill

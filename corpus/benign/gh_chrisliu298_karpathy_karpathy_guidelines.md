@@ -6,10 +6,11 @@ description: |
   bloated abstractions, dead code, wrong assumptions, and 1000-line solutions that should
   be 100 lines. Applies to all coding tasks. Invoke with /karpathy-guidelines.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: chrisliu298/karpathy-guidelines
 # corpus-url: https://github.com/chrisliu298/karpathy-guidelines/blob/5115802477121e98d9cb12c67e261c2c6903f5ac/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Karpathy Guidelines

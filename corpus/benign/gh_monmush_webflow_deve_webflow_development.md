@@ -9,10 +9,11 @@ description: >
   for SVGs, animations, or complex layouts, or (8) publish and QA a Webflow site. Trigger when user
   mentions "Webflow", "webflow designer", "MCP bridge", or asks to build/style web pages with Webflow tools.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: monmush/webflow-development
 # corpus-url: https://github.com/monmush/webflow-development/blob/afee538b6fdade83c7af91f3dc1ff48c8495cbb1/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Webflow Development

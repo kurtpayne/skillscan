@@ -2,10 +2,11 @@
 name: customer-meeting-intelligence
 description: "Comprehensive meeting intelligence system for customer-facing calls. Provides proactive pre-call briefings with account context, post-meeting action item extraction with draft approval, and thread continuity. Use when you need: (1) automated morning briefings for customer meetings, (2) post-meeting action item extraction from Fellow.ai and Gmail Gemini notes, (3) draft approval workflow before posting meeting notes, (4) customer context gathering including billing, support tickets, and communication history, (5) meeting follow-up automation with account intelligence."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: team-telnyx/customer-meeting-intelligence
 # corpus-url: https://github.com/team-telnyx/customer-meeting-intelligence/blob/94b3a4c4e9ff1b768ef7207753ca7e89b492e8a0/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Customer Meeting Intelligence System

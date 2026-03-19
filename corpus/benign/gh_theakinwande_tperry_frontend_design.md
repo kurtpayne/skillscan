@@ -5,10 +5,11 @@ risk: unknown
 source: community
 date_added: "2026-02-27"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: theakinwande/tperry
 # corpus-url: https://github.com/theakinwande/tperry/blob/9f4132bea6f4d8dd63f68da92d7a147aa2e3a26c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Frontend Design (Distinctive, Production-Grade)

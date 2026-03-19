@@ -2,10 +2,11 @@
 name: sap-ecc6-knowledge-base
 description: Use when answering SAP ECC 6.0 questions about transaction codes, SPRO/IMG configuration paths, business process flows, or cross-module integration across MM (Materials Management), SD (Sales & Distribution), FI (Financial Accounting), and CO (Controlling). Covers Procure-to-Pay, Order-to-Cash, Record-to-Report, account determination (OBYC, VKOA), period-end close sequences, and master data tables.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: BrandedTamarasu-glitch/SAPKnowledge
 # corpus-url: https://github.com/BrandedTamarasu-glitch/SAPKnowledge/blob/6590f425ac9c3897db50fcd4666fbc335d66bdd2/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # SAP ECC 6.0 Knowledge Base

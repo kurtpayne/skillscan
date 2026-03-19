@@ -2,10 +2,11 @@
 name: bilibili-follow
 description: "B站关注 UP 主 AI 辅助分类与分组同步。触发词：B站关注、UP主分类、bilibili关注整理、关注列表分组"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sunrisever/bilibili-follow-classifier
 # corpus-url: https://github.com/sunrisever/bilibili-follow-classifier/blob/ac3a2f934f212e5ffdfa95929d34e56fb247a057/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # B站关注分类

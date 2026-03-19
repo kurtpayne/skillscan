@@ -4,10 +4,11 @@ version: 1.0.0
 user-invocable: true
 description: "Multi-scanner security gate. TRIGGER when: user mentions installing, adding, or reviewing a skill to Claude Code, OpenClaw, or any other AI agent. Detects malicious code, vulnerabilities, and suspicious patterns."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: app-incubator-xyz/skill-vetter
 # corpus-url: https://github.com/app-incubator-xyz/skill-vetter/blob/d1038aeae6f7b0f16b01d20dc9bff38c35a16204/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Skill Vetter

@@ -2,10 +2,11 @@
 name: gemini-api
 description: Google Gemini API integration for building AI-powered applications. Use when working with Google's Gemini API, Python SDK (google-genai), TypeScript SDK (@google/genai), multimodal inputs (image, video, audio, PDF), thinking/reasoning features, streaming responses, structured outputs with JSON schemas, multi-turn chat, system instructions, image generation (Nano Banana), video generation (Veo), music generation (Lyria), embeddings, document/PDF processing, or any Gemini API integration task. Triggers on mentions of Gemini, Gemini 3, Gemini 2.5, Google AI, Nano Banana, Veo, Lyria, google-genai, or @google/genai SDK usage.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: diskd-ai/gemini-api
 # corpus-url: https://github.com/diskd-ai/gemini-api/blob/19c8beed7c80fdc50382a586441a02db4b73be48/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Gemini API

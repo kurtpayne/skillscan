@@ -3,10 +3,11 @@ name: youtube-scraper
 description: Given a YouTube URL, verify login via OpenClaw browser, scrape full video metadata (title, video ID, thumbnail, publish date, view count, like count, channel name, subscriber count, channel country/region), then download subtitles using a fallback chain — creator-uploaded subtitles first, then auto-generated subtitles, then Whisper local transcription from downloaded audio if subtitles are disabled.
 metadata: {"openclaw": {"emoji": "🎬", "requires": {"bins": ["yt-dlp", "python3"], "anyBins": ["whisper", "whisper-ctranslate2"]}, "install": [{"id": "brew-yt-dlp", "kind": "brew", "formula": "yt-dlp", "bins": ["yt-dlp"], "label": "Install yt-dlp (brew)"}]}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: LUKELEE-OneOnOne/youtube-scraper-openclaw
 # corpus-url: https://github.com/LUKELEE-OneOnOne/youtube-scraper-openclaw/blob/0af5e2e4ab9e68e3b4fe96aac426d17993ec551b/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # YouTube Scraper & Subtitle Downloader

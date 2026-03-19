@@ -2,10 +2,11 @@
 name: anycable-rails
 description: Implement AnyCable as a drop-in replacement for Action Cable in Rails applications, using HTTP broadcasting and embedded NATS (no Redis required). Includes deployment instructions for Railway.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sdnorm/development-skills
 # corpus-url: https://github.com/sdnorm/development-skills/blob/81b6a76aa19b123ef416cc503e981cfa4d952422/anycable-skill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # AnyCable for Rails (Redis-Free)

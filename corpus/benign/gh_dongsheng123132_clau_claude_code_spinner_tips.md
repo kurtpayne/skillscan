@@ -5,10 +5,11 @@ description: |
   Community-curated bilingual spinner tips for Claude Code. 118 tips covering Claude Code shortcuts, slash commands, CLI flags, MCP, Git, Python, JS/TS, Shell, and programming wisdom. Non-intrusive, works in any terminal. Contribute tips via simple text files.
 tags: ["spinner", "tips", "learning", "productivity", "bilingual", "claude-code"]
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: dongsheng123132/claude-code-spinner-tips
 # corpus-url: https://github.com/dongsheng123132/claude-code-spinner-tips/blob/8b73528ec11e223ab0b2278de395ed21a8737ddb/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Spinner Tips

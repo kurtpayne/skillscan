@@ -3,10 +3,11 @@ name: manim
 description: This skill should be used when the user asks to "create an animation", "make a manim video", "animate this concept", "visualize this process", "create a GIF for my blog", "plot a graph", "animate a value", or mentions "manim", "mathematical animation", "code animation", "process visualization", "technical animation", "3D scene", "camera animation", "ValueTracker", "number animation". Provides ManimCE (Community Edition) syntax, patterns, and best practices for creating programmatic animations.
 version: 1.5.0
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: awesome-skills/manim-skill
 # corpus-url: https://github.com/awesome-skills/manim-skill/blob/e2cdc1e9f5d2f39392cdafd30b2b04b31b673d60/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Manim Animation Skill

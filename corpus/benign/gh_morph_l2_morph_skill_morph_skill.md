@@ -3,10 +3,11 @@ name: morph-skill
 version: 1.3.0
 description: AI Agent skill for Morph L2 — wallet, explorer, DEX swap, cross-chain bridge with order management, and alt-fee gas payment
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: morph-l2/morph-skill
 # corpus-url: https://github.com/morph-l2/morph-skill/blob/ee80e7c7b6abb6c92db19f99f3d622c8e2088857/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Morph Skill — AI Agent Reference

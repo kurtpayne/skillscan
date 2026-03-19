@@ -2,10 +2,11 @@
 name: wordpress-com-mcp
 description: Connect Codex or other MCP-capable clients to WordPress.com and run content/site/account tasks through the WordPress.com MCP server. Use when a user asks to connect WordPress.com, authorize access, inspect sites/posts/pages/media/comments/subscribers through MCP tools, or troubleshoot WordPress.com OAuth/MCP setup.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: willmot/wordpress-com-codex-skill
 # corpus-url: https://github.com/willmot/wordpress-com-codex-skill/blob/0d2fcbbef043e42cbcc5434270609687da023075/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # WordPress.com MCP

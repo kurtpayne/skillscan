@@ -2,10 +2,11 @@
 name: kagenti-a2a-adapter
 description: Wrap existing agent code with A2A (Agent-to-Agent) protocol support for deployment on Kagenti. This skill should be used when the user has an existing AI agent (CrewAI, LangGraph, OpenAI Agents SDK, or custom Python) and wants to make it A2A-ready, deploy it on Kagenti or any A2A-compatible Kubernetes platform, or containerize an agent with proper protocol endpoints. Triggers include requests like "make my agent A2A ready", "deploy my agent on Kagenti", "wrap my CrewAI agent for Kubernetes", "add A2A support to my agent", "containerize my LangGraph agent", or "generate Kagenti manifests for my agent".
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: zanetworker/kagenti-a2a-adapter
 # corpus-url: https://github.com/zanetworker/kagenti-a2a-adapter/blob/945ceb4a11af2efaa3465291d7e315684161f430/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Kagenti A2A Adapter

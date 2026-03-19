@@ -12,10 +12,11 @@ description: >
   "commit habits" "developer report card" "代码分析" "研发效率"
   "开发者画像" "提交习惯" "工作习惯" "参与度".
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Wscats/who-is-actor
 # corpus-url: https://github.com/Wscats/who-is-actor/blob/fc5f4158b3f51a86720567f583b9d5965e5c6d3c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Who Is Actor — Git Repository Developer Profiling Skill

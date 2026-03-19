@@ -12,10 +12,11 @@ metadata:
   version: "1.0"
   repository: https://github.com/kreuzberg-dev/kreuzberg
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: makramab/paddleocr-test
 # corpus-url: https://github.com/makramab/paddleocr-test/blob/eab1ee85a1dd73fc1d8df1432e1024172c10445e/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Kreuzberg Document Extraction

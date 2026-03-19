@@ -2,10 +2,11 @@
 name: linear-cowork
 description: Use when working on any project that uses Linear for issue tracking, or when the user mentions Linear issues, tickets, creating issues, updating issue status, linking commits to issues, or any Linear MCP interaction. Always activate this skill for issue creation, status updates, commit workflows, and project organization in Linear.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: labrinyang/linear-cowork
 # corpus-url: https://github.com/labrinyang/linear-cowork/blob/18284cb781c985d60ac85469261a3ec0720c6699/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Linear Cowork

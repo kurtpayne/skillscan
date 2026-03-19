@@ -7,10 +7,11 @@ metadata:
     version: "15.4.0"
     repository: https://github.com/Tonejs/Tone.js
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: plyght/tonejs-skill
 # corpus-url: https://github.com/plyght/tonejs-skill/blob/0f161de1be02e74af8cf83638a8e6c8bb54609e1/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Tone.js Skill

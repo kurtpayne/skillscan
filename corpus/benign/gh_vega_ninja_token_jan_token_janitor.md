@@ -2,10 +2,11 @@
 name: token-janitor
 description: Audit OpenClaw token usage and find waste. Use when the user says "run token janitor", "check my token usage", "audit my tokens", "why are my tokens so high", or wants to know what's inflating their API costs. Checks workspace files being injected every turn, installed skills with platform conflicts, and config settings like caching and model choice.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: vega-ninja/token-janitor
 # corpus-url: https://github.com/vega-ninja/token-janitor/blob/3b1a25b744d19ea7a9f3e7bfce91a1c9f7b6daa8/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Token Janitor

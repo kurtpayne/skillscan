@@ -3,10 +3,11 @@ name: gltch
 description: "Local-first AI agent with personality. Chat, code, hack, trade."
 metadata: { "openclaw": { "emoji": "💜", "requires": { "bins": ["python", "ollama"] } } }
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: rougecoin-project/gltch_agent
 # corpus-url: https://github.com/rougecoin-project/gltch_agent/blob/ad28bea067648bf97fba47bdf64b5926bb6ee867/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # GLTCH

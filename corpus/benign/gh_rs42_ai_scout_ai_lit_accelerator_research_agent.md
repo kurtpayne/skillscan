@@ -2,10 +2,11 @@
 name: accelerator-research-agent
 description: Research accelerator portfolio companies using Firecrawl and Tavily MCPs. Generates structured CSV and markdown reports with systematic impact scoring. Optimized for token efficiency.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: RS42-AI/scout-ai-lite
 # corpus-url: https://github.com/RS42-AI/scout-ai-lite/blob/a4d22c97a3c9b3b6a6a57a86acab82cfaf89a921/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Accelerator Research Agent

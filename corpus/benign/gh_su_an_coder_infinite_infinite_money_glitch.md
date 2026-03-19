@@ -18,10 +18,11 @@ metadata:
       - windows
     emoji: 💰
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: SU-AN-coder/Infinite-Money-Glitch
 # corpus-url: https://github.com/SU-AN-coder/Infinite-Money-Glitch/blob/476228289f4c9022d5e3ced702944686da050438/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Infinite Money Glitch Agent

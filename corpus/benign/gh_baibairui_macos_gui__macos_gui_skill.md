@@ -2,10 +2,11 @@
 name: macos-gui-skill
 description: Use when tasks require operating desktop applications on macOS and need screenshot-guided GUI actions.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: baibairui/macos-gui-skill
 # corpus-url: https://github.com/baibairui/macos-gui-skill/blob/418ca7d1bf66f336a6c9bcbde4b23768cdb68c2f/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # macOS GUI Skill

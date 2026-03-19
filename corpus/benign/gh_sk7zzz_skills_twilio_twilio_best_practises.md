@@ -2,10 +2,11 @@
 name: twilio-best-practises
 description: Best practices for integrating Twilio communications APIs. Use when implementing SMS/MMS messaging, voice calls, WhatsApp, phone verification (Verify), webhooks, or any Twilio product. Triggers on Twilio API integration, sending SMS, making calls, OTP verification, TwiML, webhook handling, and phone number management.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: SK7zzz/skills-twilio-best-practises
 # corpus-url: https://github.com/SK7zzz/skills-twilio-best-practises/blob/7a264e3a865a316b6cfa8e6eb1ad3fe57106524e/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Twilio Integration Best Practices

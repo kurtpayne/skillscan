@@ -3,10 +3,11 @@ name: product-manager-skills
 description: PM skill for Claude Code, Codex, Cursor, and Windsurf. Diagnoses SaaS metrics, critiques PRDs, plans roadmaps, runs discovery, coaches PM career transitions, and pressure-tests AI product decisions. Six knowledge domains, 12 templates, 30+ frameworks, and an opinionated interaction style that labels assumptions and names tradeoffs.
 type: workflow
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Digidai/product-manager-skills
 # corpus-url: https://github.com/Digidai/product-manager-skills/blob/645147b823b2fad5646bf6a64b7d0ec0318d1ad9/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Product Manager Skills

@@ -2,10 +2,11 @@
 name: heroku-cli-investigator
 description: Step-by-step guidance for using the Heroku CLI (~>10.17.0) to inspect dynos, logs, releases, builds, CI runs, and Postgres health during operational incidents without creating or modifying resources. Trigger the skill when investigating failed deploys, stuck dynos, long-running queries, or anomalous build/CI results on a particular Heroku app.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: dgmdan/heroku-cli-investigator-skill
 # corpus-url: https://github.com/dgmdan/heroku-cli-investigator-skill/blob/1bd63513715393b6483f3ff69fd38c78d4be07a8/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Heroku CLI Investigator

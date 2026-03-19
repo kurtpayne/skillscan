@@ -2,10 +2,11 @@
 name: foreign-news-collector
 description: RSS 최적화 10개 매체에서 뉴스를 수집하고, RSS + 홈페이지 TOP + 랭킹 섹션 3중 신호 기반 Value Score로 중요 기사를 선별하는 스킬. 사용 시점 - 외신 브리핑 요청, 주요 뉴스 수집 요청, AI/기술/경제/국제정세 뉴스 요청 시
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: hong4137/briefing
-# corpus-url: https://github.com/hong4137/briefing/blob/17df77ffdcbb4405fc0de186c99f3e82f1bdfd1e/foreign-news-collector-v5-SKILL.md
+# corpus-url: https://github.com/hong4137/briefing/blob/8b4f60608b234fff6eeb248161bc18ed721b3e54/foreign-news-collector-v5-SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Foreign News Collector v5 (외신 뉴스 수집기)

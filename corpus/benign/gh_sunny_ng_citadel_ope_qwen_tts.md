@@ -2,10 +2,11 @@
 name: qwen-tts
 description: Generate speech locally on Apple Silicon using Qwen3-TTS via MLX. Supports custom voices, voice design (describe a voice), and voice cloning. 100% offline, no server needed. Use when the user asks to generate audio, speech, TTS, text-to-speech, voice synthesis, or voice cloning.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sunny-ng-citadel/openclaw-mlx-qwen-tts-skill
 # corpus-url: https://github.com/sunny-ng-citadel/openclaw-mlx-qwen-tts-skill/blob/30f6a0154ee7af0f9a069d82aa6eea59b6771c49/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Qwen-TTS

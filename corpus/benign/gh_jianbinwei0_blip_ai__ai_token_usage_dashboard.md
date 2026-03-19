@@ -2,10 +2,11 @@
 name: ai-token-usage-dashboard
 description: Build, refresh, and customize a local multi-provider AI token usage dashboard served on 127.0.0.1:8765. Current providers are Codex, Claude, and PI from ~/.codex/sessions, ~/.claude/projects, and ~/.pi/agent. Use when the user asks for provider-specific token usage updates, chart/stat card changes, date-range/preset behavior, refresh cadence updates, or recalc-service troubleshooting.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: jianbinwei0-blip/ai-token-usage-dashboard
 # corpus-url: https://github.com/jianbinwei0-blip/ai-token-usage-dashboard/blob/df253189f39a9644f539c25ea88d90396716c45b/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # AI Token Usage Dashboard

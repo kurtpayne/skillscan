@@ -2,10 +2,11 @@
 name: things-todo
 description: Generate a clickable Things 3 import link from tasks discussed in conversation. Use this skill whenever Claude produces a list of actions, tasks, to-dos, next steps, or a project plan that the user might want to track — even if they don't explicitly say "Things" or "todo list." Also trigger when the user says things like "ajoute ça dans Things", "fais-moi une todo", "crée les tâches", "envoie ça dans Things", "make a task list", "send to Things", "plan this out as tasks", or any variation. If a conversation ends with a clear set of actionable items, proactively offer to generate the Things link. Always use this skill instead of outputting a plain markdown checklist when the user could benefit from real task management.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: viktorvuka/claude-things-skill
 # corpus-url: https://github.com/viktorvuka/claude-things-skill/blob/33749b5388f19a31430bd525974e9480f12b3460/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Things 3 Todo List Generator

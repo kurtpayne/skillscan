@@ -2,10 +2,11 @@
 name: textbook-instructions
 description: Guidelines for writing and editing academic textbook chapters aimed at communication studies students. Use when the user asks to write, edit, review, or improve textbook chapters, course materials, or academic pedagogical content. Especially relevant for Croatian language academic texts, social science methodology textbooks, and any content where practical application of methods needs to be explained to non-technical students. Triggers include requests to review chapters, implement reviewer comments, write instructional content about research methods, or create style guides for academic authors.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: lusiki/Metodologija-za-komunikologe-v2
 # corpus-url: https://github.com/lusiki/Metodologija-za-komunikologe-v2/blob/48d051db6687a08aaa925574aaa27cd2980c33d0/textbook-instructions-SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Textbook Chapter Writing Instructions

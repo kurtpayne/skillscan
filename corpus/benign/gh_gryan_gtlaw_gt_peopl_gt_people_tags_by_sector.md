@@ -2,10 +2,11 @@
 name: gt-people-tags-by-sector
 description: extract and verify gilbert + tobin people tagged to a specific sector from user-uploaded pdf exports (e.g., our people search results filtered by sector). use when the user uploads a pdf listing people for a sector and needs an ordered table of names and titles (partner, lawyer, etc.) and optional verification against the published profiles csv.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: gryan-gtlaw/gt-people-tags-by-sector
 # corpus-url: https://github.com/gryan-gtlaw/gt-people-tags-by-sector/blob/01104a1e9adecd221c40511290c631616c0ad4f7/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # GT website people tags by sector (PDF-first)

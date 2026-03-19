@@ -2,10 +2,11 @@
 name: medlit-research
 description: 医学文献检索、批判性评价与综合分析。支持PubMed/Embase/Cochrane多数据库检索、PMC全文获取、AI辅助分析、研究质量评价、系统综述写作。使用场景：(1)检索多数据库医学文献，(2)自动获取PMC开放获取全文，(3)基于全文的深度批判性评价，(4)AI辅助PICO提取与质量评价，(5)辅助系统综述和Meta分析。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: erongcao/medlit-research
 # corpus-url: https://github.com/erongcao/medlit-research/blob/cc245745bf39315a97d11dc9cc77f9502ce833d0/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 医学文献检索与批判性评价

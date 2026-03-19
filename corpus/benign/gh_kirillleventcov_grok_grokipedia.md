@@ -2,10 +2,11 @@
 name: Grokipedia
 description: Search and fetch articles from Grokipedia.com — xAI's AI-generated encyclopedia (like Wikipedia but written by Grok). Use when asked about topics that might have a Grokipedia article, or when the user explicitly mentions Grokipedia.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: kirillleventcov/grokipedia-parser
 # corpus-url: https://github.com/kirillleventcov/grokipedia-parser/blob/7c058d85ac2d850b2bcb3ef7e04f7ea3eda5ee4e/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Grokipedia Parser

@@ -2,10 +2,11 @@
 name: admiralty
 description: Draft structured sailing orders for a Nelson mission from a task description.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sandeepkv93/admiralty
 # corpus-url: https://github.com/sandeepkv93/admiralty/blob/c2f50dff390fc1a67a1e112c7b07888f67e02b5c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Admiralty

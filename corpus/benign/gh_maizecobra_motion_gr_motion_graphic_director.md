@@ -2,10 +2,11 @@
 name: motion-graphic-director
 description: "Creative direction and design intelligence for Remotion motion graphic videos. Use when an agent needs to (1) convert a script or SRT into a shot-by-shot visual design document, (2) ideate motion graphics with editorial intent for each scene, (3) produce a design brief for user approval before writing Remotion code. Always use before generating any Remotion video code from a script."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: MaizeCobra/motion-graphic-director-skill
 # corpus-url: https://github.com/MaizeCobra/motion-graphic-director-skill/blob/3983380933258e65f2f86115b09bc778f4accd9c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Motion Graphic Director

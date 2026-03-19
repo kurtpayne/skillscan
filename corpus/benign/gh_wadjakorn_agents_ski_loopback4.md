@@ -2,10 +2,11 @@
 name: loopback4
 description: Guides implementation and maintenance tasks for this Juzmatch LoopBack 4 API. Use when adding or changing controllers, authentication, boot and application configuration, datasources or repositories, OpenAPI behavior, and startup/runtime wiring.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: wadjakorn/agents-skills-loopback4
 # corpus-url: https://github.com/wadjakorn/agents-skills-loopback4/blob/ce3b6ee1bed791982c552296f09dd6ecaba378c6/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # LoopBack4 Juzmatch API

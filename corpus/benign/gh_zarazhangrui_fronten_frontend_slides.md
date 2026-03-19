@@ -2,10 +2,11 @@
 name: frontend-slides
 description: Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files. Use when the user wants to build a presentation, convert a PPT/PPTX to web, or create slides for a talk/pitch. Helps non-designers discover their aesthetic through visual exploration rather than abstract choices.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: zarazhangrui/frontend-slides
 # corpus-url: https://github.com/zarazhangrui/frontend-slides/blob/384d1a07ba1fd59ff626b141caa65f51a44ccc73/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Frontend Slides

@@ -2,10 +2,11 @@
 name: self-xyz
 description: "Integrate Self (self.xyz) — a privacy-first identity protocol using zero-knowledge proofs to verify passports and ID cards. Use when the user mentions Self protocol, Self identity, self.xyz, passport verification, zero-knowledge identity verification, SelfAppBuilder, SelfBackendVerifier, SelfVerificationRoot, or wants to add privacy-preserving KYC, age verification, nationality checks, OFAC screening, or Sybil resistance using real-world identity documents. Covers frontend QR code integration, backend proof verification, and on-chain smart contract verification on Celo."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: selfxyz/self-skill
 # corpus-url: https://github.com/selfxyz/self-skill/blob/b8951ad809080d429d027c1cc4bcf966c1aca80d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Self Protocol Integration

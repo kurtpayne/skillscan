@@ -22,10 +22,11 @@ metadata:
       },
   }
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: phoenixjyb/openclaw-3dprint
 # corpus-url: https://github.com/phoenixjyb/openclaw-3dprint/blob/f20eb29ffb859b4d0c184b3223aadd7a8fae6bc5/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 3dprint — Text-to-3D-Print Pipeline

@@ -2,10 +2,11 @@
 name: reflect
 description: Use when the user describes a recent event, recurring behavior, emotional reaction, confusion about their own response, relationship conflict, or anything they want to examine about themselves. Triggered by conversational openers like "I had a bad day", "I keep doing this thing where...", "something happened with X", "I don't understand why I reacted that way", "I've been feeling off", or any message expressing a desire for self-understanding, pattern analysis, or personal insight. Also activates when user says "let's reflect", "I want to unpack something", or invokes the skill directly. Use for ongoing self-analysis sessions, catch-up note processing, or between-session check-ins.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Victoriakaey/reflect
 # corpus-url: https://github.com/Victoriakaey/reflect/blob/3535418d95043cc00eb93cf2097c4d0f5f054627/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # reflect

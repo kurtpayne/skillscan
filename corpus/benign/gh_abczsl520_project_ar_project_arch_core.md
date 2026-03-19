@@ -2,10 +2,11 @@
 name: project-arch-core
 description: Language-agnostic project architecture principles for AI-assisted development. Use when creating or reviewing language-specific arch skills, or when evaluating whether a codebase needs restructuring. Not a substitute for language-specific skills — provides the shared foundation they build on.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: abczsl520/project-arch-core
 # corpus-url: https://github.com/abczsl520/project-arch-core/blob/86f910a878e452343583cf894bfd6dbcc931dbc7/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Project Architecture Core — AI-Friendly Development

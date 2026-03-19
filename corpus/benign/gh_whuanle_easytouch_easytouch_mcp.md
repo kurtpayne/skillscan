@@ -2,10 +2,11 @@
 name: easytouch-mcp
 description: 使用 EasyTouch 进行跨平台桌面自动化。适用于鼠标键盘控制、截图、窗口管理、系统信息、剪贴板，以及基于 browserId 的浏览器自动化流程。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: whuanle/EasyTouch
 # corpus-url: https://github.com/whuanle/EasyTouch/blob/381cb90921e6744044396a6aa193bfcf3157e23f/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # EasyTouch Automation Skill

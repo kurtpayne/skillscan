@@ -2,10 +2,11 @@
 name: analyze-order-flow
 description: 基于足迹图、成交量分布(VRVP/Volume Profile)、Delta 等可观测数据，推断市场主动/被动成交行为，输出带证据链的交易复盘报告。适用于股票/期货/加密等可获取逐笔成交与量价分布数据的标的。当用户上传交易图表（如足迹图、VRVP 图、Delta 图）并请求分析时使用此 Skill。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: iceberg211/orderflow-skill
 # corpus-url: https://github.com/iceberg211/orderflow-skill/blob/6872b46fd0066f7ff134be405277bbef09e93fa6/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 订单流分析 Skill

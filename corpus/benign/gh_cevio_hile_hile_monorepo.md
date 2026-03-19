@@ -2,10 +2,11 @@
 name: hile-monorepo
 description: "引导 AI 在本仓库或使用 Hile 的项目中，正确选用并遵守各 Hile 模块的约束与用法。编辑/生成涉及 @hile/* 或 create-hile 的代码时必读。"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: cevio/hile
 # corpus-url: https://github.com/cevio/hile/blob/de770121768d0aab3babf3544205b806176f9009/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Hile monorepo — AI 编程约束

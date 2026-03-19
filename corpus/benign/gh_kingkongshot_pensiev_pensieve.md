@@ -8,10 +8,11 @@ description: >-
   Use self-improve after completing tasks to capture new insights.
   Provides five tools: init, upgrade, migrate, doctor, and self-improve.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: kingkongshot/Pensieve
 # corpus-url: https://github.com/kingkongshot/Pensieve/blob/b87ad197bb80a30e84bd0503c77f38ec1669a194/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Pensieve

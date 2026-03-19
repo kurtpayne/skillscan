@@ -2,10 +2,11 @@
 name: linear
 description: Interact with Linear project management. Use for creating, searching, updating issues and projects. Triggers on "linear", "issue", "ticket", "task", "backlog", "sprint", "cycle", or project management requests.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: jesseproudman/linear-skill
 # corpus-url: https://github.com/jesseproudman/linear-skill/blob/ddfc971aee3cab871e33c098e297aa59432c6ddf/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Linear Integration

@@ -2,10 +2,11 @@
 name: power-of-ten
 description: Use when reviewing code quality, auditing scripts or programs for robustness, or when asked to check code against safety-critical standards. Triggers on "code review", "code quality", "audit this code", "power of ten", "nasa check"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: remigius-labs/power-of-ten
 # corpus-url: https://github.com/remigius-labs/power-of-ten/blob/07627a6e162586d8701fa44be65edba89dad3085/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Power of Ten

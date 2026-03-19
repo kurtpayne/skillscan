@@ -16,10 +16,11 @@ metadata:
     emoji: "☁️"
     os: ["darwin", "linux", "windows"]
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: mangonob/skills-weather
 # corpus-url: https://github.com/mangonob/skills-weather/blob/9c88ca9841dfcab4d9cb5d98565ec5b140de6c1c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Weather Skill

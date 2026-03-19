@@ -2,10 +2,11 @@
 name: uprock
 description: How to use the UpRock CLI for authentication, daemon management, and AI tools (web crawling, multi-engine search, performance sweeps). Use this skill whenever the user asks to crawl a URL, research the web, test site performance, manage the UpRock daemon, or authenticate with UpRock.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: uprockcom/cli
 # corpus-url: https://github.com/uprockcom/cli/blob/8a9a5e74cc55f59dfb80bb4a3e07bb9013915d20/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # UpRock CLI

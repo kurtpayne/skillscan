@@ -2,10 +2,11 @@
 name: up-bank
 description: "Interact with Up Bank (api.up.com.au) to retrieve account balances, transactions, and financial data in real-time. Use when the user asks about their Up bank account, balance, spending, transactions, or wants to check their finances. Triggers on: 'Up bank', 'my balance', 'check transactions', 'what did I spend', 'recent transactions', 'Up account'."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: thesammykins/openclaw-upbanking
 # corpus-url: https://github.com/thesammykins/openclaw-upbanking/blob/dbd33037393124d656b9870ea6bf297476216df4/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Up Bank

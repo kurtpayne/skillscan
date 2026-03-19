@@ -4,10 +4,11 @@ description: Multi-chain wallet authentication, AI-powered crypto assistant, and
 user-invocable: true
 metadata: {"clawdbot":{"emoji":"🔐","homepage":"https://emblemvault.dev","requires":{"bins":["node"]}}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: EmblemCompany/EmblemAi-SKILLS
 # corpus-url: https://github.com/EmblemCompany/EmblemAi-SKILLS/blob/7dcd5506ed99e6da4275d9cb100444f7c973d40c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Emblem AI

@@ -2,10 +2,11 @@
 name: exa-cli
 description: AI-powered web search and content extraction via Exa API. Use for web searches, documentation lookup, semantic/conceptual searches, extracting page content, getting AI answers with sources, or deep multi-step research tasks. Triggers on requests like "search for X", "find documentation about Y", "research Z", "what is X", or any web search need.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Finesssee/exa-cli
 # corpus-url: https://github.com/Finesssee/exa-cli/blob/d4f60b51dc1ba3b6f21dab12b178582b7b84593b/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Exa CLI

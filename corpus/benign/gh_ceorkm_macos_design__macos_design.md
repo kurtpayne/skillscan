@@ -2,10 +2,11 @@
 name: macos-design
 description: Design and build native-feeling macOS application UIs. Use this skill whenever the user asks to create a desktop app, macOS app, Mac-style interface, Apple-style UI, system utility, or anything that should look and feel like a native Mac application. Also trigger when users mention "native feel", "desktop app design", "Apple design patterns", "sidebar layout", "traffic lights", or want to build tools/utilities that feel like they belong on macOS. This skill covers layout, composition, interaction patterns, animations, light/dark mode, and all the subtle details that make an app feel like Apple built it.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: ceorkm/macos-design-skill
 # corpus-url: https://github.com/ceorkm/macos-design-skill/blob/8f528a2364f996cd42f02a10b1b27198a74ca2a3/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # macOS Native App Design Skill

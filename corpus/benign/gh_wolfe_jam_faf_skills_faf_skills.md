@@ -3,10 +3,11 @@ name: faf-skills
 description: 17 Claude Code skills for AI-context, testing, and MCP development. IANA-registered format (application/vnd.faf+yaml). Create .faf project DNA, score AI-readiness (0-100%), sync with CLAUDE.md, build MCP servers, generate test suites. 36,000+ downloads across npm, PyPI, crates.io.
 license: MIT
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Wolfe-Jam/faf-skills
 # corpus-url: https://github.com/Wolfe-Jam/faf-skills/blob/f0c287390447a0cc18a7e8efefd20b6b506c29fd/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # FAF Skills — Claude Code Plugin

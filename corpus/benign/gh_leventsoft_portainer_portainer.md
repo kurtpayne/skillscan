@@ -2,10 +2,11 @@
 name: portainer
 description: Comprehensive management for Portainer CE environments and stacks. Supports listing environments, managing Docker Compose/Swarm stacks, and executing raw Docker commands via proxy. Use when the user needs to deploy apps, check container status, or manage networks within Portainer. Requires a Portainer API Key configured in OpenClaw.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Leventsoft/portainer-skill-openclaw
 # corpus-url: https://github.com/Leventsoft/portainer-skill-openclaw/blob/156f9f99cde422101e9f187ce497fa6b18c15373/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Portainer Manager Skill

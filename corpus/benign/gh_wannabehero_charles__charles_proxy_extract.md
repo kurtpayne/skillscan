@@ -3,10 +3,11 @@ name: charles-proxy-extract
 description: Extracts HTTP/HTTPS request and response data from Charles Proxy session files (.chlsj format), including URLs, methods, status codes, headers, request bodies, and response bodies. Use when analyzing captured network traffic from Charles Proxy debug sessions, inspecting API calls, debugging HTTP requests, or examining proxy logs.
 allowed-tools: Bash
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: wannabehero/charles-proxy-extract-skill
 # corpus-url: https://github.com/wannabehero/charles-proxy-extract-skill/blob/148cf9349911385b78c1964b2081194037db2df9/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Charles Proxy Session Extractor

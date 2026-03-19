@@ -3,10 +3,11 @@ name: tg
 description: Use tg to send Telegram messages, attach files, and listen for replies from the command line. Trigger when the user wants to send notifications, share files, or receive messages via Telegram.
 user-invocable: true
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Garfield1002/tg-rs
 # corpus-url: https://github.com/Garfield1002/tg-rs/blob/f00618792bdbdeb88105945bdb565b58be17143c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # tg - Telegram CLI

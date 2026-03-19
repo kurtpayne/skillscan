@@ -2,10 +2,11 @@
 name: miriad-core
 description: "Miriad platform reference: execute (JavaScript tool chaining — primary surface for multi-step work), list_tools/document_tool (discover tools), workers (cheap fast sub-agents — use by default), board filesystem with optimistic locking, plan system (specs + tasks with CAS), sandboxes (shell, git, tunnels, GPU), datasets (GROQ queries, real-time listeners), board apps (HTML served as iframes with window.__miriad), secrets (auto-redact, transfer_secret, 15min TTL), environment vars, GitHub (gh CLI, App + PAT modes), skills, custom MCP servers, stdio MCPs (run any MCP server from a sandbox via mcpcli), cross-thread bridging, long-term memory, web search, browser automation., embedded LLM functions (reason/comprehend for inline data processing)"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sanity-labs/skill-miriad-core
 # corpus-url: https://github.com/sanity-labs/skill-miriad-core/blob/8025b2af7b6de32eca5b8dd14ddc5f9aac76b31f/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # miriad-core

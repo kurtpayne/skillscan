@@ -2,10 +2,11 @@
 name: onevalue-backend
 description: Backend development for OneValue Delivery Intelligence Console. Use this skill when implementing Supabase database schema, RLS policies, n8n workflow automation, API endpoints, AI integration with Claude API, or any backend data processing tasks. Covers database design, workflow orchestration, error handling, and AI-driven features.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: nithinvaradaraj-crypto/OneValue-Console
 # corpus-url: https://github.com/nithinvaradaraj-crypto/OneValue-Console/blob/a7cef9aab6671e7eb2fea7df8e231f1dae6a6f90/onevalue-backend-SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # OneValue Backend Developer Skill

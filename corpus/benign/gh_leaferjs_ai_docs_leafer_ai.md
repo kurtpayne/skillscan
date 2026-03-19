@@ -2,10 +2,11 @@
 name: leafer-ai
 description: Leafer AI skill for generating and explaining LeaferJS (Leafer) canvas graphics code. Use this skill when building canvas editors, AI canvas tools, visualization dashboards, interactive applications, or 2D canvas games.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: leaferjs/ai-docs
 # corpus-url: https://github.com/leaferjs/ai-docs/blob/ad2bd7d3db825562a8808c1bf786a98e1a6d269f/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Leafer AI Skill

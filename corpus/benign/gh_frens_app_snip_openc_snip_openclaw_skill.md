@@ -4,10 +4,11 @@ description: Snip provides safe access to a user's connected services (calendar,
 homepage: https://getsnip.app
 metadata: {"openclaw":{"emoji":"✂️","requires":{"bins":["curl","jq"],"env":["SNIP_BEARER_TOKEN"]},"primaryEnv":"SNIP_BEARER_TOKEN"}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: frens-app/snip-openclaw-skill
 # corpus-url: https://github.com/frens-app/snip-openclaw-skill/blob/b8d88aaa5f6cf236a575a28f70b0e1edd1d049a4/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Snip

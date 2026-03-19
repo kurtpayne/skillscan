@@ -3,10 +3,11 @@ name: scan-organizer
 description: OCR, classify, and organize scanned PDFs into category subfolders using AI vision and language models. Processes medical, financial, insurance, tax, legal, personal, and household documents.
 metadata: {"openclaw":{"emoji":"📄","requires":{"bins":["uv"]},"install":[{"id":"uv-sync","kind":"uv","label":"Install scan-organizer dependencies"}]}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: markuskreitzer/scan-organizer
 # corpus-url: https://github.com/markuskreitzer/scan-organizer/blob/fd391e48ecf337a46335c8587e38b04802d51f83/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Scan Organizer

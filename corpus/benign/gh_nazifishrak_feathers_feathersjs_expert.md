@@ -2,10 +2,11 @@
 name: feathersjs-expert
 description: Expert guidance on FeathersJS (v6 Six). You MUST use this skill for ANY request related to FeathersJS, including services, around/before/after hooks, TypeBox schemas, resolvers, authentication strategies (JWT, OAuth, Local), and transports like @feathersjs/koa or @feathersjs/socketio. Use it for architecture design, debugging service methods, migrations from v4 (Crow), and client-side integration. Trigger this skill even if the user just mentions 'Feathers', '@feathersjs', or wants to build a 'real-time, event-driven API' with Node.js, Deno, or Bun.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: nazifishrak/feathersjs-expert-skill
 # corpus-url: https://github.com/nazifishrak/feathersjs-expert-skill/blob/10c8fa7069d3bec5b5fc4f9c8b2f0b47144a63cb/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # FeathersJS Expert

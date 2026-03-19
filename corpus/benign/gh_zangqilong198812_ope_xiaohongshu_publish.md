@@ -2,10 +2,11 @@
 name: xiaohongshu-publish
 description: 使用 OpenClaw 浏览器发布小红书笔记（图文/视频）。当用户需要发布小红书笔记时使用此 skill，包括：发布图文笔记、发布视频笔记、批量发布多篇笔记。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: zangqilong198812/openclaw-xiaohongshu-publish-skill
 # corpus-url: https://github.com/zangqilong198812/openclaw-xiaohongshu-publish-skill/blob/ba6182567624a6f7ecbb875bf3bfb514ce946e54/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 小红书发布 Skill

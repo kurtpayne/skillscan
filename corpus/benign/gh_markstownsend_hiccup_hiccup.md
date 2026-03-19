@@ -4,10 +4,11 @@ description: Visualize agentic task progress as inline flow diagrams so humans c
 version: 1.0.0
 tags: [progress, visualization, flow-diagram, status, multi-agent]
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: markstownsend/hiccup
 # corpus-url: https://github.com/markstownsend/hiccup/blob/b8b0eace7e76890b7318c06fe40fdf5bdc029d48/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Hiccup — Agentic Progress Flow Diagrams

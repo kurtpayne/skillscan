@@ -4,10 +4,11 @@ description: Explains code with visual diagrams and analogies. Use when explaini
 allowed-tools: Bash(*), Glob(*), Grep(*), Read(*), WebFetch(*), WebSearch(*), mcp__claude_ai_Context7__*, mcp__plugin_context7_context7__*
 argument-hint: "[file, function, class, or directory to explain]"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: adityamparikh/explain-code-skill
 # corpus-url: https://github.com/adityamparikh/explain-code-skill/blob/279c740ec7fc2dc85612c659357f829675e83e39/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Code Explanation Skill

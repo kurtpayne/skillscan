@@ -10,10 +10,11 @@ metadata:
       bins: ["td"]
       env: ["TODOIST_API_TOKEN"]
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: leaofelipe/todoist-cli-skill
 # corpus-url: https://github.com/leaofelipe/todoist-cli-skill/blob/899d34c8d5419022973f18ece25859cf5572787d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Todoist CLI (`td`)

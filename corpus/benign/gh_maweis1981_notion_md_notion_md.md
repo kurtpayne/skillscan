@@ -9,10 +9,11 @@ metadata:
       env: ["NOTION_API_KEY"]
     primaryEnv: "NOTION_API_KEY"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: maweis1981/notion-md-tool
 # corpus-url: https://github.com/maweis1981/notion-md-tool/blob/983f6a560ca108266293bc22b57ac3b4ebd84f92/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # notion-md

@@ -4,10 +4,11 @@ description: Turn text into spoken Feishu (Lark) voice messages. Use when the ag
 metadata:
   {"openclaw": {"emoji": "🔊", "requires": {"env": ["FEISHU_APP_ID", "FEISHU_APP_SECRET"], "bins": ["ffmpeg"]}, "primaryEnv": "FEISHU_APP_ID", "os": ["linux", "darwin", "win32"]}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Richerlv/cyber-horn
 # corpus-url: https://github.com/Richerlv/cyber-horn/blob/4226a7e668035de4f567f148383c2c790642af61/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # CyberHorn (赛博小喇叭)

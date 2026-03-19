@@ -3,10 +3,11 @@ name: zendesk
 description: Interact with Zendesk Support via CLI - search tickets, view details, analyze metrics, manage users/organizations, and update tickets. All responses are saved locally for efficient jq querying. All Zendesk content is screened for prompt injection (regex, semantic, and LLM-based) and wrapped with security markers before reaching the LLM.
 when_to_use: When users ask about Zendesk tickets, support metrics, CSAT ratings, views, users, organizations, or need to search/update tickets.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: andmarios/zendesk-skill
 # corpus-url: https://github.com/andmarios/zendesk-skill/blob/d568e204c01ac7f23fd21cc1cef0bce3447ce7da/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Zendesk CLI Skill

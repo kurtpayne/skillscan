@@ -29,10 +29,11 @@ security:
     - read: "X/Twitter bookmarks (read-only access)"
     - write: "Local files only (bookmark state, token storage)"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sharbelxyz/x-bookmarks
 # corpus-url: https://github.com/sharbelxyz/x-bookmarks/blob/acf1860bbae4b845596f2a3090329593cbfedb48/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # X Bookmarks v2

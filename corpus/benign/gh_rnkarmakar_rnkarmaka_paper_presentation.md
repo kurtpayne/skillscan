@@ -2,10 +2,11 @@
 name: paper-presentation
 description: Generate rigorous mathematical HTML presentations from academic papers. Use when the user wants to create a presentation from a paper, convert arXiv LaTeX to slides, build educational content from research papers, or asks to explain a paper with full mathematical rigor. Triggers on requests involving paper explanation, arXiv presentation, theorem exposition, or mathematical pedagogy from research.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: rnkarmakar/rnkarmakar.github.io
 # corpus-url: https://github.com/rnkarmakar/rnkarmakar.github.io/blob/279876c0b646045cc9de69d3f47279ee0bbe08c3/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Paper Presentation Generator

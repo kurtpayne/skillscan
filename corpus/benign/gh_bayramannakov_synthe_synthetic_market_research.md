@@ -22,10 +22,11 @@ allowed-tools:
   - Glob
   - Grep
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: BayramAnnakov/synthetic-market-research
 # corpus-url: https://github.com/BayramAnnakov/synthetic-market-research/blob/84895d24360aaf5fc3f132e0e713310d8365289c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Synthetic Market Research

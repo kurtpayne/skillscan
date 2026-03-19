@@ -2,10 +2,11 @@
 name: droidrun-docs
 description: DroidRun documentation reference. Use when users ask about DroidRun setup, configuration, SDK usage, CLI commands, device setup, agents, architecture, app cards, credentials, tracing, Docker, migration, structured output, or any DroidRun "how do I..." questions.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: droidrun/droidrun
 # corpus-url: https://github.com/droidrun/droidrun/blob/98b762d06a77e243fca66e830b7fa98d7c0124ee/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # DroidRun

@@ -10,10 +10,11 @@ description: >
   "hook this up to an API", "write tests for my component", "set up my React project", or any Claude Code 
   or Cursor-style coding task involving the browser/UI layer.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: mayanklau/frontend-coding
 # corpus-url: https://github.com/mayanklau/frontend-coding/blob/f803b46d19a7c7378a8fba27631d0d5ce2c5f6cb/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Frontend Coding Skill

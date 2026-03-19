@@ -13,10 +13,11 @@ metadata:
   version: 3.1.0
   last-updated: 2025-12-31
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: SpillwaveSolutions/architect-agent
 # corpus-url: https://github.com/SpillwaveSolutions/architect-agent/blob/647c04f9d4ca560798c5d74377c14abe6ba086a6/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Architect Agent Workflow Skill

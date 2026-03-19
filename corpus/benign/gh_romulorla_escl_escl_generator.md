@@ -2,10 +2,11 @@
 name: escl-generator
 description: Convert complete electrical schematic PDFs to ESCL (Electrical Schematic Context Language) format with batch processing and pause/continue support. Use when user uploads a multi-page electrical schematic PDF and wants it converted to structured ESCL text format.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: romulorla/escl
 # corpus-url: https://github.com/romulorla/escl/blob/8d4ac0641c8f6d5828705f27f9c5a5a09844eb23/escl-generator-skill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # ESCL Generator v2

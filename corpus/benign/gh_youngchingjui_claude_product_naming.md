@@ -3,10 +3,11 @@ name: product-naming
 description: Use when brainstorming product names, company names, or brand names. Based on David Placek's Lexicon Branding methodology (Vercel, Swiffer, Sonos, Azure, BlackBerry).
 argument-hint: "[product description or naming brief]"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: youngchingjui/claude-product-naming-skill
 # corpus-url: https://github.com/youngchingjui/claude-product-naming-skill/blob/14a68b9a82394e7768c7b91889bc1d3f888d3adf/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Product Naming Methodology

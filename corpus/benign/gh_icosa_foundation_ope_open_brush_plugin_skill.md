@@ -2,10 +2,11 @@
 name: open-brush-plugin-skill
 description: Create and modify Lua plugins for Open Brush with full API documentation access. Use when the user wants to create Open Brush plugins, work with Lua scripts for Open Brush, or asks about Open Brush scripting API, Lua functions, or plugin development.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: icosa-foundation/open-brush-plugin-skill
 # corpus-url: https://github.com/icosa-foundation/open-brush-plugin-skill/blob/d58264fbb7f84ed3cb461728b0275f4bbf13d509/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Open Brush Lua Plugin Development

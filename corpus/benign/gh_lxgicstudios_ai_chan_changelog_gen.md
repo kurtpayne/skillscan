@@ -2,10 +2,11 @@
 name: changelog-gen
 description: Generate changelogs from git history. Use when you need release notes fast.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: lxgicstudios/ai-changelog
 # corpus-url: https://github.com/lxgicstudios/ai-changelog/blob/199cb3b3f77404b22bf96dfe88ef7b1e2ff0c6c6/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Changelog Generator

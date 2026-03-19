@@ -2,10 +2,11 @@
 name: frontend-design
 description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: maybeandrews/blu-reserve
 # corpus-url: https://github.com/maybeandrews/blu-reserve/blob/20234dfb32162253eb7e30d789ab1a1fa25abdfa/frontendskill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.

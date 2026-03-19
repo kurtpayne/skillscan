@@ -3,10 +3,11 @@ name: llm-fmt
 description: Convert JSON/YAML/XML/CSV to token-efficient formats (30-70% savings)
 allowed-tools: Bash
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: SerPeter/llm-fmt-project
 # corpus-url: https://github.com/SerPeter/llm-fmt-project/blob/c4cc13a375d7fd579622833b5192b0a6909dda14/llm-fmt.skill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # llm-fmt

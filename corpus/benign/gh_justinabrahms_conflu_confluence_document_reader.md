@@ -2,10 +2,11 @@
 name: confluence-document-reader
 description: Read and search Confluence pages as markdown using the confluence-md CLI tool
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: justinabrahms/confluence-md
 # corpus-url: https://github.com/justinabrahms/confluence-md/blob/befdbc60a730900bad86844399c84aa41f41a15a/CLAUDE_SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Confluence Document Reader

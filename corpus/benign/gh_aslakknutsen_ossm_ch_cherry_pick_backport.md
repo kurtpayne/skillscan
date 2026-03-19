@@ -2,10 +2,11 @@
 name: cherry-pick-backport
 description: Backport upstream commits into downstream release branches via cherry-pick. Use when the user mentions backport, cherry-pick, or porting upstream commits to an older branch.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: aslakknutsen/ossm-cherry-pick-backport-skill
 # corpus-url: https://github.com/aslakknutsen/ossm-cherry-pick-backport-skill/blob/2dd44b3ec822605a806ad50b60113f3cc277bbe0/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Cherry-Pick Backport

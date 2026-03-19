@@ -15,10 +15,11 @@ allowed-tools:
   - Glob
   - AskUserQuestion
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: devswha/oh-my-humanizer
 # corpus-url: https://github.com/devswha/oh-my-humanizer/blob/878c3df27f32bf7661bc6383f6312c53a7eadea8/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # oh-my-humanizer: AI 글쓰기 패턴 제거 오케스트레이터

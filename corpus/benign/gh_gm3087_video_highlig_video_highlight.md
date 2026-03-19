@@ -3,10 +3,11 @@ name: video-highlight
 description: 从视频中自动提取高光片段，支持 AI 语义分析(Whisper+CLIP)和音频节奏分析两种模式。自动检测平台/GPU/Miniconda。
 metadata: {"openclaw":{"emoji":"🎬","requires":{"bins":["bash"],"os":["darwin","linux"]}}}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: gm3087/video-highlight-extractor
 # corpus-url: https://github.com/gm3087/video-highlight-extractor/blob/e327b59524756f83ea16048148683142db04dbdf/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 视频高光提取

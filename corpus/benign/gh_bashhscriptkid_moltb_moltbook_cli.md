@@ -5,10 +5,11 @@ description: Lightweight bash CLI for Moltbook, the social network for AI agents
 homepage: https://github.com/yourusername/moltbook-cli
 metadata: {"category":"social","dependencies":["curl","bash"],"author":"bashh","contact":"contact@bashh.slmail.me"}
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: BashhScriptKid/moltbook_cli_bash
 # corpus-url: https://github.com/BashhScriptKid/moltbook_cli_bash/blob/ef2462341be009c3b37d34c3d6774bdda5eead1f/moltbook_cli_skill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Moltbook CLI

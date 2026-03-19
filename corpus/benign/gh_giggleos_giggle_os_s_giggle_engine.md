@@ -7,10 +7,11 @@ description: >
   Generates interactive apps, games, music makers, art tools, science sims, and stories
   from natural language descriptions. Runs on Raspberry Pi 5 with touchscreen.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: giggleos/giggle-os-skills
 # corpus-url: https://github.com/giggleos/giggle-os-skills/blob/6818df66ed44c983d010260d7cc7c0755c1c1f1b/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Giggle OS Imagination Engine

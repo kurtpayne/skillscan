@@ -2,10 +2,11 @@
 name: commonpaper
 description: Query and manage contracts via the Common Paper REST API. Use when the user asks about their contracts, agreements, signers, NDAs, CSAs, renewals, deal values, or wants to create/void/reassign agreements. Also use when user mentions "Common Paper", "commonpaper", or asks contract-related questions like "how many signed contracts do I have?" or "do I have an NDA with X?".
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: CommonPaper/claude-skill
 # corpus-url: https://github.com/CommonPaper/claude-skill/blob/c6f3094be06c9c72acd9a8fce891c7f8ca1ab788/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Common Paper API Skill

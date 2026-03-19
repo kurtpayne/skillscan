@@ -4,10 +4,11 @@ description: |
   Nano-banana 图像生成与编辑 Skill。支持文生图和图生图，根据文字描述或参考图使用 AI 生成/编辑图像，自动压缩大图，保存到 workspace/img 目录，并直接在飞书中展示。
   触发场景：用户要求生成图片、画图、AI 绘图、创建图像、修改图片、基于图片生成、图生图。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: zweien/image-gen-skill
 # corpus-url: https://github.com/zweien/image-gen-skill/blob/1c91e23861860e18d49d7cc7d7eaf7158b3eb7ab/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Nano-banana 图像生成与编辑 Skill

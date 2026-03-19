@@ -3,10 +3,11 @@ name: xiaohongshu-personal-brand
 description: 专为小红书平台设计的个人品牌IP打造技能。基于梁小小人设构建法和真实性护城河理论，帮助用户建立鲜明人设、积累粉丝信任、实现长期影响力。适用于博主、自媒体人、个人IP创业者等需要在小红书建立个人品牌的场景。
 model: claude-opus-4-5
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: alinaluolyw-ctrl/Skills_wikipedia
 # corpus-url: https://github.com/alinaluolyw-ctrl/Skills_wikipedia/blob/401aa134aaf357939645a3ced4f42ad8733d4c66/xiaohongshu-personal-brand-SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 小红书个人品牌文案创作技能

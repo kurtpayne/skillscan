@@ -13,10 +13,11 @@ examples:
 author: crazygit
 repository: https://github.com/crazygit/kube-audit-kit
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: crazygit/kube-audit-kit
 # corpus-url: https://github.com/crazygit/kube-audit-kit/blob/e9f9adaff1d96b11197b05678db912696eed92f3/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Kube Audit Kit - Read-Only Kubernetes Security Audit Toolkit

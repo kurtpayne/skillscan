@@ -2,10 +2,11 @@
 name: trigger-trap
 description: Trap and rewrite/cancel undesired outbound agent asks before they reach the operator. Use when an agent needs enforcement for evidence-first questioning, anti-veiled-ask behavior (for example "if you want"), and 1-3-1 bypass rules through a pre-send ask-gate with audit logs and proof tests.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sene1337/trigger-trap
 # corpus-url: https://github.com/sene1337/trigger-trap/blob/d8be0a9ccce3537a108efae6bff5d1c706600908/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Trigger Trap

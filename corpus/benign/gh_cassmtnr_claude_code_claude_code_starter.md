@@ -2,10 +2,11 @@
 name: claude-code-starter
 description: Analyze a project's tech stack and generate comprehensive Claude Code configuration files (.claude/ directory with CLAUDE.md, skills, agents, rules, and commands). Use when setting up Claude Code for a new or existing repository.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: cassmtnr/claude-code-starter
 # corpus-url: https://github.com/cassmtnr/claude-code-starter/blob/bcbab17cf2cca2aca32a686d2b82daad439092fd/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Claude Code Starter

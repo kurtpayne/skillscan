@@ -2,10 +2,11 @@
 name: ddg-search
 description: Web search using DuckDuckGo. No API key required. Use this skill to search the web for current information, facts, documentation, news, or any topic. Triggers when the user asks to search the web, look something up online, find current information, or research a topic.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: guyru/ddg-search
 # corpus-url: https://github.com/guyru/ddg-search/blob/92caa366f58f9b995819f0f6a479940ce266a403/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # DuckDuckGo Search

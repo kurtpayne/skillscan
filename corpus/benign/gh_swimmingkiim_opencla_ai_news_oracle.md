@@ -4,10 +4,11 @@ description: Fetch real-time AI news briefings from the AI News Oracle API (Hack
 author: swimmingkiim
 version: 1.1.0
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: swimmingkiim/openclaw-skill-ai-news-oracle
 # corpus-url: https://github.com/swimmingkiim/openclaw-skill-ai-news-oracle/blob/8ed2d449356ed580f613db4b84e62ab7bf1b39e5/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # AI News Oracle Skill

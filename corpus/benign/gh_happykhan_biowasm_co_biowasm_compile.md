@@ -10,10 +10,11 @@ description: >
   skill when the user mentions biowasm, emscripten, wasm32, or compiling tools
   for browser-based genomics pipelines.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: happykhan/biowasm-compile-skill
 # corpus-url: https://github.com/happykhan/biowasm-compile-skill/blob/b4ffdd106fba769a1ca80b5c6c28cf601c00eb50/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Biowasm Compile Skill

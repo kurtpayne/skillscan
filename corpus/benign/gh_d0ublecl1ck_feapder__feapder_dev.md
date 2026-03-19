@@ -2,10 +2,11 @@
 name: feapder-dev
 description: Develop, debug, and structure Python crawlers built with the Feapder framework. Use when the user asks about Feapder/AirSpider/Spider/TaskSpider/BatchSpider development, project scaffolding, parser design (BaseParser/BatchParser), request/response handling, pipelines, settings/configuration, proxy/user pools, de-duplication, logging, scheduling/tasks, or troubleshooting Feapder runtime issues.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: d0ublecl1ck/feapder-dev
 # corpus-url: https://github.com/d0ublecl1ck/feapder-dev/blob/40b50867388c52b6fb26b78be7368d76eecc5ea0/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Feapder Dev

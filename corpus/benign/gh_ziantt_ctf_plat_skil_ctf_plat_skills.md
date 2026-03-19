@@ -2,10 +2,11 @@
 name: ctf-plat-skills
 description: "Use when: detecting target CTF platform type, collecting user credentials, and routing actions to the correct script under scripts/ by platform."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: ZianTT/ctf-plat-skills
 # corpus-url: https://github.com/ZianTT/ctf-plat-skills/blob/9f3baed5dea66462dce835926407f2492d9db06d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # CTF Platform Workflow Skill

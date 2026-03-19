@@ -3,10 +3,11 @@ name: reference-validator
 description: Validate and correct DOIs in academic references, check citation accuracy, verify reference lists, and identify fake or incorrect DOIs. Use this skill whenever the user mentions validating references, checking DOIs, correcting citations, verifying bibliographies, reviewing reference lists for publication, identifying citation errors, or needs to ensure reference accuracy before submitting manuscripts. Also trigger when users have reference files with potential DOI issues, need to verify DOIs in papers, or want to check if their references are real and correctly formatted.
 compatibility: python3, requests library
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Tamoghna12/reference-validator-skill
 # corpus-url: https://github.com/Tamoghna12/reference-validator-skill/blob/faab78ad642c6fb5f2e05b76371d12d95e069683/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Reference Validator

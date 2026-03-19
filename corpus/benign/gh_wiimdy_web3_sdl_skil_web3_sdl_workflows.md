@@ -10,10 +10,11 @@ compatibility:
     - xelatex
     - solidity-auditor
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: wiimdy/web3-sdl-skill
 # corpus-url: https://github.com/wiimdy/web3-sdl-skill/blob/919107a4b1a59b4b0a67260245509783c98e5f98/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Web3 SDL Workflows

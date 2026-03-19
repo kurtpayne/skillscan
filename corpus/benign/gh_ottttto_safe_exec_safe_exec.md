@@ -23,10 +23,11 @@ metadata:
       url: https://github.com/OTTTTTO/safe-exec.git
       label: Clone from GitHub
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: OTTTTTO/safe-exec
 # corpus-url: https://github.com/OTTTTTO/safe-exec/blob/85e28ea096965bae7d84a3019cc8e16b9fb42a0f/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # SafeExec - Safe Command Execution

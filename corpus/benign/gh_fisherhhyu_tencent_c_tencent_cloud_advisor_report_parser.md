@@ -2,10 +2,11 @@
 name: tencent-cloud-advisor-report-parser
 description: 解析腾讯云智能顾问巡检报告邮件。用于处理腾讯云发送的Advisor巡检报告（包括邮件解析、Excel附件下载、风险数据分析），生成结构化风险汇总。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: fisherhhyu/tencent-cloud-smart-advisor-risk-assessment-report
 # corpus-url: https://github.com/fisherhhyu/tencent-cloud-smart-advisor-risk-assessment-report/blob/82fc20393d0861d6529d6d42d90e5e1980930441/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # 腾讯云智能顾问巡检报告解析

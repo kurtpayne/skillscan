@@ -2,10 +2,11 @@
 name: subtitle-translator
 description: Translate SRT subtitle files using LLM APIs with OpenAI-compatible format. Supports both single-language and bilingual output. Use when you need to translate subtitle files (.srt) from one language to another while preserving timestamps. Processes in batches of 50 sentences with progress logging.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Thetail001/subtitle_translate_skill
 # corpus-url: https://github.com/Thetail001/subtitle_translate_skill/blob/4a7521a3811b719cb7e6e017881cd3a131efeba3/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Subtitle Translator

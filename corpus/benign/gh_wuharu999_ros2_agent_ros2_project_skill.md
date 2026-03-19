@@ -4,10 +4,11 @@ description: "Entry skill for a ROS 2 robotic arm project. Routes requests to pr
 version: "2.0.0"
 status: "active"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: wuharu999/ros2-agent-skills
 # corpus-url: https://github.com/wuharu999/ros2-agent-skills/blob/4f2f37660eca061060360008b3c2b6ba464361da/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # ROS 2 Project Skill

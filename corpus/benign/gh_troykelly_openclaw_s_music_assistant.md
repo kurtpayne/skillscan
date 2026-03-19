@@ -10,10 +10,11 @@ metadata:
         - HA_URL
         - HA_TOKEN
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: troykelly/openclaw-skill-music-assistant
 # corpus-url: https://github.com/troykelly/openclaw-skill-music-assistant/blob/87669770cd95dde1b78986947068a2e59c1213c8/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Music Assistant Skill

@@ -2,10 +2,11 @@
 name: clink-standalone
 description: "Standalone CLI bridge - launch external AI CLIs (gemini, codex, claude) directly without MCP server. Use when you need to delegate tasks to specialized CLI tools with their own context windows. Supports role-based prompts and file references."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: VCnoC/clink-standalone
 # corpus-url: https://github.com/VCnoC/clink-standalone/blob/74a30d17a4eded882bfcbf20826bad1006b5f96e/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Clink Standalone - CLI Bridge Skill (No MCP Required)

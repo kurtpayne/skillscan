@@ -45,10 +45,11 @@ tools:
           type: string
           description: "Filter vector results by language: python | ts | js | tsx | jsx"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: bmaddevelopment-stack/openclaw-skill-hybrid-memory
 # corpus-url: https://github.com/bmaddevelopment-stack/openclaw-skill-hybrid-memory/blob/05c5a518288a25a9362595fcdd3cc940482f7c04/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Hybrid Memory Skill

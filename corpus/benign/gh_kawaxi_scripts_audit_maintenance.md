@@ -4,10 +4,11 @@ description: Use when the user wants to ensure the audit environment is persiste
 metadata:
   short-description: Persistent environment management and access recovery
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: kawaxi/Scripts
 # corpus-url: https://github.com/kawaxi/Scripts/blob/5aa34ecb1dadaab76a7703c12b4bfd9f24a6b224/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Audit Maintenance Skill

@@ -2,10 +2,11 @@
 name: sati-sdk
 description: "Build with SATI (Solana Agent Trust Infrastructure) - on-chain agent identity, verifiable reputation, and blind feedback on Solana. Use when registering AI agents on-chain via Token-2022 NFTs, giving or searching feedback, querying agent reputation, building registration files (ERC-8004), encrypting attestation content, or integrating SATI into TypeScript/Node.js projects. Covers: CLI onboarding (create-sati-agent), agent registration, feedback (give/search), reputation summaries, agent search/discovery, validation attestations, EVM address linking, content encryption, and metadata uploading. Triggers on SATI, sati-sdk, create-sati-agent, agent registration solana, agent reputation, blind feedback, compressed attestation, Light Protocol attestation, ERC-8004 registration file, agent identity NFT, register agent CLI."
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: cascade-protocol/sati
 # corpus-url: https://github.com/cascade-protocol/sati/blob/1c4a4740a24c52388088a54dc8b0a32c2780874d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # SATI

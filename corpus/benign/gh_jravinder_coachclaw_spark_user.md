@@ -26,10 +26,11 @@ triggers:
   - "gb10 container"
   - "dgx spark"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: jravinder/coachclaw
 # corpus-url: https://github.com/jravinder/coachclaw/blob/63d795974f4f8f18699b8fd853ecfd8ef27b8ae5/DGX_SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # DGX Spark User Skill

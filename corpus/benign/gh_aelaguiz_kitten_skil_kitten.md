@@ -3,10 +3,11 @@ name: kitten
 description: Control and interact with Kitty terminal windows - list windows, read output, send commands, and launch new terminals
 user_invocable: true
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: aelaguiz/kitten_skill
 # corpus-url: https://github.com/aelaguiz/kitten_skill/blob/e709fda08e87fc2d3734118e96da093556504629/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Kitten Terminal Remote Control

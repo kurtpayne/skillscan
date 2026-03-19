@@ -10,10 +10,11 @@ description: >
   by a counterparty. Even if the user just says "send the NDA" with a name or
   contact in context, use this skill.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Gorgias-Solutions/EA
 # corpus-url: https://github.com/Gorgias-Solutions/EA/blob/028bffe1121f7a5e2cefff6e55747555bc54837d/send-nda-SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Send NDA Skill

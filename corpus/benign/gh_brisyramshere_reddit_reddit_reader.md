@@ -2,10 +2,11 @@
 name: reddit-reader
 description: 通过 Reddit OAuth2 API 搜索和阅读 Reddit 帖子、评论和子版块内容。当用户要求搜索 Reddit 讨论、浏览子版块帖子、阅读 Reddit 帖子内容和评论、了解 Reddit 社区对某个话题的看法时使用此 skill。支持按时间范围和排序方式筛选，支持读取完整帖子正文和嵌套评论树。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: brisyramshere/reddit-skill
 # corpus-url: https://github.com/brisyramshere/reddit-skill/blob/1e117ea1a9c3de4f86220a26aa44fcd9de0e7eb4/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Reddit Reader

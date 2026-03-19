@@ -2,10 +2,11 @@
 name: ecomap-creator
 description: 知的障害・精神障害のある方の支援情報を一元管理し、視覚的なエコマップとして表示するスキル。計画相談支援の担当者がケース会議や利用計画作成時に使用。北九州市および隣接市町村対応。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: kazumasakawahara/ecomap-creator
 # corpus-url: https://github.com/kazumasakawahara/ecomap-creator/blob/13294ebf5ab61f661d7c1d8301f3f2c7322bfedb/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # エコマップ作成 Agent Skill

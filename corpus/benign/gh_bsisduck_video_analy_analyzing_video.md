@@ -4,10 +4,11 @@ description: Analyzes video files by extracting frames, detecting scene changes,
 argument-hint: [video-path]
 allowed-tools: Bash, Read, Agent
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: bsisduck/video-analyzer-skill
 # corpus-url: https://github.com/bsisduck/video-analyzer-skill/blob/292999a02fed549b4cddfd7f95252cc34a1de7de/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Video Analyzer

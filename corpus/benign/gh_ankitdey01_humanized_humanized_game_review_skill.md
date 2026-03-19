@@ -2,10 +2,11 @@
 name: humanized-game-review-skill
 description: Write authentic, teenager-voiced game reviews with positives, negatives, and actionable suggestions. Be honest, casual, and show you actually played the game. If the game is good, you say why. If it's bad, you explain the problems with examples.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: ankitdey01/humanized-game-review-skill
 # corpus-url: https://github.com/ankitdey01/humanized-game-review-skill/blob/6f6ba315fcbe0902d386e6f42807a0deaf86a4b2/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Game Review Writing Skill for platforms like KGEN Quest

@@ -11,10 +11,11 @@ description: >
   this skill applies. Do NOT use for single-file edits, simple bug fixes, or tasks that
   can be completed in one pass.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Andres-Herrejon/master-planner-claude-skill
 # corpus-url: https://github.com/Andres-Herrejon/master-planner-claude-skill/blob/47d0d3315a01013febb465c4c03f14c038aa718b/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Master Planner

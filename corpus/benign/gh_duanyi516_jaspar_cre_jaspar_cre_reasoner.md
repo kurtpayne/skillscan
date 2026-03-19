@@ -7,10 +7,11 @@ description: >
   mechanistic explanation in K562, HepG2, or SK-N-SH cells. Does NOT perform
   de novo motif discovery, whole-genome annotation, or clinical diagnosis.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: DuanYi516/jaspar-cre-reasoner
 # corpus-url: https://github.com/DuanYi516/jaspar-cre-reasoner/blob/0e6d773850287feede2252de9bd5ebbd30eb8db1/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 ## When to activate

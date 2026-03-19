@@ -3,10 +3,11 @@ name: saturated-coding
 description: "Multi-Agent Orchestration for maximum quality coding (饱和式编程). 4-phase pipeline: research -> write-plan -> execute-plan -> verification. Each phase spawns specialized parallel agents using different skills while a thin orchestrator coordinates. Trigger on: 'saturated coding', '饱和式编程', 'agent team', 'parallel agents', '/saturated-coding'."
 user-invocable: true
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Louis-Leee/saturation-agnet-team-coding
 # corpus-url: https://github.com/Louis-Leee/saturation-agnet-team-coding/blob/e84b5becd1f4c604eedc9ed2dc5ca3b56c515b2c/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Saturated Coding (饱和式编程)

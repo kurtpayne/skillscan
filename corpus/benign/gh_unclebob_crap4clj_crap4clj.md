@@ -2,10 +2,11 @@
 name: crap4clj
 description: Use when the user asks for a CRAP report, cyclomatic complexity analysis, or code quality metrics on a Clojure project
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: unclebob/crap4clj
 # corpus-url: https://github.com/unclebob/crap4clj/blob/992a5dd41bb337a843c02fb4829a69af7bfcf595/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # crap4clj — CRAP Metric for Clojure

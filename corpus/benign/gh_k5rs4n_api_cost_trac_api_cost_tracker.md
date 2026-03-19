@@ -10,10 +10,11 @@ metadata:
         - ANTHROPIC_API_KEY (optional)
         - GOOGLE_AI_KEY (optional)
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: k5rs4n/api-cost-tracker
 # corpus-url: https://github.com/k5rs4n/api-cost-tracker/blob/c6dc438c257388d874394d3c75e6cc054a83bf2a/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # API Cost Tracker 💰

@@ -5,10 +5,11 @@ description: >
   或排查代理配置问题时，使用这个技能。对"Reddit"、"reddit.com"、粘贴的 Reddit 链接，
   以及相关代理或访问故障自动触发。
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: hwj123hwj/reddit-skill
 # corpus-url: https://github.com/hwj123hwj/reddit-skill/blob/9ce903b8802d3e16323e1ae8b165dc8201865d3b/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Reddit Skill

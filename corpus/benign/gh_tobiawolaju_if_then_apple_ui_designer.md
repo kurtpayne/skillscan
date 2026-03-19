@@ -2,10 +2,11 @@
 name: apple-ui-designer
 description: Redesign mobile app UI to feel unmistakably Apple-like, iOS-forward, and native. Use this skill when building iOS apps, applying Apple Human Interface Guidelines, or creating native-feeling mobile interfaces with SF Pro typography, translucency, and system-like components.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: tobiawolaju/if-then
 # corpus-url: https://github.com/tobiawolaju/if-then/blob/c034ebf2762d0d57b835cbc016e8fee1760c343a/skill.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Apple UI Designer

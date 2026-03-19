@@ -2,10 +2,11 @@
 name: n8n-v2
 description: Comprehensive n8n v2.0 reference for building workflow automation. Use this skill when working with n8n workflows, especially for (1) creating workflow JSON files for import, (2) implementing human-in-the-loop approval workflows with Wait nodes, (3) troubleshooting Execute Sub-Workflow node issues, (4) setting up API credentials (LinkedIn, Anthropic, NewsAPI), (5) building orchestrator patterns with sub-workflows, (6) using expressions in nodes, (7) understanding MCP server limitations, or (8) any n8n workflow development task.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: splinesreticulating/n8n-v2-workflow-skill
 # corpus-url: https://github.com/splinesreticulating/n8n-v2-workflow-skill/blob/311102d5911e6d2423413b12ad8a55d1cd6ec828/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # n8n v2.0 Workflow Development

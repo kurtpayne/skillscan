@@ -2,10 +2,11 @@
 name: indie-hacker-weekly
 description: Weekly collection and translation of overseas indie hacker success stories. Use when user wants to gather, translate, and summarize success stories of individual developers from overseas sources like Indie Hackers, Product Hunt, Hacker News, and X (Twitter). Outputs structured data suitable for Notion pages and slide presentations.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: yashi3379/indie-hacker-weekly-skill
 # corpus-url: https://github.com/yashi3379/indie-hacker-weekly-skill/blob/33572fd011fd15731f8d61796f8ed97e3adfc1a2/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Indie Hacker Weekly Report Skill

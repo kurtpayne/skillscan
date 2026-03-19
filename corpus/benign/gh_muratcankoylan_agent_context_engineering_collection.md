@@ -2,10 +2,11 @@
 name: context-engineering-collection
 description: A comprehensive collection of Agent Skills for context engineering, multi-agent architectures, and production agent systems. Use when building, optimizing, or debugging agent systems that require effective context management.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: muratcankoylan/Agent-Skills-for-Context-Engineering
 # corpus-url: https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering/blob/a60bf86998296f1facd5e287a51065008a733c2d/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Agent Skills for Context Engineering

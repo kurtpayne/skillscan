@@ -7,10 +7,11 @@ description: >
   tasks involving app review preparation, compliance checking, Play Store/App Store submission
   readiness, or store-policy audits.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: MaTriXy/StoreReady
 # corpus-url: https://github.com/MaTriXy/StoreReady/blob/e8108519ce33a63da6f8f54bd091e3f89cd14855/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # StoreReady — Mobile Store Pre-Submission Checkup

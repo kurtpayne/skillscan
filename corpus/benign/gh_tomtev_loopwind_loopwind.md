@@ -5,10 +5,11 @@ allowed-tools: Read, Write, Edit, Bash, Glob, Grep
 metadata:
   version: "0.25.11"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: tomtev/loopwind
 # corpus-url: https://github.com/tomtev/loopwind/blob/78b1a7dbc1ce4034f101cdb04e0cbdfeda9d7432/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # loopwind - Template-based image & video generation

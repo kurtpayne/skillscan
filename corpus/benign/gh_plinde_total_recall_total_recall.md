@@ -2,10 +2,11 @@
 name: total-recall
 description: Memory preservation for Claude Code sessions. Use when approaching token limits, needing to /reset or /compact, switching between complex tasks, or preserving critical session state before context loss. Creates comprehensive memory dumps at /tmp/total-recall containing current state, decisions, artifacts, and next steps for seamless context restoration.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: plinde/total-recall
 # corpus-url: https://github.com/plinde/total-recall/blob/d5fe5fad2b75cf049ceadd57cba6a347f9d4c923/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Total Recall - Context Preservation for Claude Code

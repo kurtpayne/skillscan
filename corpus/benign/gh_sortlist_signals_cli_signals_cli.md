@@ -2,10 +2,11 @@
 name: signals-cli
 description: Signals CLI skill — Monitor sources (LinkedIn, funding databases, etc.) and discover new leads programmatically
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: sortlist/signals-cli
 # corpus-url: https://github.com/sortlist/signals-cli/blob/f9065fc339d5162199b8856350847f1b690587f6/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Signals CLI Skill

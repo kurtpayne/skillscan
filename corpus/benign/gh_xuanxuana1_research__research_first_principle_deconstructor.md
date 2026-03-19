@@ -2,10 +2,11 @@
 name: research-first-principle-deconstructor
 description: Rigorous Socratic interrogator and research architect that helps researchers overcome incremental thinking by applying First Principles analysis. Use when a researcher presents a research problem, proposed methodology, draft idea, or scientific hypothesis and wants to expose hidden assumptions, identify fundamental physical/mathematical constraints, generate unconventional radical alternatives, or deepen mechanistic understanding through probing questions. Triggers on phrases like "I want to improve X by doing Y", academic research brainstorming, scientific hypothesis generation, or any request to stress-test, challenge, or deconstruct a research idea. Do NOT trigger for pure literature reviews, writing assistance, or non-research tasks.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Xuanxuana1/research-first-principle-deconstructor
 # corpus-url: https://github.com/Xuanxuana1/research-first-principle-deconstructor/blob/fa7b938e755de8feb2a23e0da6c1316fdb3fa732/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Research First Principle Deconstructor

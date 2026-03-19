@@ -2,10 +2,11 @@
 name: raycast-extension-docs
 description: Guidance for building, debugging, and publishing Raycast extensions using the Raycast documentation set. Use when Codex needs to create or modify Raycast extensions (React/TypeScript/Node), consult Raycast API reference or UI components, build AI extensions, handle manifest/lifecycle/preferences, troubleshoot issues, or prepare/publish extensions to the Raycast Store or Teams.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: lemikeone/Codex-skill-raycast-extension
 # corpus-url: https://github.com/lemikeone/Codex-skill-raycast-extension/blob/8a4329656bf1d009771477248c86105f6563f9c1/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Raycast Extension Docs

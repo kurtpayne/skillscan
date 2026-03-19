@@ -2,10 +2,11 @@
 name: zed-editor
 description: Configure, customize, and manage the Zed code editor. Use when the user wants to modify Zed keybindings, settings, tasks, or extensions — especially for chaining editor actions via workspace::SendKeystrokes, creating custom workflows, or opening projects in Zed. Also use when launching Zed from the CLI, setting up vim/helix mode bindings, or troubleshooting Zed configuration.
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: zmanian/zed-skill
 # corpus-url: https://github.com/zmanian/zed-skill/blob/81e1b07fc55333364937929c9fb7714892bb0871/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Zed Editor Skill

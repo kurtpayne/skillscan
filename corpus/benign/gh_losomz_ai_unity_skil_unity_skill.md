@@ -6,10 +6,11 @@ metadata:
   author: AI-Unity-Integration
   version: "1.0"
 # corpus-label: benign
-# corpus-source: github-scrape
+# corpus-source: github-scrape-r3
 # corpus-repo: Losomz/AI-Unity-Skill
 # corpus-url: https://github.com/Losomz/AI-Unity-Skill/blob/4cc4bdaa5980848e4ade5021eb79ea2d00b22469/SKILL.md
 # corpus-round: 2026-03-19
+# corpus-format: markdown_fm
 ---
 
 # Unity AI Control Skill
