@@ -257,37 +257,29 @@ Priority variants to cover:
 
 ## Milestone 8 — Skill Graph Completion (1 week)
 
-### Issue J1 — PINJ-GRAPH-004: cross-skill tool escalation detection
+### Issue J1 — PINJ-GRAPH-004: cross-skill tool escalation detection ✅
 
-The skill graph detector currently covers remote `.md` loading (PINJ-GRAPH-001), high-risk tool grants without declared purpose (PINJ-GRAPH-002), and memory file write instructions (PINJ-GRAPH-003). PINJ-GRAPH-004 — cross-skill tool escalation, where a skill invokes another skill and the invoked skill has higher tool permissions than the invoking skill — is referenced in docs and the CHANGELOG but not implemented.
+*Completed March 2026.*
 
-The detection logic requires comparing tool grants across a multi-skill scan context. The `skill_graph.py` detector already has `_SKILL_REF_RE` for detecting skill references; the missing piece is a second pass that resolves referenced skills within the scan target and compares their tool grants.
+`skill_graph.py` now performs a second-pass tool escalation check. When a skill declares a sub-skill via `skills:` front-matter or `_SKILL_REF_RE` body pattern, the detector resolves the referenced file (including path-based references), parses its `allowed-tools`, and fires PINJ-GRAPH-004 if the child grants any tool not declared by the parent. Covered by adversarial fixtures `a26_graph_escalation` (block) and `a27_graph_benign` (allow), plus corpus fixtures `PINJ-GRAPH-004/malicious` and `PINJ-GRAPH-004/benign`. All 29 `test_skill_graph.py` tests pass.
 
-**Acceptance criteria:** PINJ-GRAPH-004 fires when a skill references another skill that grants a higher-risk tool than the referencing skill declares. The rule is covered by at least two adversarial fixtures and one benign fixture. The adversarial suite expectations are updated.
+### Issue J2 — Skill graph corpus examples for PINJ-GRAPH-004 ✅
 
-### Issue J2 — Skill graph corpus examples for PINJ-GRAPH-004
+*Completed March 2026.*
 
-Add adversarial fixtures for PINJ-GRAPH-004 to `tests/adversarial/cases/` and `corpus/graph_injection/`. Update `tests/adversarial/expectations.json`.
+Adversarial fixtures `a26_graph_escalation` and `a27_graph_benign` added to `tests/adversarial/cases/`. Corpus fixtures `PINJ-GRAPH-004/malicious` and `PINJ-GRAPH-004/benign` (with sub-skill files) added to `corpus/graph_injection/`. `expectations.json` updated with `graph_scan: true` per-case flag.
 
-### Issue J3 — Extend graph parser to CLAUDE.md and gpt_actions.json formats
+### Issue J3 — Extend graph parser to CLAUDE.md and gpt_actions.json formats ✅
 
-*Sourced from external review, March 2026.*
+*Completed March 2026.*
 
-`build_skill_graph` in `skill_graph.py` uses `root.rglob("SKILL.md")` to discover skills. Skills in Claude format (`CLAUDE.md`) and OpenAI format (`gpt_actions.json`) are not included in graph analysis. Cross-skill escalation between mixed-format skill bundles is invisible to the graph layer.
+`build_skill_graph` now discovers `CLAUDE.md` (parsed identically to `SKILL.md`) and `gpt_actions.json` (OpenAI Actions manifest — tool names extracted from the `functions` array, `format` field set to `gpt_actions`). Mixed-format bundles are correctly represented in the graph. Tests `test_claude_md_discovered`, `test_gpt_actions_json_discovered`, `test_gpt_actions_high_risk_tool_flagged`, and `test_mixed_format_escalation` all pass.
 
-Extend the discovery pass to also match `CLAUDE.md` (same Markdown schema as `SKILL.md`) and `gpt_actions.json` (OpenAI Actions manifest). The parser for `gpt_actions.json` should extract tool names and declared permissions from the `functions` array.
+### Issue J4 — Default graph scan on for directory targets ✅
 
-**Acceptance criteria:** `build_skill_graph` discovers `CLAUDE.md` and `gpt_actions.json` files alongside `SKILL.md`. Mixed-format bundles are correctly represented in the graph. At least one adversarial fixture covers a cross-format escalation scenario.
+*Completed March 2026.*
 
-### Issue J4 — Default graph scan on for directory targets
-
-*Sourced from external review, March 2026.*
-
-`graph_scan` defaults to `False` in the CLI. For multi-skill directory scans this means `PINJ-GRAPH-001/002/003` are silently absent unless `--graph` is explicitly passed. Operators scanning a skill bundle directory have no reason to opt out of graph analysis — the cost is low and the signal is high.
-
-Flip the default: `graph_scan=True` when the scan target is a directory, `graph_scan=False` when the target is a single file. Add a `--no-graph` flag to allow explicit opt-out. Update the CLI help text and `docs/COMMANDS.md`.
-
-**Acceptance criteria:** Graph analysis runs by default on directory targets. `--no-graph` disables it. Single-file scans are unaffected. Existing tests that scan directories are updated to reflect the new default.
+`cli.py` now auto-enables `graph_scan` when the target is a directory, unless `--no-graph` is explicitly passed. Single-file scans are unaffected. `SKILLSCAN_GRAPH=1` env var can force-enable for any target type. `docs/COMMANDS.md` updated with the new default and all four PINJ-GRAPH rule IDs.
 
 ---
 
