@@ -97,6 +97,9 @@ SkillScan ships a full showcase in `examples/showcase` to demonstrate detection 
 | `90_openclaw_gatewayurl_injection` | OpenClaw CVE-2026-25253 one-click RCE via gatewayUrl parameter injection and execution approval bypass | `MAL-035` |
 | `89_clickfix_webdav_share_exec` | Click-Fix WebDAV variant that maps an attacker-controlled WebDAV share via `net use` and executes a malicious batch script, bypassing browser download protections | `MAL-034` |
 | `90_electron_asar_c2_injection` | Trojanized Electron application where the `app.asar` archive is modified to include a C2 beacon, as seen in the SnappyClient campaign targeting crypto wallets | `MAL-035` |
+| `91_ai_gated_malware_llm_c2` | AI-gated malware using OpenAI GPT-3.5-Turbo API for C2 decision-making including evasion generation and environment analysis | `MAL-036` |
+| `92_npm_postinstall_env_exfil` | Malicious npm packages exfiltrating environment variables via postinstall scripts to webhook.site and agentmail | `SUP-010` |
+| `93_prompt_control_heartbeat_persistence` | Prompt control persistence via heartbeat file and memory store manipulation for persistent AI agent C2 | `PINJ-003` |
 ## Commands
 
 ```bash

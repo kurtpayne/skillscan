@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-19",
+    "generated": "2026-03-20",
     "bundled_sources": [
       "feodotracker_ips",
       "spamhaus_drop",
@@ -95,6 +95,7 @@
     "clipaid.app",
     "clisi.digifors.de",
     "cloud.pearlpeel.com",
+    "cloudflare.report",
     "cloudstay168.com",
     "clubdetiroelpicarcho.com",
     "cn.unionlever.com",
@@ -294,6 +295,7 @@
     "pablo.yzz.me",
     "palharesinformatica.com.br",
     "pamellioty.com",
+    "pastefy.app",
     "pastefy.app",
     "pay.aqiu6.com",
     "payables-notification.com",
@@ -504,11 +506,9 @@
     "zontiz.com",
     "zycdjz.com",
     "zynova.yzz.me"
-    "zynova.yzz.me",
-    "pastefy.app",
-    "cloudflare.report"
   ],
   "ips": [
+    "144.31.165.173",
     "144.31.224.98",
     "151.242.122.227",
     "173.211.46.22",
@@ -522,11 +522,8 @@
     "50.16.16.211",
     "54.91.154.110",
     "70.34.242.255",
-    "91.92.242.30"
     "91.92.242.30",
-    "195.201.104.53",
-    "94.156.170.255",
-    "144.31.165.173"
+    "94.156.170.255"
   ],
   "cidrs": [
     "1.10.16.0/20",

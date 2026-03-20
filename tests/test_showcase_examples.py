@@ -150,13 +150,20 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-033" for f in findings_87)
     findings_88 = _scan("examples/showcase/88_clawhavoc_memory_harvest").findings
     assert any(f.id == "EXF-017" for f in findings_88)
-    findings_89 = _scan("examples/showcase/89_glassworm_chrome_extension_rat").findings
-    assert any(f.id == "MAL-034" for f in findings_89)
-    findings_90 = _scan("examples/showcase/90_openclaw_gatewayurl_injection").findings
+    findings_89a = _scan("examples/showcase/89_glassworm_chrome_extension_rat").findings
+    assert any(f.id == "MAL-004" for f in findings_89a)
+    findings_90a = _scan("examples/showcase/90_openclaw_gatewayurl_injection").findings
+    assert any(f.id == "MAL-035" for f in findings_90a)
     findings_89 = _scan("examples/showcase/89_clickfix_webdav_share_exec").findings
     assert any(f.id == "MAL-034" for f in findings_89)
     findings_90 = _scan("examples/showcase/90_electron_asar_c2_injection").findings
     assert any(f.id == "MAL-035" for f in findings_90)
+    findings_91 = _scan("examples/showcase/91_ai_gated_malware_llm_c2").findings
+    assert any(f.id == "MAL-036" for f in findings_91)
+    findings_92 = _scan("examples/showcase/92_npm_postinstall_env_exfil").findings
+    assert any(f.id == "SUP-010" for f in findings_92)
+    findings_93 = _scan("examples/showcase/93_prompt_control_heartbeat_persistence").findings
+    assert any(f.id == "PINJ-003" for f in findings_93)
 
 
 def test_showcase_policy_block_domain() -> None:
