@@ -1596,4 +1596,5 @@ tests/test_semantic_local.py
 tests/test_showcase_examples.py
 tests/test_skill_graph.py
 tests/test_suppressions.py
+trace/domains/update_domains.py
 trace/domains/verified.yml
