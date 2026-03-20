@@ -1,0 +1,341 @@
+# skillscan-trace: Verified Domain Allowlist
+# ============================================
+# Bundled with the container. Updated via `skillscan-trace update-domains`.
+# Last updated: 2026-03-20
+# Version: 1.0.0
+#
+# HOW THIS WORKS
+# --------------
+# Domains in this file are the shipped defaults. They are loaded first.
+# User config (trace-config.yml) is merged on top — additions only, no removals.
+# Per-scan CLI flags (--allow-domains, --block-domains) are applied last.
+#
+# Precedence (highest wins):
+#   CLI flags > trace-config.yml > this file
+#
+# All network calls are LOGGED regardless of allowlist status.
+# Allowlisted domains suppress findings; they do not suppress logging.
+# Block-listed domains always generate a finding, even if also allowlisted.
+#
+# MAINTENANCE
+# -----------
+# This file is versioned in the skillscan-security repo and bundled into
+# the Docker image at build time. To update without rebuilding:
+#   skillscan-trace update-domains          # pulls latest from repo
+#   skillscan-trace update-domains --check  # shows age + diff, no apply
+# The CLI warns if this file is >30 days old.
+
+_meta:
+  version: "1.0.0"
+  updated: "2026-03-20"
+  description: >
+    Verified domain allowlist for skillscan-trace. Covers major cloud providers,
+    developer tools, package registries, and AI/ML services. Skills that call
+    these domains are not flagged for network findings, but all calls are logged.
+  update_url: "https://raw.githubusercontent.com/kurtpayne/skillscan-security/main/trace/domains/verified.yml"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TIER 1: Always-on defaults
+# Enabled for every scan with no configuration required.
+# These are universally legitimate targets for agent skills.
+# ─────────────────────────────────────────────────────────────────────────────
+defaults:
+
+  # Package registries — skills that install dependencies
+  package_registries:
+    - "*.npmjs.org"           # npm
+    - "registry.npmjs.org"
+    - "*.npmjs.com"
+    - "pypi.org"              # Python packages
+    - "*.pypi.org"
+    - "files.pythonhosted.org"
+    - "crates.io"             # Rust
+    - "static.crates.io"
+    - "rubygems.org"          # Ruby
+    - "*.rubygems.org"
+    - "pkg.go.dev"            # Go
+    - "proxy.golang.org"
+    - "sum.golang.org"
+    - "packagist.org"         # PHP
+    - "repo.maven.apache.org" # Java/Maven
+    - "central.sonatype.com"
+    - "nuget.org"             # .NET
+    - "*.nuget.org"
+
+  # Source control
+  source_control:
+    - "github.com"
+    - "*.github.com"
+    - "api.github.com"
+    - "raw.githubusercontent.com"
+    - "objects.githubusercontent.com"
+    - "gitlab.com"
+    - "*.gitlab.com"
+    - "bitbucket.org"
+    - "*.bitbucket.org"
+
+  # CDN / static assets
+  cdn:
+    - "*.cloudflare.com"
+    - "cdnjs.cloudflare.com"
+    - "*.fastly.net"
+    - "*.jsdelivr.net"
+    - "unpkg.com"
+
+  # DNS / time — low-level infrastructure
+  infrastructure:
+    - "1.1.1.1"               # Cloudflare DNS
+    - "8.8.8.8"               # Google DNS
+    - "8.8.4.4"
+    - "time.cloudflare.com"   # NTP
+    - "pool.ntp.org"
+    - "*.pool.ntp.org"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TIER 2: Named profiles
+# Activated by --profile <name> or profiles: [name] in trace-config.yml.
+# Use these for skills that legitimately call into specific cloud providers
+# or developer platforms. Not enabled by default to avoid masking exfil
+# to these services in skills that have no legitimate reason to use them.
+# ─────────────────────────────────────────────────────────────────────────────
+profiles:
+
+  google_cloud:
+    description: "Google Cloud Platform APIs and CLI (gcloud, gsutil, bq)"
+    domains:
+      - "*.googleapis.com"
+      - "*.google.com"
+      - "accounts.google.com"
+      - "oauth2.googleapis.com"
+      - "storage.googleapis.com"
+      - "*.storage.googleapis.com"
+      - "*.cloudfunctions.net"
+      - "*.run.app"
+      - "*.appspot.com"
+      - "metadata.google.internal"  # GCE metadata server
+
+  aws:
+    description: "Amazon Web Services APIs and CLI"
+    domains:
+      - "*.amazonaws.com"
+      - "*.aws.amazon.com"
+      - "aws.amazon.com"
+      - "*.cloudfront.net"
+      - "s3.amazonaws.com"
+      - "*.s3.amazonaws.com"
+      - "*.s3-website*.amazonaws.com"
+      - "ec2.*.amazonaws.com"
+      - "lambda.*.amazonaws.com"
+
+  azure:
+    description: "Microsoft Azure APIs and CLI"
+    domains:
+      - "*.azure.com"
+      - "*.microsoft.com"
+      - "*.microsoftonline.com"
+      - "*.windows.net"
+      - "*.azurewebsites.net"
+      - "*.blob.core.windows.net"
+      - "management.azure.com"
+      - "login.microsoftonline.com"
+
+  openai:
+    description: "OpenAI API"
+    domains:
+      - "api.openai.com"
+      - "*.openai.com"
+
+  anthropic:
+    description: "Anthropic Claude API"
+    domains:
+      - "api.anthropic.com"
+      - "*.anthropic.com"
+
+  huggingface:
+    description: "Hugging Face Hub — model downloads, inference API"
+    domains:
+      - "huggingface.co"
+      - "*.huggingface.co"
+      - "huggingface.co"
+      - "cdn-lfs.huggingface.co"
+      - "cdn-lfs-us-1.huggingface.co"
+
+  docker:
+    description: "Docker Hub and container registries"
+    domains:
+      - "hub.docker.com"
+      - "*.docker.com"
+      - "*.docker.io"
+      - "registry-1.docker.io"
+      - "auth.docker.io"
+      - "index.docker.io"
+      - "gcr.io"
+      - "*.gcr.io"
+      - "ghcr.io"
+      - "*.ghcr.io"
+      - "quay.io"
+      - "*.quay.io"
+
+  kubernetes:
+    description: "Kubernetes API server and related tooling (kubectl, helm)"
+    domains:
+      - "*.k8s.io"
+      - "storage.googleapis.com"  # GKE
+      - "charts.helm.sh"
+      - "*.helm.sh"
+      - "artifacthub.io"
+
+  vercel:
+    description: "Vercel deployment platform"
+    domains:
+      - "vercel.com"
+      - "*.vercel.com"
+      - "*.vercel.app"
+      - "api.vercel.com"
+
+  netlify:
+    description: "Netlify deployment platform"
+    domains:
+      - "netlify.com"
+      - "*.netlify.com"
+      - "*.netlify.app"
+      - "api.netlify.com"
+
+  stripe:
+    description: "Stripe payment APIs"
+    domains:
+      - "api.stripe.com"
+      - "*.stripe.com"
+      - "js.stripe.com"
+
+  slack:
+    description: "Slack API and webhooks"
+    domains:
+      - "slack.com"
+      - "*.slack.com"
+      - "api.slack.com"
+      - "hooks.slack.com"
+
+  linear:
+    description: "Linear project management API"
+    domains:
+      - "api.linear.app"
+      - "*.linear.app"
+
+  notion:
+    description: "Notion API"
+    domains:
+      - "api.notion.com"
+      - "*.notion.com"
+      - "*.notion.so"
+
+  jira_confluence:
+    description: "Atlassian Jira and Confluence APIs"
+    domains:
+      - "*.atlassian.com"
+      - "*.atlassian.net"
+      - "api.atlassian.com"
+      - "auth.atlassian.com"
+
+  datadog:
+    description: "Datadog monitoring and observability"
+    domains:
+      - "*.datadoghq.com"
+      - "api.datadoghq.com"
+      - "*.datadog-browser-agent.com"
+
+  sentry:
+    description: "Sentry error tracking"
+    domains:
+      - "sentry.io"
+      - "*.sentry.io"
+      - "o*.ingest.sentry.io"
+
+  cloudflare:
+    description: "Cloudflare Workers, Pages, and APIs"
+    domains:
+      - "api.cloudflare.com"
+      - "*.cloudflare.com"
+      - "*.workers.dev"
+      - "*.pages.dev"
+
+  supabase:
+    description: "Supabase backend-as-a-service"
+    domains:
+      - "supabase.com"
+      - "*.supabase.com"
+      - "*.supabase.co"
+      - "api.supabase.com"
+
+  planetscale:
+    description: "PlanetScale MySQL-compatible database"
+    domains:
+      - "*.planetscale.com"
+      - "api.planetscale.com"
+
+  neon:
+    description: "Neon serverless Postgres"
+    domains:
+      - "*.neon.tech"
+      - "api.neon.tech"
+
+  upstash:
+    description: "Upstash serverless Redis and Kafka"
+    domains:
+      - "*.upstash.io"
+      - "api.upstash.com"
+
+  twilio:
+    description: "Twilio SMS, voice, and communications APIs"
+    domains:
+      - "api.twilio.com"
+      - "*.twilio.com"
+
+  sendgrid:
+    description: "SendGrid / Twilio email API"
+    domains:
+      - "api.sendgrid.com"
+      - "*.sendgrid.com"
+      - "*.sendgrid.net"
+
+  resend:
+    description: "Resend email API"
+    domains:
+      - "api.resend.com"
+      - "*.resend.com"
+
+  posthog:
+    description: "PostHog product analytics"
+    domains:
+      - "app.posthog.com"
+      - "*.posthog.com"
+      - "eu.posthog.com"
+      - "us.i.posthog.com"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ALWAYS BLOCK
+# These are never allowlisted regardless of user config or profiles.
+# They are known exfil / C2 infrastructure or services with no legitimate
+# use in a skill context.
+# ─────────────────────────────────────────────────────────────────────────────
+always_block:
+  - "ngrok.io"            # tunneling — no legitimate skill use
+  - "*.ngrok.io"
+  - "ngrok-free.app"
+  - "*.ngrok-free.app"
+  - "serveo.net"          # tunneling
+  - "*.serveo.net"
+  - "localhost.run"       # tunneling
+  - "glot.io"             # known in IOC DB
+  - "webhook.site"        # exfil staging
+  - "requestbin.com"      # exfil staging
+  - "*.requestbin.com"
+  - "pipedream.net"       # exfil staging (legitimate use exists but too risky as default)
+  - "*.pipedream.net"
+  - "canarytokens.org"    # canary token infrastructure (not a threat, but unusual in skills)
+  - "burpcollaborator.net"
+  - "*.burpcollaborator.net"
+  - "oastify.com"
+  - "*.oastify.com"
+  - "interactsh.com"
+  - "*.interactsh.com"

