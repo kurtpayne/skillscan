@@ -256,30 +256,30 @@ def _make_output_filename(source_path: Path, family_id: str, variant_idx: int) -
 
 def _add_augmentation_metadata(content: str, source_file: str, family_id: str,
                                 family_name: str, variant_idx: int, round_date: str) -> str:
-    """Add augmentation provenance metadata as YAML comments."""
-    lines = content.split("\n")
-    fm_end = -1
-    in_fm = False
-    for i, line in enumerate(lines):
-        if i == 0 and line.strip() == "---":
-            in_fm = True
-            continue
-        if in_fm and line.strip() == "---":
-            fm_end = i
-            break
-    if fm_end == -1:
-        return content
-    meta_lines = [
-        f"# corpus-label: malicious",
-        f"# corpus-source: augmented",
-        f"# corpus-base: {source_file}",
-        f"# corpus-family: {family_id}",
-        f"# corpus-family-name: {family_name}",
-        f"# corpus-variant: {variant_idx}",
-        f"# corpus-round: {round_date}",
-    ]
-    lines = lines[:fm_end] + meta_lines + lines[fm_end:]
-    return "\n".join(lines)
+    """Return content unchanged — metadata is stored in a separate .meta sidecar.
+
+    We deliberately do NOT embed corpus-label/corpus-source into the skill text
+    because the model would learn to detect those metadata strings rather than
+    the actual attack patterns.
+    """
+    return content
+
+
+def _write_augmentation_sidecar(output_path: Path, source_file: str, family_id: str,
+                                 family_name: str, variant_idx: int, round_date: str) -> None:
+    """Write provenance metadata to a .meta sidecar file (not read by the trainer)."""
+    import json
+    meta = {
+        "corpus_label": "malicious",
+        "corpus_source": "augmented",
+        "corpus_base": source_file,
+        "corpus_family": family_id,
+        "corpus_family_name": family_name,
+        "corpus_variant": variant_idx,
+        "corpus_round": round_date,
+    }
+    sidecar = output_path.with_suffix(".meta")
+    sidecar.write_text(json.dumps(meta, indent=2) + "\n")
 
 
 def augment(
@@ -366,6 +366,10 @@ def augment(
     if not dry_run:
         for item in accepted:
             item["output_path"].write_text(item["content"], encoding="utf-8")
+            _write_augmentation_sidecar(
+                item["output_path"], item["source"], item["family"],
+                item["family_name"], item["variant"], round_date,
+            )
         print(f"\nWrote {len(accepted)} files to {output_dir}")
     else:
         print("\n[DRY RUN] No files written.")
