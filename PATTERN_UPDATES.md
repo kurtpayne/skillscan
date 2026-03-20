@@ -1,3 +1,46 @@
+## 2026-03-20 — AI-Gated Malware C2, npm Postinstall Env Exfil, Prompt Control Persistence, mcp-atlassian CVEs
+
+**Sources:**
+- [Unit 42 — Analyzing the Current State of AI Use in Malware](https://unit42.paloaltonetworks.com/ai-use-in-malware/)
+- [Sonatype — Discovers Two Malicious npm Packages](https://www.sonatype.com/blog/sonatype-discovers-two-malicious-npm-packages)
+- [Vectra AI — Prompt Control: How Context Becomes the Command-and-Control Layer for AI Agents](https://www.vectra.ai/blog/prompt-control-how-context-becomes-the-command-and-control-layer-for-ai-agents)
+- [VentureBeat — Meta's rogue AI agent passed every identity check](https://venturebeat.com/security/meta-rogue-ai-agent-confused-deputy-iam-identity-governance-matrix)
+
+**Event Summary:** Three new detection rules and vulnerability enrichment were added. Unit 42 published analysis of two malware samples leveraging LLM APIs for remote C2 decision-making: a .NET infostealer using OpenAI GPT-3.5-Turbo for evasion technique generation, environment analysis, and obfuscated communication, and a Golang dropper for Sliver malware that uses an LLM to assess target environments before proceeding with infection. Sonatype discovered two malicious npm packages (`sbx-mask` and `touch-adv`) published from a compromised maintainer account that exfiltrate environment variables via postinstall scripts to webhook.site and agentmail endpoints. Vectra AI documented the "prompt control" persistence technique where attackers embed instructions in heartbeat files and memory stores that AI agents periodically read, creating a cognitive control plane for persistent C2 without traditional network beaconing. VentureBeat reported CVE-2026-27826 (SSRF) and CVE-2026-27825 (arbitrary file write) in mcp-atlassian versions before 0.17.0, enabling unauthenticated RCE from the local network.
+
+**New Patterns Added:**
+
+### MAL-036: AI-gated malware execution via LLM API C2 decision-making
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects `GenerateEvasionTechnique`, `AnalyzeTargetEnvironment`, `GenerateObfuscatedCommunication`, `SendToC2ServerWithLLM` method names, `ai-powered stealth`, `llm-enhanced`, `X-LLM-Enhanced` headers, and `gpt-3.5-turbo` combined with evasion/obfuscation/exfiltration/C2/beacon keywords.
+- **Justification:** Direct detection of AI-assisted malware documented by Unit 42. The malware uses OpenAI API calls for remote decision-making in C2 operations.
+
+### SUP-010: npm postinstall environment variable exfiltration via webhook or agentmail
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.87
+- **Pattern:** Detects `process.env` combined with `webhook.site`, `agentmail`, or `curl` on the same line, and `postinstall` scripts combined with environment variable access and exfiltration endpoints.
+- **Justification:** Direct detection of the sbx-mask/touch-adv npm supply chain attack reported by Sonatype on March 19, 2026.
+
+### PINJ-003: Prompt control persistence via heartbeat file or memory store manipulation
+- **Category:** instruction_abuse
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects `heartbeat file` combined with instruction/command/execute keywords, memory/context store combined with inject/poison/manipulate/persist keywords, and `cognitive control plane` references.
+- **Justification:** Detection of the prompt control persistence technique documented by Vectra AI, where agent context is weaponized as a C2 channel.
+
+**IOC Updates:**
+- Added `webhook.site` to domain IOC list (exfiltration endpoint for sbx-mask campaign)
+- Fixed duplicate entries and missing commas in ioc_db.json
+
+**Vulnerability Updates:**
+- Added CVE-2026-27826 (critical SSRF, mcp-atlassian < 0.17.0) to vuln_db.json
+- Added CVE-2026-27825 (high severity arbitrary file write, mcp-atlassian < 0.17.0) to vuln_db.json
+
+---
+
 ## 2026-03-19 — GlassWorm Chrome Extension RAT, OpenClaw gatewayUrl RCE, SnappyClient C2, AI Platform CVEs
 
 **Sources:**

@@ -1,4 +1,4 @@
-version: "2026.03.19.1"
+version: "2026.03.20.1"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2091,10 +2091,28 @@ static_rules:
   mitigation: Do not accept gatewayUrl parameters from untrusted sources or disable
     execution approval prompts. The CVE-2026-25253 attack chain exploits gatewayUrl
     injection to steal auth tokens and bypass approval safeguards for full RCE.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-035
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-19'
+      last_modified: '2026-03-19'
+    quality:
       precision_estimate: 0.88
       benchmark_set: core-static-v1
     references:
-    - https://thehackernews.com/2026/03/investigating-new-click-fix-variant.html
+    - https://www.proarch.com/blog/threats-vulnerabilities/openclaw-rce-vulnerability-cve-2026-25253
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
 - id: MAL-035
   category: malware_pattern
   severity: high
@@ -2122,11 +2140,6 @@ static_rules:
       last_modified: '2026-03-19'
     quality:
       precision_estimate: 0.87
-      benchmark_set: core-static-v1
-    references:
-    - https://www.proarch.com/blog/threats-vulnerabilities/openclaw-rce-vulnerability-cve-2026-25253
-    - https://nvd.nist.gov/vuln/detail/CVE-2026-25253
-      precision_estimate: 0.86
       benchmark_set: core-static-v1
     references:
     - https://thehackernews.com/2026/03/investigating-new-click-fix-variant.html
@@ -2165,6 +2178,99 @@ static_rules:
     references:
     - https://owasp.org/www-project-top-10-for-large-language-model-applications/
     - https://atlas.mitre.org/techniques/AML.T0051
+- id: MAL-036
+  category: malware_pattern
+  severity: high
+  confidence: 0.85
+  title: AI-gated malware execution via LLM API C2 decision-making
+  pattern: (?i)(?:GenerateEvasionTechnique|AnalyzeTargetEnvironment|GenerateObfuscatedCommunication|SendToC2ServerWithLLM|ai[_\s-]?powered[_\s-]?stealth|llm[_\s-]?enhanced|\bX-LLM-Enhanced\b|gpt-3\.5-turbo[^\n]{0,120}(?:evasion|obfuscat|exfiltrat|c2|beacon)|(?:evasion|obfuscat|exfiltrat|c2|beacon)[^\n]{0,120}gpt-3\.5-turbo)
+  mitigation: Do not use LLM APIs for malware decision-making, evasion technique
+    generation, or C2 communication obfuscation. This pattern detects AI-gated
+    malware that abuses OpenAI or similar APIs as a remote C2 decision layer,
+    as documented by Unit 42.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-036
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-20'
+      last_modified: '2026-03-20'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://unit42.paloaltonetworks.com/ai-use-in-malware/
+- id: SUP-010
+  category: malware_pattern
+  severity: high
+  confidence: 0.87
+  title: npm postinstall environment variable exfiltration via webhook or agentmail
+  pattern: (?i)(?:process\.env[^\n]{0,120}(?:webhook\.site|agentmail|curl\s+.*https?://)|(?:webhook\.site|agentmail)[^\n]{0,120}process\.env|postinstall[^\n]{0,200}(?:process\.env|env\b)[^\n]{0,120}(?:curl|fetch|http\.request|axios|webhook))
+  mitigation: Remove postinstall scripts that collect environment variables and
+    transmit them to external endpoints such as webhook.site or agentmail services.
+    This pattern detects the sbx-mask/touch-adv npm supply chain attack documented
+    by Sonatype.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: SUPPLY-010
+      name: Supply-chain behavior
+    tags:
+    - malware_pattern
+    - sup
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-20'
+      last_modified: '2026-03-20'
+    quality:
+      precision_estimate: 0.87
+      benchmark_set: core-static-v1
+    references:
+    - https://www.sonatype.com/blog/sonatype-discovers-two-malicious-npm-packages
+- id: PINJ-003
+  category: instruction_abuse
+  severity: high
+  confidence: 0.84
+  title: Prompt control persistence via heartbeat file or memory store manipulation
+  pattern: (?i)(?:heartbeat[_\s-]?file[^\n]{0,120}(?:instruction|command|task|execute)|(?:instruction|command|task|execute)[^\n]{0,120}heartbeat[_\s-]?file|(?:memory|context)[_\s-]?(?:store|entry|entries)[^\n]{0,120}(?:inject|poison|manipulat|persist)|(?:inject|poison|manipulat|persist)[^\n]{0,120}(?:memory|context)[_\s-]?(?:store|entry|entries)|cognitive[_\s-]?control[_\s-]?plane)
+  mitigation: Do not embed executable instructions in heartbeat files, memory stores,
+    or agent context entries. This pattern detects the prompt control persistence
+    technique documented by Vectra AI, where attackers use agent context as a C2
+    channel for persistent control.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: PROMPTINJ-003
+      name: Prompt injection/jailbreak
+    tags:
+    - instruction_abuse
+    - pinj
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-20'
+      last_modified: '2026-03-20'
+    quality:
+      precision_estimate: 0.84
+      benchmark_set: core-static-v1
+    references:
+    - https://www.vectra.ai/blog/prompt-control-how-context-becomes-the-command-and-control-layer-for-ai-agents
 
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://

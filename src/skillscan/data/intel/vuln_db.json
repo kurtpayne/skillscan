@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-19",
+    "generated": "2026-03-20",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -50,7 +50,8 @@
       "semver",
       "tar",
       "unzipper",
-      "archiver"
+      "archiver",
+      "mcp-atlassian"
     ]
   },
   "python": {
@@ -692,6 +693,18 @@
         "id": "CVE-2026-25253",
         "severity": "high",
         "fixed": "2026.3.13"
+      }
+    },
+    "mcp-atlassian": {
+      "0.16.0": {
+        "id": "CVE-2026-27826",
+        "severity": "critical",
+        "fixed": "0.17.0"
+      },
+      "0.16.1": {
+        "id": "CVE-2026-27825",
+        "severity": "high",
+        "fixed": "0.17.0"
       }
     }
   }
