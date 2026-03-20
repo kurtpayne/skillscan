@@ -22,8 +22,18 @@
 # This file is versioned in the skillscan-security repo and bundled into
 # the Docker image at build time. To update without rebuilding:
 #   skillscan-trace update-domains          # pulls latest from repo
-#   skillscan-trace update-domains --check  # shows age + diff, no apply
-# The CLI warns if this file is >30 days old.
+#   skillscan-trace update-domains --check  # shows what would change, no apply
+#
+# MONITORING (automated)
+# ----------------------
+# .github/workflows/domain-allowlist-monitor.yml runs weekly and polls:
+#   - Google Cloud cloud.json (syncToken)
+#   - AWS ip-ranges.json (createDate)
+#   - GitHub Meta API (response hash)
+#   - Cloudflare IPs (response hash)
+# When any source changes, a GitHub issue is opened with a review checklist.
+# Updates are NOT automatic — a human reviews the diff and updates this file.
+# The workflow uses signal-based detection, not a fixed staleness timer.
 
 _meta:
   version: "1.0.0"
