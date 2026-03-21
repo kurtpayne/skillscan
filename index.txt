@@ -1524,6 +1524,7 @@ src/skillscan/data/rules/__init__.py
 src/skillscan/data/rules/ast_flows.yaml
 src/skillscan/data/rules/default.yaml
 src/skillscan/data/rules/exfil_channels.yaml
+src/skillscan/data/rules/multilang.yaml
 src/skillscan/detectors/__init__.py
 src/skillscan/detectors/ast_flows.py
 src/skillscan/detectors/skill_graph.py
@@ -1596,6 +1597,7 @@ tests/test_intel.py
 tests/test_intel_update.py
 tests/test_ioc_extraction.py
 tests/test_junit.py
+tests/test_m12_archive_multilang.py
 tests/test_ml_detector.py
 tests/test_model_sync.py
 tests/test_policies_more.py
