@@ -27,7 +27,7 @@ from skillscan.policies import BUILTIN_PROFILES, load_builtin_policy, load_polic
 from skillscan.render import render_report
 from skillscan.rules import load_builtin_rulepack
 from skillscan.sarif import report_to_sarif
-from skillscan.suppressions import apply_suppressions
+from skillscan.suppressions import apply_suppressions, check_suppressions_expiry
 
 
 # load_dotenv: reads KEY=VALUE pairs from a .env file into os.environ (no-op if absent)
@@ -51,11 +51,13 @@ intel_app = typer.Typer(help="Local intel operations")
 rule_app = typer.Typer(help="Rule metadata/query operations")
 corpus_app = typer.Typer(help="Training corpus management")
 model_app = typer.Typer(help="ML model management (download, update, status)")
+suppress_app = typer.Typer(help="Suppression file management")
 app.add_typer(policy_app, name="policy")
 app.add_typer(intel_app, name="intel")
 app.add_typer(rule_app, name="rule")
 app.add_typer(corpus_app, name="corpus")
 app.add_typer(model_app, name="model")
+app.add_typer(suppress_app, name="suppress")
 console = Console()
 
 
@@ -876,6 +878,87 @@ def model_status_cmd(
             console.print("[yellow]Run: skillscan model sync[/yellow]")
         elif status.warn:
             console.print("[dim]Run: skillscan model sync (optional)[/dim]")
+
+
+@suppress_app.command("check")
+def suppress_check(
+    suppressions: Path = typer.Argument(..., help="Path to suppression YAML file"),
+    warn_days: int = typer.Option(
+        30,
+        "--warn-days",
+        help="Warn when a suppression expires within this many days (default: 30)",
+    ),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """Check a suppression file for expired or soon-to-expire entries.
+
+    Exits non-zero when any active suppression expires within --warn-days.
+    Useful as a CI gate to prevent forgotten suppressions from silently accumulating.
+    """
+    if not suppressions.exists():
+        console.print(f"[bold red]Suppressions file not found:[/] {suppressions}")
+        raise typer.Exit(2)
+
+    try:
+        result = check_suppressions_expiry(suppressions, warn_days=warn_days)
+    except ValueError as exc:
+        console.print(f"[bold red]Invalid suppressions file:[/] {exc}")
+        raise typer.Exit(2) from exc
+
+    if json_output:
+        import json as _json
+        console.print(
+            _json.dumps(
+                {
+                    "total": result.total_entries,
+                    "active": result.active_entries,
+                    "expired": result.expired_count,
+                    "expiring_soon": [
+                        {
+                            "id": e.id,
+                            "reason": e.reason,
+                            "expires": e.expires,
+                            "evidence_path": e.evidence_path,
+                            "days_remaining": e.days_remaining,
+                        }
+                        for e in result.expiring_soon
+                    ],
+                    "expired_entries": [
+                        {
+                            "id": e.id,
+                            "reason": e.reason,
+                            "expires": e.expires,
+                            "evidence_path": e.evidence_path,
+                        }
+                        for e in result.expired_entries
+                    ],
+                },
+                indent=2,
+            )
+        )
+    else:
+        console.print(f"Total entries  : {result.total_entries}")
+        console.print(f"Active         : {result.active_entries}")
+        console.print(f"Expired        : {result.expired_count}")
+        console.print(f"Expiring soon  : {len(result.expiring_soon)} (within {warn_days} days)")
+
+        if result.expired_entries:
+            console.print("\n[bold red]Expired suppressions:[/]")
+            for e in result.expired_entries:
+                path_info = f" ({e.evidence_path})" if e.evidence_path else ""
+                console.print(f"  [red]EXPIRED[/] {e.id}{path_info} — expired {e.expires}: {e.reason}")
+
+        if result.expiring_soon:
+            console.print(f"\n[bold yellow]Expiring within {warn_days} days:[/]")
+            for e in result.expiring_soon:
+                path_info = f" ({e.evidence_path})" if e.evidence_path else ""
+                console.print(
+                    f"  [yellow]WARN[/] {e.id}{path_info} — expires {e.expires} "
+                    f"({e.days_remaining}d): {e.reason}"
+                )
+
+    if result.expiring_soon or result.expired_count > 0:
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":

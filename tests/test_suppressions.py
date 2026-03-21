@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
 
 from skillscan.models import Finding, Severity
-from skillscan.suppressions import apply_suppressions
+from skillscan.suppressions import apply_suppressions, check_suppressions_expiry
 
 
 def test_apply_suppressions_active_and_expired(tmp_path: Path) -> None:
@@ -230,3 +231,76 @@ def test_apply_suppressions_line_must_be_integer(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="line' must be an integer"):
         apply_suppressions([], sup)
+
+
+# ---------------------------------------------------------------------------
+# Tests for check_suppressions_expiry
+# ---------------------------------------------------------------------------
+
+
+def test_check_suppressions_expiry_all_active(tmp_path: Path) -> None:
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text(
+        """
+- id: MAL-001
+  reason: FP
+  expires: 2099-01-01
+- id: MAL-002
+  reason: FP
+  expires: 2099-06-01
+""".strip(),
+        encoding="utf-8",
+    )
+    result = check_suppressions_expiry(sup, warn_days=30)
+    assert result.total_entries == 2
+    assert result.active_entries == 2
+    assert result.expired_count == 0
+    assert result.expiring_soon == []
+
+
+def test_check_suppressions_expiry_with_expired(tmp_path: Path) -> None:
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text(
+        """
+- id: MAL-001
+  reason: FP
+  expires: 2020-01-01
+- id: MAL-002
+  reason: FP
+  expires: 2099-01-01
+""".strip(),
+        encoding="utf-8",
+    )
+    result = check_suppressions_expiry(sup, warn_days=30)
+    assert result.expired_count == 1
+    assert result.active_entries == 1
+    assert result.expired_entries[0].id == "MAL-001"
+
+
+def test_check_suppressions_expiry_expiring_soon(tmp_path: Path) -> None:
+    soon = (datetime.now(UTC) + timedelta(days=5)).strftime("%Y-%m-%d")
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text(
+        f"""
+- id: MAL-003
+  reason: FP
+  expires: {soon}
+- id: MAL-004
+  reason: FP
+  expires: 2099-01-01
+""".strip(),
+        encoding="utf-8",
+    )
+    result = check_suppressions_expiry(sup, warn_days=30)
+    assert len(result.expiring_soon) == 1
+    assert result.expiring_soon[0].id == "MAL-003"
+    assert result.expiring_soon[0].days_remaining <= 5
+
+
+def test_check_suppressions_expiry_empty_file(tmp_path: Path) -> None:
+    sup = tmp_path / "suppressions.yaml"
+    sup.write_text("", encoding="utf-8")
+    result = check_suppressions_expiry(sup, warn_days=30)
+    assert result.total_entries == 0
+    assert result.expiring_soon == []
+    assert result.expired_count == 0

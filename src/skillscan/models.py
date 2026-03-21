@@ -30,6 +30,7 @@ class Finding(BaseModel):
     line: int | None = None
     snippet: str = ""
     mitigation: str | None = None
+    chain_actions: list[str] = Field(default_factory=list)
 
 
 

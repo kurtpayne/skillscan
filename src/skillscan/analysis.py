@@ -733,6 +733,7 @@ def scan(
                             evidence_path=str(path),
                             snippet=chain_rule.snippet or " + ".join(sorted(chain_rule.all_of)),
                             mitigation=chain_rule.mitigation,
+                            chain_actions=sorted(chain_rule.all_of),
                         )
                     )
 

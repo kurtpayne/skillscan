@@ -12,8 +12,14 @@ weights:
   threat_intel: 3
   binary_artifact: 1
 hard_block_rules:
-  - MAL-001
-  - IOC-001
+  - MAL-001   # download-and-execute (critical)
+  - IOC-001   # known-malicious domain (critical)
+  - DEF-001   # defender exclusion manipulation (critical)
+  - MAL-025   # MCP tool poisoning via hidden instruction block (critical)
+  - MAL-029   # Solana RPC C2 channel (critical)
+  - CHN-011   # MCP tool poisoning + credential exfil chain (critical)
+  - CHN-013   # container escape + host path mount chain (critical)
+block_min_confidence: 0.75
 allow_domains: []
 block_domains: []
 limits:

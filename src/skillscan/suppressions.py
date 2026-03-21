@@ -80,6 +80,65 @@ def _matches(entry: SuppressionEntry, finding: Finding) -> bool:
     return True
 
 
+@dataclass
+class ExpiryEntry:
+    id: str
+    reason: str
+    expires: str
+    evidence_path: str | None
+    days_remaining: int
+
+
+@dataclass
+class ExpiryCheckResult:
+    total_entries: int
+    active_entries: int
+    expired_count: int
+    expiring_soon: list[ExpiryEntry]
+    expired_entries: list[SuppressionEntry]
+
+
+def check_suppressions_expiry(path: Path, warn_days: int = 30) -> ExpiryCheckResult:
+    """Check a suppression file for expired or soon-to-expire entries.
+
+    Returns an ExpiryCheckResult. Exits non-zero (via caller) when any active
+    suppression expires within warn_days days.
+    """
+    entries = _load_entries(path)
+    now = datetime.now(UTC)
+    warn_threshold = warn_days * 86400  # seconds
+
+    active: list[SuppressionEntry] = []
+    expired_entries: list[SuppressionEntry] = []
+    expiring_soon: list[ExpiryEntry] = []
+
+    for entry in entries:
+        expiry_dt = _parse_date_utc(entry.expires)
+        delta = (expiry_dt - now).total_seconds()
+        if delta < 0:
+            expired_entries.append(entry)
+        else:
+            active.append(entry)
+            if delta <= warn_threshold:
+                expiring_soon.append(
+                    ExpiryEntry(
+                        id=entry.id,
+                        reason=entry.reason,
+                        expires=entry.expires,
+                        evidence_path=entry.evidence_path,
+                        days_remaining=int(delta // 86400),
+                    )
+                )
+
+    return ExpiryCheckResult(
+        total_entries=len(entries),
+        active_entries=len(active),
+        expired_count=len(expired_entries),
+        expiring_soon=expiring_soon,
+        expired_entries=expired_entries,
+    )
+
+
 def apply_suppressions(findings: list[Finding], path: Path) -> SuppressionResult:
     entries = _load_entries(path)
     now = datetime.now(UTC)

@@ -36,6 +36,7 @@ def report_to_sarif(report: ScanReport) -> dict:
             message = f"{message}: {finding.snippet.strip()}"
 
         clabel = confidence_label(finding.confidence).value
+        region = {"startLine": finding.line} if finding.line else {"startLine": 1}
         result: dict = {
             "ruleId": finding.id,
             "level": _level_from_severity(finding.severity),
@@ -44,7 +45,7 @@ def report_to_sarif(report: ScanReport) -> dict:
                 {
                     "physicalLocation": {
                         "artifactLocation": {"uri": finding.evidence_path},
-                        "region": ({"startLine": finding.line} if finding.line else {}),
+                        "region": region,
                     }
                 }
             ],
@@ -56,6 +57,18 @@ def report_to_sarif(report: ScanReport) -> dict:
                 "mitigation": finding.mitigation,
             },
         }
+        if finding.chain_actions:
+            result["relatedLocations"] = [
+                {
+                    "id": idx,
+                    "message": {"text": f"Chain indicator: {action}"},
+                    "physicalLocation": {
+                        "artifactLocation": {"uri": finding.evidence_path},
+                        "region": {"startLine": 1},
+                    },
+                }
+                for idx, action in enumerate(finding.chain_actions, start=1)
+            ]
         results.append(result)
 
     return {

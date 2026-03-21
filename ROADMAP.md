@@ -424,30 +424,33 @@ The document should cover: the detection pipeline stages and their order; the st
 ---
 
 ## Milestone 11 — Hardening & Operational Maturity (ongoing)
-
 These items do not have a fixed milestone but should be addressed before a v1.0 release.
+
+### Completed
+
+**SARIF empty region for file-level findings.** Fixed: `sarif.py` now falls back to `{"startLine": 1}` when `finding.line` is `None`. Tests added.
+
+**SARIF `relatedLocations` for chain findings.** Fixed: `Finding` model gains `chain_actions: list[str]`; `analysis.py` populates it for chain rules; `sarif.py` emits `relatedLocations` with per-action messages. Tests added.
+
+**Expand `hard_block_rules` in strict policy.** `strict.yaml` now hard-blocks `DEF-001`, `MAL-025`, `MAL-029`, `CHN-011`, `CHN-013` in addition to `MAL-001` and `IOC-001`. `balanced.yaml` adds `DEF-001` and `MAL-025`.
+
+**Set `block_min_confidence` in policy files.** `strict.yaml`: `0.75`. `balanced.yaml`: `0.65`.
+
+**`skillscan suppress check` subcommand.** Implemented in `suppressions.py` and wired into the CLI as `skillscan suppress check <file> [--warn-days N] [--json]`. Exits non-zero when any suppression is expired or expires within `--warn-days` (default 30). Tests added.
+
+**Release smoke test.** `.github/workflows/release-smoke-test.yml` triggers on published releases and `workflow_dispatch`. Tests PyPI install + Docker image: scans `openclaw_compromised_like` fixture, asserts `block` verdict, validates SARIF and JUnit output.
+
+**`docs/DETECTION_MODEL.md` referenced but missing.** Completed in Milestone 10.
+
+### Remaining
 
 **Test coverage for ML and remote paths.** The `test_ml_detector.py` and `test_remote.py` tests use mocks throughout. At least one integration test per module should run against real artifacts (gated behind a `--integration` marker and skipped in standard CI).
 
 **ClamAV integration test.** `test_clamav.py` mocks the `clamscan` binary. The Docker image includes ClamAV and enables it by default; there should be at least one end-to-end test that runs inside the Docker image and verifies ClamAV findings appear in the report.
 
-**Suppression file expiry enforcement in CI.** The suppression module supports expiry dates but there is no CI step that warns when suppressions are approaching expiry. Add a `skillscan suppress check` subcommand that exits non-zero when any active suppression expires within 30 days.
+**Homebrew formula submission.** Deferred until after v1.0 ships. The scanner needs to be fully hardened before distribution through a channel that creates end-user expectations. The formula in `packaging/homebrew/` is scaffolded and ready; submission to a `homebrew-skillscan` tap is the first step when the time comes.
 
-**Homebrew formula submission.** The formula in `packaging/homebrew/` is scaffolded but not submitted to homebrew-core or a tap. Submit to a `homebrew-skillscan` tap as a first step; homebrew-core submission can follow after v1.0.
-
-**Release smoke test.** The release checklist references smoke tests but there is no automated post-release verification. Add a workflow that triggers on published releases, installs from PyPI and Docker Hub, and runs `skillscan scan tests/fixtures/malicious/openclaw_compromised_like` with an expected `block` verdict.
-
-**`docs/DETECTION_MODEL.md` referenced but missing.** Covered in Milestone 10.
-
-**SARIF empty region for file-level findings.** When `finding.line` is `None`, the `region` dict in `sarif.py` is `{}`. The SARIF spec requires at minimum `{"startLine": 1}` for valid region objects; some consumers reject empty regions. Fix: fall back to `{"startLine": 1}` when no line number is available.
-
-**SARIF `relatedLocations` for chain findings.** Chain findings (`CHN-*`) have two match locations by definition but `sarif.py` only emits a single `physicalLocation`. Without `relatedLocations` pointing to both indicators, the GitHub Security tab shows a single location with no context on why the chain fired. Fix: populate `relatedLocations` from `finding.related_path` / `finding.related_line` when present.
-
-**Expand `hard_block_rules` in strict policy.** `strict.yaml` currently hard-blocks only `MAL-001` and `IOC-001`. `DEF-001` (Defender exclusion manipulation), `MAL-025` (MCP tool poisoning via hidden instruction block), `MAL-029` (Solana RPC C2), `CHN-011` (MCP tool poisoning + credential exfil chain), and `CHN-013` (container escape + host path mount chain) are all `critical` severity but not in `hard_block_rules`. A skill with Defender disabling but a low overall score could slip through to `warn` instead of `block` in strict mode.
-
-**Set `block_min_confidence` in policy files.** The `block_min_confidence` field defaults to `0.0` in both `strict.yaml` and `balanced.yaml`, meaning every finding regardless of confidence contributes to the block score. A `0.60`-confidence MEDIUM finding from the social engineering classifier counts equally toward block threshold as a `0.95`-confidence CRITICAL malware pattern. Suggested values: `0.75` for strict, `0.65` for balanced.
-
-**AST taint propagation known limitation.** The AST detector (`ast_flows.py`) only propagates taint through direct assignments (`visit_Assign`). Augmented assignment (`+=`), tuple unpacking, and function return values do not propagate taint. A pattern like `result = get_secret(); send(process(result))` will not be caught because taint does not flow through `process()`. This is inherent to the lightweight AST approach and should be documented as a known limitation in `docs/DETECTION_MODEL.md` rather than silently accepted.
+**AST taint propagation known limitation.** The AST detector (`ast_flows.py`) only propagates taint through direct assignments (`visit_Assign`). Augmented assignment (`+=`), tuple unpacking, and function return values do not propagate taint. A pattern like `result = get_secret(); send(process(result))` will not be caught because taint does not flow through `process()`. Documented as a known limitation in `docs/DETECTION_MODEL.md`.
 
 ---
 

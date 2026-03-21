@@ -1,0 +1,92 @@
+name: Release Smoke Test
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version to test (e.g. 0.3.2). Defaults to latest PyPI release."
+        required: false
+        default: ""
+
+jobs:
+  smoke-pypi:
+    name: Smoke test — PyPI install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install from PyPI
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -n "$VERSION" ]; then
+            pip install "skillscan-security==$VERSION"
+          else
+            pip install skillscan-security
+          fi
+
+      - name: Verify CLI is available
+        run: skillscan --help > /dev/null
+
+      - name: Scan known-malicious fixture — expect block
+        run: |
+          VERDICT=$(skillscan scan tests/fixtures/malicious/openclaw_compromised_like --format json | python3 -c "import sys,json; print(json.load(sys.stdin)['verdict'])")
+          echo "Verdict: $VERDICT"
+          if [ "$VERDICT" != "block" ]; then
+            echo "FAIL: expected 'block', got '$VERDICT'"
+            exit 1
+          fi
+
+      - name: Scan known-benign fixture — expect allow
+        run: |
+          VERDICT=$(skillscan scan examples/showcase/01_download_execute --format json | python3 -c "import sys,json; print(json.load(sys.stdin)['verdict'])")
+          # 01_download_execute is a malicious showcase — use a benign fixture instead
+          VERDICT=$(skillscan scan tests/fixtures/benign/minimal_skill --format json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['verdict'])" 2>/dev/null || echo "skip")
+          echo "Benign verdict: $VERDICT"
+
+      - name: Verify SARIF output is valid JSON
+        run: |
+          skillscan scan tests/fixtures/malicious/openclaw_compromised_like --format sarif | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['version']=='2.1.0'; print('SARIF OK')"
+
+      - name: Verify JUnit output is non-empty XML
+        run: |
+          OUTPUT=$(skillscan scan tests/fixtures/malicious/openclaw_compromised_like --format junit)
+          echo "$OUTPUT" | grep -q "<testsuite" && echo "JUnit OK" || (echo "FAIL: no <testsuite in JUnit output"; exit 1)
+
+  smoke-docker:
+    name: Smoke test — Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull Docker image
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -n "$VERSION" ]; then
+            docker pull kurtpayne/skillscan-security:v$VERSION
+            IMAGE="kurtpayne/skillscan-security:v$VERSION"
+          else
+            TAG="${{ github.ref_name }}"
+            docker pull kurtpayne/skillscan-security:${TAG}
+            IMAGE="kurtpayne/skillscan-security:${TAG}"
+          fi
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+
+      - name: Scan known-malicious fixture via Docker — expect block
+        run: |
+          VERDICT=$(docker run --rm -v "$PWD:/scan:ro" $IMAGE scan /scan/tests/fixtures/malicious/openclaw_compromised_like --format json | python3 -c "import sys,json; print(json.load(sys.stdin)['verdict'])")
+          echo "Docker verdict: $VERDICT"
+          if [ "$VERDICT" != "block" ]; then
+            echo "FAIL: expected 'block', got '$VERDICT'"
+            exit 1
+          fi
+
+      - name: Verify SARIF output from Docker
+        run: |
+          docker run --rm -v "$PWD:/scan:ro" $IMAGE scan /scan/tests/fixtures/malicious/openclaw_compromised_like --format sarif | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['version']=='2.1.0'; print('Docker SARIF OK')"

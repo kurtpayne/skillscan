@@ -12,7 +12,10 @@ weights:
   threat_intel: 2
   binary_artifact: 1
 hard_block_rules:
-  - MAL-001
+  - MAL-001   # download-and-execute (critical)
+  - DEF-001   # defender exclusion manipulation (critical)
+  - MAL-025   # MCP tool poisoning via hidden instruction block (critical)
+block_min_confidence: 0.65
 allow_domains: []
 block_domains: []
 limits:
