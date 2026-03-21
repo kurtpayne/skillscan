@@ -7,6 +7,7 @@
 .github/workflows/pattern-update-guard.yml
 .github/workflows/release-docker.yml
 .github/workflows/release-pypi.yml
+.github/workflows/release-smoke-test.yml
 .github/workflows/signature-lint.yml
 .github/workflows/skillscan-reusable.yml
 .github/workflows/update-index.yml
@@ -1172,8 +1173,11 @@ corpus/malicious/a37_lotai_ai_assistant_c2.md
 corpus/malicious/a38_glassworm_extensionpack.md
 corpus/malicious/a39_npm_dependency_chain.md
 corpus/malicious/a40_teampcp_credential_stealer.md
+corpus/malicious/a41_canisterworm_icp_c2.md
+corpus/malicious/a42_mcp_server_command_injection.md
 corpus/manifest.json
 corpus/prompt_injection/a23_prompt_injection.md
+corpus/prompt_injection/p04_claudy_day_injection.md
 corpus/prompt_injection/pi01_role_override_description.md
 corpus/prompt_injection/pi02_role_override_notes.md
 corpus/prompt_injection/pi03_context_extraction_examples.md
@@ -1363,6 +1367,8 @@ examples/showcase/07_dep_vuln_npm/package.json
 examples/showcase/08_unpinned_deps/package.json
 examples/showcase/08_unpinned_deps/requirements.txt
 examples/showcase/09_policy_block_domain/SKILL.md
+examples/showcase/100_mcp_server_command_injection/SKILL.md
+examples/showcase/101_claudy_day_prompt_injection/SKILL.md
 examples/showcase/10_openai_style/gpt_actions.json
 examples/showcase/10_openai_style/openapi.json
 examples/showcase/11_claude_style/CLAUDE.md
@@ -1462,6 +1468,7 @@ examples/showcase/95_lotai_ai_assistant_c2_relay/SKILL.md
 examples/showcase/96_glassworm_extensionpack_transitive/SKILL.md
 examples/showcase/97_npm_dependency_chain_postinstall/SKILL.md
 examples/showcase/98_teampcp_actions_credential_stealer/SKILL.md
+examples/showcase/99_canisterworm_icp_blockchain_c2/SKILL.md
 examples/showcase/INDEX.md
 examples/suspicious_skill/SKILL.md
 examples/suspicious_skill/setup.sh
