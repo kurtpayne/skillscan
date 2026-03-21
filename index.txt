@@ -3,6 +3,7 @@
 .github/workflows/ci.yml
 .github/workflows/codeql.yml
 .github/workflows/corpus-sync.yml
+.github/workflows/domain-allowlist-monitor.yml
 .github/workflows/pattern-update-guard.yml
 .github/workflows/release-docker.yml
 .github/workflows/release-pypi.yml
