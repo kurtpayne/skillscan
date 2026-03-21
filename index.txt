@@ -1169,6 +1169,9 @@ corpus/malicious/a34_npm_postinstall_env_exfil.md
 corpus/malicious/a35_prompt_control_heartbeat.md
 corpus/malicious/a36_ghostclaw_skillmd_malware.md
 corpus/malicious/a37_lotai_ai_assistant_c2.md
+corpus/malicious/a38_glassworm_extensionpack.md
+corpus/malicious/a39_npm_dependency_chain.md
+corpus/malicious/a40_teampcp_credential_stealer.md
 corpus/manifest.json
 corpus/prompt_injection/a23_prompt_injection.md
 corpus/prompt_injection/pi01_role_override_description.md
@@ -1456,6 +1459,9 @@ examples/showcase/92_npm_postinstall_env_exfil/SKILL.md
 examples/showcase/93_prompt_control_heartbeat_persistence/SKILL.md
 examples/showcase/94_ghostclaw_skillmd_malware/SKILL.md
 examples/showcase/95_lotai_ai_assistant_c2_relay/SKILL.md
+examples/showcase/96_glassworm_extensionpack_transitive/SKILL.md
+examples/showcase/97_npm_dependency_chain_postinstall/SKILL.md
+examples/showcase/98_teampcp_actions_credential_stealer/SKILL.md
 examples/showcase/INDEX.md
 examples/suspicious_skill/SKILL.md
 examples/suspicious_skill/setup.sh
