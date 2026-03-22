@@ -1,16 +1,20 @@
 # SkillScan Security — Roadmap
 
-*Last updated: 2026-03-21 (session 2). Reflects a full codebase audit conducted at v0.3.1; updated through v0.3.2 and subsequent sessions through 2026-03-21. M18 (skillscan-trace) and M19 (skill-fuzzer) complete. Benign corpus expanded 54 → 188 files (Gap #3 closed). Fine-tune pending with new benign examples. Next: fine-tune trigger + held-out eval (Items 1–2), then `skillscan diff` BD1 + PSV rules BD2.*
+*Last updated: 2026-03-22 (session 3). Reflects a full codebase audit conducted at v0.3.1; updated through v0.3.2 and subsequent sessions through 2026-03-21. M18 (skillscan-trace) and M19 (skill-fuzzer) complete. Benign corpus expanded 54 → 188 files (Gap #3 closed). Fine-tune pending with new benign examples. Next: fine-tune trigger + held-out eval (Items 1–2), then `skillscan diff` BD1 + PSV rules BD2.*
 
 > SkillScan was designed and directed by Kurt Payne and built with [Manus](https://manus.im) — an AI agent that handled implementation, research, and iteration at speed.
 
 ---
 
-## Current State (v0.3.2 / 2026-03-21 session 2)
+## Current State (v0.3.2 / 2026-03-22 session 3)
 
 > **Session summary (2026-03-21, session 1):** M18 (skillscan-trace) and M19 (skill-fuzzer) are complete. First behavioral batch run on 95 skills produced F1 92.5% → 98.7% after judge prompt fixes. 40 sandbox_verified examples imported to corpus. Triage pipeline (static-first, skip trace if score <0.20 AND semantic <0.25 AND ML prob <0.30 AND zero findings) is operational. Corpus feedback loop active via `CorpusManager.iter_examples()`. Fuzzer→tracer pipeline script written (`scripts/fuzzer_tracer_pipeline.py`). ROADMAP.md and DETECTION_MODEL.md updated.
 
 > **Session summary (2026-03-21, session 2 — Gap #3 closed):** Benign corpus expanded from 54 → 188 files (+134) via three scrapers targeting `mattnigh/skills_collection` (48 skills), GitHub code search (36 skills), and `alirezarezvani/claude-skills` (50 skills). Quality filters: length 100–20k chars, 20 injection-keyword hard-rejects, structure check, SHA-256 dedup. FP rate spot-check on alirezarezvani skills shows ~80% false-block rate driven by RB-001 (backtick in markdown), PINJ-SEM-001/SE-SEM-001 (semantic over-fire on long instructional prose), and CHN-001/002 (benign phrases like "PDF download"). These 134 new benign examples are the negative training data needed to suppress these FPs. **Next: fine-tune trigger + held-out eval (F1 target ≥ 0.90), then `skillscan diff` BD1 + PSV rules BD2.**
+
+> **Session summary (2026-03-22, session 3 — F1 plateau confirmed):** Fine-tune v1278-3ep completed (CI job pushed to HuggingFace at 07:01 UTC). Held-out eval results: Macro F1=0.2690, FP rate=95.7%, FN rate=18.5% — negligible improvement over baseline (F1=0.2607, FP=96.6%). Root cause: (1) the CI fine-tune pipeline has a bug — `finetune_modal.py` uses `repo_root/corpus` but the CI sets `SKILLSCAN_CORPUS_DIR` to `training_corpus/`, so `held_out_eval/` was not included in the uploaded corpus and the F1 gate was bypassed; (2) more benign training data alone is insufficient to break the injection bias in the base model — need more diverse injection examples and/or higher LoRA rank. **Next: fix fine-tune pipeline (SKILLSCAN_CORPUS_DIR + held_out_eval inclusion), run fuzzer→tracer adversarial corpus expansion (CR1), then `skillscan diff` BD1 + PSV rules BD2.**
+>
+> **Session summary (2026-03-22, session 4 — CR1 complete, CRITICAL corpus gaps closed, fine-tune v1128 triggered):** Pipeline bug fixed in `skillscan-corpus` commit `11ab94f` (SKILLSCAN_CORPUS_DIR fallback + `training_corpus/` fallback + held_out_eval sibling inclusion). `coverage_gap_analysis.py` and `backtranslate_augment.py` scripts added to `skillscan-corpus/scripts/`. CR1 corpus researcher skill built (`skills/corpus-researcher/SKILL.md`, validated). CRITICAL corpus gaps closed: `graph_injection` 0→20 examples (gr01–gr20, cross-skill credential relay patterns), `social_engineering` 0→30 examples (se01–se30, authority impersonation + urgency manipulation). Total corpus: 1,078→1,128 examples (711 benign, 417 injection). Fine-tune v1128 triggered via workflow dispatch (run in progress at 07:49 UTC). **Next: wait for v1128 eval results; if F1 improves, proceed to BD1 (`skillscan diff`) and BD2 (PSV rules). If F1 still plateaus, run CR4 back-translation augmentation (script ready at `scripts/backtranslate_augment.py`).**
 
 ## Current State (v0.3.1 baseline)
 
@@ -28,7 +32,7 @@ The scanner is a functioning, well-structured Python CLI with a clean separation
 | Policy engine | Complete — 3 profiles + custom YAML |
 | IOC database | Seeded — 163 domains, 1,310 IPs, 2 CIDRs (v0.3.2) |
 | Vuln database | Seeded — 23 Python + 4 npm packages, 111 versions (v0.3.2) |
-| ML detection | Operational — 1,293 corpus examples (1,159 + 134 new benign), macro F1=0.7544 pre-retrain. Fine-tune pending with new benign batch. Target: F1 ≥ 0.90 on held-out eval. |
+| ML detection | Operational — 1,128 corpus examples (711 benign + 417 injection). v1128 fine-tune triggered 2026-03-22 (in progress). v1278-3ep eval: macro F1=0.2690, FP=95.7%. Pipeline bug fixed. CRITICAL gaps closed (graph_injection=20, social_engineering=30). See `docs/MODEL_METRICS.md`. |
 | Skill graph detector | 3 of 4 planned rules implemented |
 | AI assist | **Removed in v0.3.2** — free/offline/private positioning |
 | SARIF / JUnit / JSON output | Complete |
@@ -850,11 +854,13 @@ The agent is a Manus skill (`skills/corpus-researcher/SKILL.md`) that:
 5. Commits new examples to `corpus/` with proper `SOURCES.md` attribution
 6. Opens a PR with a structured summary: examples added per category, new coverage percentages, quality review checklist
 
-### Issue CR1 — Corpus researcher skill scaffold
+### Issue CR1 — Corpus researcher skill scaffold ✅ DONE (2026-03-22)
 
 Create `skills/corpus-researcher/SKILL.md` following the `skillscan-pattern-update` skill as a template. The skill should define the search strategy, quality criteria, and PR format.
 
 **Acceptance criteria:** Skill runs end-to-end in Manus. PR includes at least 10 new injection examples. Coverage gap report is accurate.
+
+**Completed:** `skills/corpus-researcher/SKILL.md` written and validated. Includes full workflow (setup → gap analysis → example generation → validation → commit → fine-tune trigger). `coverage_gap_analysis.py` and `backtranslate_augment.py` scripts added to `skillscan-corpus/scripts/`. CRITICAL gaps closed: graph_injection (0→20) and social_engineering (0→30). Fine-tune v1128 triggered.
 
 ### Issue CR2 — Agent Hijacker template library
 
@@ -880,7 +886,7 @@ For each of the weakest injection examples in the training set (those misclassif
 
 **Rationale:** `deberta-v3-base` is an English-only model. Raw multilingual examples produce noisy signal due to subword fragmentation of non-English tokens. Back-translation preserves the attack semantics while expanding the decision boundary in the English embedding space — strictly better than multilingual examples for this classifier. This is distinct from multilingual classifier support (a future milestone requiring `deberta-v3-large-multilingual`).
 
-**Implementation:** Script in `scripts/backtranslate_augment.py`. Targets the 20–30 injection examples with the lowest model confidence in the most recent eval run. Output goes to `corpus/backtranslated/` (private corpus split — not committed to the public repo).
+**Implementation:** Script in `scripts/backtranslate_augment.py` ✅ written (2026-03-22). Targets the 20–30 injection examples with the lowest model confidence in the most recent eval run. Output goes to `training_corpus/augmented/augmented/`. Requires `OPENAI_API_KEY`. Run when v1128 eval results confirm F1 still below target.
 
 **Acceptance criteria:** At least 80 back-translated injection examples added. Injection recall on the held-out eval set improves by ≥ 0.05 in the subsequent fine-tune run.
 
@@ -931,8 +937,8 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 |---|---|---|---|
 | IOC DB entries | 2,031 (493 domains, 8 IPs, 1,527 CIDRs, 3 URLs) | 5,000+ (automated) | 20,000+ |
 | Vuln DB packages | 27 (23 Python + 4 npm) | 50+ | 150+ |
-| ML corpus size | 1,159 (711 benign + 448 injection) | 1,500+ | 2,000+ |
-| ML adapter F1 (held-out) | 0.7544 macro (inj F1=0.667, gate=0.77; 40 sandbox_verified examples now in corpus, fine-tune pending; see `corpus/EVAL_RESULTS.md`) | ≥0.85 | ≥0.90 |
+| ML corpus size | 1,278 (911 benign + 367 injection) | 1,500+ | 2,000+ |
+| ML adapter F1 (held-out) | 0.2690 macro (v1278-3ep, 2026-03-22; FP=95.7%, FN=18.5%; F1 plateau — pipeline bug + injection bias; see `docs/MODEL_METRICS.md`) | ≥0.85 | ≥0.90 |
 | Static + chain rules | 85 (70 static + 15 chain) | 95+ | 120+ |
 | Adversarial cases | 40 (30 agent_hijacker + 10 held_out_eval) + 40 sandbox_verified (2026-03-21) | 80+ | 120+ |
 | Time-to-first-scan | <5 min | <3 min | <2 min |
