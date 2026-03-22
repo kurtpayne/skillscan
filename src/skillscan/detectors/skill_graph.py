@@ -118,13 +118,24 @@ _PSV_FSWRITE_TOOLS = frozenset({
     "bash", "shell", "computer", "computer_use", "execute_code",
 })
 
-# Shell execution implied by instruction body
-_PSV_SHELL_RE = re.compile(
-    r"(?i)\b(run.*(?:command|script|bash|shell|python|node)"
-    r"|execute.*(?:command|script|code)"
+# Shell execution implied by instruction body.
+# Uses the `regex` library (not stdlib `re`) for variable-width lookbehind,
+# which handles multi-line negations like "does not\nexecute code" where
+# the negation word and the matched phrase are separated by a newline.
+try:
+    import regex as _regex_lib
+except ImportError:  # pragma: no cover
+    _regex_lib = re  # type: ignore[assignment]
+
+_PSV_SHELL_RE = _regex_lib.compile(
+    r"(?i)(?<![\s\S]{0,60}\b(?:not|never|avoid|without|don't|won't|do not|does not|will not)[\s\S]{0,3})"
+    r"\b(run[\s\S]{0,30}(?:command|script|bash|shell|python|node)"
+    r"|execute[\s\S]{0,30}(?:command|script|code)"
     r"|subprocess\.(?:run|call|Popen)|os\.system\("
     r"|bash -c|sh -c|powershell -c|cmd /c)",
 )
+
+
 # Tools that satisfy the shell execution requirement
 _PSV_SHELL_TOOLS = frozenset({
     "bash", "shell", "terminal", "computer", "computer_use",
