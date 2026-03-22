@@ -193,6 +193,72 @@ class SocialEngineeringClassifier:
         return SemanticEvidence(confidence=confidence, snippet=snippet)
 
 
+def classify_prompt_injection_raw(text: str) -> float:
+    """Return the raw semantic injection score (0.0–1.0) without the 0.62 threshold gate.
+
+    Used by the triage pipeline to get sub-threshold signal for escalation decisions.
+    Returns 0.0 if the text is too short to classify.
+    """
+    clf = LocalPromptInjectionClassifier()
+    tokens = clf._tokenize_and_stem(text)
+    if len(tokens) < 20:
+        return 0.0
+    roots = set(tokens)
+    override = len(roots & clf._override_roots)
+    authority = len(roots & clf._authority_roots)
+    secrecy = len(roots & clf._secrecy_roots)
+    data_access = len(roots & clf._data_roots)
+    exfil = len(roots & clf._exfil_roots)
+    coercion = len(roots & clf._coercion_roots)
+    score = 0.0
+    score += min(override, 3) * 0.18
+    score += min(authority, 3) * 0.1
+    score += min(secrecy, 2) * 0.12
+    score += min(data_access, 3) * 0.11
+    score += min(exfil, 3) * 0.11
+    score += min(coercion, 2) * 0.07
+    if override > 0 and authority > 0:
+        score += 0.12
+    if (data_access > 0 and exfil > 0) or (secrecy > 0 and exfil > 0):
+        score += 0.13
+    if coercion > 0 and (override > 0 or secrecy > 0):
+        score += 0.06
+    return min(round(score, 3), 0.95)
+
+
+def classify_social_engineering_raw(text: str) -> float:
+    """Return the raw social engineering score (0.0–1.0) without the 0.62 threshold gate.
+
+    Used by the triage pipeline to get sub-threshold signal for escalation decisions.
+    Returns 0.0 if the core pattern (imperative + solicit + credential) is absent.
+    """
+    clf = SocialEngineeringClassifier()
+    tokens = clf._tokenize_and_stem(text)
+    if len(tokens) < 8:
+        return 0.0
+    roots = set(tokens)
+    imperative = len(roots & clf._imperative_roots)
+    solicit = len(roots & clf._solicit_roots)
+    credential = len(roots & clf._credential_roots)
+    social_eng = len(roots & clf._social_eng_roots)
+    urgency = len(roots & clf._urgency_roots)
+    if imperative == 0 or solicit == 0 or credential == 0:
+        return 0.0
+    score = 0.0
+    score += min(imperative, 2) * 0.20
+    score += min(solicit, 2) * 0.18
+    score += min(credential, 2) * 0.18
+    score += min(social_eng, 3) * 0.10
+    score += min(urgency, 2) * 0.08
+    if imperative > 0 and credential > 0 and solicit > 0:
+        score += 0.15
+    if social_eng > 0 and credential > 0:
+        score += 0.08
+    if urgency > 0 and credential > 0:
+        score += 0.06
+    return min(round(score, 3), 0.92)
+
+
 def local_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     evidence = LocalPromptInjectionClassifier().classify(text)
     if evidence is None:

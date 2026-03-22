@@ -88,6 +88,55 @@ class ScanMetadata(BaseModel):
     intel_sources: list[str]
 
 
+class TriageMetadata(BaseModel):
+    """Raw sub-threshold scores exposed for downstream triage decisions.
+
+    These values are computed during every scan but only surfaced in JSON output.
+    They are intentionally NOT used to emit Findings — they are signals for the
+    static-first triage pipeline to decide whether to escalate to the behavioral
+    tracer (skillscan-trace).
+    """
+
+    semantic_injection_score: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Raw score from LocalPromptInjectionClassifier (0.0–1.0). "
+            "A Finding is only emitted above 0.62; this field captures the score "
+            "even when it falls below that threshold."
+        ),
+    )
+    social_engineering_score: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Raw score from SocialEngineeringClassifier (0.0–1.0). "
+            "A Finding is only emitted above 0.62; this field captures the score "
+            "even when it falls below that threshold."
+        ),
+    )
+    ml_injection_probability: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Injection probability from the neural ML classifier (0.0–1.0), or None "
+            "if --ml was not enabled. A Finding is only emitted above 0.7; this field "
+            "captures the probability even when it falls below that threshold."
+        ),
+    )
+    has_sub_threshold_signal: bool = Field(
+        default=False,
+        description=(
+            "True if any triage signal is non-trivial (semantic_injection_score > 0.25, "
+            "social_engineering_score > 0.25, or ml_injection_probability > 0.30) "
+            "but no Finding was emitted. Use this as the primary triage gate."
+        ),
+    )
+
+
 class ScanReport(BaseModel):
     metadata: ScanMetadata
     verdict: Verdict
@@ -96,6 +145,7 @@ class ScanReport(BaseModel):
     iocs: list[IOC]
     dependency_findings: list[DependencyFinding]
     capabilities: list[Capability]
+    triage_metadata: TriageMetadata = Field(default_factory=TriageMetadata)
 
     def to_json(self) -> str:
         return self.model_dump_json(indent=2)
