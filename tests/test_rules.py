@@ -1490,8 +1490,9 @@ def test_new_patterns_2026_03_21_batch2() -> None:
 
 def _make_psv_node(content: str, tmp_path):  # type: ignore[no-untyped-def]
     """Helper: write content to a SKILL.md and parse it into a SkillNode."""
-    from skillscan.detectors.skill_graph import _parse_skill_md
     from pathlib import Path
+
+    from skillscan.detectors.skill_graph import _parse_skill_md
     p = Path(tmp_path) / "SKILL.md"
     p.write_text(content, encoding="utf-8")
     return _parse_skill_md(p)
@@ -1617,8 +1618,9 @@ def test_psv_clean_skill_no_findings(tmp_path) -> None:  # type: ignore[no-untyp
 
 def test_skill_diff_detects_tool_addition(tmp_path) -> None:  # type: ignore[no-untyped-def]
     """skill-diff detects when a high-risk tool is added to allowed-tools."""
-    from skillscan.skill_diff import diff_skills
     from pathlib import Path
+
+    from skillscan.skill_diff import diff_skills
     baseline = Path(tmp_path) / "baseline" / "SKILL.md"
     current = Path(tmp_path) / "current" / "SKILL.md"
     baseline.parent.mkdir()
@@ -1633,8 +1635,9 @@ def test_skill_diff_detects_tool_addition(tmp_path) -> None:  # type: ignore[no-
 
 def test_skill_diff_detects_injection_phrase(tmp_path) -> None:  # type: ignore[no-untyped-def]
     """skill-diff detects when an override/injection phrase is added to instructions."""
-    from skillscan.skill_diff import diff_skills
     from pathlib import Path
+
+    from skillscan.skill_diff import diff_skills
     baseline = Path(tmp_path) / "baseline" / "SKILL.md"
     current = Path(tmp_path) / "current" / "SKILL.md"
     baseline.parent.mkdir()
@@ -1655,8 +1658,9 @@ def test_skill_diff_detects_injection_phrase(tmp_path) -> None:  # type: ignore[
 
 def test_skill_diff_clean_update_no_findings(tmp_path) -> None:  # type: ignore[no-untyped-def]
     """skill-diff produces no security findings for a benign documentation update."""
-    from skillscan.skill_diff import diff_skills
     from pathlib import Path
+
+    from skillscan.skill_diff import diff_skills
     baseline = Path(tmp_path) / "baseline" / "SKILL.md"
     current = Path(tmp_path) / "current" / "SKILL.md"
     baseline.parent.mkdir()
