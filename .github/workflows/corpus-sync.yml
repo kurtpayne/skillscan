@@ -26,9 +26,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
-      - name: Install package (no ML extras needed for sync)
-        run: pip install -e ".[dev]" --quiet
+      # No pip install needed: corpus_manager.py uses only stdlib (hashlib, json, pathlib, argparse)
       - name: Clone skillscan-corpus (all corpus data now lives there)
         id: clone
         run: |
@@ -56,38 +54,12 @@ jobs:
           CORPUS_DEPLOY_KEY: ${{ secrets.CORPUS_DEPLOY_KEY }}
       - name: Run corpus sync
         id: sync
+        # corpus_manager.py lives in skillscan-corpus and owns all corpus layout
+        # knowledge. No dependency on skillscan-security for this step.
         run: |
-          python - <<'EOF'
-          import json, os, sys
-          from pathlib import Path
-          sys.path.insert(0, "src")
-          from skillscan.corpus import CorpusManager
-
-          corpus_path = os.environ.get("CORPUS_PATH", "")
-          if not corpus_path:
-              print("ERROR: CORPUS_PATH not set", file=sys.stderr)
-              sys.exit(1)
-
-          # skillscan-corpus layout:
-          #   training_corpus/  — public subdirs (benign/, malicious/, etc.)
-          #   adversarial/      — private, at repo root
-          #   jailbreak_distillations/ — private, at repo root
-          #   sandbox_verified/ — private, at repo root
-          #   manifest.json     — at repo root
-          # Pass root_dir so CorpusManager resolves private dirs and the
-          # manifest relative to the repo root, not training_corpus/.
-          corpus_dir = Path(corpus_path) / "training_corpus"
-          mgr = CorpusManager(
-              corpus_dir=corpus_dir,
-              root_dir=Path(corpus_path),
-          )
-
-          decision = mgr.sync()
-          print(decision.summary())
-          with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-              fh.write(f"should_retrain={'true' if decision.should_retrain else 'false'}\n")
-              fh.write(f"summary={decision.summary()}\n")
-          EOF
+          python "$CORPUS_PATH/scripts/corpus_manager.py" sync \
+            --root "$CORPUS_PATH" \
+            --github-output "$GITHUB_OUTPUT"
         env:
           CORPUS_PATH: ${{ steps.clone.outputs.corpus_path }}
           SKILLSCAN_MIN_NEW_EXAMPLES: ${{ vars.SKILLSCAN_MIN_NEW_EXAMPLES || '50' }}
