@@ -243,6 +243,8 @@ corpus/benign/gh_wipcomputer_wip_ai_d_wip_ai_devops_toolbox.md
 corpus/benign/gh_wmorein_docling_read_docling_reader.md
 corpus/benign/gh_wncfht_pulsedeck_bilibili_up_digest.md
 corpus/benign/gh_zhihong_ke_browser_c_browser_cdp_takeover.md
+corpus/malicious/a43_canisterworm_k8s_wiper.md
+corpus/malicious/a44_api_traffic_hijack_settings.md
 docs/ARCHITECTURE.md
 docs/COMMANDS.md
 docs/DETECTION_MODEL.md
@@ -293,6 +295,8 @@ examples/showcase/08_unpinned_deps/requirements.txt
 examples/showcase/09_policy_block_domain/SKILL.md
 examples/showcase/100_mcp_server_command_injection/SKILL.md
 examples/showcase/101_claudy_day_prompt_injection/SKILL.md
+examples/showcase/102_canisterworm_k8s_wiper/SKILL.md
+examples/showcase/103_api_traffic_hijack_settings/SKILL.md
 examples/showcase/10_openai_style/gpt_actions.json
 examples/showcase/10_openai_style/openapi.json
 examples/showcase/11_claude_style/CLAUDE.md
