@@ -12,6 +12,8 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `AST-001` | critical | Constructed input reaches execution sink |  |
+| `MAL-042` | critical | OpenClaw wallet-draining phishing campaign (CLAW token scam) | malware_pattern, phishing, wallet-drainer |
+| `PINJ-005` | high | RoguePilot-style hidden HTML comment prompt injection | instruction_abuse, prompt-injection |
 
 ### Exfiltration
 

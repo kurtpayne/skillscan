@@ -1,3 +1,39 @@
+## 2026-03-22 — OpenClaw Wallet-Draining Phishing Campaign, RoguePilot HTML Comment Prompt Injection
+
+**Sources:**
+- [Bitcoin.com News — Wallet Draining Scam Targets Openclaw Community With Fake Airdrop](https://news.bitcoin.com/wallet-draining-scam-targets-openclaw-community-with-fake-airdrop/)
+- [Orca Security — RoguePilot: Exploiting GitHub Copilot for a Repository Takeover](https://orca.security/resources/blog/roguepilot-exploiting-github-copilot-for-a-repository-takeover/)
+
+**Event Summary:** Two new detection rules and two new IOC domains were added. OX Security reported an active phishing campaign targeting OpenClaw developers through fake GitHub Issues offering $5,000 in CLAW tokens. The campaign uses the domain `token-claw.xyz` to host a cloned openclaw.ai site that drains connected crypto wallets, with a C2 server at `watery-compost.today`. Orca Security documented the RoguePilot attack technique where hidden HTML comments in GitHub Issues inject prompt injection payloads into AI coding assistants, chaining with symlink exploitation to exfiltrate `GITHUB_TOKEN` credentials via `$schema` URL parameters.
+
+**New Patterns Added:**
+
+### MAL-042: OpenClaw wallet-draining phishing campaign (CLAW token scam)
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.88
+- **Pattern:** Detects references to `token-claw.xyz` phishing domain, `watery-compost.today` C2 domain, CLAW token airdrop social engineering wording, and wallet-draining JavaScript patterns combining `connectWallet` with exfiltration or `localStorage` clearing.
+- **Justification:** Direct detection of the OpenClaw wallet-draining phishing campaign reported by OX Security and covered by Bitcoin.com News. The campaign is actively targeting developers who interact with OpenClaw-related GitHub repositories.
+
+### PINJ-005: RoguePilot-style hidden HTML comment prompt injection
+- **Category:** instruction_abuse
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects HTML comments (`<!-- -->`) containing prompt injection keywords such as "ignore previous instructions", "system prompt", "new instructions", "override previous", "disregard previous", or credential-related terms like `GITHUB_TOKEN`, `secrets.`, `api_key`.
+- **Justification:** Detection of the RoguePilot attack technique documented by Orca Security, where invisible HTML comments in GitHub Issues hijack AI coding assistants to exfiltrate credentials.
+
+**IOC Updates:**
+- Added domain: `token-claw.xyz` (OpenClaw CLAW token airdrop phishing domain)
+- Added domain: `watery-compost.today` (C2 server for OpenClaw wallet-draining campaign)
+
+**Showcase Updates:**
+- `102_openclaw_wallet_draining_phishing`: Demonstrates wallet-draining phishing with fake CLAW token airdrop (`MAL-042`)
+- `103_roguepilot_html_comment_injection`: Demonstrates hidden HTML comment prompt injection targeting AI assistants (`PINJ-005`)
+
+**Version:** `2026.03.22.1`
+
+---
+
 ## 2026-03-21 (batch 2) — CanisterWorm ICP Blockchain C2, MCP Server Command Injection, Claudy Day Prompt Injection
 
 **Sources:**
