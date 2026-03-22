@@ -28,6 +28,7 @@ from skillscan.render import render_report
 from skillscan.rules import load_builtin_rulepack
 from skillscan.sarif import report_to_sarif
 from skillscan.suppressions import apply_suppressions, check_suppressions_expiry
+from skillscan.skill_diff import diff_skills, SkillDiffResult
 
 
 # load_dotenv: reads KEY=VALUE pairs from a .env file into os.environ (no-op if absent)
@@ -958,6 +959,86 @@ def suppress_check(
                 )
 
     if result.expiring_soon or result.expired_count > 0:
+        raise typer.Exit(1)
+
+
+@app.command("skill-diff")
+def skill_diff_cmd(
+    baseline: Path = typer.Argument(..., exists=True, readable=True, help="Baseline SKILL.md (trusted/older version)"),
+    current: Path = typer.Argument(..., exists=True, readable=True, help="Current SKILL.md (updated version to evaluate)"),
+    format: str = typer.Option("text", "--format", help="Output format: text|json"),
+    min_severity: str = typer.Option("low", "--min-severity", help="Minimum severity to report: critical|high|medium|low|info"),
+    exit_on_changes: bool = typer.Option(False, "--exit-on-changes", help="Exit with code 1 if security changes are found"),
+) -> None:
+    """Compare two SKILL.md files at the instruction level and flag security-relevant changes.
+
+    Unlike 'skillscan diff' (which compares scan report JSON files), this command
+    compares the raw skill content and detects: new tool grants, network calls,
+    shell execution, exfiltration patterns, override phrases, and other
+    security-relevant instruction changes.
+    """
+    _SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    if format not in {"text", "json"}:
+        console.print("[bold red]Invalid --format:[/] expected text or json")
+        raise typer.Exit(2)
+    if min_severity not in _SEV_ORDER:
+        console.print("[bold red]Invalid --min-severity:[/] expected critical|high|medium|low|info")
+        raise typer.Exit(2)
+
+    result: SkillDiffResult = diff_skills(baseline, current)
+    min_sev_rank = _SEV_ORDER[min_severity]
+    visible = [c for c in result.changes if _SEV_ORDER.get(c.severity, 99) <= min_sev_rank]
+
+    if format == "json":
+        import dataclasses
+        typer.echo(json.dumps({
+            "baseline": result.baseline_path,
+            "current": result.current_path,
+            "baseline_name": result.baseline_name,
+            "current_name": result.current_name,
+            "summary": {
+                "critical": result.critical_count,
+                "high": result.high_count,
+                "medium": result.medium_count,
+                "low": result.low_count,
+                "info": result.info_count,
+                "has_security_changes": result.has_security_changes,
+            },
+            "changes": [dataclasses.asdict(c) for c in visible],
+        }, indent=2))
+        if exit_on_changes and result.has_security_changes:
+            raise typer.Exit(1)
+        return
+
+    # --- Text output ---
+    sev_color = {"critical": "bold red", "high": "red", "medium": "yellow", "low": "cyan", "info": "dim"}
+    console.print(Panel(
+        (
+            f"[bold]Baseline:[/bold] {result.baseline_path}\n"
+            f"[bold]Current:[/bold]  {result.current_path}\n"
+            f"[bold red]Critical:[/bold red] {result.critical_count}  "
+            f"[red]High:[/red] {result.high_count}  "
+            f"[yellow]Medium:[/yellow] {result.medium_count}  "
+            f"[cyan]Low:[/cyan] {result.low_count}  "
+            f"[dim]Info:[/dim] {result.info_count}"
+        ),
+        title="SkillScan Skill Diff",
+    ))
+
+    if not visible:
+        console.print("[green]No security-relevant changes detected at or above the specified severity threshold.[/green]")
+    else:
+        for change in visible:
+            color = sev_color.get(change.severity, "white")
+            line_info = f" (line {change.line_number})" if change.line_number else ""
+            console.print(
+                f"  [{color}][{change.severity.upper()}][/{color}] "
+                f"[bold]{change.change_type}[/bold] \u2014 {change.description}{line_info}"
+            )
+            if change.snippet:
+                console.print(f"    [dim]{change.snippet[:100]}[/dim]")
+
+    if exit_on_changes and result.has_security_changes:
         raise typer.Exit(1)
 
 

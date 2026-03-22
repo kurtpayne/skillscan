@@ -7,6 +7,9 @@ Rule IDs emitted:
   PINJ-GRAPH-003  Skill instructs the agent to write a memory/config file
   PINJ-GRAPH-004  Skill references another skill that grants higher-risk tools
                   (cross-skill tool escalation)
+  PSV-001         Skill instructions imply network access not declared in allowed-tools
+  PSV-002         Skill instructions imply filesystem write not declared in allowed-tools
+  PSV-003         Skill instructions imply shell execution not declared in allowed-tools
 
 Supported skill formats:
   SKILL.md         Standard SkillScan / ClawHub format (YAML front-matter + Markdown body)
@@ -84,6 +87,50 @@ def _max_tool_risk(tools: Iterable[str]) -> int:
     """Return the highest risk tier among the given tool names (0 = no risk)."""
     return max((_TOOL_RISK.get(t.lower(), 0) for t in tools), default=0)
 
+
+# ---------------------------------------------------------------------------
+# PSV: Permission Scope Validation patterns
+# ---------------------------------------------------------------------------
+
+# Network access implied by instruction body
+_PSV_NETWORK_RE = re.compile(
+    r"(?i)\b(curl|wget|fetch|http\.get|requests\.get|urllib\.request|socket\.connect"
+    r"|make.*(?:http|web|api).*(?:request|call)|send.*(?:http|web|api)"
+    r"|download.*from|upload.*to|connect.*to.*(?:server|endpoint|url|api))",
+)
+# Tools that satisfy the network access requirement (declared in allowed-tools)
+_PSV_NETWORK_TOOLS = frozenset({
+    "webfetch", "web_fetch", "url_fetch", "http_get", "fetch", "curl", "wget",
+    "browser", "web_search", "search", "mcp__fetch__fetch",
+    "bash", "shell", "computer", "computer_use", "execute_code",
+})
+
+# Filesystem write implied by instruction body
+_PSV_FSWRITE_RE = re.compile(
+    r"(?i)\b(write.*(?:file|to disk|output)|save.*(?:file|to disk|result)"
+    r"|create.*file|append.*(?:to|file)|overwrite.*file"
+    r"|open\([^)]*['\"][wa]['\"]|write_text\(|Path\([^)]*\)\.write)",
+)
+# Tools that satisfy the filesystem write requirement
+_PSV_FSWRITE_TOOLS = frozenset({
+    "write", "write_file", "file_write", "create_file", "fs_write",
+    "mcp__filesystem__write_file", "mcp__filesystem__create_directory",
+    "bash", "shell", "computer", "computer_use", "execute_code",
+})
+
+# Shell execution implied by instruction body
+_PSV_SHELL_RE = re.compile(
+    r"(?i)\b(run.*(?:command|script|bash|shell|python|node)"
+    r"|execute.*(?:command|script|code)"
+    r"|subprocess\.(?:run|call|Popen)|os\.system\("
+    r"|bash -c|sh -c|powershell -c|cmd /c)",
+)
+# Tools that satisfy the shell execution requirement
+_PSV_SHELL_TOOLS = frozenset({
+    "bash", "shell", "terminal", "computer", "computer_use",
+    "execute_code", "run_code", "code_execution", "exec",
+    "mcp__bash__bash",
+})
 
 # Memory / config files that, if written, affect all future agent sessions
 _MEMORY_FILES = frozenset(
@@ -580,6 +627,77 @@ def _check_tool_escalation(graph: SkillGraph) -> list[Finding]:
 # ---------------------------------------------------------------------------
 
 
+def _check_permission_scope(node: SkillNode) -> list[Finding]:
+    """PSV-001/002/003: skill instructions imply capabilities not declared in allowed-tools.
+
+    Detects the trust gap where a skill's prose instructions describe actions
+    that require tools not listed in allowed-tools. An operator reading only the
+    frontmatter would not know the skill needs network/filesystem/shell access.
+    """
+    findings: list[Finding] = []
+    declared = frozenset(t.lower().strip() for t in node.allowed_tools)
+
+    # PSV-001: undeclared network access
+    if _PSV_NETWORK_RE.search(node.body) and not (declared & _PSV_NETWORK_TOOLS):
+        m = _PSV_NETWORK_RE.search(node.body)
+        snippet = (m.group(0) if m else "")[:100]
+        findings.append(Finding(
+            id="PSV-001",
+            category="permission_scope",
+            severity=Severity.MEDIUM,
+            confidence=0.75,
+            title="Skill instructions imply network access not declared in allowed-tools",
+            evidence_path=str(node.path),
+            snippet=snippet,
+            mitigation=(
+                "Add a network-capable tool (e.g., 'WebFetch', 'curl', 'web_search') to "
+                "'allowed-tools' in the skill frontmatter, or remove the network instruction. "
+                "Undeclared network access prevents operators from making informed trust decisions."
+            ),
+        ))
+
+    # PSV-002: undeclared filesystem write
+    if _PSV_FSWRITE_RE.search(node.body) and not (declared & _PSV_FSWRITE_TOOLS):
+        m = _PSV_FSWRITE_RE.search(node.body)
+        snippet = (m.group(0) if m else "")[:100]
+        findings.append(Finding(
+            id="PSV-002",
+            category="permission_scope",
+            severity=Severity.MEDIUM,
+            confidence=0.72,
+            title="Skill instructions imply filesystem write not declared in allowed-tools",
+            evidence_path=str(node.path),
+            snippet=snippet,
+            mitigation=(
+                "Add a write-capable tool (e.g., 'Write', 'file_write', 'mcp__filesystem__write_file') "
+                "to 'allowed-tools', or remove the write instruction. "
+                "Undeclared filesystem writes can silently modify files outside the operator's awareness."
+            ),
+        ))
+
+    # PSV-003: undeclared shell execution
+    if _PSV_SHELL_RE.search(node.body) and not (declared & _PSV_SHELL_TOOLS):
+        m = _PSV_SHELL_RE.search(node.body)
+        snippet = (m.group(0) if m else "")[:100]
+        findings.append(Finding(
+            id="PSV-003",
+            category="permission_scope",
+            severity=Severity.HIGH,
+            confidence=0.80,
+            title="Skill instructions imply shell execution not declared in allowed-tools",
+            evidence_path=str(node.path),
+            snippet=snippet,
+            mitigation=(
+                "Add 'Bash' or 'computer' to 'allowed-tools' if shell execution is intentional, "
+                "or remove the shell execution instruction. "
+                "Undeclared shell execution is a high-risk indicator: it suggests the skill "
+                "may attempt to run commands without the operator's knowledge."
+            ),
+        ))
+
+    return findings
+
+
 def skill_graph_findings(root: Path) -> list[Finding]:
     """Build the skill graph for *root* and return all graph-level findings."""
     graph = build_skill_graph(root)
@@ -589,6 +707,7 @@ def skill_graph_findings(root: Path) -> list[Finding]:
         findings.extend(_check_remote_md_load(node))
         findings.extend(_check_tool_grant_without_purpose(node))
         findings.extend(_check_memory_write(node))
+        findings.extend(_check_permission_scope(node))
 
     # Graph-level checks (require the full graph)
     findings.extend(_check_tool_escalation(graph))
