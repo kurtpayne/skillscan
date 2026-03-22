@@ -457,6 +457,7 @@ src/skillscan/rules.py
 src/skillscan/rules_sync.py
 src/skillscan/sarif.py
 src/skillscan/semantic_local.py
+src/skillscan/skill_diff.py
 src/skillscan/suppressions.py
 tests/adversarial/cases/a01_curl_bash/SKILL.md
 tests/adversarial/cases/a02_wget_sh/SKILL.md
