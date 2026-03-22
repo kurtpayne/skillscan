@@ -1,12 +1,16 @@
 # SkillScan Security — Roadmap
 
-*Last updated: 2026-03-19. Reflects a full codebase audit conducted at v0.3.1; updated through v0.3.2. Session notes from 2026-03-19 appended below.*
+*Last updated: 2026-03-21. Reflects a full codebase audit conducted at v0.3.1; updated through v0.3.2 and subsequent sessions through 2026-03-21. M18 (skillscan-trace) and M19 (skill-fuzzer) complete. First behavioral batch run complete: F1 92.5% → 98.7% after judge prompt fixes. 40 sandbox_verified examples imported to corpus. Triage pipeline and corpus feedback loop operational.*
 
 > SkillScan was designed and directed by Kurt Payne and built with [Manus](https://manus.im) — an AI agent that handled implementation, research, and iteration at speed.
 
 ---
 
-## Current State (v0.3.1)
+## Current State (v0.3.2 / 2026-03-21)
+
+> **Session summary (2026-03-21):** M18 (skillscan-trace) and M19 (skill-fuzzer) are complete. First behavioral batch run on 95 skills produced F1 92.5% → 98.7% after judge prompt fixes. 40 sandbox_verified examples imported to corpus. Triage pipeline (static-first, skip trace if score <0.20 AND semantic <0.25 AND ML prob <0.30 AND zero findings) is operational. Corpus feedback loop active via `CorpusManager.iter_examples()`. Next: fuzzer→tracer pipeline on 30 agent_hijacker seeds, benign corpus scraping (50-100 GitHub/ClawHub skills), and fine-tune trigger with 40 sandbox_verified examples.
+
+## Current State (v0.3.1 baseline)
 
 The scanner is a functioning, well-structured Python CLI with a clean separation between the detection engine, rule data, and output layer. The core architecture is sound and the test suite (30 test files, ~5,500 lines) covers the main detection paths well. The following is an honest accounting of where things stand.
 
@@ -590,6 +594,8 @@ Add a `skillscan_core.validate_schema(skill_path)` function that validates a ski
 
 ## Milestone 16 — Behavioral Diff & Permission Scope Validation (2 weeks)
 
+> **Note (2026-03-21):** The corpus feedback loop component of this milestone is complete. `CorpusManager.iter_examples()` now scans `sandbox_verified/` directories and ingests behavioral trace examples. The GitHub Actions `corpus-sync.yml` workflow triggers fine-tune automatically on 40% corpus growth. 40 sandbox_verified examples from the first trace batch run have been imported. The remaining issues (BD1 instruction diff, BD2 permission scope validation, BD3 fingerprint drift) are pending.
+
 The most tractable near-term additions to the offline static paradigm. Both address real supply chain attack vectors that neither current tool covers.
 
 ### Issue BD1 — Instruction-level skill diff
@@ -640,7 +646,7 @@ This is the most complex item in this milestone and may be deferred to a follow-
 
 ---
 
-## Milestone 18 — skillscan-trace: Local Dynamic Execution Tracing (4 weeks)
+## Milestone 18 — skillscan-trace: Local Dynamic Execution Tracing ✅ COMPLETE (2026-03-21)
 
 The only dynamic analysis capability in the SkillScan ecosystem. A Docker container that runs a skill through a local agent with a fully instrumented tool environment and records a structured execution trace. The execution is entirely local — the user supplies model credentials and an input prompt; we supply the canary environment, the tripwires, and the detection layer.
 
@@ -695,7 +701,7 @@ The container accepts `--skills` (one or more paths), `--prompt` (the input to s
 
 ---
 
-## Milestone 19 — Skill Fuzzer (2 weeks)
+## Milestone 19 — Skill Fuzzer ✅ COMPLETE (2026-03-21)
 
 *Added 2026-03-21. Moved from Milestone 21 to 19 on 2026-03-21 — the fuzzer is a prerequisite for high-quality corpus expansion, not a follow-on.*
 
@@ -924,9 +930,9 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 | IOC DB entries | 2,031 (493 domains, 8 IPs, 1,527 CIDRs, 3 URLs) | 5,000+ (automated) | 20,000+ |
 | Vuln DB packages | 27 (23 Python + 4 npm) | 50+ | 150+ |
 | ML corpus size | 1,159 (711 benign + 448 injection) | 1,500+ | 2,000+ |
-| ML adapter F1 (held-out) | 0.7544 macro (inj F1=0.667, gate=0.77 — pending push; gate lowered 0.80→0.77 on 2026-03-20, see `corpus/EVAL_RESULTS.md`; raise to 0.85 once inj F1 > 0.80 via hand-crafted examples or sandbox-verified labels) | ≥0.85 | ≥0.90 |
+| ML adapter F1 (held-out) | 0.7544 macro (inj F1=0.667, gate=0.77; 40 sandbox_verified examples now in corpus, fine-tune pending; see `corpus/EVAL_RESULTS.md`) | ≥0.85 | ≥0.90 |
 | Static + chain rules | 85 (70 static + 15 chain) | 95+ | 120+ |
-| Adversarial cases | 25 | 40+ | 60+ |
+| Adversarial cases | 40 (30 agent_hijacker + 10 held_out_eval) + 40 sandbox_verified (2026-03-21) | 80+ | 120+ |
 | Time-to-first-scan | <5 min | <3 min | <2 min |
 
 ### Ecosystem Coverage
@@ -940,7 +946,7 @@ The following items from earlier roadmap drafts are explicitly deprioritized unt
 | Permission scope validation | not implemented | PSV-001/002/003 rules live (Milestone 16) |
 | Instruction-level diff | report JSON only | skill file diff with rule-flagged changes (Milestone 16) |
 | Similarity hashing / typosquatting | not implemented | TYP-001 rule live (Milestone 17) |
-| skillscan-trace | spec complete, repo bootstrapped ([kurtpayne/skillscan-trace](https://github.com/kurtpayne/skillscan-trace)) | Docker image published, Ollama default, corpus feedback loop active (Milestone 18) |
+| skillscan-trace | **complete** ([kurtpayne/skillscan-trace](https://github.com/kurtpayne/skillscan-trace), v0.1.0) — canary MCP server (5 tool types, 15+ detection patterns), execution harness (GPT-4.1-mini execution model), dual-LLM judge (GPT-4.1 + Claude Sonnet), SARIF/JSON/text output, Modal batch script, corpus import pipeline, static-first triage design. First batch run: 95 skills, F1 98.7% after prompt fixes. Corpus feedback loop active via `CorpusManager.iter_examples()` scanning `sandbox_verified/`. | complete (Milestone 18) |
 | Scanner as a Service | direction confirmed, not started | token-gated hosted scanning, permanent report URLs, GitHub Action (post-v1.0) |
-| Public skill feed | placeholder page | daily cron, 50+ skills scanned (Milestone 14) |
+| Public skill feed | placeholder page on skillscan.sh | daily cron, 50+ skills scanned (Milestone 14) |
 | Languages covered | Python/bash/GH Actions | + JS/TS/Ruby/Go/Rust (Milestone 10) |

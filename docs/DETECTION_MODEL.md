@@ -13,11 +13,14 @@ SkillScan operates a layered, deterministic-first pipeline. Each layer runs inde
 | 1 | Binary artifact detection | Always | Yes |
 | 2 | ClamAV malware scan | `--clamav` flag | No |
 | 3 | Static regex rules | Always | Yes |
-| 4 | ML prompt-injection classifier | `--ml` flag | No |
-| 5 | AST data-flow analysis | Always | Yes |
-| 6 | Chain rules (co-occurrence) | Always | Yes |
-| 7 | Skill graph analysis | `--graph` flag | No |
-| 8 | AI semantic assist | `--ai` flag | No |
+| 4 | Local semantic classifier (NLTK/Porter stemmer) | Always | Yes |
+| 5 | ML prompt-injection classifier (DeBERTa-v3-base + LoRA) | `--ml` flag | No |
+| 6 | AST data-flow analysis | Always | Yes |
+| 7 | Chain rules (co-occurrence) | Always | Yes |
+| 8 | Skill graph analysis | `--graph` flag | No |
+| 9 | Behavioral tracer (`skillscan-trace`) | Separate tool | N/A |
+
+> **Layer 9 note:** `skillscan-trace` is a separate tool (private repo `kurtpayne/skillscan-trace`) that runs a skill through a real LLM agent with a fully instrumented canary environment. It is invoked after static analysis (layers 1–8) and only for skills in the uncertain middle band (semantic score >0.25 OR ML prob >0.30 OR any static findings). Output is SARIF-compatible and feeds back into the ML corpus via `sandbox_verified/` directories.
 
 Additionally, the IOC/vuln intel layer runs alongside layers 3–6 to cross-reference extracted indicators against the bundled threat intelligence databases.
 
@@ -272,10 +275,10 @@ The scoring layer aggregates all findings from layers 1–7 and produces a final
 
 | Policy | Hard-block rules |
 |---|---|
-| `balanced` | `MAL-001` |
-| `strict` | `MAL-001`, `IOC-001` |
+| `balanced` | `MAL-001`, `DEF-001`, `MAL-025` |
+| `strict` | `MAL-001`, `IOC-001`, `DEF-001`, `MAL-025`, `MAL-029`, `CHN-011`, `CHN-013` |
 
-> **Known gap (Issue H3):** Several critical-severity rules (`DEF-001`, `MAL-025`, `MAL-029`, `CHN-011`, `CHN-013`) are not in `strict.yaml`'s `hard_block_rules`. A skill with Defender disabling but a low overall score could reach `warn` instead of `block` in strict mode. Fix planned for Milestone 11.
+A skill with Defender disabling (`DEF-001`), MCP tool poisoning (`MAL-025`), or a confirmed C2 IOC (`IOC-001`) will always produce a `block` verdict in strict mode regardless of numeric score. The `balanced` policy hard-blocks the two highest-confidence attack patterns (`MAL-001` shell execution, `DEF-001` Defender disable) to prevent the most obvious attacks from slipping through on low-confidence scores.
 
 The verdict bands for the default `balanced` policy are:
 
