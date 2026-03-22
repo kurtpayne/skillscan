@@ -203,8 +203,17 @@ class CorpusManager:
     Parameters
     ----------
     corpus_dir:
-        Root of the corpus directory.  Defaults to ``corpus/`` relative to the
-        repo root (detected from this file's location).
+        Root of the corpus directory containing the public subdirectories
+        (benign/, malicious/, prompt_injection/, social_engineering/,
+        graph_injection/).  Defaults to ``corpus/`` relative to the repo root.
+    root_dir:
+        Optional parent directory of ``corpus_dir``.  When set, private
+        subdirectories (adversarial/, jailbreak_distillations/,
+        sandbox_verified/) are looked up relative to ``root_dir`` rather than
+        ``corpus_dir``.  The manifest files are also written to ``root_dir``
+        instead of ``corpus_dir``.  This supports the skillscan-corpus layout
+        where ``training_corpus/`` holds public data and private dirs live at
+        the repo root.
     min_new_examples:
         Absolute count of new/changed examples that triggers a retrain.
     min_delta_pct:
@@ -220,6 +229,7 @@ class CorpusManager:
     def __init__(
         self,
         corpus_dir: Path | None = None,
+        root_dir: Path | None = None,
         min_new_examples: int = DEFAULT_MIN_NEW_EXAMPLES,
         min_delta_pct: float = DEFAULT_MIN_DELTA_PCT,
         include_private: bool | None = None,
@@ -231,15 +241,21 @@ class CorpusManager:
             # Default: corpus/ sibling of the package root
             corpus_dir = Path(__file__).parent.parent.parent / "corpus"
         self.corpus_dir = corpus_dir.resolve()
-        self.manifest_path = self.corpus_dir / MANIFEST_FILENAME
-        self.combined_manifest_path = self.corpus_dir / MANIFEST_COMBINED_FILENAME
+        # root_dir: where private dirs and manifests live.
+        # Defaults to corpus_dir (legacy flat layout).
+        # Set to the repo root when corpus_dir is a subdirectory (e.g. training_corpus/).
+        self.root_dir: Path = root_dir.resolve() if root_dir else self.corpus_dir
+        self.manifest_path = self.root_dir / MANIFEST_FILENAME
+        self.combined_manifest_path = self.root_dir / MANIFEST_COMBINED_FILENAME
         self.min_new_examples = min_new_examples
         self.min_delta_pct = min_delta_pct
 
         # Auto-detect whether private directories are present
+        # Check both corpus_dir and root_dir so either layout works.
         if include_private is None:
             include_private = any(
-                (self.corpus_dir / d).is_dir() for d in PRIVATE_LABEL_MAP
+                (self.root_dir / d).is_dir() or (self.corpus_dir / d).is_dir()
+                for d in PRIVATE_LABEL_MAP
             )
         self.include_private = include_private
 
@@ -392,9 +408,10 @@ class CorpusManager:
                             examples.append((p, label))
 
         # Private subdirectories (only when include_private is True)
+        # Look in root_dir first (skillscan-corpus layout), then corpus_dir (flat layout).
         if include_private:
             for subdir, label in PRIVATE_LABEL_MAP.items():
-                d = self.corpus_dir / subdir
+                d = (self.root_dir / subdir) if (self.root_dir / subdir).is_dir() else (self.corpus_dir / subdir)
                 if not d.is_dir():
                     continue
                 for p in sorted(d.rglob("*")):
@@ -403,13 +420,13 @@ class CorpusManager:
                         if p.name in ("MANIFEST.json", "manifest.json"):
                             continue
                         examples.append((p, label))
-
         # sandbox_verified/ — tracer-confirmed malicious skills.
         # Structure: sandbox_verified/<run_id>/*.md
         # All .md files here are labeled injection.
         # Only included when include_private is True (same as adversarial/).
         if include_private:
-            sv_dir = self.corpus_dir / SANDBOX_VERIFIED_DIR
+            # Check root_dir first (skillscan-corpus layout), then corpus_dir.
+            sv_dir = (self.root_dir / SANDBOX_VERIFIED_DIR) if (self.root_dir / SANDBOX_VERIFIED_DIR).is_dir() else (self.corpus_dir / SANDBOX_VERIFIED_DIR)
             if sv_dir.is_dir():
                 for run_dir in sorted(sv_dir.iterdir()):
                     if not run_dir.is_dir():
@@ -448,10 +465,22 @@ class CorpusManager:
     # ------------------------------------------------------------------
 
     def _build_index(self, include_private: bool = False) -> dict[str, str]:
-        """Return {relative_path: sha256} for every training corpus file."""
+        """Return {relative_path: sha256} for every training corpus file.
+
+        Relative paths are computed against ``corpus_dir`` for public examples
+        and against ``root_dir`` for private examples that live outside
+        ``corpus_dir`` (e.g. adversarial/ at the repo root).
+        """
         index: dict[str, str] = {}
         for path, _label in self.iter_examples(include_private=include_private):
-            rel = str(path.relative_to(self.corpus_dir))
+            try:
+                rel = str(path.relative_to(self.corpus_dir))
+            except ValueError:
+                # File is outside corpus_dir (e.g. private dir at root_dir level)
+                try:
+                    rel = str(path.relative_to(self.root_dir))
+                except ValueError:
+                    rel = str(path)
             index[rel] = _sha256(path)
         return index
 

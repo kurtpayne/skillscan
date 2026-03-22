@@ -68,21 +68,19 @@ jobs:
               print("ERROR: CORPUS_PATH not set", file=sys.stderr)
               sys.exit(1)
 
-          # Build a unified corpus view: training_corpus/ + private dirs
-          # CorpusManager accepts SKILLSCAN_CORPUS_DIR env var
-          # We point it at training_corpus/ for the public data;
-          # private dirs (adversarial, jailbreak_distillations, etc.)
-          # are auto-detected as siblings.
+          # skillscan-corpus layout:
+          #   training_corpus/  — public subdirs (benign/, malicious/, etc.)
+          #   adversarial/      — private, at repo root
+          #   jailbreak_distillations/ — private, at repo root
+          #   sandbox_verified/ — private, at repo root
+          #   manifest.json     — at repo root
+          # Pass root_dir so CorpusManager resolves private dirs and the
+          # manifest relative to the repo root, not training_corpus/.
           corpus_dir = Path(corpus_path) / "training_corpus"
-          mgr = CorpusManager(corpus_dir=corpus_dir)
-
-          # Also scan private dirs if present
-          private_dirs = ["adversarial", "jailbreak_distillations", "social_engineering"]
-          for d in private_dirs:
-              p = Path(corpus_path) / d
-              if p.is_dir():
-                  mgr.corpus_dir = Path(corpus_path)  # widen scope to full repo root
-                  break
+          mgr = CorpusManager(
+              corpus_dir=corpus_dir,
+              root_dir=Path(corpus_path),
+          )
 
           decision = mgr.sync()
           print(decision.summary())
