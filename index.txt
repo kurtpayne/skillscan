@@ -250,6 +250,7 @@ docs/DISTRIBUTION.md
 docs/EXAMPLES.md
 docs/GITHUB_ACTIONS.md
 docs/INTEL.md
+docs/MODEL_METRICS.md
 docs/ORG_MIGRATION_PLAYBOOK.md
 docs/POLICY.md
 docs/PRD.md
