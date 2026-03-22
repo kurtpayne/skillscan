@@ -27,6 +27,7 @@ def corpus_dir(tmp_path: Path) -> Path:
 
 
 def _write(path: Path, text: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
     return path
 
@@ -255,3 +256,89 @@ def test_removed_examples_detected(corpus_dir: Path) -> None:
     assert decision.removed_examples == 1
     # Removal alone does not trigger retrain (only additions/changes do)
     assert decision.should_retrain is False
+
+
+# ---------------------------------------------------------------------------
+# sandbox_verified/ integration (M16)
+# ---------------------------------------------------------------------------
+
+
+def test_sandbox_verified_examples_included_when_private(corpus_dir: Path) -> None:
+    """sandbox_verified/ skills are included in iter_examples when include_private=True."""
+    # Seed a benign skill in the public corpus
+    _write(corpus_dir / "benign" / "benign_a.md", "name: benign_a\ndescription: benign")
+
+    # Add tracer-verified malicious skills in sandbox_verified/<run_id>/
+    run_dir = corpus_dir / "sandbox_verified" / "trace_20260322_030126"
+    _write(run_dir / "ah01_goal_substitution.md", "name: ah01\ndescription: malicious")
+    _write(run_dir / "ah03_secrecy_directive.md", "name: ah03\ndescription: malicious")
+    # JSON trace files should be ignored
+    _write(run_dir / "ah01_goal_substitution.trace.json", '{"verdict": "malicious"}')
+
+    mgr = CorpusManager(corpus_dir=corpus_dir, include_private=True)
+    examples = mgr.iter_examples(include_private=True)
+    paths = [str(p) for p, _ in examples]
+
+    # Both sandbox_verified .md files should be present
+    rel_paths = [str(p.relative_to(corpus_dir)) for p, _ in examples]
+    assert any("ah01_goal_substitution.md" in rp for rp in rel_paths)
+    assert any("ah03_secrecy_directive.md" in rp for rp in rel_paths)
+    # JSON file should NOT be present
+    assert not any(".json" in rp for rp in rel_paths)
+    # All sandbox_verified examples are labeled injection
+    sv_examples = [(p, lbl) for p, lbl in examples
+                   if str(p.relative_to(corpus_dir)).startswith("sandbox_verified")]
+    assert len(sv_examples) == 2, f"Expected 2 sandbox_verified examples, got {len(sv_examples)}"
+    for p, lbl in sv_examples:
+        assert lbl == "injection", f"Expected injection for {p}, got {lbl}"
+
+
+def test_sandbox_verified_excluded_when_not_private(corpus_dir: Path) -> None:
+    """sandbox_verified/ skills are excluded when include_private=False."""
+    _write(corpus_dir / "benign" / "benign_a.md", "name: benign_a\ndescription: benign")
+    run_dir = corpus_dir / "sandbox_verified" / "trace_20260322_030126"
+    _write(run_dir / "ah01_goal_substitution.md", "name: ah01\ndescription: malicious")
+
+    mgr = CorpusManager(corpus_dir=corpus_dir, include_private=False)
+    examples = mgr.iter_examples(include_private=False)
+    rel_paths = [str(p.relative_to(corpus_dir)) for p, _ in examples]
+
+    assert not any(rp.startswith("sandbox_verified") for rp in rel_paths), \
+        f"sandbox_verified should be excluded when include_private=False, got: {rel_paths}"
+    assert len(examples) == 1, f"Expected 1 example (benign only), got {len(examples)}: {rel_paths}"
+
+
+def test_sandbox_verified_triggers_retrain(corpus_dir: Path) -> None:
+    """Adding sandbox_verified examples crosses the delta threshold and triggers retrain."""
+    # Seed 100 public examples and record a fine-tune
+    for i in range(100):
+        _write(corpus_dir / "benign" / f"skill_{i}.md", f"name: skill_{i}\ndescription: skill {i}")
+
+    mgr = CorpusManager(corpus_dir=corpus_dir, min_new_examples=10, min_delta_pct=0.50,
+                        include_private=True)
+    mgr.sync()
+    mgr.record_finetune("checkpoints/ft-base")
+
+    # Add 15 tracer-verified skills — crosses absolute threshold (10)
+    run_dir = corpus_dir / "sandbox_verified" / "trace_20260322_030126"
+    for i in range(15):
+        _write(run_dir / f"ah{i:02d}_attack.md", f"name: ah{i:02d}\ndescription: malicious {i}")
+
+    decision = mgr.sync()
+    assert decision.should_retrain is True
+    assert decision.new_examples >= 15
+
+
+def test_sandbox_verified_multiple_runs(corpus_dir: Path) -> None:
+    """Multiple trace run directories under sandbox_verified/ are all scanned."""
+    for run_id in ["trace_20260322_030126", "trace_20260323_120000"]:
+        run_dir = corpus_dir / "sandbox_verified" / run_id
+        _write(run_dir / "ah01_attack.md", f"name: ah01\ndescription: malicious ({run_id})")
+
+    mgr = CorpusManager(corpus_dir=corpus_dir, include_private=True)
+    examples = mgr.iter_examples(include_private=True)
+    sv_examples = [(p, lbl) for p, lbl in examples
+                   if str(p.relative_to(corpus_dir)).startswith("sandbox_verified")]
+
+    assert len(sv_examples) == 2
+    assert all(lbl == "injection" for _, lbl in sv_examples)

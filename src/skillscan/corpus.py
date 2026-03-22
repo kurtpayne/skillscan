@@ -99,6 +99,11 @@ PRIVATE_LABEL_MAP: dict[str, str] = {
     "jailbreak_distillations": "injection",
 }
 
+# Tracer-verified subdirectory — produced by skillscan-trace batch runs.
+# sandbox_verified/<run_id>/*.md files are all confirmed malicious (injection).
+# These are private (not in public manifest) and always included when present.
+SANDBOX_VERIFIED_DIR = "sandbox_verified"
+
 # Subdirectories that are never used for training (eval only).
 EVAL_ONLY_DIRS: frozenset[str] = frozenset({"held_out_eval"})
 
@@ -398,6 +403,23 @@ class CorpusManager:
                         if p.name in ("MANIFEST.json", "manifest.json"):
                             continue
                         examples.append((p, label))
+
+        # sandbox_verified/ — tracer-confirmed malicious skills.
+        # Structure: sandbox_verified/<run_id>/*.md
+        # All .md files here are labeled injection.
+        # Only included when include_private is True (same as adversarial/).
+        if include_private:
+            sv_dir = self.corpus_dir / SANDBOX_VERIFIED_DIR
+            if sv_dir.is_dir():
+                for run_dir in sorted(sv_dir.iterdir()):
+                    if not run_dir.is_dir():
+                        continue
+                    for p in sorted(run_dir.rglob("*")):
+                        if p.is_file() and p.suffix in SUPPORTED_EXTENSIONS:
+                            # Skip the raw trace JSON files — only skill .md files
+                            if p.suffix == ".json":
+                                continue
+                            examples.append((p, "injection"))
 
         # held_out_eval/ is intentionally excluded from iter_examples()
         # It is only used by the evaluation step in finetune_modal.py
