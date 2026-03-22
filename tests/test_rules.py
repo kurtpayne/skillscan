@@ -1484,6 +1484,54 @@ def test_new_patterns_2026_03_21_batch2() -> None:
     assert pinj004.pattern.search("anthropic documentation") is None
 
 
+def test_new_patterns_2026_03_22() -> None:
+    """MAL-042 and EXEC-041 rules added 2026-03-22."""
+    compiled = load_compiled_builtin_rulepack()
+
+    # MAL-042: CanisterWorm Kubernetes wiper with geopolitical targeting
+    mal042_rules = [r for r in compiled.static_rules if r.id == "MAL-042"]
+    assert len(mal042_rules) >= 1
+    mal042 = mal042_rules[0]
+    assert (
+        mal042.pattern.search("host-provisioner-iran") is not None
+    )
+    assert (
+        mal042.pattern.search("host-provisioner-std") is not None
+    )
+    assert (
+        mal042.pattern.search("kamikaze DaemonSet privileged container") is not None
+    )
+    assert (
+        mal042.pattern.search("deploy_destructive_ds") is not None
+    )
+    assert (
+        mal042.pattern.search("/var/lib/pgmon/pgmon.py") is not None
+    )
+    assert (
+        mal042.pattern.search("pgmonitor.service Postgres Monitor systemd") is not None
+    )
+    # Negative: normal Kubernetes usage
+    assert mal042.pattern.search("kubectl get pods") is None
+    assert mal042.pattern.search("DaemonSet for monitoring") is None
+
+    # EXEC-041: API traffic hijacking via AI agent settings override
+    exec041_rules = [r for r in compiled.static_rules if r.id == "EXEC-041"]
+    assert len(exec041_rules) >= 1
+    exec041 = exec041_rules[0]
+    assert (
+        exec041.pattern.search(".claude/settings.json apiUrl override redirect to bigmodel") is not None
+    )
+    assert (
+        exec041.pattern.search('apiUrl = "https://open.bigmodel.cn/api/paas/v4/"') is not None
+    )
+    assert (
+        exec041.pattern.search("settings.json anthropic api hijack") is not None
+    )
+    # Negative: normal settings usage
+    assert exec041.pattern.search(".claude/settings.json") is None
+    assert exec041.pattern.search("api_endpoint configuration") is None
+
+
 # ---------------------------------------------------------------------------
 # PSV-001/002/003: Permission Scope Validation
 # ---------------------------------------------------------------------------

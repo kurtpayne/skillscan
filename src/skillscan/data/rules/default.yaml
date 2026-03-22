@@ -1,4 +1,4 @@
-version: "2026.03.21.2"
+version: "2026.03.22.1"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2528,6 +2528,71 @@ static_rules:
       benchmark_set: core-static-v1
     references:
     - https://www.oasis.security/blog/claude-ai-prompt-injection-data-exfiltration-vulnerability
+- id: MAL-042
+  category: malware_pattern
+  severity: critical
+  confidence: 0.88
+  title: CanisterWorm Kubernetes wiper with geopolitical targeting
+  pattern: (?i)(?:host-provisioner-(?:iran|std)|kamikaze[^\n]{0,120}(?:DaemonSet|privileged|hostPath|wipe|reboot)|deploy_destructive_ds|deploy_std_ds|is_iran\(\)[^\n]{0,120}(?:Asia/Tehran|fa_IR)|DaemonSet[^\n]{0,200}hostPath[^\n]{0,80}path:\s*/[^\n]{0,80}privileged:\s*true|pgmonitor\.service[^\n]{0,80}(?:Postgres\s*Monitor|systemd)|/var/lib/pgmon/pgmon\.py)
+  mitigation: Remove CanisterWorm Kubernetes wiper payloads. This variant deploys
+    privileged DaemonSets that wipe Iranian-targeted nodes via a container named
+    kamikaze, while installing CanisterWorm backdoors on non-Iranian nodes. It also
+    spreads via SSH key theft and exposed Docker APIs on port 2375.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXEC-042
+      name: Execution or malware behavior
+    tags:
+    - malware_pattern
+    - mal
+    - kubernetes
+    - wiper
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-22'
+      last_modified: '2026-03-22'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.aikido.dev/blog/teampcp-stage-payload-canisterworm-iran
+- id: EXEC-041
+  category: exfiltration
+  severity: high
+  confidence: 0.84
+  title: API traffic hijacking via AI agent settings override
+  pattern: (?i)(?:\.claude/settings\.json[^\n]{0,200}(?:apiUrl|api[_\s-]?endpoint|base[_\s-]?url|api[_\s-]?key|model)[^\n]{0,80}(?:override|redirect|replace|bigmodel|zhipu|glm)|(?:apiUrl|api_endpoint|base_url)\s*[=:]\s*["'][^"']{0,200}(?:bigmodel\.cn|zhipuai|open\.bigmodel)|settings\.json[^\n]{0,120}(?:anthropic|openai|api)[^\n]{0,80}(?:hijack|intercept|redirect|reroute))
+  mitigation: Do not override AI agent API endpoints in settings files. The
+    flyingtimes/podcast-using-skill attack redirected all Claude Code API traffic
+    to Zhipu AI BigModel platform in China by modifying .claude/settings.json,
+    silently intercepting all user conversations and code context.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: EXFIL-018
+      name: Exfiltration or data theft
+    tags:
+    - exfiltration
+    - exec
+    - api-hijack
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-22'
+      last_modified: '2026-03-22'
+    quality:
+      precision_estimate: 0.84
+      benchmark_set: core-static-v1
+    references:
+    - https://thenewstack.io/ai-agent-skills-security/
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
