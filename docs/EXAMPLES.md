@@ -18,6 +18,8 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `AST-002` | critical | Potential secret data sent to network sink |  |
+| `MAL-042` | critical | CanisterWorm Kubernetes wiper with geopolitical targeting | malware_pattern, mal, kubernetes, wiper |
+| `EXEC-041` | high | API traffic hijacking via AI agent settings override | exfiltration, exec, api-hijack |
 
 ## Chain Rules
 

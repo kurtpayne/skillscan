@@ -1,3 +1,32 @@
+## 2026-03-22 — CanisterWorm Kubernetes Wiper, API Traffic Hijacking via Settings Override
+**Sources:**
+- [Aikido Security — CanisterWorm Gets Teeth: TeamPCP's Kubernetes Wiper Targets Iran](https://www.aikido.dev/blog/teampcp-stage-payload-canisterworm-iran)
+- [The New Stack — What a Security Audit of 22,511 AI Coding Skills Found Lurking in the Code](https://thenewstack.io/ai-agent-skills-security/)
+- [Reddit/pwnhub — CVE-2026-32042: OpenClaw Unauthorized Operator Access](https://www.reddit.com/r/pwnhub/comments/1rztthf/critical_vulnerability_in_openclaw_allows/)
+**Event Summary:** Two new detection rules, three new IOC domains, and one new CVE were added. Aikido Security documented a new CanisterWorm variant that deploys privileged Kubernetes DaemonSets to wipe Iranian-targeted nodes (via timezone and locale checks) while installing CanisterWorm backdoors on non-Iranian nodes. The variant also adds SSH key theft and exposed Docker API exploitation for lateral movement. The New Stack reported on a Mobb.ai audit of 22,511 AI coding agent skills that discovered API traffic hijacking via `.claude/settings.json` overrides, where the `flyingtimes/podcast-using-skill` repository redirected all Claude Code API traffic to Zhipu AI's BigModel platform in China. CVE-2026-32042 was disclosed for OpenClaw privilege escalation allowing unpaired devices to bypass operator pairing and self-assign elevated scopes.
+**New Patterns Added:**
+### MAL-042: CanisterWorm Kubernetes wiper with geopolitical targeting
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.88
+- **Pattern:** Detects `host-provisioner-iran`/`host-provisioner-std` DaemonSet names, `kamikaze` container with privileged hostPath mounts, `deploy_destructive_ds`/`deploy_std_ds` functions, Iran timezone targeting (`Asia/Tehran`, `fa_IR`), `pgmonitor.service` persistence, and `/var/lib/pgmon/pgmon.py` backdoor path.
+- **Justification:** Direct detection of the CanisterWorm Kubernetes wiper variant documented by Aikido Security. This extends MAL-040 coverage to the destructive K8s-native payload that wipes Iranian nodes and installs backdoors on others.
+### EXEC-041: API traffic hijacking via AI agent settings override
+- **Category:** exfiltration
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects `.claude/settings.json` combined with API endpoint override keywords (`apiUrl`, `base_url`, `api_endpoint`) and redirect targets (`bigmodel.cn`, `zhipuai`), as well as explicit API hijack/intercept/redirect wording.
+- **Justification:** Detection of the API traffic hijacking attack discovered in the Mobb.ai audit of 22,511 AI coding skills, where malicious skills override `.claude/settings.json` to silently redirect all API traffic to attacker-controlled servers.
+**IOC Updates:**
+- Added domain: `souls-entire-defined-routes.trycloudflare.com` (CanisterWorm K8s wiper payload delivery, first observed)
+- Added domain: `investigation-launches-hearings-copying.trycloudflare.com` (CanisterWorm K8s wiper payload delivery, second observed)
+- Added domain: `championships-peoples-point-cassette.trycloudflare.com` (CanisterWorm K8s wiper payload delivery, third observed with lateral movement)
+**Vulnerability Updates:**
+- Added CVE-2026-32042 (high privilege escalation, openclaw 2026.2.22, fixed in 2026.2.25) to vuln_db.json
+**Corpus Updates:**
+- Added `corpus/malicious/a43_canisterworm_k8s_wiper.md` — CanisterWorm Kubernetes wiper sample
+- Added `corpus/malicious/a44_api_traffic_hijack_settings.md` — API traffic hijacking via settings override sample
+---
 ## 2026-03-21 (batch 2) — CanisterWorm ICP Blockchain C2, MCP Server Command Injection, Claudy Day Prompt Injection
 
 **Sources:**

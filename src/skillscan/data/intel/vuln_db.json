@@ -706,6 +706,11 @@
         "id": "CVE-2026-31997",
         "severity": "critical",
         "fixed": "2026.3.15"
+      },
+      "2026.2.22": {
+        "id": "CVE-2026-32042",
+        "severity": "high",
+        "fixed": "2026.2.25"
       }
     },
     "mcp-atlassian": {
