@@ -21,14 +21,41 @@ import yaml  # type: ignore[import-untyped]
 # Patterns that, when ADDED, are security-relevant
 _SECURITY_PATTERNS: list[tuple[str, str, str]] = [
     # (category, severity, regex)
-    ("network_call",    "high",   r"(?i)\b(curl|wget|fetch|http\.get|requests\.get|urllib|socket\.connect)\b"),
-    ("shell_exec",      "high",   r"(?i)\b(subprocess|os\.system|exec\(|eval\(|shell=True|bash -c|sh -c)\b"),
-    ("exfiltration",    "high",   r"(?i)\b(exfil|data=\{|token=\{|key=\{|dump.*secret|send.*credential)\b"),
-    ("override_phrase", "high",   r"(?i)(ignore (all |previous |above |prior )(instructions?|rules?|constraints?)|disregard|override (your|all) (instructions?|rules?|constraints?)|forget (everything|all)|new (primary |top |master )?instruction)"),
-    ("authority_claim", "medium", r"(?i)(system (administrator|operator|owner)|you are now|act as|pretend (you are|to be)|your (true |real |actual )?role is)"),
-    ("data_access",     "medium", r"(?i)\b(read.*file|write.*file|delete.*file|list.*directory|glob\(|open\(.*['\"]r['\"])\b"),
-    ("credential_ref",  "medium", r"(?i)\b(api[_\s]?key|secret[_\s]?key|password|token|bearer|auth[_\s]?header|private[_\s]?key)\b"),
-    ("url_reference",   "low",    r"https?://[^\s\)\"']{10,}"),
+    (
+        "network_call", "high",
+        r"(?i)\b(curl|wget|fetch|http\.get|requests\.get|urllib|socket\.connect)\b",
+    ),
+    (
+        "shell_exec", "high",
+        r"(?i)\b(subprocess|os\.system|exec\(|eval\(|shell=True|bash -c|sh -c)\b",
+    ),
+    (
+        "exfiltration", "high",
+        r"(?i)\b(exfil|data=\{|token=\{|key=\{|dump.*secret|send.*credential)\b",
+    ),
+    (
+        "override_phrase", "high",
+        r"(?i)(ignore (all |previous |above |prior )"
+        r"(instructions?|rules?|constraints?)|disregard|"
+        r"override (your|all) (instructions?|rules?|constraints?)|"
+        r"forget (everything|all)|new (primary |top |master )?instruction)",
+    ),
+    (
+        "authority_claim", "medium",
+        r"(?i)(system (administrator|operator|owner)|you are now|act as|"
+        r"pretend (you are|to be)|your (true |real |actual )?role is)",
+    ),
+    (
+        "data_access", "medium",
+        r"(?i)\b(read.*file|write.*file|delete.*file|list.*directory"
+        r"|glob\(|open\(.*['\"]r['\"])\b",
+    ),
+    (
+        "credential_ref", "medium",
+        r"(?i)\b(api[_\s]?key|secret[_\s]?key|password|token|bearer"
+        r"|auth[_\s]?header|private[_\s]?key)\b",
+    ),
+    ("url_reference", "low", r"https?://[^\s\)\"']{10,}"),
 ]
 
 _COMPILED: list[tuple[str, str, re.Pattern[str]]] = [

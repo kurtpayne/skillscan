@@ -27,8 +27,8 @@ from skillscan.policies import BUILTIN_PROFILES, load_builtin_policy, load_polic
 from skillscan.render import render_report
 from skillscan.rules import load_builtin_rulepack
 from skillscan.sarif import report_to_sarif
+from skillscan.skill_diff import SkillDiffResult, diff_skills
 from skillscan.suppressions import apply_suppressions, check_suppressions_expiry
-from skillscan.skill_diff import diff_skills, SkillDiffResult
 
 
 # load_dotenv: reads KEY=VALUE pairs from a .env file into os.environ (no-op if absent)
@@ -964,11 +964,23 @@ def suppress_check(
 
 @app.command("skill-diff")
 def skill_diff_cmd(
-    baseline: Path = typer.Argument(..., exists=True, readable=True, help="Baseline SKILL.md (trusted/older version)"),
-    current: Path = typer.Argument(..., exists=True, readable=True, help="Current SKILL.md (updated version to evaluate)"),
+    baseline: Path = typer.Argument(
+        ..., exists=True, readable=True,
+        help="Baseline SKILL.md (trusted/older version)",
+    ),
+    current: Path = typer.Argument(
+        ..., exists=True, readable=True,
+        help="Current SKILL.md (updated version to evaluate)",
+    ),
     format: str = typer.Option("text", "--format", help="Output format: text|json"),
-    min_severity: str = typer.Option("low", "--min-severity", help="Minimum severity to report: critical|high|medium|low|info"),
-    exit_on_changes: bool = typer.Option(False, "--exit-on-changes", help="Exit with code 1 if security changes are found"),
+    min_severity: str = typer.Option(
+        "low", "--min-severity",
+        help="Minimum severity to report: critical|high|medium|low|info",
+    ),
+    exit_on_changes: bool = typer.Option(
+        False, "--exit-on-changes",
+        help="Exit with code 1 if security changes are found",
+    ),
 ) -> None:
     """Compare two SKILL.md files at the instruction level and flag security-relevant changes.
 
@@ -1026,7 +1038,10 @@ def skill_diff_cmd(
     ))
 
     if not visible:
-        console.print("[green]No security-relevant changes detected at or above the specified severity threshold.[/green]")
+        console.print(
+            "[green]No security-relevant changes detected "
+            "at or above the specified severity threshold.[/green]"
+        )
     else:
         for change in visible:
             color = sev_color.get(change.severity, "white")
