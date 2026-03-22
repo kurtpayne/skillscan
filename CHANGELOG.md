@@ -7,6 +7,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **M19 — Skill Fuzzer** (`tools/skill-fuzzer/`): LLM-powered adversarial SKILL.md variant generator. Supports five mutation strategies: `evasion`, `injection`, `benign_drift`, `obfuscation`, and `authority`. Uses any OpenAI-compatible API (GPT-4.1-mini default, Ollama-compatible). Generates unified diffs and optional `skillscan` scan results per variant. Outputs `summary.json` with evasion/false-positive rates. Installable as `pip install skillscan-security[fuzzer]`.
+- **`[project.optional-dependencies].fuzzer`** extra in `pyproject.toml` (`openai>=1.30.0`, `click>=8.1.0`).
+
+---
+
 ## [0.3.2] — 2026-03-18
 
 ### Added
