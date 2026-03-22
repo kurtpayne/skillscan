@@ -277,8 +277,6 @@ def test_sandbox_verified_examples_included_when_private(corpus_dir: Path) -> No
 
     mgr = CorpusManager(corpus_dir=corpus_dir, include_private=True)
     examples = mgr.iter_examples(include_private=True)
-    paths = [str(p) for p, _ in examples]
-
     # Both sandbox_verified .md files should be present
     rel_paths = [str(p.relative_to(corpus_dir)) for p, _ in examples]
     assert any("ah01_goal_substitution.md" in rp for rp in rel_paths)

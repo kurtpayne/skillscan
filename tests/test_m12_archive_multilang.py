@@ -4,7 +4,6 @@ Milestone 12 tests: expanded archive detection, extraction, and multilang rules.
 from __future__ import annotations
 
 import io
-import struct
 import tarfile
 import tempfile
 import zipfile
@@ -14,7 +13,6 @@ import pytest
 
 from skillscan.models import detect_archive_format, is_archive
 from skillscan.rules import load_builtin_rulepack
-
 
 # ── Archive format detection ─────────────────────────────────────────────────
 

@@ -30,13 +30,19 @@ from skillscan.models import (
     ScanMetadata,
     ScanReport,
     Severity,
+    TriageMetadata,
     Verdict,
     detect_archive_format,
     is_archive,
 )
 from skillscan.remote import RemoteFetchError, fetch_remote_target, is_url_target
 from skillscan.rules import CompiledRulePack, load_compiled_builtin_rulepack
-from skillscan.semantic_local import local_prompt_injection_findings, local_social_engineering_findings
+from skillscan.semantic_local import (
+    classify_prompt_injection_raw,
+    classify_social_engineering_raw,
+    local_prompt_injection_findings,
+    local_social_engineering_findings,
+)
 
 URL_RE = re.compile(r"https?://[^\s\"'<>]+", re.IGNORECASE)
 IP_RE = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
@@ -171,9 +177,8 @@ def _safe_extract_tar(src: Path, dst: Path, max_files: int, max_bytes: int) -> N
             total += member.size
             if total > max_bytes:
                 raise ScanError("Archive exceeds max bytes limit")
-        # filter='data' was added in Python 3.12; use manual extraction on 3.11
-        import sys
-        if sys.version_info >= (3, 12):
+        # filter='data' was added in Python 3.12; use keyword argument only when available
+        if hasattr(tf, 'extraction_filter'):
             tf.extractall(dst, filter="data")
         else:
             for member in members:
@@ -773,6 +778,10 @@ def scan(
         iocs: list[IOC] = []
         capabilities: list[Capability] = []
         dependency_findings: list[DependencyFinding] = []
+        # Triage score accumulators — track max across all files
+        _triage_sem_inj: float = 0.0
+        _triage_se: float = 0.0
+        _triage_ml_prob: float | None = None
         vuln_db = _load_builtin_vuln_db()
         ioc_db = _load_builtin_ioc_db()
         ioc_db, vuln_db, intel_sources = _merge_user_intel(ioc_db, vuln_db)
@@ -837,8 +846,16 @@ def scan(
 
             findings.extend(local_prompt_injection_findings(path, analysis_text))
             findings.extend(local_social_engineering_findings(path, analysis_text))
+            # Capture raw triage scores (always, regardless of threshold)
+            _triage_sem_inj = max(_triage_sem_inj, classify_prompt_injection_raw(analysis_text))
+            _triage_se = max(_triage_se, classify_social_engineering_raw(analysis_text))
             if ml_detect:
-                findings.extend(ml_prompt_injection_findings(path, analysis_text))
+                ml_findings = ml_prompt_injection_findings(path, analysis_text)
+                findings.extend(ml_findings)
+                # Extract raw ML probability from finding confidence if available
+                for f in ml_findings:
+                    if f.id.startswith("ML-"):
+                        _triage_ml_prob = max(_triage_ml_prob or 0.0, f.confidence)
 
             for capability_name, pattern in ruleset.capability_patterns:
                 if pattern.search(analysis_text):
@@ -1087,8 +1104,8 @@ def scan(
                             evidence_path=str(target),
                             snippet=f"{archive_name}: {reason}",
                             mitigation=(
-                                "Install skillscan[archives] for expanded archive support, or manually inspect "
-                                "the archive contents before loading this skill."
+                                "Install skillscan[archives] for expanded archive support, "
+                                "or manually inspect the archive contents before loading this skill."
                             ),
                         )
                     )
@@ -1146,6 +1163,21 @@ def scan(
             intel_sources=intel_sources,
         )
 
+        # Build triage metadata — compute has_sub_threshold_signal
+        _has_sub = (
+            (_triage_sem_inj > 0.25)
+            or (_triage_se > 0.25)
+            or (_triage_ml_prob is not None and _triage_ml_prob > 0.30)
+        )
+        triage_metadata = TriageMetadata(
+            semantic_injection_score=round(_triage_sem_inj, 4),
+            social_engineering_score=round(_triage_se, 4),
+            ml_injection_probability=(
+                round(_triage_ml_prob, 4) if _triage_ml_prob is not None else None
+            ),
+            has_sub_threshold_signal=_has_sub,
+        )
+
         return ScanReport(
             metadata=metadata,
             verdict=verdict,
@@ -1154,6 +1186,7 @@ def scan(
             iocs=iocs,
             dependency_findings=dependency_findings,
             capabilities=capabilities,
+            triage_metadata=triage_metadata,
         )
     finally:
         if prepared.cleanup_dir is not None:
