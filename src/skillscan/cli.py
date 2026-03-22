@@ -28,7 +28,12 @@ from skillscan.render import render_report
 from skillscan.rules import load_builtin_rulepack
 from skillscan.sarif import report_to_sarif
 from skillscan.skill_diff import SkillDiffResult, diff_skills
-from skillscan.suppressions import apply_suppressions, check_suppressions_expiry
+from skillscan.suppressions import (
+    ExpiryEntry,  # noqa: F401 – used as type annotation target by mypy
+    SuppressionEntry,  # noqa: F401 – used as type annotation target by mypy
+    apply_suppressions,
+    check_suppressions_expiry,
+)
 
 
 # load_dotenv: reads KEY=VALUE pairs from a .env file into os.environ (no-op if absent)
@@ -945,17 +950,17 @@ def suppress_check(
 
         if result.expired_entries:
             console.print("\n[bold red]Expired suppressions:[/]")
-            for e in result.expired_entries:
-                path_info = f" ({e.evidence_path})" if e.evidence_path else ""
-                console.print(f"  [red]EXPIRED[/] {e.id}{path_info} — expired {e.expires}: {e.reason}")
+            for se in result.expired_entries:
+                path_info = f" ({se.evidence_path})" if se.evidence_path else ""
+                console.print(f"  [red]EXPIRED[/] {se.id}{path_info} — expired {se.expires}: {se.reason}")
 
         if result.expiring_soon:
             console.print(f"\n[bold yellow]Expiring within {warn_days} days:[/]")
-            for e in result.expiring_soon:
-                path_info = f" ({e.evidence_path})" if e.evidence_path else ""
+            for ee in result.expiring_soon:
+                path_info = f" ({ee.evidence_path})" if ee.evidence_path else ""
                 console.print(
-                    f"  [yellow]WARN[/] {e.id}{path_info} — expires {e.expires} "
-                    f"({e.days_remaining}d): {e.reason}"
+                    f"  [yellow]WARN[/] {ee.id}{path_info} — expires {ee.expires} "
+                    f"({ee.days_remaining}d): {ee.reason}"
                 )
 
     if result.expiring_soon or result.expired_count > 0:
