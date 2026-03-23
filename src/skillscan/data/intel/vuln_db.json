@@ -665,6 +665,14 @@
         "severity": "critical",
         "fixed": "1.8.2"
       }
+    },
+    "sqlbot": {
+      "0.1.0": {
+        "id": "CVE-2026-32622",
+        "severity": "critical",
+        "fixed": null,
+        "description": "Stored prompt injection in SQLBot allows RCE via COPY TO PROGRAM as postgres user"
+      }
     }
   },
   "npm": {
@@ -752,6 +760,14 @@
         "severity": "high",
         "fixed": "0.0.2",
         "description": "SSRF in Azure MCP Server Tools allows privilege escalation over network (CVSS 8.8)"
+      }
+    },
+    "@leanprover/unicode-input-component": {
+      "0.1.9": {
+        "id": "CVE-2026-32732",
+        "severity": "medium",
+        "fixed": "0.2.0",
+        "description": "XSS in Lean 4 VS Code Extension unicode-input-component allows arbitrary JavaScript execution"
       }
     }
   }

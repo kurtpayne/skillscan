@@ -1,4 +1,4 @@
-version: "2026.03.23.1"
+version: "2026.03.23.2"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2665,6 +2665,73 @@ static_rules:
     - https://www.cve.org/CVERecord?id=CVE-2026-26118
     - https://blog.talosintelligence.com/microsoft-patch-tuesday-march-2026/
     - https://www.sentinelone.com/vulnerability-database/cve-2026-26118/
+- id: MAL-044
+  category: malware_pattern
+  severity: critical
+  confidence: 0.86
+  title: SQLBot stored prompt injection to RCE via COPY TO PROGRAM
+  pattern: (?i)(?:COPY[\s_-]?TO[\s_-]?PROGRAM|sqlbot[^\n]{0,120}(?:prompt[\s_-]?inject|rce|remote[\s_-]?code)|CVE-2026-32622|\bCOPY\b[^\n]{0,80}\bTO\b[^\n]{0,80}\bPROGRAM\b[^\n]{0,80}(?:bash|sh|curl|wget|python|nc\b)|excel[^\n]{0,120}(?:prompt[\s_-]?inject|payload)[^\n]{0,80}(?:postgres|sql|COPY)|upload[^\n]{0,80}\.xlsx[^\n]{0,80}(?:inject|payload|COPY[\s_-]?TO))
+  mitigation: Do not allow AI SQL agents to execute COPY TO PROGRAM commands.
+    CVE-2026-32622 is a stored prompt injection vulnerability in SQLBot where
+    malicious Excel files with embedded prompt injection payloads cause the AI
+    agent to execute arbitrary system commands as the postgres user via COPY TO
+    PROGRAM. Restrict SQL agent permissions and sanitize all uploaded data.
+  metadata:
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [prompt-injection, rce, sql, postgres, ai-agent, cve]
+    last_modified: '2026-03-23'
+    quality:
+      precision_estimate: 0.86
+      benchmark_set: core-static-v1
+    references:
+    - https://www.sentinelone.com/vulnerability-database/cve-2026-32622/
+    - https://www.armosec.io/blog/why-generic-container-alerts-miss-ai-specific-threats/
+- id: PINJ-006
+  category: prompt_injection
+  severity: high
+  confidence: 0.84
+  title: RAG poisoning multi-stage AI agent attack chain
+  pattern: (?i)(?:rag[\s_-]?poison(?:ing)?[^\n]{0,120}(?:exfiltrat|steal|inject|retriev|manipulat)|retrieval[\s_-]?augmented[^\n]{0,120}(?:poison|inject|manipulat|tamper)|\brag\b[^\n]{0,80}(?:inject|poison)[^\n]{0,80}(?:tool|agent|function[\s_-]?call)|embed(?:ding)?[^\n]{0,80}(?:poison|inject)[^\n]{0,80}(?:retriev|vector[\s_-]?(?:db|store|search))|knowledge[\s_-]?base[^\n]{0,80}(?:poison|inject|tamper)[^\n]{0,80}(?:agent|tool|exfil))
+  mitigation: Validate and sanitize all data ingested into RAG knowledge bases.
+    The RAG poisoning attack chain injects malicious content into vector databases
+    that gets retrieved by AI agents, manipulating tool invocations to steal
+    Kubernetes service account tokens and exfiltrate sensitive data. Implement
+    content filtering on RAG inputs and monitor for anomalous retrieval patterns.
+  metadata:
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [rag, prompt-injection, ai-agent, knowledge-base, data-poisoning]
+    last_modified: '2026-03-23'
+    quality:
+      precision_estimate: 0.84
+      benchmark_set: core-static-v1
+    references:
+    - https://www.armosec.io/blog/why-generic-container-alerts-miss-ai-specific-threats/
+- id: SUP-015
+  category: supply_chain
+  severity: critical
+  confidence: 0.88
+  title: GitHub Actions supply chain compromise via release tag repointing
+  pattern: (?i)(?:(?:release[\s_-]?)?tag[\s_-]?repoint(?:ing)?[^\n]{0,120}(?:malicious|credential|steal|compromise)|entrypoint\.sh[^\n]{0,120}(?:credential|secret|token|steal|exfil)|(?:trivy|aquasecurity)[\s_/-]?action[^\n]{0,120}(?:compromis|malicious|supply[\s_-]?chain|credential[\s_-]?steal)|git[\s_-]?tag[^\n]{0,80}(?:-f|--force)[^\n]{0,80}(?:release|v[0-9])|18a24f83e807479438dcab7a1804c51a00dafc1d526698a66e0640d1e5dd671a)
+  mitigation: Pin GitHub Actions to full commit SHAs instead of mutable tags.
+    The trivy-action supply chain compromise repointed 76 of 77 release tags to
+    a malicious commit containing a credential stealer in entrypoint.sh. Always
+    verify action integrity via SHA pinning and monitor for unexpected tag changes.
+  metadata:
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [github-actions, supply-chain, tag-repointing, credential-theft, trivy]
+    last_modified: '2026-03-23'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.crowdstrike.com/en-us/blog/from-scanner-to-stealer-inside-the-trivy-action-supply-chain-compromise/
+    - https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b

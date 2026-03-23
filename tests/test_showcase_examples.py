@@ -190,6 +190,12 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "PINJ-005" for f in findings_105)
     findings_106 = _scan("examples/showcase/102_azure_mcp_ssrf_privilege_escalation").findings
     assert any(f.id == "SUP-014" for f in findings_106)
+    findings_107 = _scan("examples/showcase/104_sqlbot_prompt_injection_rce").findings
+    assert any(f.id == "MAL-044" for f in findings_107)
+    findings_108 = _scan("examples/showcase/105_rag_poisoning_attack_chain").findings
+    assert any(f.id == "PINJ-006" for f in findings_108)
+    findings_109 = _scan("examples/showcase/106_github_actions_tag_repointing").findings
+    assert any(f.id == "SUP-015" for f in findings_109)
 
 
 def test_showcase_policy_block_domain() -> None:

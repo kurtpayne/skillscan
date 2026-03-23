@@ -43,3 +43,6 @@
 | `MAL-043` | high | SANDWORM_MODE npm worm with McpInject AI toolchain poisoning | `100_sandworm_mode_npm_worm` | supply-chain, npm-worm, mcp-poisoning, credential-theft, ai-toolchain |
 | `PINJ-005` | high | Clinejection indirect prompt injection via external data fields | `101_clinejection_indirect_prompt_injection` | prompt-injection, indirect-injection, ai-agent, supply-chain, lateral-movement |
 | `SUP-014` | high | Azure MCP Server SSRF privilege escalation (CVE-2026-26118) | `102_azure_mcp_ssrf_privilege_escalation` | azure, mcp-server, ssrf, privilege-escalation, cve |
+| `MAL-044` | critical | SQLBot stored prompt injection to RCE via COPY TO PROGRAM | `104_sqlbot_prompt_injection_rce` | prompt-injection, rce, sql, postgres, ai-agent, cve |
+| `PINJ-006` | high | RAG poisoning multi-stage AI agent attack chain | `105_rag_poisoning_attack_chain` | rag, prompt-injection, ai-agent, knowledge-base, data-poisoning |
+| `SUP-015` | critical | GitHub Actions supply chain compromise via release tag repointing | `106_github_actions_tag_repointing` | github-actions, supply-chain, tag-repointing, credential-theft, trivy |
