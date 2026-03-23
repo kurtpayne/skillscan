@@ -452,3 +452,167 @@ The SaaS scanner is explicitly deferred until the offline product meets the qual
 - Privacy-preserving scan option: agent runs in customer's environment, only the report is returned
 
 The SaaS architecture should be specced as a dedicated document when the time comes, not added incrementally to this roadmap.
+
+---
+
+## Scanning Tiers
+
+### Cost structure
+
+The three cost drivers determine what each tier can afford to include.
+
+| Driver | Approximate cost | Notes |
+|---|---|---|
+| Static scan | ~$0.00 | Runs locally; CPU only; no API calls |
+| ML classifier inference | ~$0.00 | Offline ONNX model; no API calls |
+| Dynamic trace (1 model, 3 inputs) | ~$0.05–0.15 | LLM API calls for the traced model |
+| Dynamic trace (3 models, 3 inputs each) | ~$0.30–0.60 | Parallelized; 3× the above |
+| Report compiler (LLM render) | ~$0.02–0.05 | One LLM call to compile the final report |
+| Badge issuance | ~$0.00 | Static SVG + registry write |
+
+A free GitHub-triggered scan must cost effectively nothing. A paid scan can absorb LLM API costs because the price covers them. An enterprise report can absorb multi-model trace costs because the price is per-engagement, not per-scan.
+
+---
+
+### Tier definitions
+
+#### Tier 0 — Community (free, GitHub-triggered)
+
+**Who it serves:** Open-source skill publishers who want a trust signal without paying anything.
+
+**How it works:** A GitHub Action (or webhook) triggers a static scan on every push to a repo containing a SKILL.md. The scan runs entirely offline — no LLM API calls. The result is a badge that appears in the README.
+
+**What is included:**
+
+- Full static analysis (117+ rules, chain rules, IOC/vuln DB lookup)
+- ML classifier (offline ONNX, no API cost)
+- Skill graph and permission scope validation
+- Badge issued on PASS: `SkillScan Community — Static PASS — vX.Y.Z — YYYY-MM-DD`
+- Badge issued on BLOCK: `SkillScan Community — Issues Found — view report`
+- Public summary report (finding count by severity, no finding detail) linked from the badge
+- Re-scans automatically on every push
+
+**What is not included:** Dynamic trace, multi-model comparison, full finding detail in the public report, suppression workflow, file integrity manifest, policy profiles.
+
+**Badge appearance:** Gray/silver. Clearly labeled "Static scan only." Expiry: none (re-scans on push, badge updates automatically).
+
+**Cost to SkillScan:** ~$0.00 per scan. Sustainable at any volume.
+
+---
+
+#### Tier 1 — Verified (paid, per-skill or subscription)
+
+**Who it serves:** Skill publishers who want a stronger trust signal and are willing to pay for it. Marketplace operators who want to display a credible badge on listed skills.
+
+**How it works:** Publisher submits a skill (or connects their repo). SkillScan runs static analysis plus a single-model dynamic trace (3 fuzz inputs, standard canary tool surface). The LLM compiler renders a full report. A Verified badge is issued on PASS.
+
+**What is included:**
+
+- Everything in Tier 0
+- Dynamic trace: 1 model (claude-sonnet or equivalent), 3 fuzz inputs, full canary tool surface (14 tools including email, calendar, GitHub, Slack, Notion)
+- Full finding detail in the report (evidence lines, trace behavioral narrative, canary relay summary)
+- File integrity manifest (SHA-256 + source URL for every file analyzed)
+- Suppression workflow with audit trail
+- Dependency vulnerability section (pip/npm packages cross-referenced against vuln DB)
+- Badge issued on PASS: `SkillScan Verified — PASS — vX.Y.Z — YYYY-MM-DD`
+- Badge issued on BLOCK: `SkillScan Verified — BLOCK — view report`
+- Report PDF delivered to publisher
+- 90-day approval window; badge expires and prompts re-scan after 90 days
+
+**What is not included:** Multi-model trace, policy profiles, bulk scanning, SIEM integration.
+
+**Badge appearance:** Green with a checkmark. "Verified" label. Shows expiry date. Links to the full report PDF.
+
+**Suggested pricing:** ~$9–19 per scan, or ~$49/month for unlimited re-scans on a single skill. Pricing should cover ~3–5× the LLM API cost per scan.
+
+**Cost to SkillScan:** ~$0.10–0.20 per scan (trace + compiler). Margin is strong at the suggested price.
+
+---
+
+#### Tier 2 — Professional (paid, per-engagement or annual subscription)
+
+**Who it serves:** Enterprise teams scanning internal skills before deployment. Security consultants delivering SkillScan reports to clients.
+
+**How it works:** Submits a batch of skills (or a directory). SkillScan runs static analysis plus a multi-model dynamic trace (2–3 models in parallel, 3 fuzz inputs each). The LLM compiler renders a full report with the multi-model comparison section. A Professional badge is issued per skill on PASS.
+
+**What is included:**
+
+- Everything in Tier 1
+- Multi-model trace: 2–3 models (e.g., claude-sonnet + gpt-4.1), results compared and divergences flagged
+- Policy profiles: customer-defined YAML mapping finding IDs to PASS/WARN/BLOCK thresholds
+- Bulk scan summary dashboard: roll-up table across all skills in the batch
+- Delta / baseline comparison: "3 new findings since last scan, 1 resolved"
+- SARIF output for GitHub Advanced Security / Azure DevOps integration
+- Machine-readable JSON report (stable schema, versioned) for SIEM/SOAR
+- Badge issued on PASS: `SkillScan Professional — PASS — 3 models — vX.Y.Z — YYYY-MM-DD`
+- Signed PDF report with customer watermark (tamper-evident)
+- 90-day approval window per skill; re-scan on change
+
+**What is not included:** Continuous monitoring (watch mode), skill registry API, regression alerts (these are SaaS-tier features requiring persistent infrastructure).
+
+**Badge appearance:** Gold/dark. "Professional — Multi-model verified." Shows model count and expiry. Links to the signed report.
+
+**Suggested pricing:** ~$99–299 per engagement (up to 10 skills), or ~$499/month for a team with unlimited scans. Enterprise annual contract pricing on request.
+
+**Cost to SkillScan:** ~$0.40–0.80 per skill (multi-model trace + compiler). Margin is strong at engagement pricing; requires volume discipline at subscription pricing.
+
+---
+
+#### Tier 3 — Enterprise API (SaaS, post-v1.0)
+
+**Who it serves:** Large enterprises and platform operators who need to scan skills programmatically at scale — e.g., a marketplace that scans every submitted skill before listing, or an enterprise that scans every skill on every PR merge.
+
+**How it works:** REST API (`POST /v1/scan`). Customer sends the skill file content (or a GitHub URL). SkillScan runs the full scan pipeline in its cloud infrastructure and delivers the report via webhook or polling. Persistent customer account, registry, and regression alert infrastructure.
+
+**What is included:**
+
+- Everything in Tier 2
+- Scan API with webhook delivery and job polling
+- Skill registry: approved version tracking, expiry management, query endpoint
+- Continuous monitoring: watch a GitHub repo, re-scan on SKILL.md change, alert on regression
+- Regression alerts: email/webhook when a new finding appears in a previously-passing skill
+- Skill signing: SkillScan issues a signed attestation embedded in the skill front-matter
+- SLA: 99.9% uptime, scan completion within 5 minutes for Tier 1-equivalent, 15 minutes for multi-model
+
+**Pricing model:** Per-scan credits (volume discounts), or annual contract with a scan allowance. Pricing TBD when specced.
+
+**Prerequisite quality bar before offering Tier 3:** FPR ≤ 5%, macro F1 ≥ 0.90, all known gaps in the SaaS prerequisites table closed. Do not offer Tier 3 until the product is excellent — a bad scan at scale does more reputational damage than no SaaS at all.
+
+---
+
+### Tier comparison
+
+| Feature | Tier 0 Community | Tier 1 Verified | Tier 2 Professional | Tier 3 Enterprise API |
+|---|:---:|:---:|:---:|:---:|
+| Static analysis (117+ rules) | Yes | Yes | Yes | Yes |
+| ML classifier (offline) | Yes | Yes | Yes | Yes |
+| IOC / vuln DB lookup | Yes | Yes | Yes | Yes |
+| Dynamic trace (1 model) | No | Yes | Yes | Yes |
+| Dynamic trace (multi-model) | No | No | Yes | Yes |
+| Full finding detail in report | No | Yes | Yes | Yes |
+| File integrity manifest | No | Yes | Yes | Yes |
+| Dependency vuln section | No | Yes | Yes | Yes |
+| Policy profiles | No | No | Yes | Yes |
+| Bulk scan summary | No | No | Yes | Yes |
+| Delta / baseline comparison | No | No | Yes | Yes |
+| SARIF / JSON output | No | No | Yes | Yes |
+| Signed PDF report | No | No | Yes | Yes |
+| Skill registry | No | No | No | Yes |
+| Continuous monitoring | No | No | No | Yes |
+| Regression alerts | No | No | No | Yes |
+| Skill signing | No | No | No | Yes |
+| Badge color | Silver | Green | Gold | Gold + API |
+| Badge expiry | None (auto-refresh) | 90 days | 90 days | Managed |
+| Approx. cost per scan | $0 | $9–19 | $99–299/engagement | TBD |
+
+### Badge design principles
+
+Badges are the primary distribution mechanism for Tier 0 and Tier 1. A few design constraints that matter:
+
+**The badge must be honest about what was scanned.** A Community badge that says "PASS" but only ran static analysis must clearly say "Static scan only" — it should not look identical to a Verified badge that ran a full trace. Buyers who see the badge in a marketplace need to be able to distinguish the two at a glance. Color coding (silver vs. green vs. gold) plus a tier label achieves this.
+
+**Expiry is a feature, not a limitation.** A badge that expires after 90 days and prompts re-scan is more valuable than a badge that never expires, because it tells the buyer the scan is current. The expiry date should be visible on the badge. A badge that expired 6 months ago is worse than no badge.
+
+**The badge links to the report, not just a status page.** The full report (or at minimum the public summary for Tier 0) must be accessible from the badge URL. This is what makes the badge credible — anyone can verify the claim by reading the evidence.
+
+**Tier 0 badges are issued for free but are rate-limited.** A publisher can get one free badge per skill per day (re-scan on push). Abuse prevention: rate limit by GitHub repo, not by IP.
