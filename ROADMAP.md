@@ -340,3 +340,60 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 | 9 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
 | 10 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
 | — | **SaaS** | Post-v1.0; requires FPR ≤ 2%, detection ≥ 85% |
+
+---
+
+## Report Generation
+
+### Overview
+
+SkillScan can produce a structured enterprise security report combining static analysis output and dynamic trace data. The report is the primary commercial artifact — it is what an enterprise security team receives as the deliverable of a scan engagement.
+
+Two canonical variants exist:
+
+| Variant | When issued | Content |
+|---|---|---|
+| **PASS** | All checks pass, no findings | Clean bill of health, tool-surface adherence proof, 90-day approval, residual risk caveats |
+| **BLOCK** | One or more findings | Per-finding detail with evidence, trace behavioral narrative, canary relay summary, remediation guidance |
+
+Sample reports are stored in `skillscan-website/docs/sample-reports/` (private, not served by the website).
+
+### Reproducibility
+
+The report is compiled from three inputs:
+
+1. `skillscan scan <dir> --output json` — static analysis JSON
+2. `skillscan-trace <dir> --inputs 3 --output json` — dynamic trace JSON
+3. An LLM compiler prompt that takes both JSONs and renders the Markdown report
+
+The compiler prompt is the only component not yet built. Everything else is already implemented. Building the compiler is approximately a half-day task once the report format is finalized. The sample reports in `skillscan-website/docs/sample-reports/` are the canonical format specification.
+
+### Value-add items identified (2026-03-22)
+
+The following enhancements increase the report's credibility and utility for enterprise buyers. All are implementable with existing tooling.
+
+**File integrity manifest (high priority).** Every file analyzed should be listed with its SHA-256 hash and the URL or path it was fetched from. For skills fetched from GitHub or a registry, the URL + commit SHA + file hash together constitute a tamper-evident provenance record. Implementation: add a `manifest` block to the scan JSON output (one entry per file: `{path, sha256, source_url, fetched_at}`). The report compiler includes this as an appendix table.
+
+**Multi-model trace (high priority).** Run the dynamic trace against two or more models (e.g., claude-sonnet-4-5 + gpt-4.1) and report where they agree and diverge. A skill that behaves maliciously on one model but not another is a significant finding — it may indicate the skill was tuned to exploit a specific model's behavior. Agreement between models increases confidence in both PASS and BLOCK verdicts. The `skillscan-trace` harness already supports `--model`; the report compiler needs a multi-model comparison section and the runs can be parallelized.
+
+**Confidence-weighted finding severity (medium priority).** Each static finding already has a `confidence` field (0.0–1.0). Surface this in the report as a visual indicator so the reader can distinguish a near-certain finding from a heuristic one. Especially important for semantic classifier findings, which are probabilistic by nature.
+
+**Suppression audit trail (medium priority).** When a finding is suppressed, the report should include the suppression entry, the author, the date, and the documented rationale. This gives the customer an auditable record of what was reviewed and consciously accepted.
+
+**Dependency vulnerability section (medium priority).** For skills that reference `pip install` or `npm install` commands, extract the package names and versions and cross-reference against the vuln DB. Surface any CVEs as a separate "Dependency Vulnerabilities" section. Natural complement to the existing supply chain detection rules.
+
+**Delta / baseline comparison (lower priority).** If a previous scan report exists for the same skill, include a delta section: "3 new findings since last scan, 1 resolved." Creates recurring scan value — a customer who scans on every PR merge needs to know what changed. Prerequisite: `skillscan diff` (already implemented).
+
+### Report structure (canonical)
+
+1. Cover / executive summary — verdict, risk score table, scan metadata
+2. Detection layers active — table: layer, type, findings count
+3. Per-skill findings — static findings with evidence + dynamic trace narrative
+4. IOC and domain analysis — table: domain, skill, IOC listed, trace observed
+5. Methodology and limitations — honest caveats (required for enterprise credibility)
+6. Remediation guidance — table: skill, priority, action
+7. Appendix — scan configuration + file integrity manifest
+
+### SaaS report delivery (future)
+
+When the SaaS scanner is built, reports will be delivered as a signed PDF (tamper-evident, customer-specific watermark), a machine-readable JSON report (for SIEM/SOAR integration), and a SARIF file (for GitHub Advanced Security / Azure DevOps integration). The signing infrastructure and token system are out of scope until the offline product quality bar is met (FPR ≤ 2%, macro F1 ≥ 0.90).
