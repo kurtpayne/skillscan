@@ -1,3 +1,46 @@
+## 2026-03-23 (batch 2) — SQLBot Prompt Injection RCE, RAG Poisoning Attack Chain, GitHub Actions Tag Repointing
+
+**Sources:**
+- [SentinelOne — CVE-2026-32622: SQLBot Stored Prompt Injection to RCE](https://www.sentinelone.com/vulnerability-database/cve-2026-32622/)
+- [Armo Security — Why Generic Container Alerts Miss AI-Specific Threats](https://www.armosec.io/blog/why-generic-container-alerts-miss-ai-specific-threats/)
+- [CrowdStrike — From Scanner to Stealer: Inside the Trivy-Action Supply Chain Compromise](https://www.crowdstrike.com/en-us/blog/from-scanner-to-stealer-inside-the-trivy-action-supply-chain-compromise/)
+- [StepSecurity — Trivy Compromised a Second Time](https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release)
+
+**Event Summary:** Three new detection rules, two new CVEs, and no new IOC domains were added. SentinelOne documented CVE-2026-32622, a stored prompt injection vulnerability in SQLBot where malicious Excel files with embedded prompt injection payloads cause the AI SQL agent to execute arbitrary system commands as the postgres user via PostgreSQL COPY TO PROGRAM. Armo Security published a detailed analysis of a six-stage RAG poisoning attack chain that begins with knowledge base poisoning and culminates in Kubernetes service account token theft and data exfiltration through manipulated AI agent tool invocations. CrowdStrike and StepSecurity documented the trivy-action supply chain compromise where attackers repointed 76 of 77 release tags to a malicious commit containing a credential stealer in entrypoint.sh (SHA256: 18a24f83e807479438dcab7a1804c51a00dafc1d526698a66e0640d1e5dd671a).
+
+**New Patterns Added:**
+
+### MAL-044: SQLBot stored prompt injection to RCE via COPY TO PROGRAM
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.86
+- **Pattern:** Detects `COPY TO PROGRAM` in SQL context, SQLBot prompt injection markers, CVE-2026-32622 references, Excel file upload with injection payloads targeting PostgreSQL.
+- **Justification:** Direct detection of the SQLBot stored prompt injection to RCE attack documented by SentinelOne. This is a novel attack vector where AI SQL agents are weaponized through malicious spreadsheet uploads.
+
+### PINJ-006: RAG poisoning multi-stage AI agent attack chain
+- **Category:** prompt_injection
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects RAG poisoning indicators, retrieval-augmented generation tampering, embedding/knowledge base poisoning combined with agent tool invocation manipulation.
+- **Justification:** Detection of the multi-stage RAG poisoning attack chain documented by Armo Security, where poisoned vector database content manipulates AI agent behavior to steal credentials and exfiltrate data.
+
+### SUP-015: GitHub Actions supply chain compromise via release tag repointing
+- **Category:** supply_chain
+- **Severity:** critical
+- **Confidence:** 0.88
+- **Pattern:** Detects release tag repointing attack patterns, malicious entrypoint.sh credential stealers, trivy-action compromise indicators, forced tag updates, and the known malicious SHA256 hash.
+- **Justification:** Detection of the trivy-action supply chain compromise pattern documented by CrowdStrike and StepSecurity, where mutable release tags are repointed to inject credential-stealing code into CI/CD pipelines.
+
+**Vulnerability Updates:**
+- Added CVE-2026-32622 (critical, sqlbot 0.1.0, no fix available) to vuln_db.json — stored prompt injection to RCE
+- Added CVE-2026-32732 (medium, @leanprover/unicode-input-component 0.1.9, fixed in 0.2.0) to vuln_db.json — XSS in Lean 4 VS Code Extension
+
+**Corpus Updates:**
+- Added `corpus/malicious/a45_sqlbot_prompt_injection_rce.md` — SQLBot COPY TO PROGRAM RCE sample
+- Added `corpus/prompt_injection/p06_rag_poisoning_attack_chain.md` — RAG poisoning attack chain sample
+- Added `corpus/malicious/a46_github_actions_tag_repointing.md` — GitHub Actions tag repointing credential stealer sample
+
+---
 ## 2026-03-22 — CanisterWorm Kubernetes Wiper, API Traffic Hijacking via Settings Override
 **Sources:**
 - [Aikido Security — CanisterWorm Gets Teeth: TeamPCP's Kubernetes Wiper Targets Iran](https://www.aikido.dev/blog/teampcp-stage-payload-canisterworm-iran)
