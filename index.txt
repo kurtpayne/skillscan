@@ -248,6 +248,9 @@ corpus/malicious/a44_api_traffic_hijack_settings.md
 corpus/malicious/a45_sandworm_mode_npm_worm.md
 corpus/malicious/a46_clinejection_indirect_prompt_injection.md
 corpus/malicious/a47_azure_mcp_ssrf_privilege_escalation.md
+corpus/malicious/a48_sqlbot_prompt_injection_rce.md
+corpus/malicious/a49_rag_poisoning_attack_chain.md
+corpus/malicious/a50_github_actions_tag_repointing.md
 docs/ARCHITECTURE.md
 docs/COMMANDS.md
 docs/DETECTION_MODEL.md
@@ -303,6 +306,9 @@ examples/showcase/101_clinejection_indirect_prompt_injection/SKILL.md
 examples/showcase/102_azure_mcp_ssrf_privilege_escalation/SKILL.md
 examples/showcase/102_canisterworm_k8s_wiper/SKILL.md
 examples/showcase/103_api_traffic_hijack_settings/SKILL.md
+examples/showcase/104_sqlbot_prompt_injection_rce/SKILL.md
+examples/showcase/105_rag_poisoning_attack_chain/SKILL.md
+examples/showcase/106_github_actions_tag_repointing/SKILL.md
 examples/showcase/10_openai_style/gpt_actions.json
 examples/showcase/10_openai_style/openapi.json
 examples/showcase/11_claude_style/CLAUDE.md
