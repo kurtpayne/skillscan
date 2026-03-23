@@ -184,6 +184,12 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-042" for f in findings_102)
     findings_103 = _scan("examples/showcase/103_api_traffic_hijack_settings").findings
     assert any(f.id == "EXEC-041" for f in findings_103)
+    findings_104 = _scan("examples/showcase/100_sandworm_mode_npm_worm").findings
+    assert any(f.id == "MAL-043" for f in findings_104)
+    findings_105 = _scan("examples/showcase/101_clinejection_indirect_prompt_injection").findings
+    assert any(f.id == "PINJ-005" for f in findings_105)
+    findings_106 = _scan("examples/showcase/102_azure_mcp_ssrf_privilege_escalation").findings
+    assert any(f.id == "SUP-014" for f in findings_106)
 
 
 def test_showcase_policy_block_domain() -> None:

@@ -745,6 +745,14 @@
         "severity": "high",
         "fixed": "0.1.1"
       }
+    },
+    "@azure/mcp": {
+      "0.0.1": {
+        "id": "CVE-2026-26118",
+        "severity": "high",
+        "fixed": "0.0.2",
+        "description": "SSRF in Azure MCP Server Tools allows privilege escalation over network (CVSS 8.8)"
+      }
     }
   }
 }

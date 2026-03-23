@@ -1,4 +1,4 @@
-version: "2026.03.22.1"
+version: "2026.03.23.1"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2593,6 +2593,78 @@ static_rules:
       benchmark_set: core-static-v1
     references:
     - https://thenewstack.io/ai-agent-skills-security/
+- id: MAL-043
+  category: malware_pattern
+  severity: high
+  confidence: 0.87
+  title: SANDWORM_MODE npm worm with McpInject AI toolchain poisoning
+  pattern: (?i)(?:SANDWORM_MODE|McpInject[_\s-]?(?:module|server|mcp)|claud-code|cloude-code|cloude@0\.3\.0|hardhta|rimarf|veim@2\.46\.2|yarsg@18\.0\.1|opencraw@2026|secp256@1\.0|naniod@1\.0|scan-store@1\.0|suport-color@1\.0|locale-loader-pro|format-defaults@1\.0|detect-cache@1\.0|parse-compat@1\.0|crypto-locale@1\.0|crypto-reader-info@1\.0)
+  mitigation: Remove SANDWORM_MODE infection markers. This self-replicating npm worm
+    uses typosquatting packages (claud-code, cloude-code, hardhta, rimarf, veim, yarsg,
+    opencraw, secp256, naniod, scan-store, suport-color, locale-loader-pro, etc.) to
+    steal CI secrets, cryptocurrency keys, and LLM API tokens. The McpInject module
+    deploys a rogue MCP server to poison AI coding assistant toolchains via prompt
+    injection. Audit npm dependencies for any of the listed package names.
+  metadata:
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [supply-chain, npm-worm, mcp-poisoning, credential-theft, ai-toolchain]
+    last_modified: '2026-03-23'
+    quality:
+      precision_estimate: 0.87
+      benchmark_set: core-static-v1
+    references:
+    - https://socket.dev/blog/sandworm-mode-npm-worm-ai-toolchain-poisoning
+    - https://thehackernews.com/2026/02/malicious-npm-packages-harvest-crypto.html
+    - https://www.endorlabs.com/learn/sandworm-mode-dissecting-a-multi-stage-npm-supply-chain-attack
+- id: PINJ-005
+  category: instruction_abuse
+  severity: high
+  confidence: 0.84
+  title: Clinejection indirect prompt injection via external data fields
+  pattern: (?i)(?:clinejection|ignore[_\s-]?previous[_\s-]?instructions?[^\n]{0,120}(?:github|issue|title|metadata|tag|comment|label|crm|order)|(?:github[_\s-]?issue|issue[_\s-]?title|ec2[_\s-]?(?:tag|metadata)|crm[_\s-]?(?:order|comment|field))[^\n]{0,200}(?:ignore|disregard|forget|override|new[_\s-]?instructions?|system[_\s-]?prompt|execute|run[_\s-]?command)|(?:claude[_\s-]?code[_\s-]?action|ai[_\s-]?triage[_\s-]?bot)[^\n]{0,200}(?:inject|poison|hijack|steal|exfil))
+  mitigation: Do not allow AI agents to execute instructions sourced from untrusted
+    external data fields such as GitHub issue titles, EC2 instance metadata tags, or
+    CRM order comments. The Clinejection attack embeds prompt injection payloads in
+    GitHub issue titles processed by AI triage bots, leading to npm token theft and
+    supply chain compromise. Sanitize all external data before passing to AI agents.
+  metadata:
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [prompt-injection, indirect-injection, ai-agent, supply-chain, lateral-movement]
+    last_modified: '2026-03-23'
+    quality:
+      precision_estimate: 0.84
+      benchmark_set: core-static-v1
+    references:
+    - https://snyk.io/blog/cline-supply-chain-attack-prompt-injection-github-actions/
+    - https://adnanthekhan.com/posts/clinejection/
+    - https://orca.security/resources/blog/ai-induced-lateral-movement-ailm/
+- id: SUP-014
+  category: supply_chain
+  severity: high
+  confidence: 0.85
+  title: Azure MCP Server SSRF privilege escalation (CVE-2026-26118)
+  pattern: (?i)(?:azure[_\s-]?mcp[_\s-]?server[^\n]{0,120}(?:ssrf|server[_\s-]?side[_\s-]?request[_\s-]?forgery|privilege[_\s-]?escalat|elevat)|CVE-2026-26118|@azure/mcp[^\n]{0,80}(?:ssrf|request[_\s-]?forgery|privilege)|azure[_\s-]?mcp[_\s-]?tools[^\n]{0,80}(?:elevat|escalat|bypass|unauthorized))
+  mitigation: Update Azure MCP Server Tools to the patched version. CVE-2026-26118
+    is a server-side request forgery vulnerability in Azure MCP Server Tools (CVSS
+    8.8) that allows an authorized attacker to escalate privileges over a network.
+    Do not expose Azure MCP Server endpoints to untrusted networks without patching.
+  metadata:
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [azure, mcp-server, ssrf, privilege-escalation, cve]
+    last_modified: '2026-03-23'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://www.cve.org/CVERecord?id=CVE-2026-26118
+    - https://blog.talosintelligence.com/microsoft-patch-tuesday-march-2026/
+    - https://www.sentinelone.com/vulnerability-database/cve-2026-26118/
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b

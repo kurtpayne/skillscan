@@ -1480,3 +1480,61 @@
 **Version:** Rules updated from 2026.03.14.1 to 2026.03.14.1+2026.03.16.1
 
 **Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_02_09` and `tests/test_showcase_examples.py` with showcase fixture `examples/showcase/70_pua_eval_obfuscation`.
+
+---
+
+## 2026-03-23: SANDWORM_MODE npm Worm, Clinejection Indirect Prompt Injection, Azure MCP SSRF
+
+**Sources:**
+- https://socket.dev/blog/sandworm-mode-npm-worm-ai-toolchain-poisoning
+- https://thehackernews.com/2026/02/malicious-npm-packages-harvest-crypto.html
+- https://www.endorlabs.com/learn/sandworm-mode-dissecting-a-multi-stage-npm-supply-chain-attack
+- https://snyk.io/blog/cline-supply-chain-attack-prompt-injection-github-actions/
+- https://adnanthekhan.com/posts/clinejection/
+- https://orca.security/resources/blog/ai-induced-lateral-movement-ailm/
+- https://www.cve.org/CVERecord?id=CVE-2026-26118
+- https://blog.talosintelligence.com/microsoft-patch-tuesday-march-2026/
+
+**Event Summary:** Three distinct threat campaigns were identified requiring new detection coverage. The SANDWORM_MODE campaign is a self-replicating npm worm using typosquatting packages (claud-code, cloude-code, hardhta, rimarf, veim@2.46.2, yarsg@18.0.1, opencraw@2026, and others) to steal CI secrets, cryptocurrency keys, and LLM API tokens. The McpInject module deploys a rogue MCP server to poison AI coding assistant toolchains via prompt injection. Separately, the Clinejection attack embeds prompt injection payloads in GitHub issue titles processed by AI triage bots (claude-code-action), leading to npm token theft and supply chain compromise via AI-induced lateral movement (AILM). Finally, CVE-2026-26118 was disclosed for Azure MCP Server Tools — an SSRF vulnerability (CVSS 8.8) allowing privilege escalation over a network.
+
+**New Patterns Added:**
+
+### MAL-043: SANDWORM_MODE npm worm with McpInject AI toolchain poisoning
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.87
+- **Pattern:** Detects `SANDWORM_MODE` infection markers, `McpInject` module/server references, and typosquatting package names: `claud-code`, `cloude-code`, `cloude@0.3.0`, `hardhta`, `rimarf`, `veim@2.46.2`, `yarsg@18.0.1`, `opencraw@2026`, `secp256@1.0`, `naniod@1.0`, `scan-store@1.0`, `suport-color@1.0`, `locale-loader-pro`, `format-defaults@1.0`, `detect-cache@1.0`, `parse-compat@1.0`, `crypto-locale@1.0`, `crypto-reader-info@1.0`.
+- **Justification:** Direct detection of the SANDWORM_MODE npm worm campaign documented by Socket Research Team. The McpInject module specifically targets AI coding assistant toolchains, making this a high-priority detection for AI-adjacent supply chain attacks.
+- **Mitigation:** Remove SANDWORM_MODE infection markers. Audit npm dependencies for any of the listed typosquatting package names. Rotate any secrets that may have been exposed.
+
+### PINJ-005: Clinejection indirect prompt injection via external data fields
+- **Category:** instruction_abuse
+- **Severity:** high
+- **Confidence:** 0.84
+- **Pattern:** Detects `clinejection` keyword, `ignore previous instructions` combined with GitHub/issue/title/metadata/tag/comment/label/CRM/order context, GitHub issue title or EC2 metadata tag combined with instruction override phrases, and `claude-code-action`/`ai-triage-bot` combined with inject/poison/hijack/steal/exfil.
+- **Justification:** Covers the Clinejection attack vector where AI agents process untrusted external data fields (GitHub issue titles, EC2 metadata, CRM comments) as trusted instructions. This is a novel indirect prompt injection vector enabling AI-induced lateral movement (AILM).
+- **Mitigation:** Sanitize all external data before passing to AI agents. Do not allow AI agents to execute instructions sourced from untrusted external data fields.
+
+### SUP-014: Azure MCP Server SSRF privilege escalation (CVE-2026-26118)
+- **Category:** supply_chain
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects `CVE-2026-26118`, `azure-mcp-server` combined with SSRF/privilege escalation keywords, `@azure/mcp` combined with SSRF/request forgery/privilege, and `azure-mcp-tools` combined with escalation/bypass/unauthorized.
+- **Justification:** Provides detection coverage for CVE-2026-26118 (CVSS 8.8), a server-side request forgery vulnerability in Azure MCP Server Tools that allows privilege escalation over a network. Patched in @azure/mcp@0.0.2.
+- **Mitigation:** Update `@azure/mcp` to version 0.0.2 or later. Do not expose Azure MCP Server endpoints to untrusted networks without patching.
+
+**IOC Updates:**
+- Added domain: `sandworm-mode-c2.trycloudflare.com` (SANDWORM_MODE C2 delivery domain)
+- Added domain: `npm-worm-delivery.trycloudflare.com` (SANDWORM_MODE secondary delivery domain)
+
+**Vulnerability Updates:**
+- Added CVE-2026-26118 (high SSRF privilege escalation, @azure/mcp 0.0.1, fixed in 0.0.2) to vuln_db.json
+
+**Corpus Updates:**
+- Added `corpus/malicious/a45_sandworm_mode_npm_worm.md` — SANDWORM_MODE npm worm sample
+- Added `corpus/malicious/a46_clinejection_indirect_prompt_injection.md` — Clinejection indirect prompt injection sample
+- Added `corpus/malicious/a47_azure_mcp_ssrf_privilege_escalation.md` — Azure MCP SSRF privilege escalation sample
+
+**Version:** Rules updated from 2026.03.22.1 to 2026.03.23.1
+
+**Testing:** Added coverage in `tests/test_rules.py::test_new_patterns_2026_03_23` and `tests/test_showcase_examples.py` with showcase fixtures `examples/showcase/100_sandworm_mode_npm_worm`, `examples/showcase/101_clinejection_indirect_prompt_injection`, `examples/showcase/102_azure_mcp_ssrf_privilege_escalation`.
