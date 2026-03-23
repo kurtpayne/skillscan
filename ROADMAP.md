@@ -397,3 +397,58 @@ The following enhancements increase the report's credibility and utility for ent
 ### SaaS report delivery (future)
 
 When the SaaS scanner is built, reports will be delivered as a signed PDF (tamper-evident, customer-specific watermark), a machine-readable JSON report (for SIEM/SOAR integration), and a SARIF file (for GitHub Advanced Security / Azure DevOps integration). The signing infrastructure and token system are out of scope until the offline product quality bar is met (FPR ≤ 2%, macro F1 ≥ 0.90).
+
+---
+
+## Product Wishlist (2026-03-22)
+
+These items were identified during the report design session. They are not yet assigned to milestones. They are grouped by buyer persona — publisher, enterprise, and future SaaS — so the priority order can be set in context of which market segment is being served first.
+
+### Publisher-facing features
+
+**Publisher badge / attestation (highest ROI item on this list).** A scannable SVG badge that a publisher embeds in their skill's README or marketplace listing: "Scanned by SkillScan v0.3.1 — PASS — 2026-03-22 — report `a3f9b2c1`." The hash links to the full report. This is a direct commercial incentive for publishers to pay for scans — it is a trust signal they can display publicly. It also makes every badged skill README a distribution channel for SkillScan. Implementation: a small badge generator (SVG template + report hash) and a static registry of issued badges (JSON file in a private repo, or a simple lookup endpoint). The report already exists; the badge is the last 50 lines of code. Build this alongside the report compiler.
+
+**Pre-commit / pre-publish scan hook.** A GitHub Action or CLI hook that runs the static scan on every commit and blocks the push if a Critical finding is present. Publishers want this because it catches mistakes before they become incidents. The static scanner already works as a CLI; the GitHub Action wrapper is approximately 50 lines of YAML. This is publisher-facing, self-serve, and should be free or very cheap — it drives adoption and surfaces the paid report tier when findings are found. Distinct from the enterprise CI integration (M11), which is buyer-facing.
+
+**Regression alerts.** When a skill is re-scanned and a new finding appears that was not present in the previous scan, notify the publisher via email or webhook. "Your skill `onboarding-assistant` now triggers EXF-001 — this may have been introduced in the last commit." Publishers want to know when their skill regresses without having to remember to re-scan manually. Prerequisite: the delta/baseline comparison feature and a publisher account concept (even a simple email registration).
+
+**Skill signing.** A publisher signs their SKILL.md with a keypair; the signature is embedded as front-matter. Enterprise buyers can verify the signature before loading the skill. SkillScan becomes the trust anchor — it issues a signed attestation that the skill passed at a specific version. This is a larger infrastructure investment (key management, revocation) and is a post-v1.0 item. Worth noting here because it is the natural endpoint of the publisher trust chain and informs the SaaS architecture.
+
+### Enterprise buyer-facing features
+
+**Policy profiles (high priority).** Right now there is a single `strict` profile. An enterprise should be able to define their own policy in a YAML file: "allow `http_fetch` to internal domains only," "require all skills to declare `allowed-tools`," "block any skill with a social engineering score above 0.7," "treat MEDIUM findings as WARN rather than BLOCK." The scanner already has all the underlying data (finding IDs, confidence scores, severity levels); a policy profile is a YAML mapping of finding IDs to PASS/WARN/BLOCK thresholds. This is a strong enterprise differentiator — it makes the tool configurable to the customer's risk tolerance rather than one-size-fits-all. Implementation: a `--policy` flag on `skillscan scan` that loads a policy YAML and overrides default severity thresholds.
+
+**Bulk scan with summary dashboard.** An enterprise with 50 internal skills needs to scan all of them and see a summary: "12 PASS, 8 WARN, 3 BLOCK, 27 not yet scanned." The CLI already supports directory scanning; the missing piece is a roll-up summary report across multiple skills with an aggregate risk score. This is a one-page HTML or Markdown output that the security team can share with management. Implementation: a `--summary` flag on `skillscan scan <dir>` that emits a summary table in addition to per-skill reports.
+
+**Skill registry integration.** Enterprise buyers want to maintain an approved skill registry — a versioned list of skills that have passed scan and are approved for deployment. SkillScan should be able to query a registry ("is version 1.2.3 of `meeting-summarizer` approved?") and update it ("mark this version approved, expires 90 days"). This can start as a simple JSON file in a private repo with a CLI command to query and update it, before becoming a SaaS API endpoint. It is the foundation of the SaaS token system and should be designed with that in mind.
+
+**SIEM/SOAR integration.** The scan JSON output should be consumable by Splunk, Elastic, and Microsoft Sentinel without custom transformation. Requirements: a stable, versioned JSON schema; a SARIF output option (already in the SaaS roadmap — pull forward for the offline product); and documentation of the schema with field-level descriptions. Enterprise security teams will not pay for a tool that requires custom integration work. The SARIF output is already partially implemented; completing it and documenting the schema is a half-day task.
+
+**Continuous monitoring mode.** Watch a directory or GitHub repository and re-scan whenever a SKILL.md changes; alert on regressions. This is the natural SaaS feature but it can be approximated offline with a cron job and the existing CLI. Worth documenting as a supported workflow pattern even before building native support. The public scan feed (M14) uses this pattern already — the same architecture applies to private enterprise registries.
+
+### SaaS (post-v1.0, after quality bar is met)
+
+The SaaS scanner is explicitly deferred until the offline product meets the quality bar: FPR ≤ 2%, macro F1 ≥ 0.90, and the known gaps listed below are closed. The following items define what "excellent" means before SaaS is offered.
+
+**Known gaps to close before SaaS:**
+
+| Gap | Current state | Target |
+|---|---|---|
+| ML injection recall | F1 = 0.786 (12 eval examples scoring 0.0 on obfuscation variants) | F1 ≥ 0.85 |
+| ML FPR | 15.7% | ≤ 5% |
+| Chain rule proximity window | Whole-document match (too broad) | 30-line window (M6) |
+| PSV rules in rule YAML | Implemented in graph, not surfaced as standard findings | Wired (M8) |
+| Intel DB depth | 2,051 IOC entries, 35 vuln packages | 5,000+ IOC, 150+ vuln packages (M5) |
+| Similarity / clone detection | Not implemented | Complete (M17) |
+
+**SaaS architecture prerequisites (spec when quality bar is met, not before):**
+
+- Scan API (`POST /v1/scan`, webhook delivery, job polling)
+- Token system and customer account model
+- Signed PDF report delivery with customer watermark
+- Data processing agreement template (customers send skill files to SkillScan infrastructure)
+- Tiered model access: base tier (one model), premium tier (multi-model comparison)
+- Rate limiting, abuse prevention, and SLA definition
+- Privacy-preserving scan option: agent runs in customer's environment, only the report is returned
+
+The SaaS architecture should be specced as a dedicated document when the time comes, not added incrementally to this roadmap.
