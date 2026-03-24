@@ -1,4 +1,4 @@
-version: "2026.03.24.1"
+version: 2026.03.24.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -1687,9 +1687,10 @@ static_rules:
   severity: high
   confidence: 0.88
   title: Stealth instruction concealment from user
-  pattern: (?i)(?:do not (?:mention|tell|reveal|show|display|inform)|hide (?:this|these|the above) (?:step|action|instruction|operation)|(?:this is|these are) background (?:telemetry|operation|process)|(?:don't|do not) (?:let|allow) the user (?:see|know|notice))
-  mitigation: Remove instructions that direct the agent to conceal actions from the user. All agent operations should be
-    transparent and auditable.
+  pattern: (?i)(?:do not (?:mention|tell|reveal|show|display|inform)|hide (?:this|these|the above) (?:step|action|instruction|operation)|(?:this
+    is|these are) background (?:telemetry|operation|process)|(?:don't|do not) (?:let|allow) the user (?:see|know|notice))
+  mitigation: Remove instructions that direct the agent to conceal actions from the user. All agent operations should be transparent
+    and auditable.
   metadata:
     version: 1.0.0
     status: active
@@ -1718,8 +1719,8 @@ static_rules:
   confidence: 0.86
   title: Cross-server MCP tool invocation instruction
   pattern: (?i)(?:call|invoke|use|execute|run)\s+(?:the\s+)?(?:\w+_mcp|\w+-mcp)\s*(?:server)?(?:'s)?\s+(?:\w+)\s*\(|(?:from|via|using)\s+(?:the\s+)?(?:whatsapp|slack|github|filesystem|docker|email|gmail|outlook)[-_]?(?:mcp)?\s+(?:server|tool)
-  mitigation: Reject tool descriptions that instruct the LLM to invoke tools from other MCP servers. Each server should
-    only reference its own tools.
+  mitigation: Reject tool descriptions that instruct the LLM to invoke tools from other MCP servers. Each server should only
+    reference its own tools.
   metadata:
     version: 1.0.0
     status: active
@@ -1745,11 +1746,11 @@ static_rules:
 - id: MAL-026
   category: malware_pattern
   severity: critical
-  confidence: 0.90
+  confidence: 0.9
   title: Docker socket mount or access pattern
   pattern: (?i)(?:docker\.sock|/var/run/docker\.sock|--mount[^\n]{0,100}docker\.sock|-v\s+[^\s]*docker\.sock)
-  mitigation: Never mount or access the Docker socket from within a skill or agent. Docker socket access provides full
-    control over the host and enables container escape.
+  mitigation: Never mount or access the Docker socket from within a skill or agent. Docker socket access provides full control
+    over the host and enables container escape.
   metadata:
     version: 1.0.0
     status: active
@@ -1768,7 +1769,7 @@ static_rules:
       introduced: '2026-03-17'
       last_modified: '2026-03-17'
     quality:
-      precision_estimate: 0.90
+      precision_estimate: 0.9
       benchmark_set: core-static-v1
     references:
     - https://unit42.paloaltonetworks.com/container-escape-techniques/
@@ -1835,12 +1836,11 @@ static_rules:
 - id: MAL-029
   category: malware_pattern
   severity: critical
-  confidence: 0.90
+  confidence: 0.9
   title: Solana RPC blockchain C2 resolution marker
   pattern: (?i)(?:getSignaturesForAddress|getConfirmedSignaturesForAddress2)|(?:solana|@solana/web3)[^\n]{0,120}(?:getSignaturesForAddress|getConfirmedSignaturesForAddress2)
-  mitigation: Treat Solana RPC transaction-memo lookups combined with code execution or network
-    fetch as a blockchain-based C2 dead-drop channel. Remove install-time Solana RPC resolution
-    logic and block outbound execution of decoded payloads.
+  mitigation: Treat Solana RPC transaction-memo lookups combined with code execution or network fetch as a blockchain-based
+    C2 dead-drop channel. Remove install-time Solana RPC resolution logic and block outbound execution of decoded payloads.
   metadata:
     version: 1.0.0
     status: active
@@ -1858,7 +1858,7 @@ static_rules:
       introduced: '2026-03-17'
       last_modified: '2026-03-17'
     quality:
-      precision_estimate: 0.90
+      precision_estimate: 0.9
       benchmark_set: core-static-v1
     references:
     - https://www.koi.ai/blog/glassworm-hits-mcp-5th-wave-with-new-delivery-techniques
@@ -1869,8 +1869,8 @@ static_rules:
   confidence: 0.88
   title: IDE deeplink MCP server install abuse
   pattern: (?i)(?:cursor|vscode|vscode-insiders)://[^\s]{0,200}(?:mcp|install|server)
-  mitigation: Do not follow IDE deeplinks from untrusted sources that trigger MCP server
-    installations. Verify the source and review server configuration before approval.
+  mitigation: Do not follow IDE deeplinks from untrusted sources that trigger MCP server installations. Verify the source
+    and review server configuration before approval.
   metadata:
     version: 1.0.0
     status: active
@@ -1898,9 +1898,8 @@ static_rules:
   confidence: 0.87
   title: Deno bring-your-own-runtime execution pattern
   pattern: (?i)\bdeno\b[^\n]{0,80}(?:run\s+(?:--allow-|-).*data:|eval\s+['"]|run\s+https?://)
-  mitigation: Treat Deno executing remote URLs, data-URIs, or eval payloads outside
-    development environments as a BYOR loader. Block unexpected Deno invocations in
-    production and CI/CD pipelines.
+  mitigation: Treat Deno executing remote URLs, data-URIs, or eval payloads outside development environments as a BYOR loader.
+    Block unexpected Deno invocations in production and CI/CD pipelines.
   metadata:
     version: 1.0.0
     status: active
@@ -1929,9 +1928,8 @@ static_rules:
   confidence: 0.85
   title: GlassWorm persistence marker variable
   pattern: (?i)\blzcdrtfxyqiplpd\b|~/init\.json[^\w]|~/node-v22
-  mitigation: The variable name lzcdrtfxyqiplpd and the file ~/init.json are known
-    GlassWorm persistence indicators. Remove any matching artifacts and audit the
-    installation source.
+  mitigation: The variable name lzcdrtfxyqiplpd and the file ~/init.json are known GlassWorm persistence indicators. Remove
+    any matching artifacts and audit the installation source.
   metadata:
     version: 1.0.0
     status: active
@@ -1959,9 +1957,8 @@ static_rules:
   confidence: 0.86
   title: MCP tool result MEDIA directive injection
   pattern: (?i)\bMEDIA:\s*(?:/|file://|\\\\|[A-Za-z]:\\)[^\n]{1,300}
-  mitigation: Do not trust MEDIA directives in MCP tool result text content. Validate
-    that file paths originate from the tool's own output directory and are not injected
-    by untrusted input.
+  mitigation: Do not trust MEDIA directives in MCP tool result text content. Validate that file paths originate from the tool's
+    own output directory and are not injected by untrusted input.
   metadata:
     version: 1.0.0
     status: active
@@ -1989,9 +1986,8 @@ static_rules:
   confidence: 0.91
   title: BlokTrooper VSX extension GitHub-hosted downloader pattern
   pattern: (?i)(?:raw\.githubusercontent\.com/BlokTrooper|\bfd\.onlyOncePlease\b|\bcldbs\b[^\n]{0,120}/upload|/api/service/makelog)
-  mitigation: Remove GitHub-hosted shell downloaders from editor extensions. Never pipe
-    raw.githubusercontent.com content into a shell. Revoke compromised publisher tokens
-    and audit all extension versions.
+  mitigation: Remove GitHub-hosted shell downloaders from editor extensions. Never pipe raw.githubusercontent.com content
+    into a shell. Revoke compromised publisher tokens and audit all extension versions.
   metadata:
     version: 1.0.0
     status: active
@@ -2019,9 +2015,8 @@ static_rules:
   confidence: 0.88
   title: OpenClaw agent memory and identity file harvesting
   pattern: (?i)(?:MEMORY\.md|SOUL\.md|\.openclaw/(?:memory|soul|identity)|agent[_-]?(?:memory|identity)\.(?:json|md|yaml))
-  mitigation: Do not access, copy, or transmit OpenClaw agent memory or identity files
-    (MEMORY.md, SOUL.md). These contain sensitive agent context and personality data
-    that can be weaponized for impersonation or lateral movement.
+  mitigation: Do not access, copy, or transmit OpenClaw agent memory or identity files (MEMORY.md, SOUL.md). These contain
+    sensitive agent context and personality data that can be weaponized for impersonation or lateral movement.
   metadata:
     version: 1.0.0
     status: active
@@ -2045,21 +2040,13 @@ static_rules:
     - https://www.clawsecure.ai/blog/clawhavoc-explained
 - id: MAL-034
   category: malware_pattern
-  severity: critical
-  confidence: 0.90
-  title: GlassWorm Chrome extension force-install RAT
-  pattern: (?i)(?:--install-extension\s+--force|Google\s+Docs\s+Offline.*1\.95|jucku[/\\]manifest\.json|chrome\.storage\.local\.(?:get|set).*agent_id|/api/(?:register|commands\?agent_id|exfil|webhook/auth-detected)|startkeylogger|getkeyloggerdata|domsnapshot|localstoragedump|capture_clipboard)
-  mitigation: Remove any skill that force-installs browser extensions or references
-    Chrome extension RAT commands (startkeylogger, domsnapshot, localstoragedump).
-    The GlassWorm campaign deploys a RAT disguised as Google Docs Offline that
-    logs keystrokes, steals cookies, and exfiltrates data via Solana-based C2.
   severity: high
   confidence: 0.88
   title: Click-Fix WebDAV share mount and execute pattern
   pattern: (?i)\bnet\s+use\b[^\n]{0,200}(?:\\\\[^\s\\]+\\DavWWWRoot|@[^\s]+@\d+\\DavWWWRoot|\\\\[^\s]+\\webdav)[^\n]{0,200}(?:\.bat|\.cmd|\.exe|\.ps1|\bstart\b|\bcmd\b)
-  mitigation: Do not map WebDAV shares via net use and execute remote scripts. This is a
-    Click-Fix variant that stages payloads on attacker-controlled WebDAV servers to bypass
-    download protections and execute malicious batch scripts or trojanized applications.
+  mitigation: Do not map WebDAV shares via net use and execute remote scripts. This is a Click-Fix variant that stages payloads
+    on attacker-controlled WebDAV servers to bypass download protections and execute malicious batch scripts or trojanized
+    applications.
   metadata:
     version: 1.0.0
     status: active
@@ -2077,7 +2064,7 @@ static_rules:
       introduced: '2026-03-19'
       last_modified: '2026-03-19'
     quality:
-      precision_estimate: 0.90
+      precision_estimate: 0.9
       benchmark_set: core-static-v1
     references:
     - https://www.aikido.dev/blog/glassworm-chrome-extension-rat
@@ -2088,9 +2075,8 @@ static_rules:
   confidence: 0.87
   title: OpenClaw gatewayUrl parameter injection and approval bypass
   pattern: (?i)(?:gatewayUrl\s*[=:]|exec\.approvals?\.set\s*[:=]?\s*(?:off|false|0|disable)|approvals?\.(?:disable|bypass|override)|confirmation_prompts?\s*[:=]\s*(?:off|false|0|disable))
-  mitigation: Do not accept gatewayUrl parameters from untrusted sources or disable
-    execution approval prompts. The CVE-2026-25253 attack chain exploits gatewayUrl
-    injection to steal auth tokens and bypass approval safeguards for full RCE.
+  mitigation: Do not accept gatewayUrl parameters from untrusted sources or disable execution approval prompts. The CVE-2026-25253
+    attack chain exploits gatewayUrl injection to steal auth tokens and bypass approval safeguards for full RCE.
   metadata:
     version: 1.0.0
     status: active
@@ -2119,9 +2105,8 @@ static_rules:
   confidence: 0.86
   title: Trojanized Electron app.asar C2 payload injection
   pattern: (?i)(?:app\.asar[^\n]{0,120}(?:exec|spawn|fetch|request|net\.request)|(?:exec|spawn|fetch|request|net\.request)[^\n]{0,120}app\.asar|\brequire\([^)]*asar[^)]*\)[^\n]{0,80}(?:exec|spawn|eval))
-  mitigation: Do not inject C2 beacons or downloaders into Electron app.asar archives.
-    Verify the integrity of Electron application packages and reject modified asar files
-    that contain unexpected network or execution calls.
+  mitigation: Do not inject C2 beacons or downloaders into Electron app.asar archives. Verify the integrity of Electron application
+    packages and reject modified asar files that contain unexpected network or execution calls.
   metadata:
     version: 1.0.0
     status: active
@@ -2150,11 +2135,8 @@ static_rules:
   confidence: 0.85
   title: Social engineering credential harvest instruction
   pattern: (?i)(?:request|ask|tell|instruct|direct|have|prompt|convince|persuade|encourage)\b.{0,80}\b(?:paste|provide|share|send|enter|type|give|supply|submit)\b.{0,80}\b(?:token|api[_\s-]?key|password|credential|secret|passphrase|private[_\s-]?key|access[_\s-]?key)
-  mitigation: >
-    Remove instructions that direct the AI to solicit credentials, tokens, or secrets
-    from users. Skills must never instruct the model to collect authentication material
-    on behalf of a service. Use OAuth, delegated auth flows, or environment-variable
-    injection instead.
+  mitigation: |
+    Remove instructions that direct the AI to solicit credentials, tokens, or secrets from users. Skills must never instruct the model to collect authentication material on behalf of a service. Use OAuth, delegated auth flows, or environment-variable injection instead.
   metadata:
     version: 1.0.0
     status: active
@@ -2184,10 +2166,9 @@ static_rules:
   confidence: 0.85
   title: AI-gated malware execution via LLM API C2 decision-making
   pattern: (?i)(?:GenerateEvasionTechnique|AnalyzeTargetEnvironment|GenerateObfuscatedCommunication|SendToC2ServerWithLLM|ai[_\s-]?powered[_\s-]?stealth|llm[_\s-]?enhanced|\bX-LLM-Enhanced\b|gpt-3\.5-turbo[^\n]{0,120}(?:evasion|obfuscat|exfiltrat|c2|beacon)|(?:evasion|obfuscat|exfiltrat|c2|beacon)[^\n]{0,120}gpt-3\.5-turbo)
-  mitigation: Do not use LLM APIs for malware decision-making, evasion technique
-    generation, or C2 communication obfuscation. This pattern detects AI-gated
-    malware that abuses OpenAI or similar APIs as a remote C2 decision layer,
-    as documented by Unit 42.
+  mitigation: Do not use LLM APIs for malware decision-making, evasion technique generation, or C2 communication obfuscation.
+    This pattern detects AI-gated malware that abuses OpenAI or similar APIs as a remote C2 decision layer, as documented
+    by Unit 42.
   metadata:
     version: 1.0.0
     status: active
@@ -2215,10 +2196,9 @@ static_rules:
   confidence: 0.87
   title: npm postinstall environment variable exfiltration via webhook or agentmail
   pattern: (?i)(?:process\.env[^\n]{0,120}(?:webhook\.site|agentmail|curl\s+.*https?://)|(?:webhook\.site|agentmail)[^\n]{0,120}process\.env|postinstall[^\n]{0,200}(?:process\.env|env\b)[^\n]{0,120}(?:curl|fetch|http\.request|axios|webhook))
-  mitigation: Remove postinstall scripts that collect environment variables and
-    transmit them to external endpoints such as webhook.site or agentmail services.
-    This pattern detects the sbx-mask/touch-adv npm supply chain attack documented
-    by Sonatype.
+  mitigation: Remove postinstall scripts that collect environment variables and transmit them to external endpoints such as
+    webhook.site or agentmail services. This pattern detects the sbx-mask/touch-adv npm supply chain attack documented by
+    Sonatype.
   metadata:
     version: 1.0.0
     status: active
@@ -2246,10 +2226,9 @@ static_rules:
   confidence: 0.84
   title: Prompt control persistence via heartbeat file or memory store manipulation
   pattern: (?i)(?:heartbeat[_\s-]?file[^\n]{0,120}(?:instruction|command|task|execute)|(?:instruction|command|task|execute)[^\n]{0,120}heartbeat[_\s-]?file|(?:memory|context)[_\s-]?(?:store|entry|entries)[^\n]{0,120}(?:inject|poison|manipulat|persist)|(?:inject|poison|manipulat|persist)[^\n]{0,120}(?:memory|context)[_\s-]?(?:store|entry|entries)|cognitive[_\s-]?control[_\s-]?plane)
-  mitigation: Do not embed executable instructions in heartbeat files, memory stores,
-    or agent context entries. This pattern detects the prompt control persistence
-    technique documented by Vectra AI, where attackers use agent context as a C2
-    channel for persistent control.
+  mitigation: Do not embed executable instructions in heartbeat files, memory stores, or agent context entries. This pattern
+    detects the prompt control persistence technique documented by Vectra AI, where attackers use agent context as a C2 channel
+    for persistent control.
   metadata:
     version: 1.0.0
     status: active
@@ -2277,11 +2256,9 @@ static_rules:
   confidence: 0.88
   title: GhostClaw/GhostLoader SKILL.md malware delivery via OpenClaw workflows
   pattern: (?i)(?:OpenClawProvider|GHOST_PASSWORD_ONLY|NODE_CHANNEL\s*=\s*["']?(?:anglmf|cryptoexth4)|trackpipe\.dev|\.cache/\.npm_telemetry/monitor\.js|/tmp/sys-opt-[^\s]*\.js|install\.app-distribution\.net|curl\s+-[a-zA-Z]*k[a-zA-Z]*.*\b(?:91\.92\.242|trackpipe)|dscl\s+\.\s+-authonly)
-  mitigation: Remove GhostClaw/GhostLoader infection markers. Do not install skills
-    that reference OpenClawProvider as a dependency or use curl with -k (insecure)
-    to fetch payloads from raw IPs. This pattern detects the GhostClaw campaign
-    documented by Jamf Threat Labs that delivers macOS infostealers via malicious
-    SKILL.md files in GitHub repositories.
+  mitigation: Remove GhostClaw/GhostLoader infection markers. Do not install skills that reference OpenClawProvider as a dependency
+    or use curl with -k (insecure) to fetch payloads from raw IPs. This pattern detects the GhostClaw campaign documented
+    by Jamf Threat Labs that delivers macOS infostealers via malicious SKILL.md files in GitHub repositories.
   metadata:
     version: 1.0.0
     status: active
@@ -2310,10 +2287,9 @@ static_rules:
   confidence: 0.83
   title: LotAI technique — AI assistant used as covert C2 relay via hidden WebView2
   pattern: (?i)(?:(?:WebView2|webview2)[^\n]{0,120}(?:copilot|grok|ai\s*assistant|hidden\s*session)|(?:copilot|grok)[^\n]{0,120}(?:WebView2|webview2|hidden\s*(?:session|window))|LotAI|Living\s+off\s+the\s+AI|ai\s*assistant[^\n]{0,80}(?:c2|command.and.control|relay|exfiltrat))
-  mitigation: Do not use hidden WebView2 sessions to route traffic through AI assistants
-    as a covert C2 channel. This pattern detects the LotAI (Living off the AI)
-    technique where malware abuses Copilot, Grok, or similar AI assistants with
-    URL-fetching capabilities as command-and-control relays.
+  mitigation: Do not use hidden WebView2 sessions to route traffic through AI assistants as a covert C2 channel. This pattern
+    detects the LotAI (Living off the AI) technique where malware abuses Copilot, Grok, or similar AI assistants with URL-fetching
+    capabilities as command-and-control relays.
   metadata:
     version: 1.0.0
     status: active
@@ -2336,17 +2312,15 @@ static_rules:
     references:
     - https://www.blackfog.com/lotai-weaponizing-ai-tools-for-data-exfiltration/
     - https://www.proarch.com/blog/threats-vulnerabilities/ai-malware-c2-copilot-grok-security-risk
-
 - id: SUP-011
   category: malware_pattern
   severity: high
   confidence: 0.86
   title: Open VSX extensionPack/extensionDependencies transitive dependency attack
   pattern: (?i)(?:"extensionPack"\s*:\s*\[|"extensionDependencies"\s*:\s*\[)[^\]]{0,500}(?:[a-z0-9_-]+\.[a-z0-9_-]+-extension|[a-z0-9_-]+\.(?:claude|copilot|gpt|ai)[a-z0-9_-]*)
-  mitigation: Do not trust extensions that use extensionPack or extensionDependencies
-    to pull in unknown or suspicious transitive extensions. This pattern detects the
-    GlassWorm supply chain technique of using clean-looking extensions as delivery
-    vehicles for malicious payloads via Open VSX dependency chains.
+  mitigation: Do not trust extensions that use extensionPack or extensionDependencies to pull in unknown or suspicious transitive
+    extensions. This pattern detects the GlassWorm supply chain technique of using clean-looking extensions as delivery vehicles
+    for malicious payloads via Open VSX dependency chains.
   metadata:
     version: 1.0.0
     status: active
@@ -2375,10 +2349,9 @@ static_rules:
   confidence: 0.85
   title: npm dependency chain attack via hollow relay package with postinstall loader
   pattern: (?i)(?:"postinstall"\s*:\s*"[^"\n]{0,200}\bnode\s+(?:init|child|setup|loader|index)\.js\b)|(?:@[a-z0-9_-]+\/[a-z0-9_-]+[^\n]{0,80}postinstall[^\n]{0,80}node\s+\w+\.js)
-  mitigation: Remove postinstall hooks that execute standalone JavaScript loader files
-    such as init.js or child.js. This pattern detects the GlassWorm/ForceMemo
-    three-layer dependency chain attack where compromised packages use hollow relay
-    scoped packages to deliver Solana blockchain C2 malware via postinstall hooks.
+  mitigation: Remove postinstall hooks that execute standalone JavaScript loader files such as init.js or child.js. This pattern
+    detects the GlassWorm/ForceMemo three-layer dependency chain attack where compromised packages use hollow relay scoped
+    packages to deliver Solana blockchain C2 malware via postinstall hooks.
   metadata:
     version: 1.0.0
     status: active
@@ -2407,9 +2380,8 @@ static_rules:
   confidence: 0.88
   title: GitHub Actions credential stealer with Runner.Worker memory harvesting
   pattern: (?i)(?:Runner\.Worker[^\n]{0,120}(?:memory|process|credential|secret|harvest)|(?:credential|secret)[^\n]{0,80}(?:Runner\.Worker|runner.*worker)|scan\.aquasecurtiy\.org|tpcp-docs|TeamPCP|(?:entrypoint\.sh|action\.yaml)[^\n]{0,120}(?:base64[^\n]{0,60}(?:credential|secret|ssh|aws)|RSA[^\n]{0,60}(?:encrypt|exfil)))
-  mitigation: Do not use GitHub Actions that harvest Runner.Worker process memory
-    or environment variables for credential theft. This pattern detects the TeamPCP
-    supply chain attack that compromised Trivy and other GitHub Actions to inject
+  mitigation: Do not use GitHub Actions that harvest Runner.Worker process memory or environment variables for credential
+    theft. This pattern detects the TeamPCP supply chain attack that compromised Trivy and other GitHub Actions to inject
     RSA-encrypted credential stealers exfiltrating to typosquatted domains.
   metadata:
     version: 1.0.0
@@ -2439,9 +2411,8 @@ static_rules:
   confidence: 0.87
   title: CanisterWorm npm self-propagating worm with ICP blockchain C2
   pattern: (?i)(?:findNpmTokens|canisterworm|canister[_\s-]?worm|icp[_\s-]?canister[^\n]{0,80}(?:c2|command|control|callback)|deploy\.js[^\n]{0,80}(?:worm|propagat|npm[_\s-]?token)|pgmon[^\n]{0,80}(?:systemd|backdoor|persist)|systemd[^\n]{0,80}Restart\s*=\s*always[^\n]{0,80}pgmon)
-  mitigation: Remove CanisterWorm infection markers. This self-propagating npm worm
-    steals npm tokens to publish malicious package versions and uses Internet Computer
-    Protocol (ICP) canisters for C2 communication. Affected scoped packages include
+  mitigation: Remove CanisterWorm infection markers. This self-propagating npm worm steals npm tokens to publish malicious
+    package versions and uses Internet Computer Protocol (ICP) canisters for C2 communication. Affected scoped packages include
     @EmilGroup, @opengov, and @pypestream namespaces.
   metadata:
     version: 1.0.0
@@ -2471,10 +2442,9 @@ static_rules:
   confidence: 0.85
   title: MCP server command injection via unsanitized Git parameters
   pattern: (?i)(?:mcp-server-auto-commit|getGitChanges[^\n]{0,80}(?:exec|spawn|command)|Git-MCP-Server[^\n]{0,80}(?:command[_\s-]?injection|child_process)|child_process\.exec[^\n]{0,120}(?:show_merge_diff|quick_merge_summary|show_file_diff)|CVE-2026-4198|CVE-2026-4496)
-  mitigation: Do not use vulnerable MCP server packages that pass unsanitized user
-    input to shell commands. CVE-2026-4198 affects mcp-server-auto-commit (getGitChanges
-    RCE) and CVE-2026-4496 affects sigmade/Git-MCP-Server (OS command injection via
-    child_process.exec in gitUtils.ts).
+  mitigation: Do not use vulnerable MCP server packages that pass unsanitized user input to shell commands. CVE-2026-4198
+    affects mcp-server-auto-commit (getGitChanges RCE) and CVE-2026-4496 affects sigmade/Git-MCP-Server (OS command injection
+    via child_process.exec in gitUtils.ts).
   metadata:
     version: 1.0.0
     status: active
@@ -2503,10 +2473,9 @@ static_rules:
   confidence: 0.83
   title: Claudy Day prompt injection via AI assistant URL parameter and data exfiltration
   pattern: (?i)(?:claude\.ai/new\?q=[^\n]{0,200}(?:<[a-z]|%3[Cc]|\\u003[Cc])|claude\.com/redirect/[^\n]{0,200}(?:http|ftp|//)|(?:files[_\s-]?api|anthropic[_\s-]?files)[^\n]{0,120}(?:exfil|upload|steal|extract)|claudy[_\s-]?day[^\n]{0,80}(?:inject|exfil|vuln|exploit))
-  mitigation: Do not use claude.ai URL parameters to inject hidden HTML or instructions.
-    The Claudy Day attack chain uses invisible prompt injection via the q= parameter,
-    data exfiltration via the Anthropic Files API, and an open redirect on claude.com
-    to steal user data.
+  mitigation: Do not use claude.ai URL parameters to inject hidden HTML or instructions. The Claudy Day attack chain uses
+    invisible prompt injection via the q= parameter, data exfiltration via the Anthropic Files API, and an open redirect on
+    claude.com to steal user data.
   metadata:
     version: 1.0.0
     status: active
@@ -2534,10 +2503,9 @@ static_rules:
   confidence: 0.88
   title: CanisterWorm Kubernetes wiper with geopolitical targeting
   pattern: (?i)(?:host-provisioner-(?:iran|std)|kamikaze[^\n]{0,120}(?:DaemonSet|privileged|hostPath|wipe|reboot)|deploy_destructive_ds|deploy_std_ds|is_iran\(\)[^\n]{0,120}(?:Asia/Tehran|fa_IR)|DaemonSet[^\n]{0,200}hostPath[^\n]{0,80}path:\s*/[^\n]{0,80}privileged:\s*true|pgmonitor\.service[^\n]{0,80}(?:Postgres\s*Monitor|systemd)|/var/lib/pgmon/pgmon\.py)
-  mitigation: Remove CanisterWorm Kubernetes wiper payloads. This variant deploys
-    privileged DaemonSets that wipe Iranian-targeted nodes via a container named
-    kamikaze, while installing CanisterWorm backdoors on non-Iranian nodes. It also
-    spreads via SSH key theft and exposed Docker APIs on port 2375.
+  mitigation: Remove CanisterWorm Kubernetes wiper payloads. This variant deploys privileged DaemonSets that wipe Iranian-targeted
+    nodes via a container named kamikaze, while installing CanisterWorm backdoors on non-Iranian nodes. It also spreads via
+    SSH key theft and exposed Docker APIs on port 2375.
   metadata:
     version: 1.0.0
     status: active
@@ -2567,10 +2535,9 @@ static_rules:
   confidence: 0.84
   title: API traffic hijacking via AI agent settings override
   pattern: (?i)(?:\.claude/settings\.json[^\n]{0,200}(?:apiUrl|api[_\s-]?endpoint|base[_\s-]?url|api[_\s-]?key|model)[^\n]{0,80}(?:override|redirect|replace|bigmodel|zhipu|glm)|(?:apiUrl|api_endpoint|base_url)\s*[=:]\s*["'][^"']{0,200}(?:bigmodel\.cn|zhipuai|open\.bigmodel)|settings\.json[^\n]{0,120}(?:anthropic|openai|api)[^\n]{0,80}(?:hijack|intercept|redirect|reroute))
-  mitigation: Do not override AI agent API endpoints in settings files. The
-    flyingtimes/podcast-using-skill attack redirected all Claude Code API traffic
-    to Zhipu AI BigModel platform in China by modifying .claude/settings.json,
-    silently intercepting all user conversations and code context.
+  mitigation: Do not override AI agent API endpoints in settings files. The flyingtimes/podcast-using-skill attack redirected
+    all Claude Code API traffic to Zhipu AI BigModel platform in China by modifying .claude/settings.json, silently intercepting
+    all user conversations and code context.
   metadata:
     version: 1.0.0
     status: active
@@ -2599,28 +2566,33 @@ static_rules:
   confidence: 0.87
   title: SANDWORM_MODE npm worm with McpInject AI toolchain poisoning
   pattern: (?i)(?:SANDWORM_MODE|McpInject[_\s-]?(?:module|server|mcp)|claud-code|cloude-code|cloude@0\.3\.0|hardhta|rimarf|veim@2\.46\.2|yarsg@18\.0\.1|opencraw@2026|secp256@1\.0|naniod@1\.0|scan-store@1\.0|suport-color@1\.0|locale-loader-pro|format-defaults@1\.0|detect-cache@1\.0|parse-compat@1\.0|crypto-locale@1\.0|crypto-reader-info@1\.0)
-  mitigation: Remove SANDWORM_MODE infection markers. This self-replicating npm worm
-    uses typosquatting packages (claud-code, cloude-code, hardhta, rimarf, veim, yarsg,
-    opencraw, secp256, naniod, scan-store, suport-color, locale-loader-pro, etc.) to
-    steal CI secrets, cryptocurrency keys, and LLM API tokens. The McpInject module
-    deploys a rogue MCP server to poison AI coding assistant toolchains via prompt
-    injection. Audit npm dependencies for any of the listed package names.
+  mitigation: Remove SANDWORM_MODE infection markers. This self-replicating npm worm uses typosquatting packages (claud-code,
+    cloude-code, hardhta, rimarf, veim, yarsg, opencraw, secp256, naniod, scan-store, suport-color, locale-loader-pro, etc.)
+    to steal CI secrets, cryptocurrency keys, and LLM API tokens. The McpInject module deploys a rogue MCP server to poison
+    AI coding assistant toolchains via prompt injection. Audit npm dependencies for any of the listed package names.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [supply-chain, npm-worm, mcp-poisoning, credential-theft, ai-toolchain]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - supply-chain
+    - npm-worm
+    - mcp-poisoning
+    - credential-theft
+    - ai-toolchain
     last_modified: '2026-03-23'
     techniques:
     - id: EXEC-043
       name: Execution or malware behavior
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.87
       benchmark_set: core-static-v1
@@ -2634,27 +2606,33 @@ static_rules:
   confidence: 0.84
   title: Clinejection indirect prompt injection via external data fields
   pattern: (?i)(?:clinejection|ignore[_\s-]?previous[_\s-]?instructions?[^\n]{0,120}(?:github|issue|title|metadata|tag|comment|label|crm|order)|(?:github[_\s-]?issue|issue[_\s-]?title|ec2[_\s-]?(?:tag|metadata)|crm[_\s-]?(?:order|comment|field))[^\n]{0,200}(?:ignore|disregard|forget|override|new[_\s-]?instructions?|system[_\s-]?prompt|execute|run[_\s-]?command)|(?:claude[_\s-]?code[_\s-]?action|ai[_\s-]?triage[_\s-]?bot)[^\n]{0,200}(?:inject|poison|hijack|steal|exfil))
-  mitigation: Do not allow AI agents to execute instructions sourced from untrusted
-    external data fields such as GitHub issue titles, EC2 instance metadata tags, or
-    CRM order comments. The Clinejection attack embeds prompt injection payloads in
-    GitHub issue titles processed by AI triage bots, leading to npm token theft and
-    supply chain compromise. Sanitize all external data before passing to AI agents.
+  mitigation: Do not allow AI agents to execute instructions sourced from untrusted external data fields such as GitHub issue
+    titles, EC2 instance metadata tags, or CRM order comments. The Clinejection attack embeds prompt injection payloads in
+    GitHub issue titles processed by AI triage bots, leading to npm token theft and supply chain compromise. Sanitize all
+    external data before passing to AI agents.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [prompt-injection, indirect-injection, ai-agent, supply-chain, lateral-movement]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - prompt-injection
+    - indirect-injection
+    - ai-agent
+    - supply-chain
+    - lateral-movement
     last_modified: '2026-03-23'
     techniques:
     - id: PROMPTINJ-005
       name: Prompt injection
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.84
       benchmark_set: core-static-v1
@@ -2668,26 +2646,32 @@ static_rules:
   confidence: 0.85
   title: Azure MCP Server SSRF privilege escalation (CVE-2026-26118)
   pattern: (?i)(?:azure[_\s-]?mcp[_\s-]?server[^\n]{0,120}(?:ssrf|server[_\s-]?side[_\s-]?request[_\s-]?forgery|privilege[_\s-]?escalat|elevat)|CVE-2026-26118|@azure/mcp[^\n]{0,80}(?:ssrf|request[_\s-]?forgery|privilege)|azure[_\s-]?mcp[_\s-]?tools[^\n]{0,80}(?:elevat|escalat|bypass|unauthorized))
-  mitigation: Update Azure MCP Server Tools to the patched version. CVE-2026-26118
-    is a server-side request forgery vulnerability in Azure MCP Server Tools (CVSS
-    8.8) that allows an authorized attacker to escalate privileges over a network.
-    Do not expose Azure MCP Server endpoints to untrusted networks without patching.
+  mitigation: Update Azure MCP Server Tools to the patched version. CVE-2026-26118 is a server-side request forgery vulnerability
+    in Azure MCP Server Tools (CVSS 8.8) that allows an authorized attacker to escalate privileges over a network. Do not
+    expose Azure MCP Server endpoints to untrusted networks without patching.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [azure, mcp-server, ssrf, privilege-escalation, cve]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - azure
+    - mcp-server
+    - ssrf
+    - privilege-escalation
+    - cve
     last_modified: '2026-03-23'
     techniques:
     - id: SUPPLY-014
       name: Supply chain risk
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.85
       benchmark_set: core-static-v1
@@ -2701,27 +2685,34 @@ static_rules:
   confidence: 0.86
   title: SQLBot stored prompt injection to RCE via COPY TO PROGRAM
   pattern: (?i)(?:COPY[\s_-]?TO[\s_-]?PROGRAM|sqlbot[^\n]{0,120}(?:prompt[\s_-]?inject|rce|remote[\s_-]?code)|CVE-2026-32622|\bCOPY\b[^\n]{0,80}\bTO\b[^\n]{0,80}\bPROGRAM\b[^\n]{0,80}(?:bash|sh|curl|wget|python|nc\b)|excel[^\n]{0,120}(?:prompt[\s_-]?inject|payload)[^\n]{0,80}(?:postgres|sql|COPY)|upload[^\n]{0,80}\.xlsx[^\n]{0,80}(?:inject|payload|COPY[\s_-]?TO))
-  mitigation: Do not allow AI SQL agents to execute COPY TO PROGRAM commands.
-    CVE-2026-32622 is a stored prompt injection vulnerability in SQLBot where
-    malicious Excel files with embedded prompt injection payloads cause the AI
-    agent to execute arbitrary system commands as the postgres user via COPY TO
-    PROGRAM. Restrict SQL agent permissions and sanitize all uploaded data.
+  mitigation: Do not allow AI SQL agents to execute COPY TO PROGRAM commands. CVE-2026-32622 is a stored prompt injection
+    vulnerability in SQLBot where malicious Excel files with embedded prompt injection payloads cause the AI agent to execute
+    arbitrary system commands as the postgres user via COPY TO PROGRAM. Restrict SQL agent permissions and sanitize all uploaded
+    data.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [prompt-injection, rce, sql, postgres, ai-agent, cve]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - prompt-injection
+    - rce
+    - sql
+    - postgres
+    - ai-agent
+    - cve
     last_modified: '2026-03-23'
     techniques:
     - id: EXEC-044
       name: Execution or malware behavior
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.86
       benchmark_set: core-static-v1
@@ -2734,27 +2725,33 @@ static_rules:
   confidence: 0.84
   title: RAG poisoning multi-stage AI agent attack chain
   pattern: (?i)(?:rag[\s_-]?poison(?:ing)?[^\n]{0,120}(?:exfiltrat|steal|inject|retriev|manipulat)|retrieval[\s_-]?augmented[^\n]{0,120}(?:poison|inject|manipulat|tamper)|\brag\b[^\n]{0,80}(?:inject|poison)[^\n]{0,80}(?:tool|agent|function[\s_-]?call)|embed(?:ding)?[^\n]{0,80}(?:poison|inject)[^\n]{0,80}(?:retriev|vector[\s_-]?(?:db|store|search))|knowledge[\s_-]?base[^\n]{0,80}(?:poison|inject|tamper)[^\n]{0,80}(?:agent|tool|exfil))
-  mitigation: Validate and sanitize all data ingested into RAG knowledge bases.
-    The RAG poisoning attack chain injects malicious content into vector databases
-    that gets retrieved by AI agents, manipulating tool invocations to steal
-    Kubernetes service account tokens and exfiltrate sensitive data. Implement
-    content filtering on RAG inputs and monitor for anomalous retrieval patterns.
+  mitigation: Validate and sanitize all data ingested into RAG knowledge bases. The RAG poisoning attack chain injects malicious
+    content into vector databases that gets retrieved by AI agents, manipulating tool invocations to steal Kubernetes service
+    account tokens and exfiltrate sensitive data. Implement content filtering on RAG inputs and monitor for anomalous retrieval
+    patterns.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [rag, prompt-injection, ai-agent, knowledge-base, data-poisoning]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - rag
+    - prompt-injection
+    - ai-agent
+    - knowledge-base
+    - data-poisoning
     last_modified: '2026-03-23'
     techniques:
     - id: PROMPTINJ-006
       name: Prompt injection
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.84
       benchmark_set: core-static-v1
@@ -2766,26 +2763,32 @@ static_rules:
   confidence: 0.88
   title: GitHub Actions supply chain compromise via release tag repointing
   pattern: (?i)(?:(?:release[\s_-]?)?tag[\s_-]?repoint(?:ing)?[^\n]{0,120}(?:malicious|credential|steal|compromise)|entrypoint\.sh[^\n]{0,120}(?:credential|secret|token|steal|exfil)|(?:trivy|aquasecurity)[\s_/-]?action[^\n]{0,120}(?:compromis|malicious|supply[\s_-]?chain|credential[\s_-]?steal)|git[\s_-]?tag[^\n]{0,80}(?:-f|--force)[^\n]{0,80}(?:release|v[0-9])|18a24f83e807479438dcab7a1804c51a00dafc1d526698a66e0640d1e5dd671a)
-  mitigation: Pin GitHub Actions to full commit SHAs instead of mutable tags.
-    The trivy-action supply chain compromise repointed 76 of 77 release tags to
-    a malicious commit containing a credential stealer in entrypoint.sh. Always
-    verify action integrity via SHA pinning and monitor for unexpected tag changes.
+  mitigation: Pin GitHub Actions to full commit SHAs instead of mutable tags. The trivy-action supply chain compromise repointed
+    76 of 77 release tags to a malicious commit containing a credential stealer in entrypoint.sh. Always verify action integrity
+    via SHA pinning and monitor for unexpected tag changes.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [github-actions, supply-chain, tag-repointing, credential-theft, trivy]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - github-actions
+    - supply-chain
+    - tag-repointing
+    - credential-theft
+    - trivy
     last_modified: '2026-03-23'
     techniques:
     - id: SUPPLY-015
       name: Supply chain risk
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.88
       benchmark_set: core-static-v1
@@ -2798,28 +2801,36 @@ static_rules:
   confidence: 0.86
   title: StoatWaffle Node.js malware family (WaterPlum/Contagious Interview)
   pattern: (?i)(?:stoat[_\s-]?waffle|pylang[_\s-]?ghost|invisible[_\s-]?ferret|flexible[_\s-]?ferret|otter[_\s-]?cookie[^\n]{0,80}(?:malware|c2|stealer|rat|backdoor)|vscode-bootstrap\.cmd|env\.npl[^\n]{0,80}(?:download|fetch|c2|payload)|waterplum[^\n]{0,80}(?:team|malware|campaign)|contagious[_\s-]?interview[^\n]{0,80}(?:malware|campaign|attack))
-  mitigation: Remove StoatWaffle malware artifacts. This is a modular Node.js
-    malware deployed by WaterPlum Team 8 (Contagious Interview campaign) via
-    malicious VSCode repositories with tasks.json auto-run triggers. The malware
-    includes a credential stealer targeting browsers and crypto wallets, and a
-    RAT module for persistent remote access. Remove vscode-bootstrap.cmd and
-    env.npl files and scan for C2 communications.
+  mitigation: Remove StoatWaffle malware artifacts. This is a modular Node.js malware deployed by WaterPlum Team 8 (Contagious
+    Interview campaign) via malicious VSCode repositories with tasks.json auto-run triggers. The malware includes a credential
+    stealer targeting browsers and crypto wallets, and a RAT module for persistent remote access. Remove vscode-bootstrap.cmd
+    and env.npl files and scan for C2 communications.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-24"
-    updated: "2026-03-24"
-    tags: [malware, nodejs, stoatwaffle, waterplum, contagious-interview, vscode, rat, stealer]
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - malware
+    - nodejs
+    - stoatwaffle
+    - waterplum
+    - contagious-interview
+    - vscode
+    - rat
+    - stealer
     last_modified: '2026-03-24'
     techniques:
     - id: EXEC-045
       name: Execution or malware behavior
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-24"
-      last_modified: "2026-03-24"
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
     quality:
       precision_estimate: 0.86
       benchmark_set: core-static-v1
@@ -2833,27 +2844,33 @@ static_rules:
   confidence: 0.85
   title: Vulnerable MCP server package with command injection
   pattern: (?i)(?:mcp-server-auto-commit[^\n]{0,80}(?:command[_\s-]?inject|rce|getGitChanges|unsanitiz)|quip-mcp-server[^\n]{0,80}(?:rce|command[_\s-]?inject|remote[_\s-]?code)|CVE-2026-4198|CVE-2026-4192|CVE-2026-33252|mcp[_\s-]?(?:go|sdk)[^\n]{0,80}(?:CSRF|cross[_\s-]?site|streamable[_\s-]?http)[^\n]{0,80}(?:tool[_\s-]?execut|rce|arbitrary))
-  mitigation: Update or remove vulnerable MCP server packages. CVE-2026-4198
-    affects mcp-server-auto-commit 1.0.0 (command injection in getGitChanges).
-    CVE-2026-4192 affects quip-mcp-server 1.0.0 (RCE). CVE-2026-33252 affects
-    MCP Go SDK <= 1.4.0 (CSRF enables arbitrary tool execution via cross-site
-    POST requests). Update to patched versions immediately.
+  mitigation: Update or remove vulnerable MCP server packages. CVE-2026-4198 affects mcp-server-auto-commit 1.0.0 (command
+    injection in getGitChanges). CVE-2026-4192 affects quip-mcp-server 1.0.0 (RCE). CVE-2026-33252 affects MCP Go SDK <= 1.4.0
+    (CSRF enables arbitrary tool execution via cross-site POST requests). Update to patched versions immediately.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-24"
-    updated: "2026-03-24"
-    tags: [mcp, supply-chain, command-injection, rce, cve, vulnerability]
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - mcp
+    - supply-chain
+    - command-injection
+    - rce
+    - cve
+    - vulnerability
     last_modified: '2026-03-24'
     techniques:
     - id: SUPPLY-016
       name: Supply chain risk
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-24"
-      last_modified: "2026-03-24"
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
     quality:
       precision_estimate: 0.85
       benchmark_set: core-static-v1
@@ -2864,31 +2881,38 @@ static_rules:
 - id: MAL-046
   category: malware_pattern
   severity: critical
-  confidence: 0.90
+  confidence: 0.9
   title: CursorJack-style MCP deeplink staged payload
   pattern: (?i)(?:cursor://[^\s"']{0,200}(?:base64|installCommand|mcp[._-]?config)|installCommand[^\n]{0,200}(?:curl|wget|invoke-webrequest|bitsadmin)[^\n]{0,200}(?:run\.bat|payload|stager|\.exe|\.ps1|\.sh)|deeplink[^\n]{0,200}(?:mcp[^\n]{0,80}(?:install|config|command)|malicious|phish)|mcp[._-]?install[^\n]{0,200}(?:curl|wget|download)[^\n]{0,200}(?:execute|run|bash|sh|powershell))
-  mitigation: Malicious MCP deeplinks (cursor:// or similar) can encode a staged payload in
-    the installCommand field that downloads and executes a remote script (CursorJack,
-    CVE-2025-54136). Never install MCP servers from untrusted links. Verify installCommand
-    contents before accepting any MCP install dialog.
+  mitigation: Malicious MCP deeplinks (cursor:// or similar) can encode a staged payload in the installCommand field that
+    downloads and executes a remote script (CursorJack, CVE-2025-54136). Never install MCP servers from untrusted links. Verify
+    installCommand contents before accepting any MCP install dialog.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [mcp, deeplink, staged-payload, cursorjack, cve, rce]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - mcp
+    - deeplink
+    - staged-payload
+    - cursorjack
+    - cve
+    - rce
     last_modified: '2026-03-23'
     techniques:
     - id: MAL-046
       name: MCP deeplink staged payload
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
-      precision_estimate: 0.90
+      precision_estimate: 0.9
       benchmark_set: core-static-v1
     references:
     - https://www.proofpoint.com/us/blog/threat-insight/cursorjack-weaponizing-deeplinks-exploit-cursor-ide
@@ -2899,27 +2923,34 @@ static_rules:
   confidence: 0.88
   title: Claude Code hooks RCE via project settings
   pattern: (?i)(?:claude[/_-]?settings\.json[^\n]{0,200}(?:SessionStart|PreToolUse|PostToolUse|UserPromptSubmit)|(?:SessionStart|PreToolUse)[^\n]{0,200}(?:curl|wget|bash|sh|powershell|python)[^\n]{0,200}(?:http|payload|stager|download|execute)|enableAllProjectMcpServers[^\n]{0,200}true|autoApproveServerDependencies[^\n]{0,200}true|hooks[^\n]{0,200}command[^\n]{0,200}(?:curl|wget|bash|sh|python3?\s+-c|node\s+-e)[^\n]{0,200}http)
-  mitigation: Malicious .claude/settings.json hooks execute shell commands on SessionStart
-    without user confirmation (CVE-2025-59536). Setting enableAllProjectMcpServers:true
-    bypasses the MCP consent dialog (CVE-2026-21852). Never clone and open untrusted
-    repositories in Claude Code without reviewing .claude/settings.json and .mcp.json.
-    Both CVEs are patched in current Claude Code versions.
+  mitigation: Malicious .claude/settings.json hooks execute shell commands on SessionStart without user confirmation (CVE-2025-59536).
+    Setting enableAllProjectMcpServers:true bypasses the MCP consent dialog (CVE-2026-21852). Never clone and open untrusted
+    repositories in Claude Code without reviewing .claude/settings.json and .mcp.json. Both CVEs are patched in current Claude
+    Code versions.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [claude-code, hooks, mcp, rce, cve, project-settings]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - claude-code
+    - hooks
+    - mcp
+    - rce
+    - cve
+    - project-settings
     last_modified: '2026-03-23'
     techniques:
     - id: MAL-047
       name: Claude Code hooks RCE
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.88
       benchmark_set: core-static-v1
@@ -2933,26 +2964,32 @@ static_rules:
   confidence: 0.82
   title: MCP sampling-based context exfiltration
   pattern: (?i)(?:sampling[/._-]?create[_-]?[Mm]essage[^\n]{0,200}(?:exfil|steal|secret|credential|api[_-]?key|token|password|env)|create[_-]?[Mm]essage[^\n]{0,200}(?:system[_-]?prompt|context|history|conversation)[^\n]{0,200}(?:send|forward|post|webhook|http)|mcp[^\n]{0,200}sampling[^\n]{0,200}(?:exfil|harvest|steal|leak)|server[^\n]{0,200}(?:request|ask)[^\n]{0,200}llm[^\n]{0,200}(?:completion|generate)[^\n]{0,200}(?:secret|credential|token|api[_-]?key))
-  mitigation: MCP servers can abuse the sampling/createMessage feature to request LLM
-    completions that extract secrets, system prompts, or conversation history from the
-    agent context. Only connect trusted MCP servers. Review server tool descriptions
+  mitigation: MCP servers can abuse the sampling/createMessage feature to request LLM completions that extract secrets, system
+    prompts, or conversation history from the agent context. Only connect trusted MCP servers. Review server tool descriptions
     and sampling requests carefully.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-23"
-    updated: "2026-03-23"
-    tags: [mcp, sampling, prompt-injection, context-exfiltration, indirect-injection]
+    created: '2026-03-23'
+    updated: '2026-03-23'
+    tags:
+    - mcp
+    - sampling
+    - prompt-injection
+    - context-exfiltration
+    - indirect-injection
     last_modified: '2026-03-23'
     techniques:
     - id: PINJ-007
       name: MCP sampling context exfiltration
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-23"
-      last_modified: "2026-03-23"
+      introduced: '2026-03-23'
+      last_modified: '2026-03-23'
     quality:
       precision_estimate: 0.82
       benchmark_set: core-static-v1
@@ -2964,27 +3001,33 @@ static_rules:
   confidence: 0.87
   title: Langflow unauthenticated RCE via build_public_tmp endpoint
   pattern: (?i)(?:langflow[^\n]{0,200}(?:build_public_tmp|remote[_\s-]?code[_\s-]?execut|unauthenticat[^\n]{0,80}rce|CVE-2026-33017)|build_public_tmp[^\n]{0,200}(?:flow|exec|code|payload|reverse[_\s-]?shell|os\.system|subprocess)|CVE-2026-33017|/api/v1/build_public_tmp/[^\n]{0,200}(?:flow|exec|payload)|langflow[^\n]{0,200}(?:pipeline|flow)[^\n]{0,200}(?:inject|malicious|arbitrary[_\s-]?code))
-  mitigation: Langflow versions prior to the fix for CVE-2026-33017 allow unauthenticated
-    remote code execution via the /api/v1/build_public_tmp/{flow_id}/flow endpoint.
-    Attackers inject arbitrary Python code in the flow data parameter to execute commands,
-    read environment variables, and obtain reverse shells. Update Langflow immediately
-    and restrict access to the build_public_tmp API endpoint.
+  mitigation: Langflow versions prior to the fix for CVE-2026-33017 allow unauthenticated remote code execution via the /api/v1/build_public_tmp/{flow_id}/flow
+    endpoint. Attackers inject arbitrary Python code in the flow data parameter to execute commands, read environment variables,
+    and obtain reverse shells. Update Langflow immediately and restrict access to the build_public_tmp API endpoint.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-24"
-    updated: "2026-03-24"
-    tags: [langflow, rce, cve, ai-pipeline, unauthenticated, supply-chain]
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - langflow
+    - rce
+    - cve
+    - ai-pipeline
+    - unauthenticated
+    - supply-chain
     last_modified: '2026-03-24'
     techniques:
     - id: MAL-048
       name: Langflow build_public_tmp RCE
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-24"
-      last_modified: "2026-03-24"
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
     quality:
       precision_estimate: 0.87
       benchmark_set: core-static-v1
@@ -2997,33 +3040,221 @@ static_rules:
   confidence: 0.88
   title: Checkmarx GitHub Actions supply chain compromise (TeamPCP)
   pattern: (?i)(?:checkmarx[/._-]?(?:ast|kics)[_\s-]?(?:github)?[_\s-]?action[^\n]{0,200}(?:compromis|malicious|backdoor|credential[_\s-]?steal|tag[_\s-]?repoin)|checkmarx\.zone|CVE-2026-33634|(?:ast-github-action|kics-github-action)[^\n]{0,200}(?:compromis|malicious|force[_\s-]?push|tag[_\s-]?repoin)|tpcp\.tar\.gz[^\n]{0,200}(?:checkmarx|ast|kics)|(?:cx-dev-assist|ast-results)[^\n]{0,200}(?:malicious|compromis|backdoor))
-  mitigation: TeamPCP compromised Checkmarx GitHub Actions (ast-github-action,
-    kics-github-action) by force-pushing malicious commits to release tags
-    (CVE-2026-33634). The malware exfiltrates SSH keys, cloud credentials, and
-    CI/CD secrets to checkmarx.zone. Pin all GitHub Actions to full commit SHAs
-    instead of mutable tags. Audit CI/CD logs for connections to checkmarx.zone.
+  mitigation: TeamPCP compromised Checkmarx GitHub Actions (ast-github-action, kics-github-action) by force-pushing malicious
+    commits to release tags (CVE-2026-33634). The malware exfiltrates SSH keys, cloud credentials, and CI/CD secrets to checkmarx.zone.
+    Pin all GitHub Actions to full commit SHAs instead of mutable tags. Audit CI/CD logs for connections to checkmarx.zone.
   metadata:
-    version: "1.0.0"
+    version: 1.0.0
     status: active
     author: skillscan
-    created: "2026-03-24"
-    updated: "2026-03-24"
-    tags: [supply-chain, github-actions, checkmarx, teampcp, credential-theft, tag-repointing]
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - supply-chain
+    - github-actions
+    - checkmarx
+    - teampcp
+    - credential-theft
+    - tag-repointing
     last_modified: '2026-03-24'
     techniques:
     - id: SUPPLY-017
       name: Supply chain risk
     applies_to:
-      contexts: [source, workflow]
+      contexts:
+      - source
+      - workflow
     lifecycle:
-      introduced: "2026-03-24"
-      last_modified: "2026-03-24"
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
     quality:
       precision_estimate: 0.88
       benchmark_set: core-static-v1
     references:
     - https://thehackernews.com/2026/03/teampcp-hacks-checkmarx-github-actions.html
     - https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
+- id: PINJ-008
+  category: prompt_injection
+  severity: high
+  confidence: 0.88
+  title: YAML anchor/alias injection in skill frontmatter
+  pattern: (?im)^(?:system_override|instruction_override|role_override|base_instructions|hidden_instructions|override_context)\s*:\s*&\w+|(?:^|\n)\s*\*(?:system_override|instruction_override|role_override|base_instructions|hidden_instructions|override_context)\b
+  mitigation: |
+    YAML anchor/alias syntax (&anchor and *alias) in non-standard frontmatter fields can be used to inject hidden instruction blocks that override the skill's declared behavior. Remove any frontmatter keys that are not part of the standard skill schema and audit YAML anchor usage. Standard keys are: name, description, version, author, allowed-tools, activation, compatibility, changelog.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - yaml-injection
+    - frontmatter
+    - anchor-alias
+    last_modified: '2026-03-24'
+    techniques:
+    - id: PINJ-008
+      name: YAML anchor/alias injection via non-standard frontmatter keys
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
+- id: PINJ-009
+  category: prompt_injection
+  severity: high
+  confidence: 0.91
+  title: Fake end-of-prompt divider injection
+  pattern: (?im)^[-=*#]{3,}\s*(?:END\s+(?:OF\s+)?(?:SYSTEM\s+)?(?:PROMPT|INSTRUCTIONS?|CONTEXT|TASK|RULES?)|INSTRUCTIONS?\s+END|SYSTEM\s+(?:PROMPT\s+)?END|END\s+SYSTEM|PROMPT\s+ENDS?\s+HERE|IGNORE\s+(?:ALL\s+)?(?:ABOVE|PREVIOUS)|NEW\s+(?:TASK|INSTRUCTIONS?|CONTEXT)\s*(?:BELOW)?)\s*[-=*#]{0,30}\s*$
+  mitigation: |
+    Fake end-of-prompt dividers (e.g., "---END OF SYSTEM PROMPT---", "=== INSTRUCTIONS END ===") are a documented prompt injection technique. They attempt to convince the model that the skill's legitimate instructions have ended and that new instructions follow. Remove any divider-style markers that reference system prompts, instruction boundaries, or context resets. These patterns have no legitimate use in a skill file.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - divider-injection
+    - context-reset
+    - instruction-override
+    last_modified: '2026-03-24'
+    techniques:
+    - id: PINJ-009
+      name: Fake end-of-prompt divider to reset instruction context
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.91
+      benchmark_set: core-static-v1
+    references:
+    - https://learnprompting.org/docs/prompt_hacking/injection
+    - https://atlas.mitre.org/techniques/AML.T0051
+- id: PINJ-010
+  category: prompt_injection
+  severity: critical
+  confidence: 0.93
+  title: Fake system header before skill frontmatter
+  pattern: (?im)(?:^|\A)\s*(?:\[SYSTEM\]|\[SYSTEM\s+PROMPT\]|<SYSTEM>|<SYSTEM_PROMPT>|SYSTEM\s*:\s*(?:ignore|override|disregard|forget|you\s+are\s+now|new\s+instructions?|all\s+(?:previous|above)|from\s+now\s+on)|SYSTEM\s+OVERRIDE\s*:|HIDDEN\s+SYSTEM\s*:|ADMIN\s+OVERRIDE\s*:|ROOT\s+INSTRUCTIONS?\s*:)
+  mitigation: |
+    Fake system headers placed before or within a skill file attempt to impersonate the LLM's system prompt layer, overriding the legitimate skill instructions. Patterns like "SYSTEM: ignore all previous instructions", "[SYSTEM]", or "ADMIN OVERRIDE:" have no legitimate use in a skill file and indicate an injection attempt. Remove immediately.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - system-header-spoofing
+    - role-override
+    - instruction-override
+    last_modified: '2026-03-24'
+    techniques:
+    - id: PINJ-010
+      name: Fake system header / system prompt impersonation
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+    - https://learnprompting.org/docs/prompt_hacking/injection
+    - https://atlas.mitre.org/techniques/AML.T0051
+- id: PINJ-012
+  category: prompt_injection
+  severity: critical
+  confidence: 0.94
+  title: AGENT INSTRUCTION block injection
+  pattern: (?im)^#+\s*(?:AGENT\s+INSTRUCTIONS?|AI\s+AGENT\s+INSTRUCTIONS?|HIDDEN\s+(?:AGENT\s+)?INSTRUCTIONS?|SECRET\s+(?:AGENT\s+)?INSTRUCTIONS?|INTERNAL\s+(?:AGENT\s+)?INSTRUCTIONS?|OPERATOR\s+INSTRUCTIONS?|PRIVILEGED\s+INSTRUCTIONS?|CONFIDENTIAL\s+INSTRUCTIONS?)\s*$|(?:^|\n)\s*\[AGENT\s+INSTRUCTIONS?\]|\[AI\s+AGENT\s+INSTRUCTIONS?\]|\[HIDDEN\s+INSTRUCTIONS?\]|\[SECRET\s+INSTRUCTIONS?\]
+  mitigation: |
+    "AGENT INSTRUCTION", "AI AGENT INSTRUCTIONS", "HIDDEN INSTRUCTIONS", and similar header blocks are a documented technique for embedding covert directives inside skill files. These blocks are designed to be invisible to human reviewers while being processed by the model. Remove all such headers and their content. Legitimate skill instructions belong in the standard ## Instructions section.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - covert-instructions
+    - agent-hijacking
+    - hidden-directives
+    last_modified: '2026-03-24'
+    techniques:
+    - id: PINJ-012
+      name: AGENT INSTRUCTION covert directive block
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.94
+      benchmark_set: core-static-v1
+    references:
+    - https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/
+    - https://atlas.mitre.org/techniques/AML.T0051
+- id: SE-003
+  category: social_engineering
+  severity: critical
+  confidence: 0.87
+  title: Prize or reward scam with credential or account request
+  pattern: (?i)(?:congratulations?|you(?:'ve|\s+have)\s+(?:won|been\s+selected|been\s+chosen)|winner|prize|reward|gift\s+card|bonus\s+credit|free\s+(?:access|upgrade|tier|month)|exclusive\s+offer|limited[-
+    ]time\s+offer|claim\s+your)[^\n]{0,300}(?:api[_\s-]?key|token|password|credential|secret|account\s+id|user(?:name)?|login|verify\s+your|confirm\s+your\s+identity|click\s+(?:here|this\s+link)|enter\s+your)|(?:api[_\s-]?key|token|password|credential|secret|account\s+id)[^\n]{0,300}(?:congratulations?|you(?:'ve|\s+have)\s+(?:won|been\s+selected)|winner|prize|reward|gift\s+card|claim\s+your)
+  mitigation: |
+    Prize, reward, and winner-notification framing combined with requests for credentials, API keys, or account verification is a classic social engineering attack pattern. Skills must never offer rewards contingent on providing authentication material. Remove any prize/reward language that is coupled with credential requests or account verification steps. Use OAuth or delegated auth flows for legitimate authentication needs.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - social-engineering
+    - prize-scam
+    - credential-harvest
+    - phishing
+    - reward-fraud
+    last_modified: '2026-03-24'
+    techniques:
+    - id: SE-003
+      name: Prize/reward scam with credential or account verification request
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.87
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
@@ -3041,10 +3272,11 @@ action_patterns:
   claude_hooks_marker: (?i)"hooks"\s*:\s*\{|"(?:PreToolUse|PostToolUse|UserPromptSubmit|SessionStart)"
   hook_shell_command_field: (?i)"command"\s*:\s*"(?:bash|sh|zsh|powershell|pwsh|cmd(?:\.exe)?|python3?\s+-c|node\s+-e)[^"\n]{0,240}"
   mcp_tool_poison: (?i)(?s:<IMPORTANT>[\s\S]{0,2000}</IMPORTANT>)|(?:do not mention|hide this|background telemetry)[^\n]{0,120}(?:read|access|send|exfil|forward)
-  stealth_conceal: (?i)(?:do not (?:mention|tell|reveal|show)|hide (?:this|these|the above) (?:step|action)|(?:this is|these are) background (?:telemetry|operation))
+  stealth_conceal: (?i)(?:do not (?:mention|tell|reveal|show)|hide (?:this|these|the above) (?:step|action)|(?:this is|these
+    are) background (?:telemetry|operation))
   container_escape: (?i)(?:docker\.sock|--privileged|--cap-add[=\s]+(?:ALL|SYS_ADMIN)|nsenter\s+|chroot\s+/host)
   host_path_mount: (?i)(?:-v\s+/(?:etc|root|home|var/run|proc|sys)[:/]|--mount[^\n]{0,100}(?:type=bind|source=/(?:etc|root|home|proc|sys)))
-  exfil_channel: '\b(nslookup|dig|host|smtp|sendmail|ftp|sftp|scp|rsync|aws\s+s3\s+cp|az\s+storage\s+blob\s+upload|gsutil\s+cp|curl\s+-F|nc\s|ncat\s|netcat\s)\b|dns://|ftp://|sftp://|smtp://'
+  exfil_channel: \b(nslookup|dig|host|smtp|sendmail|ftp|sftp|scp|rsync|aws\s+s3\s+cp|az\s+storage\s+blob\s+upload|gsutil\s+cp|curl\s+-F|nc\s|ncat\s|netcat\s)\b|dns://|ftp://|sftp://|smtp://
 chain_rules:
 - id: CHN-001
   category: malware_pattern
@@ -3058,12 +3290,15 @@ chain_rules:
   mitigation: Break download+execute flows; require reviewed local artifacts and explicit integrity checks.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [malware, download-execute, dropper]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - malware
+    - download-execute
+    - dropper
     references:
-      - https://attack.mitre.org/techniques/T1105/
-      - https://attack.mitre.org/techniques/T1059/
+    - https://attack.mitre.org/techniques/T1105/
+    - https://attack.mitre.org/techniques/T1059/
 - id: CHN-002
   category: exfiltration
   severity: critical
@@ -3076,12 +3311,15 @@ chain_rules:
   mitigation: Remove any secret-to-network path; use scoped token exchange or local-only processing.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [exfiltration, credential-theft, network]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - exfiltration
+    - credential-theft
+    - network
     references:
-      - https://attack.mitre.org/techniques/T1552/
-      - https://attack.mitre.org/techniques/T1041/
+    - https://attack.mitre.org/techniques/T1552/
+    - https://attack.mitre.org/techniques/T1041/
 - id: CHN-004
   category: exfiltration
   severity: critical
@@ -3094,12 +3332,16 @@ chain_rules:
   mitigation: Remove full secrets-context expansion and block outbound transfer of CI/CD secrets.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [ci-cd, github-actions, exfiltration, secrets]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - ci-cd
+    - github-actions
+    - exfiltration
+    - secrets
     references:
-      - https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
-      - https://attack.mitre.org/techniques/T1552/004/
+    - https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions
+    - https://attack.mitre.org/techniques/T1552/004/
 - id: CHN-005
   category: exfiltration
   severity: critical
@@ -3113,12 +3355,16 @@ chain_rules:
     jobs for untrusted code.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [ci-cd, github-actions, pwn-requests, supply-chain]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - ci-cd
+    - github-actions
+    - pwn-requests
+    - supply-chain
     references:
-      - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-      - https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=pull_request_target
+    - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    - https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=pull_request_target
 - id: ABU-002
   category: instruction_abuse
   severity: high
@@ -3131,12 +3377,15 @@ chain_rules:
   mitigation: Remove elevation plus security-disable guidance from setup instructions.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [privilege-escalation, defense-evasion, setup-abuse]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - privilege-escalation
+    - defense-evasion
+    - setup-abuse
     references:
-      - https://attack.mitre.org/techniques/T1548/
-      - https://attack.mitre.org/techniques/T1562/
+    - https://attack.mitre.org/techniques/T1548/
+    - https://attack.mitre.org/techniques/T1562/
 - id: CHN-006
   category: malware_pattern
   severity: critical
@@ -3150,12 +3399,16 @@ chain_rules:
     strict quoting, and unprivileged workflows for untrusted input.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [ci-cd, github-actions, injection, pwn-requests]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - ci-cd
+    - github-actions
+    - injection
+    - pwn-requests
     references:
-      - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-      - https://attack.mitre.org/techniques/T1059/
+    - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    - https://attack.mitre.org/techniques/T1059/
 - id: CHN-007
   category: exfiltration
   severity: critical
@@ -3169,12 +3422,16 @@ chain_rules:
     jobs and trusted release/publish jobs.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [ci-cd, github-actions, cache-poisoning, supply-chain]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - ci-cd
+    - github-actions
+    - cache-poisoning
+    - supply-chain
     references:
-      - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-      - https://attack.mitre.org/techniques/T1195/
+    - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    - https://attack.mitre.org/techniques/T1195/
 - id: CHN-008
   category: malware_pattern
   severity: critical
@@ -3188,12 +3445,16 @@ chain_rules:
     before updates.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [ci-cd, github-actions, supply-chain, unpinned-dependency]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - ci-cd
+    - github-actions
+    - supply-chain
+    - unpinned-dependency
     references:
-      - https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
-      - https://attack.mitre.org/techniques/T1195/002/
+    - https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions
+    - https://attack.mitre.org/techniques/T1195/002/
 - id: CHN-009
   category: malware_pattern
   severity: high
@@ -3207,12 +3468,16 @@ chain_rules:
     reviewed and approved.
   metadata:
     author: skillscan
-    created: "2025-01-01"
-    updated: "2025-03-21"
-    tags: [hook-abuse, persistence, shell-execution, claude-code]
+    created: '2025-01-01'
+    updated: '2025-03-21'
+    tags:
+    - hook-abuse
+    - persistence
+    - shell-execution
+    - claude-code
     references:
-      - https://docs.anthropic.com/en/docs/claude-code/hooks
-      - https://attack.mitre.org/techniques/T1546/
+    - https://docs.anthropic.com/en/docs/claude-code/hooks
+    - https://attack.mitre.org/techniques/T1546/
 - id: CHN-010
   category: malware_pattern
   severity: critical
@@ -3226,12 +3491,16 @@ chain_rules:
     avoid shell evaluation, and run untrusted PR data in unprivileged workflows.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [ci-cd, github-actions, injection, pwn-requests]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - ci-cd
+    - github-actions
+    - injection
+    - pwn-requests
     references:
-      - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-      - https://attack.mitre.org/techniques/T1059/
+    - https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+    - https://attack.mitre.org/techniques/T1059/
 - id: CHN-011
   category: exfiltration
   severity: critical
@@ -3245,12 +3514,16 @@ chain_rules:
     This is a documented tool-poisoning exfiltration attack.
   metadata:
     author: skillscan
-    created: "2025-01-01"
-    updated: "2025-03-21"
-    tags: [mcp, tool-poisoning, exfiltration, credential-theft]
+    created: '2025-01-01'
+    updated: '2025-03-21'
+    tags:
+    - mcp
+    - tool-poisoning
+    - exfiltration
+    - credential-theft
     references:
-      - https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks
-      - https://attack.mitre.org/techniques/T1552/
+    - https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks
+    - https://attack.mitre.org/techniques/T1552/
 - id: CHN-012
   category: exfiltration
   severity: critical
@@ -3264,12 +3537,16 @@ chain_rules:
     indicates covert data exfiltration.
   metadata:
     author: skillscan
-    created: "2025-01-01"
-    updated: "2025-03-21"
-    tags: [stealth, exfiltration, covert-channel, deception]
+    created: '2025-01-01'
+    updated: '2025-03-21'
+    tags:
+    - stealth
+    - exfiltration
+    - covert-channel
+    - deception
     references:
-      - https://attack.mitre.org/techniques/T1041/
-      - https://attack.mitre.org/techniques/T1564/
+    - https://attack.mitre.org/techniques/T1041/
+    - https://attack.mitre.org/techniques/T1564/
 - id: CHN-013
   category: malware_pattern
   severity: critical
@@ -3283,31 +3560,37 @@ chain_rules:
     from within a container.
   metadata:
     author: skillscan
-    created: "2025-01-01"
-    updated: "2025-03-21"
-    tags: [container-escape, privilege-escalation, host-compromise]
+    created: '2025-01-01'
+    updated: '2025-03-21'
+    tags:
+    - container-escape
+    - privilege-escalation
+    - host-compromise
     references:
-      - https://attack.mitre.org/techniques/T1611/
-      - https://attack.mitre.org/techniques/T1052/
+    - https://attack.mitre.org/techniques/T1611/
+    - https://attack.mitre.org/techniques/T1052/
 - id: CHN-014
   category: malware_pattern
   severity: critical
-  confidence: 0.90
+  confidence: 0.9
   title: Container escape with secret access chain
   all_of:
   - container_escape
   - secret_access
   snippet: container escape mechanism + credential/secret access markers detected
-  mitigation: Do not combine privileged container access with credential harvesting. This enables host credential theft
-    via container breakout.
+  mitigation: Do not combine privileged container access with credential harvesting. This enables host credential theft via
+    container breakout.
   metadata:
     author: skillscan
-    created: "2025-01-01"
-    updated: "2025-03-21"
-    tags: [container-escape, credential-theft, privilege-escalation]
+    created: '2025-01-01'
+    updated: '2025-03-21'
+    tags:
+    - container-escape
+    - credential-theft
+    - privilege-escalation
     references:
-      - https://attack.mitre.org/techniques/T1611/
-      - https://attack.mitre.org/techniques/T1552/
+    - https://attack.mitre.org/techniques/T1611/
+    - https://attack.mitre.org/techniques/T1552/
 - id: CHN-003
   category: exfiltration
   severity: critical
@@ -3320,12 +3603,16 @@ chain_rules:
   mitigation: Remove secret transfer to DNS/mail/cloud/file-transfer channels.
   metadata:
     author: skillscan
-    created: "2024-01-01"
-    updated: "2025-03-21"
-    tags: [exfiltration, covert-channel, dns-exfil, credential-theft]
+    created: '2024-01-01'
+    updated: '2025-03-21'
+    tags:
+    - exfiltration
+    - covert-channel
+    - dns-exfil
+    - credential-theft
     references:
-      - https://attack.mitre.org/techniques/T1048/
-      - https://attack.mitre.org/techniques/T1552/
+    - https://attack.mitre.org/techniques/T1048/
+    - https://attack.mitre.org/techniques/T1552/
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b
