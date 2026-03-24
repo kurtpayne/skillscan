@@ -396,6 +396,30 @@ This is the primary distribution mechanism for the offline product. A developer 
 
 ---
 
+## Milestone 14.5 — Model Details on Website
+
+**Goal:** Surface the ML classifier's capabilities, training methodology, and current performance metrics on the SkillScan website so enterprise evaluators and developers can assess the model before deploying it.
+
+**Prerequisites:**
+- Milestone 7 (ML Model Quality) must reach macro F1 ≥ 0.95 before this milestone begins — the website should reflect a production-quality model, not a work-in-progress.
+- Milestone 10.7 (CLI UX Audit & Command Consolidation) should be complete so the product surface the website describes is stable and polished.
+
+**Actions:**
+- Add a dedicated **Model** page (or expand the existing Docs section) covering:
+  - Architecture overview: DeBERTa-v3-base + LoRA adapter, classification head, ONNX INT8 inference pipeline
+  - Training data summary: corpus size, category breakdown, data sources (vendor skills, organic examples, back-translation augmentation)
+  - Current performance metrics: macro F1, precision/recall by category, FPR, eval set size — pulled from `docs/MODEL_METRICS.md`
+  - Version history table: each adapter version with its key improvements and metric deltas
+  - Known limitations: attack categories with lower recall, indirect injection coverage, enterprise jargon FP patterns
+- Update the **Home page** stats section to include the current macro F1 score alongside rule count and showcase count.
+- Add a **"How it works"** section explaining the two-layer detection approach (static rules + ML classifier) and when each layer fires.
+- Link from the Rules page to the Model page for findings that were ML-detected.
+- Keep metrics in sync with `docs/MODEL_METRICS.md` — the website should not have its own copy of the numbers.
+
+**Acceptance criteria:** Model page is live and accurate. F1 score shown on homepage. Architecture and training methodology are clearly explained. Page loads in < 2s. Content reviewed for accuracy against `docs/MODEL_METRICS.md`.
+
+---
+
 ## Milestone 15 — skillscan-core Extraction
 
 **Goal:** Extract shared logic into a `skillscan-core` package that both `skillscan` and `skillscan-lint` depend on.
