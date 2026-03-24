@@ -205,6 +205,32 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ---
 
+## Milestone 10.6 — Organic Eval Pipeline & Corpus Commit Policy
+
+**Goal:** Establish a closed feedback loop between the pattern update agent and the ML model, ensuring every new attack pattern discovered in the wild is immediately tested against the model and tracked as a known gap if missed.
+
+**Background:** The pattern update skill discovers real-world threats on a schedule. Previously, new patterns were added directly to the training corpus, which contaminates the held-out eval set and makes F1 scores unreliable. The correct architecture:
+
+1. New patterns land in `held_out_eval/organic/` in `kurtpayne/skillscan-corpus` (eval-only, never training data)
+2. CI runs the held-out eval after each fine-tune, reporting hand-crafted vs organic breakdown
+3. If the model misses an organic example (FN), a GitHub issue is opened automatically in `skillscan-security`
+4. After a fine-tune that correctly classifies the example, it is *promoted* to the training corpus and removed from eval
+
+**Status as of 2026-03-23:**
+- ✅ `skillscan-pattern-update` skill updated to write organic eval examples to `held_out_eval/organic/` and commit to private corpus repo
+- ✅ `corpus/` gitignored in `skillscan-security` — cannot be re-added accidentally
+- ✅ Corpus commit policy documented: all training data lives in `kurtpayne/skillscan-corpus` (private)
+
+**Remaining actions:**
+- Create `held_out_eval/organic/` directory in `kurtpayne/skillscan-corpus` with a `README.md` explaining the promotion workflow.
+- Create `PROMOTION_CANDIDATES.md` in `kurtpayne/skillscan-corpus` to track examples ready for promotion.
+- Update `finetune_modal.py` to include `held_out_eval/organic/` in the held-out eval run and report per-source breakdown.
+- Add a post-eval step in `finetune_modal.py`: if any organic example is a FN, open a GitHub issue in `skillscan-security` titled `[ML Regression] Model misses organic pattern: {pattern_id}`.
+
+**Acceptance criteria:** Pattern update skill writes organic eval examples and commits. Post-eval step opens GitHub issues for FN organic examples. `PROMOTION_CANDIDATES.md` is maintained. `corpus/` cannot be re-added to the public repo.
+
+---
+
 ## Milestone 11 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
