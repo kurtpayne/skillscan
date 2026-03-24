@@ -318,6 +318,7 @@ tests/test_intel.py
 tests/test_intel_update.py
 tests/test_ioc_extraction.py
 tests/test_junit.py
+tests/test_m10_8_attack_hints.py
 tests/test_m12_archive_multilang.py
 tests/test_m6_m7_gap_fixes.py
 tests/test_ml_detector.py
