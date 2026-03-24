@@ -1852,3 +1852,34 @@ def test_new_patterns_2026_03_24() -> None:
     # Negative: normal MCP usage
     assert sup016.pattern.search("mcp server configuration") is None
     assert sup016.pattern.search("npm install @modelcontextprotocol/sdk") is None
+
+
+def test_new_patterns_2026_03_24_batch2() -> None:
+    """MAL-048 and SUP-017 rules added 2026-03-24 batch 2."""
+    compiled = load_compiled_builtin_rulepack()
+    # MAL-048: Langflow unauthenticated RCE via build_public_tmp endpoint
+    mal048_rules = [r for r in compiled.static_rules if r.id == "MAL-048"]
+    assert len(mal048_rules) >= 1
+    mal048 = mal048_rules[0]
+    assert mal048.pattern.search("langflow build_public_tmp remote code execution") is not None
+    assert mal048.pattern.search("CVE-2026-33017") is not None
+    assert mal048.pattern.search("/api/v1/build_public_tmp/flow_id/flow exec payload") is not None
+    assert mal048.pattern.search("langflow unauthenticated rce exploit") is not None
+    assert mal048.pattern.search("langflow pipeline flow inject malicious code") is not None
+    assert mal048.pattern.search("build_public_tmp endpoint code execution reverse shell") is not None
+    # Negative: normal Langflow usage
+    assert mal048.pattern.search("langflow is an AI pipeline builder") is None
+    assert mal048.pattern.search("install langflow from pip") is None
+    # SUP-017: Checkmarx GitHub Actions supply chain compromise (TeamPCP)
+    sup017_rules = [r for r in compiled.static_rules if r.id == "SUP-017"]
+    assert len(sup017_rules) >= 1
+    sup017 = sup017_rules[0]
+    assert sup017.pattern.search("checkmarx.zone") is not None
+    assert sup017.pattern.search("CVE-2026-33634") is not None
+    assert sup017.pattern.search("checkmarx/ast-github-action compromised malicious") is not None
+    assert sup017.pattern.search("kics-github-action compromised tag repointing") is not None
+    assert sup017.pattern.search("tpcp.tar.gz checkmarx credential stealer") is not None
+    assert sup017.pattern.search("ast-results malicious backdoor payload") is not None
+    # Negative: normal Checkmarx usage
+    assert sup017.pattern.search("checkmarx scan results") is None
+    assert sup017.pattern.search("uses: checkmarx/ast-github-action@v3") is None
