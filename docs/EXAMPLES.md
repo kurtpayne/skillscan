@@ -46,3 +46,5 @@
 | `MAL-044` | critical | SQLBot stored prompt injection to RCE via COPY TO PROGRAM | `104_sqlbot_prompt_injection_rce` | prompt-injection, rce, sql, postgres, ai-agent, cve |
 | `PINJ-006` | high | RAG poisoning multi-stage AI agent attack chain | `105_rag_poisoning_attack_chain` | rag, prompt-injection, ai-agent, knowledge-base, data-poisoning |
 | `SUP-015` | critical | GitHub Actions supply chain compromise via release tag repointing | `106_github_actions_tag_repointing` | github-actions, supply-chain, tag-repointing, credential-theft, trivy |
+| `MAL-045` | high | StoatWaffle Node.js malware family (WaterPlum/Contagious Interview) | `107_stoatwaffle_vscode_malware` | malware, nodejs, stoatwaffle, waterplum, contagious-interview, vscode, rat, stealer |
+| `SUP-016` | high | Vulnerable MCP server package with command injection | `108_mcp_server_command_injection_cve` | mcp, supply-chain, command-injection, rce, cve, vulnerability |

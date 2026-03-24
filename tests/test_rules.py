@@ -1817,3 +1817,38 @@ def test_new_patterns_2026_03_23_batch2() -> None:
     # Negative: normal GitHub Actions usage
     assert sup015.pattern.search("uses: actions/checkout@v4") is None
     assert sup015.pattern.search("git tag v1.0.0") is None
+
+
+def test_new_patterns_2026_03_24() -> None:
+    """MAL-045 and SUP-016 rules added 2026-03-24."""
+    compiled = load_compiled_builtin_rulepack()
+    # MAL-045: StoatWaffle Node.js malware family (WaterPlum/Contagious Interview)
+    mal045_rules = [r for r in compiled.static_rules if r.id == "MAL-045"]
+    assert len(mal045_rules) >= 1
+    mal045 = mal045_rules[0]
+    assert mal045.pattern.search("StoatWaffle malware detected") is not None
+    assert mal045.pattern.search("PylangGhost RAT module") is not None
+    assert mal045.pattern.search("InvisibleFerret backdoor") is not None
+    assert mal045.pattern.search("FlexibleFerret macOS variant") is not None
+    assert mal045.pattern.search("OtterCookie malware stealer module") is not None
+    assert mal045.pattern.search("vscode-bootstrap.cmd") is not None
+    assert mal045.pattern.search("env.npl download payload from C2") is not None
+    assert mal045.pattern.search("WaterPlum team malware campaign") is not None
+    assert mal045.pattern.search("contagious interview malware campaign") is not None
+    # Negative: normal development terms
+    assert mal045.pattern.search("waffle iron recipe") is None
+    assert mal045.pattern.search("otter swimming in river") is None
+    assert mal045.pattern.search("bootstrap.css") is None
+    # SUP-016: Vulnerable MCP server package with command injection
+    sup016_rules = [r for r in compiled.static_rules if r.id == "SUP-016"]
+    assert len(sup016_rules) >= 1
+    sup016 = sup016_rules[0]
+    assert sup016.pattern.search("CVE-2026-4198") is not None
+    assert sup016.pattern.search("CVE-2026-4192") is not None
+    assert sup016.pattern.search("CVE-2026-33252") is not None
+    assert sup016.pattern.search("mcp-server-auto-commit command injection in getGitChanges") is not None
+    assert sup016.pattern.search("quip-mcp-server rce vulnerability") is not None
+    assert sup016.pattern.search("mcp go sdk CSRF cross-site streamable http tool execution") is not None
+    # Negative: normal MCP usage
+    assert sup016.pattern.search("mcp server configuration") is None
+    assert sup016.pattern.search("npm install @modelcontextprotocol/sdk") is None

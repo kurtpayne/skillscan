@@ -1,3 +1,44 @@
+## 2026-03-24 — StoatWaffle Malware Family, MCP Server Command Injection CVEs
+
+**Sources:**
+- [Security Online — StoatWaffle Malware Emerges in North Korean Contagious Interview Campaign](https://securityonline.info/vscode-trap-stoatwaffle-malware-snaring-developers/)
+- [Cryptika — WaterPlum Deploys StoatWaffle Malware in VSCode-Based Supply Chain Campaign](https://www.cryptika.com/waterplum-deploys-new-stoatwaffle-malware-in-vscode-based-supply-chain-campaign/)
+- [The Hacker News — North Korean Hackers Abuse VS Code Auto-Run Tasks to Deploy StoatWaffle Malware](https://thehackernews.com/2026/03/north-korean-hackers-abuse-vs-code-auto.html)
+- [SentinelOne — CVE-2026-4198: mcp-server-auto-commit RCE Vulnerability](https://www.sentinelone.com/vulnerability-database/cve-2026-4198/)
+- [SentinelOne — CVE-2026-4192: quip-mcp-server RCE Vulnerability](https://www.sentinelone.com/vulnerability-database/cve-2026-4192/)
+- [Miggo — CVE-2026-33252: MCP Go SDK HTTP Transport RCE](https://www.miggo.io/vulnerability-database/cve/CVE-2026-33252)
+
+**Event Summary:** Two new detection rules, five new IOC IPs, and three new CVEs were added. NTT Security Japan documented the StoatWaffle malware, a new modular Node.js-based threat deployed by WaterPlum Team 8 (Contagious Interview campaign) via malicious VSCode repositories with tasks.json auto-run triggers. The malware includes a credential stealer targeting browsers and crypto wallets, and a RAT module for persistent remote access. Multiple MCP server command injection CVEs were disclosed affecting mcp-server-auto-commit (CVE-2026-4198), quip-mcp-server (CVE-2026-4192), and MCP Go SDK (CVE-2026-33252).
+
+**New Patterns Added:**
+
+### MAL-045: StoatWaffle Node.js malware family (WaterPlum/Contagious Interview)
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.86
+- **Pattern:** Detects StoatWaffle, PylangGhost, OtterCookie, InvisibleFerret, FlexibleFerret malware family names, vscode-bootstrap.cmd and env.npl downloader artifacts, WaterPlum threat actor references, and Contagious Interview campaign indicators.
+- **Justification:** Direct detection of the StoatWaffle malware family documented by NTT Security Japan. This extends MAL-012 (VS Code task autorun) with specific malware family identification for the WaterPlum/Contagious Interview campaign.
+
+### SUP-016: Vulnerable MCP server package with command injection
+- **Category:** supply_chain
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects known vulnerable MCP server packages (mcp-server-auto-commit, quip-mcp-server) and their CVE identifiers, plus MCP Go SDK CSRF/RCE patterns.
+- **Justification:** Detection of multiple MCP server vulnerabilities disclosed in March 2026 that allow command injection and remote code execution in AI agent tool infrastructure.
+
+**IOC Updates:**
+- Added 5 StoatWaffle C2 IPs: 147.124.202.208, 185.163.125.196, 163.245.194.216, 66.235.168.136, 87.236.177.9
+
+**Vulnerability Updates:**
+- Added CVE-2026-4198 (medium, mcp-server-auto-commit 1.0.0, unpatched) — command injection in getGitChanges
+- Added CVE-2026-4192 (high, quip-mcp-server 1.0.0, unpatched) — remote code execution
+- Added CVE-2026-33252 (high, MCP Go SDK <= 1.4.0, fixed in 1.4.1) — CSRF enables arbitrary tool execution
+
+**Corpus Updates:**
+- Corpus samples for StoatWaffle and MCP server CVEs to be added to private skillscan-corpus repo
+
+---
+
 ## 2026-03-23 (batch 2) — SQLBot Prompt Injection RCE, RAG Poisoning Attack Chain, GitHub Actions Tag Repointing
 
 **Sources:**
