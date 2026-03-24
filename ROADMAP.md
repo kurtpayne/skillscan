@@ -1,6 +1,6 @@
 # SkillScan Roadmap
 
-> **Last updated:** 2026-03-22
+> **Last updated:** 2026-03-24
 > **Version:** 0.3.2
 >
 > SkillScan was designed and directed by Kurt Payne and built with [Manus](https://manus.im).
@@ -18,20 +18,20 @@ The two user-facing products are:
 
 These two tools are the product. The behavioral tracer (`skillscan-trace`) and training corpus (`skillscan-corpus`) are private infrastructure that improve the ML model and validate detection rules. They do not ship to users and are not part of the public roadmap.
 
-**SaaS scanner** (token-gated hosted scanning with permanent report URLs) is a future phase. It is not on the active roadmap. The prerequisite is a false positive rate below 2% on benign skills and a detection rate above 85% on the malicious corpus. The current ML model (v7458, macro F1 0.8448, FPR 15.7%) does not yet meet that bar. The SaaS design is documented in `skillscan-trace/ROADMAP.md` Phase 3 for reference when the time comes.
+**SaaS scanner** (token-gated hosted scanning with permanent report URLs) is a future phase. It is not on the active roadmap. The prerequisite is a false positive rate below 2% on benign skills and a detection rate above 85% on the malicious corpus. The current ML model (v5, macro F1 0.911, FPR 11.45%) is improving rapidly but does not yet meet the SaaS bar. The SaaS design is documented in `skillscan-trace/ROADMAP.md` Phase 3 for reference when the time comes.
 
 ---
 
-## Current State (2026-03-22)
+## Current State (2026-03-24)
 
 ### What is working and shipped
 
 | Component | Status | Notes |
 |---|---|---|
-| Static rules | **117 rules** (85 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` |
+| Static rules | **135 rules** (120 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` |
 | AST data-flow analysis | **Complete** | `detectors/ast_flows.py` — secret→decode→exec/network flows |
 | Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003 permission scope validation |
-| ML classifier | **v7458, macro F1 0.8448** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
+| ML classifier | **v5, macro F1 0.911** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
 | IOC DB | **2,051 entries** (bundled) | 503 domains, 17 IPs, 1,527 CIDRs, 4 URLs; runtime feeds via `managed_sources.json` |
 | Vuln DB | **35 packages** | 26 Python + 9 npm |
 | Semantic classifier | **Complete** | `semantic_local.py` — offline stem-and-score, no network |
@@ -43,29 +43,30 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 | `skillscan-lint` | **Complete** | SARIF output, schema validation, front-matter checks |
 | Skill fuzzer | **Complete** | `tools/skill-fuzzer/` — 5 mutation strategies, evasion rate reporting |
 | Test suite | **300 test functions** across 30 files | |
-| Showcase examples | **104 examples** covering all rule categories | |
+| Showcase examples | **117 examples** covering all rule categories | |
 
 ### ML model state
 
-The v7458 fine-tune (2026-03-22) is the first run to pass the F1 gate:
+Model history (all runs that passed the F1 gate):
 
-| Metric | v1278 (previous) | v7458 (current) | Target (v0.4.0) | Target (v1.0) |
+| Metric | v7458 (2026-03-22) | v5 (2026-03-24) | Target (v0.4.0) | Target (v1.0) |
 |---|---|---|---|---|
-| Training corpus | ~210 examples | **7,277 examples** | 10,000+ | 20,000+ |
-| Macro F1 | 0.7544 (FAILED) | **0.8448** (PASSED) | ≥ 0.90 | ≥ 0.93 |
-| Benign F1 | 0.8421 | 0.9040 | ≥ 0.90 | ≥ 0.93 |
-| Injection F1 | 0.6667 | **0.7857** | ≥ 0.85 | ≥ 0.90 |
-| FPR | 18.4% | **15.7%** | ≤ 12% | ≤ 5% |
+| Training corpus | 7,277 examples | **11,461 examples** | 15,000+ | 25,000+ |
+| Eval set | 181 examples | **202 examples** | 220+ | 250+ |
+| Macro F1 | 0.8448 (PASSED) | **0.911** (PASSED) | ≥ 0.93 | **≥ 0.95** |
+| Benign F1 | 0.9040 | **0.9317** | ≥ 0.93 | ≥ 0.95 |
+| Injection F1 | 0.7857 | **0.8903** | ≥ 0.92 | ≥ 0.95 |
+| FPR | 15.7% | **11.45%** | ≤ 8% | ≤ 5% |
 
-The injection recall improvement (+0.119) is the main story. The 12 injection eval examples still scoring 0.0 are all obfuscation-style variants — these are the highest-priority corpus additions for the next fine-tune.
+v5 improvements: macro F1 +0.066, injection F1 +0.105, FPR −4.25pp. 13 injection archetypes still score 0.0 — all are indirect injection, jailbreak, or social-engineering patterns with 0–5 training examples. These are the highest-priority corpus additions for the next fine-tune.
 
 ### Open gaps
 
 | Gap | Severity | Milestone |
 |---|---|---|
-| ML injection recall on obfuscation variants | **High** | M7 |
-| FPR at 15.7% (target ≤ 10% for SaaS) | **High** | M7 |
-| `docs/MODEL_METRICS.md` stale (shows v1278) | **Medium** | M10 |
+| 13 injection FN archetypes (indirect, jailbreak, SE) | **High** | M7 |
+| FPR at 11.45% (target ≤ 8% for v0.4.0) | **Medium** | M7 |
+| `docs/MODEL_METRICS.md` stale (shows v7458) | **Medium** | M10 |
 | Chain rule proximity window missing | **Medium** | M6 |
 | PSV rules not wired through rule YAML | **Medium** | M8 |
 | Vuln DB thin (35 packages) | **Medium** | M5 |
@@ -124,19 +125,25 @@ The current chain rules (CHN-001 through CHN-014) match patterns anywhere in the
 
 ---
 
-## Milestone 7 — ML Model Quality: Injection Recall
+## Milestone 7 — ML Model Quality: Injection Recall *(in progress)*
 
-**Goal:** Push injection F1 from 0.7857 to ≥ 0.85, closing the gap on obfuscation-style attacks.
+**Goal:** Push macro F1 from 0.911 to ≥ 0.95, closing the remaining gap on indirect injection, jailbreak variants, and social engineering attacks.
 
-The 12 injection eval examples still scoring 0.0 are all obfuscation or indirect-style attacks. The model has not seen enough training examples of this pattern.
+v5 (2026-03-24): macro F1=0.911, injection F1=0.890, FPR=11.45%. The model is now precise (P=0.972) but misses subtle indirect attacks. 13 injection archetypes still score 0.0 — all are indirect, jailbreak, or social-engineering patterns with 0–5 training examples.
+
+**Remaining FN archetypes (13):**
+- Indirect/supply-chain: pi12, pi15, pi20, pi21, pi22, pi24, pi27, pi31, pi59, pi63
+- Jailbreak: jb07 (consistency appeal), jb08 (refusal prohibition)
+- Social engineering: se_git_config_harvest, se_prize_scam
 
 **Actions:**
-- Add 50+ training examples covering the 12 failing eval patterns: markdown injection, LaTeX injection, tool name spoofing, exfil via error messages, fake changelogs, conditional triggers, supply chain dependency injection, webhook exfil logging, author field injection, RSS indirect injection, prompt leak via translation, context flooding.
-- Run back-translation augmentation (`scripts/backtranslate_augment.py`, already written) on the 12 failing examples to generate 4–5 natural English variants each.
-- Trigger a new fine-tune. Target: injection F1 ≥ 0.85, FPR ≤ 12%.
-- Update `docs/MODEL_METRICS.md` with v7458 results and the new run results.
+- Add 8–10 training variants for each of the 13 FN archetypes (~120 new examples).
+- Run back-translation augmentation on the 9 indirect injection FN eval examples (generates ~36 paraphrase variants).
+- Add 10 benign MCP training examples to fix 2 benign FP archetypes (mcp_git_skill, mcp_sampling_skill).
+- Trigger a new fine-tune. Target: macro F1 ≥ 0.93, injection F1 ≥ 0.92, FPR ≤ 8%.
+- Update `docs/MODEL_METRICS.md` with v5 results and the new run results.
 
-**Acceptance criteria:** Injection F1 ≥ 0.85 on the 181-example held-out eval set. FPR ≤ 12%. `MODEL_METRICS.md` is current.
+**Acceptance criteria:** Macro F1 ≥ 0.93 on the 202-example held-out eval set. FPR ≤ 8%. `MODEL_METRICS.md` is current. Long-term target: macro F1 ≥ 0.95.
 
 ---
 
@@ -421,16 +428,16 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 
 ### Detection Quality
 
-| Metric | Current (2026-03-22) | Target (v0.4.0) | Target (v1.0) |
+| Metric | Current (2026-03-24) | Target (v0.4.0) | Target (v1.0) |
 |---|---|---|---|
-| Static + chain rules | 117 (102 static + 15 chain) | 130+ | 150+ |
-| ML corpus size (training) | 7,277 examples | 10,000+ | 20,000+ |
-| ML macro F1 (held-out) | **0.8448** (v7458, gate PASSED) | ≥ 0.90 | ≥ 0.93 |
-| ML injection F1 | 0.7857 | ≥ 0.85 | ≥ 0.90 |
-| ML FPR | 15.7% | ≤ 12% | ≤ 5% |
+| Static + chain rules | 135 (120 static + 15 chain) | 150+ | 175+ |
+| ML corpus size (training) | 11,461 examples | 15,000+ | 25,000+ |
+| ML macro F1 (held-out) | **0.911** (v5, 2026-03-24, gate PASSED) | ≥ 0.93 | **≥ 0.95** |
+| ML injection F1 | 0.8903 | ≥ 0.92 | ≥ 0.95 |
+| ML FPR | 11.45% | ≤ 8% | ≤ 5% |
 | IOC DB entries (bundled) | 2,051 | 5,000+ | 20,000+ |
 | Vuln DB packages | 35 | 50+ | 150+ |
-| Showcase examples | 104 | 120+ | 150+ |
+| Showcase examples | 117 | 130+ | 150+ |
 
 ### Ecosystem Coverage
 
