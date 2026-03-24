@@ -102,3 +102,82 @@ def test_merge_user_intel_ignores_unreadable_source(monkeypatch, tmp_path: Path)
     assert merged_ioc_db == ioc_db
     assert merged_vuln_db == vuln_db
     assert "user:broken" not in sources
+
+
+# ---------------------------------------------------------------------------
+# CI gate: bundled DB depth (Milestone 5)
+# ---------------------------------------------------------------------------
+
+def _bundled_ioc_db_path():
+    import skillscan
+    from pathlib import Path
+    return Path(skillscan.__file__).parent / "data" / "intel" / "ioc_db.json"
+
+
+def _bundled_vuln_db_path():
+    import skillscan
+    from pathlib import Path
+    return Path(skillscan.__file__).parent / "data" / "intel" / "vuln_db.json"
+
+
+def test_bundled_ioc_db_minimum_entries():
+    """Bundled IOC DB must contain at least 5,000 entries (M5 gate)."""
+    db_path = _bundled_ioc_db_path()
+    assert db_path.exists(), f"Bundled ioc_db.json not found at {db_path}"
+    db = json.loads(db_path.read_text(encoding="utf-8"))
+    total = (
+        len(db.get("domains", []))
+        + len(db.get("ips", []))
+        + len(db.get("cidrs", []))
+        + len(db.get("urls", []))
+    )
+    assert total >= 5000, (
+        f"Bundled IOC DB has only {total} entries -- must be >= 5,000. "
+        "Run python3 scripts/seed_ioc_db.py to refresh."
+    )
+
+
+def test_bundled_ioc_db_parses_correctly():
+    """Every entry in the bundled IOC DB must be a non-empty string."""
+    db_path = _bundled_ioc_db_path()
+    assert db_path.exists()
+    db = json.loads(db_path.read_text(encoding="utf-8"))
+    for key in ("domains", "ips", "cidrs", "urls"):
+        entries = db.get(key, [])
+        assert isinstance(entries, list), f"ioc_db[key] is not a list"
+        for entry in entries:
+            assert isinstance(entry, str) and entry.strip()
+
+
+def test_bundled_ioc_db_has_meta():
+    """Bundled IOC DB must have a _meta block with a generated date."""
+    db_path = _bundled_ioc_db_path()
+    assert db_path.exists()
+    db = json.loads(db_path.read_text(encoding="utf-8"))
+    assert "_meta" in db, "ioc_db.json is missing the _meta block"
+    assert "generated" in db["_meta"], "ioc_db.json _meta is missing generated date"
+
+
+def test_bundled_vuln_db_minimum_packages():
+    """Bundled vuln DB must cover at least 20 Python packages (M5 gate)."""
+    db_path = _bundled_vuln_db_path()
+    assert db_path.exists(), f"Bundled vuln_db.json not found at {db_path}"
+    db = json.loads(db_path.read_text(encoding="utf-8"))
+    python_pkgs = db.get("python", {})
+    assert len(python_pkgs) >= 20, (
+        f"Bundled vuln DB covers only {len(python_pkgs)} Python packages -- must be >= 20. "
+        "Run python3 scripts/seed_vuln_db.py to refresh."
+    )
+
+
+def test_bundled_vuln_db_parses_correctly():
+    """Every entry in the bundled vuln DB must have the expected schema."""
+    db_path = _bundled_vuln_db_path()
+    assert db_path.exists()
+    db = json.loads(db_path.read_text(encoding="utf-8"))
+    for ecosystem in ("python", "npm"):
+        for pkg, versions in db.get(ecosystem, {}).items():
+            assert isinstance(versions, dict)
+            for version, vuln in versions.items():
+                assert "id" in vuln
+                assert "severity" in vuln

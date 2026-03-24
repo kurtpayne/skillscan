@@ -16,6 +16,7 @@ Bundled DB sources (high-precision, small):
   - urlhaus_hosts: active malware-hosting domains (~500 entries)
   - feodotracker_ips: active C2 IPs (~1-50 entries, very high precision)
   - spamhaus_drop: hijacked IP blocks (~1,500 CIDRs)
+  - hagezi_doh_domains: DNS-over-HTTPS bypass domains (~3,500 entries, high precision)
 
 Runtime-only sources (large, merged at scan time):
   - urlhaus_urls: 71k active malware URLs
@@ -42,7 +43,7 @@ IOC_DB_PATH = REPO_ROOT / "src/skillscan/data/intel/ioc_db.json"
 MANAGED_SOURCES_PATH = REPO_ROOT / "src/skillscan/data/intel/managed_sources.json"
 
 # Only these feeds are baked into the bundled DB.
-BUNDLED_FEEDS = {"urlhaus_hosts", "feodotracker_ips", "spamhaus_drop"}
+BUNDLED_FEEDS = {"urlhaus_hosts", "feodotracker_ips", "spamhaus_drop", "hagezi_doh_domains"}
 
 REQUEST_TIMEOUT = 30
 

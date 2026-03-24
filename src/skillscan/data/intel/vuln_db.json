@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-20",
+    "generated": "2026-03-24",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -50,9 +50,7 @@
       "semver",
       "tar",
       "unzipper",
-      "archiver",
-      "mcp-atlassian",
-      "@aborruso/ckan-mcp-server"
+      "archiver"
     ]
   },
   "python": {
@@ -634,45 +632,6 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
-    },
-    "langsmith": {
-      "0.12.70": {
-        "id": "CVE-2026-25750",
-        "severity": "high",
-        "fixed": "0.12.71"
-      }
-    },
-    "sglang": {
-      "0.4.5": {
-        "id": "CVE-2026-3060",
-        "severity": "critical",
-        "fixed": null
-      },
-      "0.4.5.1": {
-        "id": "CVE-2026-3059",
-        "severity": "critical",
-        "fixed": null
-      },
-      "0.4.5.2": {
-        "id": "CVE-2026-3989",
-        "severity": "high",
-        "fixed": null
-      }
-    },
-    "langflow": {
-      "1.8.1": {
-        "id": "CVE-2026-33017",
-        "severity": "critical",
-        "fixed": "1.8.2"
-      }
-    },
-    "sqlbot": {
-      "0.1.0": {
-        "id": "CVE-2026-32622",
-        "severity": "critical",
-        "fixed": null,
-        "description": "Stored prompt injection in SQLBot allows RCE via COPY TO PROGRAM as postgres user"
-      }
     }
   },
   "npm": {
@@ -702,72 +661,6 @@
         "id": "GHSA-29xp-372q-xqph",
         "severity": "medium",
         "fixed": "7.5.2"
-      }
-    },
-    "openclaw": {
-      "2026.3.12": {
-        "id": "CVE-2026-25253",
-        "severity": "high",
-        "fixed": "2026.3.13"
-      },
-      "2026.3.14": {
-        "id": "CVE-2026-31997",
-        "severity": "critical",
-        "fixed": "2026.3.15"
-      },
-      "2026.2.22": {
-        "id": "CVE-2026-32042",
-        "severity": "high",
-        "fixed": "2026.2.25"
-      }
-    },
-    "mcp-atlassian": {
-      "0.16.0": {
-        "id": "CVE-2026-27826",
-        "severity": "critical",
-        "fixed": "0.17.0"
-      },
-      "0.16.1": {
-        "id": "CVE-2026-27825",
-        "severity": "high",
-        "fixed": "0.17.0"
-      }
-    },
-    "@aborruso/ckan-mcp-server": {
-      "0.4.84": {
-        "id": "CVE-2026-33060",
-        "severity": "medium",
-        "fixed": "0.4.85"
-      }
-    },
-    "mcp-server-auto-commit": {
-      "1.0.0": {
-        "id": "CVE-2026-4198",
-        "severity": "high",
-        "fixed": "1.0.1"
-      }
-    },
-    "git-mcp-server": {
-      "0.1.0": {
-        "id": "CVE-2026-4496",
-        "severity": "high",
-        "fixed": "0.1.1"
-      }
-    },
-    "@azure/mcp": {
-      "0.0.1": {
-        "id": "CVE-2026-26118",
-        "severity": "high",
-        "fixed": "0.0.2",
-        "description": "SSRF in Azure MCP Server Tools allows privilege escalation over network (CVSS 8.8)"
-      }
-    },
-    "@leanprover/unicode-input-component": {
-      "0.1.9": {
-        "id": "CVE-2026-32732",
-        "severity": "medium",
-        "fixed": "0.2.0",
-        "description": "XSS in Lean 4 VS Code Extension unicode-input-component allows arbitrary JavaScript execution"
       }
     }
   }

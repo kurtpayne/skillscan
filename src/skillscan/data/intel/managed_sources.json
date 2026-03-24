@@ -24,6 +24,12 @@
     "url": "https://www.spamhaus.org/drop/drop.txt"
   },
   {
+    "name": "hagezi_doh_domains",
+    "kind": "ioc",
+    "format": "domain_text",
+    "url": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/doh-onlydomains.txt"
+  },
+  {
     "name": "hagezi_tif_domains",
     "kind": "ioc",
     "format": "domain_text",
