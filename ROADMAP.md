@@ -31,9 +31,9 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 | Static rules | **135 rules** (120 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` |
 | AST data-flow analysis | **Complete** | `detectors/ast_flows.py` — secret→decode→exec/network flows |
 | Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003 permission scope validation |
-| ML classifier | **v5, macro F1 0.911** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
+| ML classifier | **v7, macro F1 0.9475** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
 | IOC DB | **2,051 entries** (bundled) | 503 domains, 17 IPs, 1,527 CIDRs, 4 URLs; runtime feeds via `managed_sources.json` |
-| Vuln DB | **35 packages** | 26 Python + 9 npm |
+| Vuln DB | **78 packages** | 46 Python + 26 npm + 6 Go |
 | Semantic classifier | **Complete** | `semantic_local.py` — offline stem-and-score, no network |
 | `skillscan diff` | **Complete** | Instruction-level diff with security-relevant change flagging |
 | SARIF / JUnit / CycloneDX output | **Complete** | CI-ready output formats |
@@ -49,29 +49,36 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 
 Model history (all runs that passed the F1 gate):
 
-| Metric | v7458 (2026-03-22) | v5 (2026-03-24) | Target (v0.4.0) | Target (v1.0) |
+| Metric | v7458 (2026-03-22) | v5 (2026-03-24) | v7 (2026-03-24) | Target (v1.0) |
 |---|---|---|---|---|
-| Training corpus | 7,277 examples | **11,461 examples** | 15,000+ | 25,000+ |
-| Eval set | 181 examples | **202 examples** | 220+ | 250+ |
-| Macro F1 | 0.8448 (PASSED) | **0.911** (PASSED) | ≥ 0.93 | **≥ 0.95** |
-| Benign F1 | 0.9040 | **0.9317** | ≥ 0.93 | ≥ 0.95 |
-| Injection F1 | 0.7857 | **0.8903** | ≥ 0.92 | ≥ 0.95 |
-| FPR | 15.7% | **11.45%** | ≤ 8% | ≤ 5% |
+| Training corpus | 7,277 examples | 11,461 examples | **13,910 examples** | 25,000+ |
+| Eval set | 181 examples | 202 examples | **221 examples** | 250+ |
+| Macro F1 | 0.8448 | 0.9110 | **0.9475** | **≥ 0.95** |
+| Benign F1 | 0.9040 | 0.9317 | **0.9614** | ≥ 0.97 |
+| Injection F1 | 0.7857 | 0.8903 | **0.9336** | ≥ 0.95 |
+| FPR | 15.7% | 11.45% | **7.38%** | ≤ 5% |
+| Enterprise benign eval | — | — | **20/20 (100%)** | 30/30 (100%) |
 
-v5 improvements: macro F1 +0.066, injection F1 +0.105, FPR −4.25pp. 13 injection archetypes still score 0.0 — all are indirect injection, jailbreak, or social-engineering patterns with 0–5 training examples. These are the highest-priority corpus additions for the next fine-tune.
+v7 improvements over v5: macro F1 +0.037, injection F1 +0.043, FPR −4.07pp, enterprise benign 0% → 100%. F1 gate raised to 0.92. 8 injection archetypes still score 0.0 — jailbreak variants, MCP impersonation, and subtle indirect patterns. Corpus researcher agent now runs daily at 02:00 UTC harvesting new vendor skill files automatically.
 
 ### Open gaps
 
+Updated 2026-03-24 after v7 fine-tune (macro F1=0.9475) and full gap analysis across all three detection layers. Full analysis: `docs/GAP_ANALYSIS.md`.
+
 | Gap | Severity | Milestone |
 |---|---|---|
-| 13 injection FN archetypes (indirect, jailbreak, SE) | **High** | M7 |
-| Enterprise benign FPR: credential/endpoint/auth patterns over-trigger | **High** | M7.5 |
-| FPR at 11.45% (target ≤ 8% for v0.4.0) | **Medium** | M7 / M7.5 |
-| `docs/MODEL_METRICS.md` stale (shows v7458) | **Medium** | M10 |
+| 8 injection FN archetypes (jb07, jb08, mcp_impersonation, pi21, pi24, pi61, se_git, organic) | **High** | M7 |
+| 5 P1 YAML rules missing (PINJ-008/009/010/012, SE-003) | **High** | M6 |
+| 6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002) | **High** | M6 / M8 |
+| PSV-004 unknown frontmatter keys not flagged | **Medium** | M8 |
+| GR-007 circular dependency detection missing | **Medium** | M8 |
+| PSV-005 tool drift detection missing | **Medium** | M8 |
+| SUP-018 pip install in skill body not flagged | **Medium** | M6 |
+| 9 lint rules missing (QL-026 through QL-034) | **Medium** | M10.9 |
 | Chain rule proximity window missing | **Medium** | M6 |
 | PSV rules not wired through rule YAML | **Medium** | M8 |
-| Vuln DB thin (35 packages) | **Medium** | M5 |
-| IOC DB bundled only 2,051 entries | **Medium** | M5 |
+| Vuln DB thin (78 packages, target 150+) | **Low** | M5 |
+| IOC DB bundled only 2,051 entries | **Low** | M5 |
 | VS Code extension unpublished | **Low** | M9 |
 | `exfil_channels.yaml` not merged into `default.yaml` | **Low** | M6 |
 | `docs/RELEASE_ONBOARDING.md` stale | **Low** | M10 |
@@ -121,8 +128,20 @@ The current chain rules (CHN-001 through CHN-014) match patterns anywhere in the
 - Update `rules.py` to enforce the window when `window_lines` is set.
 - Add metadata blocks to all 15 chain rules (currently only static rules have metadata guards).
 - Migrate `exfil_channels.yaml` (EXF-002, CHN-003) into `default.yaml` and delete the satellite file.
+- **[GAP P1]** Add `PINJ-008` — YAML anchor/alias injection in frontmatter (`&override` + `*override` in non-standard fields). Severity: HIGH.
+- **[GAP P1]** Add `PINJ-009` — Fake end-of-prompt dividers (`---END OF SYSTEM PROMPT---`, `[END OF INSTRUCTIONS]`) followed by role markers. Severity: HIGH.
+- **[GAP P1]** Add `PINJ-010` — Fake system header at the very start of a skill file before frontmatter (`SYSTEM:`, `[SYSTEM]`). Severity: HIGH.
+- **[GAP P1]** Add `PINJ-012` — `AGENT INSTRUCTION` or `AI AGENT INSTRUCTION` headers anywhere in the skill body. Severity: CRITICAL.
+- **[GAP P1]** Add `SE-003` — Prize/reward/winner framing combined with requests for API keys, account IDs, or credentials. Severity: CRITICAL.
+- **[GAP P2]** Add `PINJ-011` — Tool alias injection (`safe_exec → Bash`, `w+ maps to w+`). Severity: HIGH.
+- **[GAP P2]** Add `PINJ-013` — Conditional time-lock patterns (date/time condition + instruction-override language). Severity: HIGH.
+- **[GAP P2]** Add `PINJ-014` — Scan all string-type frontmatter fields (not just `description`) for injection keywords. Severity: HIGH.
+- **[GAP P2]** Add `EXF-018` — Error messages instructed to include `system prompt`, `conversation history`, or `full context`. Severity: HIGH.
+- **[GAP P2]** Add `EXF-019` — Skills that configure logging/audit endpoints collecting conversation history or environment metadata. Severity: HIGH.
+- **[GAP P2]** Add `SE-002` — Instructions to read `~/.gitconfig` or `~/.git-credentials` combined with any send/upload/audit instruction. Severity: HIGH.
+- **[GAP P3]** Add `SUP-018` — `pip install` in skill bodies referencing non-standard package names pinned to specific versions. Severity: MEDIUM.
 
-**Acceptance criteria:** CHN-001/002/004/005 false positive rate on the 104 benign showcase examples drops to zero. All chain rules have metadata blocks. `exfil_channels.yaml` is deleted.
+**Acceptance criteria:** CHN-001/002/004/005 false positive rate on the 104 benign showcase examples drops to zero. All chain rules have metadata blocks. `exfil_channels.yaml` is deleted. All P1 YAML rules (PINJ-008/009/010/012, SE-003) implemented with showcase examples.
 
 ---
 
@@ -144,7 +163,17 @@ v5 (2026-03-24): macro F1=0.911, injection F1=0.890, FPR=11.45%. The model is no
 - Trigger a new fine-tune. Target: macro F1 ≥ 0.93, injection F1 ≥ 0.92, FPR ≤ 8%.
 - Update `docs/MODEL_METRICS.md` with v5 results and the new run results.
 
-**Acceptance criteria:** Macro F1 ≥ 0.93 on the 202-example held-out eval set. FPR ≤ 8%. `MODEL_METRICS.md` is current. Long-term target: macro F1 ≥ 0.95.
+**v7 status (2026-03-24):** macro F1=0.9475, FPR=7.38%, enterprise benign eval 20/20 (100%). F1 gate raised to 0.92. 8 injection archetypes still score 0.0.
+
+**Remaining FN archetypes (8):** jb07 (consistency appeal), jb08 (refusal prohibition), mcp_server_impersonation, organic_mal047 (Claude hooks RCE), organic_sup017 (Actions tag repoint), pi21 (supply chain pip), pi24 (RSS indirect), pi61 (error context leakage), se_git_config_harvest.
+
+**Actions for v8:**
+- Add 8–10 training variants for each of the 8 remaining FN archetypes.
+- Add **malicious enterprise skill variants**: take real Azure/AWS/Composio vendor skill files and inject attack patterns (credential exfil, endpoint redirect, tool alias injection, fake system headers). These are the hardest injection examples — they look exactly like legitimate enterprise skills but contain embedded attacks. Target: 50–80 adversarial enterprise examples across 5 attack categories in `training_corpus/enterprise_injection/`.
+- Run corpus researcher agent before triggering the run.
+- Trigger v8 fine-tune. Target: macro F1 ≥ 0.96, FPR ≤ 6%.
+
+**Acceptance criteria:** Macro F1 ≥ 0.95 on the held-out eval set. FPR ≤ 6%. `MODEL_METRICS.md` is current.
 
 ---
 
@@ -174,7 +203,13 @@ Enterprise customers scanning internal skill libraries — runbooks, deployment 
 
 **Why this is a separate milestone from M7:** M7 is about injection recall (catching attacks). M7.5 is about benign precision (not crying wolf on legitimate enterprise skills). They require different corpus additions and can be worked in parallel. Both feed the same training run.
 
-**Acceptance criteria:** The 20 new benign eval examples all score SAFE. FPR on the full benign eval set drops to ≤ 8%. No regression in injection F1.
+**Status (2026-03-24): COMPLETE.** All 20 enterprise benign eval examples score SAFE (100%). FPR dropped to 7.38%. Corpus researcher agent harvested 389 vendor skill files (Azure, AWS, Composio, ServiceNow) and runs daily at 02:00 UTC.
+
+**Remaining work for v8:**
+- Add malicious enterprise skill variants (see M7 above for details).
+- Add 10 more enterprise benign eval examples covering compound patterns: multi-step runbooks, CI/CD pipeline skills, infrastructure-as-code helpers.
+
+**Acceptance criteria:** All 30 enterprise benign eval examples score SAFE. 50–80 adversarial enterprise injection examples score INJECTION. FPR ≤ 5%.
 
 ---
 
@@ -189,8 +224,12 @@ PSV-001/002/003 are implemented in `detectors/skill_graph.py` but have no entrie
 - Ensure `skillscan rule list` shows PSV rules.
 - Ensure PSV findings can be suppressed via `--suppress-rule PSV-001`.
 - Add 5 showcase examples for PSV rules.
+- **[GAP P2]** Add `PSV-004` — flag unknown frontmatter keys not in the standard schema. Catches `system_override`, `behavior`, `activation` injection vectors. Severity: WARNING.
+- **[GAP P2]** Add `GR-007` — detect cycles in the skill invocation graph using DFS. Severity: ERROR.
+- **[GAP P4]** Add `GR-008` — warn when a skill invokes another skill without a version constraint. Severity: WARNING.
+- **[GAP P4]** Add `PSV-005` — detect tool set expansion between skill versions (surfaced from `skillscan diff`). Severity: HIGH.
 
-**Acceptance criteria:** `skillscan rule list` shows PSV-001/002/003. PSV findings appear in SARIF output. Suppression works. 5 new showcase examples pass.
+**Acceptance criteria:** `skillscan rule list` shows PSV-001/002/003/004. PSV findings appear in SARIF output. Suppression works. GR-007 detects circular dependencies. 8 new showcase examples pass.
 
 ---
 
@@ -344,10 +383,27 @@ After the ML score passes the injection threshold, run the top-scoring chunk thr
 - Attack hint accuracy (correct category) ≥70% on the labeled eval set
 - No change to FPR or macro F1 (post-processing only, no model change)
 - SARIF output includes `attack_hint` in the `properties` field
+---
+## Milestone 10.9 — Lint Rule Expansion (skillscan-lint)
+
+**Goal:** Bring skillscan-lint from 25 rules to 34 rules, covering schema validation, description/tools alignment, and documentation completeness gaps identified in the vendor skill corpus audit.
+
+The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 patterns that real enterprise skills follow consistently but that the current lint rules do not check for. These are quality and reliability issues, not security issues — they belong in `skillscan-lint`, not `skillscan-security`.
+
+**Actions:**
+- **[GAP P2]** Add `QL-026` — warn on unknown frontmatter keys not in the standard schema. Add `QL-027` — warn when `version` is not a valid semver string. Severity: INFO/WARNING.
+- **[GAP P2]** Add `QL-028` — detect "use the tool" or "call the function" without a specific tool name in the skill body. Severity: INFO.
+- **[GAP P2]** Add `QL-029` — detect when the description contains action verbs (`executes`, `runs`, `deploys`) that imply capabilities not present in `allowed-tools`. Severity: WARNING.
+- **[GAP P2]** Add `QL-030` — warn when `allowed-tools` contains `computer` or `Bash` without a justification keyword in the description. Severity: WARNING.
+- **[GAP P2]** Add `QL-032` — warn when a skill has no `## Inputs` or `## Outputs` section. Severity: WARNING.
+- **[GAP P3]** Add `QL-031` — info-level flag when a skill has no `changelog` section and no `updated` frontmatter field. Severity: INFO.
+- **[GAP P3]** Add `QL-033` — info-level flag when a skill has no `## When to Use` section. Severity: INFO.
+- **[GAP P4]** Add `QL-034` — warn when a skill body references specific CLI tools (`az`, `kubectl`, `terraform`, `gh`, `npm`, `pip`) without a `compatibility:` or `## Prerequisites` section. Severity: INFO.
+
+**Acceptance criteria:** `skillscan-lint` rule count reaches 34. All 9 new rules have unit tests and at least 2 showcase examples each. No regression on existing showcase examples.
 
 ---
-
-## Milestone 11 — Hardening & PyPI Publish
+## Milestone 1111 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
 
