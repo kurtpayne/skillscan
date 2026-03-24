@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
+
+import pytest
 
 from skillscan.clamav import scan_paths
 
@@ -51,11 +54,6 @@ def test_clamav_timeout(monkeypatch, tmp_path: Path) -> None:
 # This test is skipped automatically when ClamAV is not installed so it does not
 # break developer laptops.  In CI, ClamAV is expected to be present and the test
 # is a hard gate.
-
-import shutil
-
-import pytest
-
 
 def _clamav_installed() -> bool:
     return shutil.which("clamscan") is not None

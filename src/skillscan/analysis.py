@@ -90,7 +90,10 @@ VulnPackageMap = dict[str, VulnVersionMap]
 VulnDB = dict[str, VulnPackageMap]
 
 BYTECODE_SUFFIXES = {".pyc", ".pyo"}
-SCRIPT_SUFFIXES = {".py", ".sh", ".bash", ".rb", ".js", ".ts", ".mjs", ".cjs", ".go", ".rs", ".pl", ".ps1", ".psm1"}
+SCRIPT_SUFFIXES = {
+    ".py", ".sh", ".bash", ".rb", ".js", ".ts", ".mjs",
+    ".cjs", ".go", ".rs", ".pl", ".ps1", ".psm1",
+}
 
 # Language tag → file extensions (for multilang rule filtering)
 _LANG_EXTENSIONS: dict[str, frozenset[str]] = {
