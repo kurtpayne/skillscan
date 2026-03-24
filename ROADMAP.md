@@ -65,7 +65,8 @@ v5 improvements: macro F1 +0.066, injection F1 +0.105, FPR −4.25pp. 13 injecti
 | Gap | Severity | Milestone |
 |---|---|---|
 | 13 injection FN archetypes (indirect, jailbreak, SE) | **High** | M7 |
-| FPR at 11.45% (target ≤ 8% for v0.4.0) | **Medium** | M7 |
+| Enterprise benign FPR: credential/endpoint/auth patterns over-trigger | **High** | M7.5 |
+| FPR at 11.45% (target ≤ 8% for v0.4.0) | **Medium** | M7 / M7.5 |
 | `docs/MODEL_METRICS.md` stale (shows v7458) | **Medium** | M10 |
 | Chain rule proximity window missing | **Medium** | M6 |
 | PSV rules not wired through rule YAML | **Medium** | M8 |
@@ -144,6 +145,36 @@ v5 (2026-03-24): macro F1=0.911, injection F1=0.890, FPR=11.45%. The model is no
 - Update `docs/MODEL_METRICS.md` with v5 results and the new run results.
 
 **Acceptance criteria:** Macro F1 ≥ 0.93 on the 202-example held-out eval set. FPR ≤ 8%. `MODEL_METRICS.md` is current. Long-term target: macro F1 ≥ 0.95.
+
+---
+
+## Milestone 7.5 — Enterprise Benign Corpus: Corporate Workflows & Runbooks
+
+**Goal:** Eliminate false positives on legitimate enterprise skill files that use credential-referencing, internal endpoint, and authentication patterns.
+
+Live inference testing (2026-03-24) revealed that the v5 model flags 6 out of 9 benign enterprise jargon examples as injection. The jargon vocabulary itself (`Toolzilla`, `Artemis`, `Blorb`, etc.) is handled correctly — the model generalizes to unknown names fine. The problem is **semantic patterns** that appear in both benign enterprise workflows and real attacks:
+
+| Trigger pattern | Benign context | Attack context |
+|---|---|---|
+| `"send results to [endpoint]"` | Internal reporting API call | Exfiltration channel |
+| `"your API key is stored in [vault]"` | Operational credential retrieval | Credential harvesting setup |
+| `"authenticate using your [badge/token]"` | SSO / MFA workflow | Social engineering pretext |
+| `"sampling/createMessage"` | Legitimate MCP delegation | MCP sampling exfil |
+| `"never include credentials"` | Explicit security guardrail | (Ironically triggers the model) |
+
+Enterprise customers scanning internal skill libraries — runbooks, deployment scripts, auth helpers, incident response procedures — will encounter significant false positive noise from these patterns.
+
+**Actions:**
+- Add 20–30 benign training examples covering **credential-referencing operational patterns**: vault retrieval, config file reads, API key rotation, token refresh workflows. Emphasize that the credential is being *used for a legitimate purpose*, not exfiltrated.
+- Add 20–30 benign training examples covering **internal endpoint patterns**: sending results to `corp.internal` APIs, posting to internal Slack/Teams webhooks, writing to internal dashboards, logging to internal SIEM.
+- Add 20–30 benign training examples covering **enterprise authentication workflows**: SSO login, badge-based auth, MFA setup, bastion host access, jump server patterns, service account usage.
+- Add 10–15 benign training examples covering **runbook-style multi-step procedures**: incident response runbooks, deployment checklists, on-call procedures, change management workflows.
+- Add 5 held-out eval examples for each of the 4 pattern categories (20 new benign eval examples total) to track FP rate on enterprise patterns specifically.
+- Save all examples to `training_corpus/benign/benign/` with prefix `benign_enterprise_`.
+
+**Why this is a separate milestone from M7:** M7 is about injection recall (catching attacks). M7.5 is about benign precision (not crying wolf on legitimate enterprise skills). They require different corpus additions and can be worked in parallel. Both feed the same training run.
+
+**Acceptance criteria:** The 20 new benign eval examples all score SAFE. FPR on the full benign eval set drops to ≤ 8%. No regression in injection F1.
 
 ---
 
