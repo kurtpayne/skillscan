@@ -173,13 +173,28 @@ def test_bundled_vuln_db_minimum_packages():
 
 
 def test_bundled_vuln_db_parses_correctly():
-    """Every entry in the bundled vuln DB must have the expected schema."""
+    """Every entry in the bundled vuln DB must have the expected schema.
+
+    Two formats are accepted:
+    - dict-format (version-keyed): {"1.2.3": {"id": ..., "severity": ...}}
+      Used by the scanner for exact-version lookups.
+    - list-format (OSV-style): [{"id": ..., "severity": ..., "versions": [...]}]
+      Added by the pattern-update skill; currently informational only.
+    """
     db_path = _bundled_vuln_db_path()
     assert db_path.exists()
     db = json.loads(db_path.read_text(encoding="utf-8"))
     for ecosystem in ("python", "npm"):
         for pkg, versions in db.get(ecosystem, {}).items():
-            assert isinstance(versions, dict)
-            for version, vuln in versions.items():
-                assert "id" in vuln
-                assert "severity" in vuln
+            if isinstance(versions, list):
+                # OSV-style list format — validate each advisory entry
+                for entry in versions:
+                    assert "id" in entry, f"{ecosystem}/{pkg}: list entry missing 'id'"
+                    assert "severity" in entry, f"{ecosystem}/{pkg}: list entry missing 'severity'"
+            else:
+                assert isinstance(versions, dict), (
+                    f"{ecosystem}/{pkg}: expected dict or list, got {type(versions).__name__}"
+                )
+                for version, vuln in versions.items():
+                    assert "id" in vuln, f"{ecosystem}/{pkg}@{version}: missing 'id'"
+                    assert "severity" in vuln, f"{ecosystem}/{pkg}@{version}: missing 'severity'"

@@ -55,6 +55,8 @@ def report_to_sarif(report: ScanReport) -> dict:
                 "confidence": finding.confidence,
                 "confidenceLabel": clabel,
                 "mitigation": finding.mitigation,
+                # M10.8: attack-type hint (only present for PINJ-ML-001 findings)
+                **({"attackHint": finding.attack_hint} if finding.attack_hint else {}),
             },
         }
         if finding.chain_actions:

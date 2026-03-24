@@ -31,6 +31,9 @@ class Finding(BaseModel):
     snippet: str = ""
     mitigation: str | None = None
     chain_actions: list[str] = Field(default_factory=list)
+    # M10.8: attack-type hint from keyword post-processor (forward-compatible with
+    # future multi-class DeBERTa head).  Set only for PINJ-ML-001 findings.
+    attack_hint: str | None = None
 
 
 

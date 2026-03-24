@@ -160,6 +160,141 @@ def _chunk_text(text: str, max_chars: int = 1800) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# M10.8 — Attack-type hint classifier (keyword post-processor)
+# ---------------------------------------------------------------------------
+
+# Priority-ordered list of (hint_label, compiled_pattern) tuples.
+# Evaluated top-to-bottom; first match wins.
+_ATTACK_HINT_RULES: list[tuple[str, re.Pattern[str]]] = [
+    (
+        "exfiltration",
+        re.compile(
+            r"(?i)"
+            r"(?:dns|webhook|exfil|curl\s|wget\s|http[s]?://[^\s]{10,}|base64|b64encode"
+            r"|send.*secret|leak.*token|POST.*cred|exfiltrat|steal.*key"
+            r"|error.*message.*token|\bngrok\b|\bburp\b|\binteract\.sh\b)"
+        ),
+    ),
+    (
+        "supply_chain",
+        re.compile(
+            r"(?i)"
+            r"(?:setup\.py|__init__.*exec|pip install.*&&|npm install.*&&"
+            r"|postinstall|preinstall|install_requires.*subprocess"
+            r"|package.*hook|dependency.*inject|malicious.*package"
+            r"|typosquat|\bpypi\b.*malware|\bnpm\b.*malware)"
+        ),
+    ),
+    (
+        "jailbreak",
+        re.compile(
+            r"(?i)"
+            r"(?:developer mode|DAN|do anything now|jailbreak"
+            r"|ignore (?:previous|all|your|prior) (?:instructions?|rules?|constraints?|guidelines?)"
+            r"|pretend you (?:are|have no|can)"
+            r"|you are now|act as (?:an? )?(?:AI|assistant|bot|GPT|Claude) (?:without|with no)"
+            r"|unrestricted (?:mode|AI|assistant)"
+            r"|no (?:restrictions?|limits?|filters?|safety|guidelines?)"
+            r"|bypass (?:safety|filter|restriction|guideline)"
+            r"|\bDAN\b|\bDANmode\b)"
+        ),
+    ),
+    (
+        "indirect_injection",
+        re.compile(
+            r"(?i)"
+            r"(?:when you (?:read|see|encounter|process)"
+            r"|if (?:this|the following) (?:appears?|is (?:read|seen|processed))"
+            r"|hidden (?:in|within) (?:the )?(?:rss|feed|changelog|result|output|response)"
+            r"|tool (?:result|output|response).*inject"
+            r"|\brss\b.*inject|\bchangelog\b.*inject"
+            r"|embedded (?:in|within) (?:the )?(?:document|page|result)"
+            r"|\brag\b.*inject|retrieval.*inject)"
+        ),
+    ),
+    (
+        "social_engineering",
+        re.compile(
+            r"(?i)"
+            r"(?:urgent(?:ly)?|immediately|your (?:account|access|token|key|credential)"
+            r"|verify your|confirm (?:your )?(?:identity|credentials?|account)"
+            r"|deprecated (?:api|token|key|endpoint)"
+            r"|(?:prize|reward|winner|congratulations|you.?ve won)"
+            r"|vendor (?:support|update|notice|alert)"
+            r"|security (?:alert|warning|notice|update) (?:from|by) (?:anthropic|openai|manus)"
+            r"|click (?:here|this link)|limited time)"
+        ),
+    ),
+    (
+        "prompt_injection",
+        re.compile(
+            r"(?i)"
+            r"(?:ignore (?:the )?(?:system|previous|above|prior)"
+            r"|override (?:the )?(?:system|previous|above|prior)"
+            r"|disregard (?:the )?(?:system|previous|above|prior)"
+            r"|forget (?:the )?(?:system|previous|above|prior)"
+            r"|your (?:new |real |actual )?(?:instructions?|goal|task|objective|purpose) (?:is|are)"
+            r"|new (?:instructions?|goal|task|objective|purpose):"
+            r"|system prompt|context (?:window|extract|leak)"
+            r"|reveal (?:your|the) (?:system|instructions?|prompt)"
+            r"|what (?:are|were) your (?:instructions?|system prompt)"
+            r"|role (?:override|hijack|switch)"
+            r"|\[SYSTEM\]|\[INST\]|<\|system\|>|<\|im_start\|>)"
+        ),
+    ),
+]
+
+
+def _classify_attack_type(text: str) -> str | None:
+    """Return the most likely attack-type hint for *text*, or None.
+
+    Applies a priority-ordered keyword ruleset.  The first matching rule wins.
+    Returns one of: 'exfiltration', 'supply_chain', 'jailbreak',
+    'indirect_injection', 'social_engineering', 'prompt_injection', or None.
+    """
+    for hint, pattern in _ATTACK_HINT_RULES:
+        if pattern.search(text):
+            return hint
+    return None
+
+
+_ATTACK_HINT_MITIGATIONS: dict[str, str] = {
+    "exfiltration": (
+        "This skill appears to contain data-exfiltration patterns: DNS callbacks, webhook URLs, "
+        "or commands that send secrets/tokens to external endpoints. "
+        "Audit all network calls and remove any that transmit sensitive data."
+    ),
+    "supply_chain": (
+        "This skill contains supply-chain injection patterns: malicious package hooks, "
+        "postinstall scripts, or dependency manipulation. "
+        "Verify all package names against known-good registries and audit install scripts."
+    ),
+    "jailbreak": (
+        "This skill contains jailbreak language: instructions to enter 'developer mode', "
+        "act as an unrestricted AI, or ignore safety guidelines. "
+        "Remove override/bypass instructions and ensure the skill does not attempt to "
+        "circumvent model safety constraints."
+    ),
+    "indirect_injection": (
+        "This skill contains indirect-injection patterns: instructions that activate when "
+        "the model reads external content (RSS feeds, changelogs, tool results). "
+        "Sanitize all external content before passing it to the model context."
+    ),
+    "social_engineering": (
+        "This skill contains social-engineering language: urgency cues, credential-verification "
+        "requests, prize/reward lures, or impersonation of trusted vendors. "
+        "Remove manipulative language and ensure the skill does not coerce users into "
+        "disclosing credentials or clicking untrusted links."
+    ),
+    "prompt_injection": (
+        "This skill contains prompt-injection patterns: instructions to override the system "
+        "prompt, extract context, or hijack the model's goal. "
+        "Remove role-override and context-extraction instructions."
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
@@ -261,20 +396,45 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     severity = Severity.HIGH if best_score >= _HIGH_THRESHOLD else Severity.MEDIUM
     confidence = round(min(best_score, 0.99), 3)
 
+    # M10.8: classify attack type from the best-scoring chunk
+    attack_hint = _classify_attack_type(best_snippet + " " + text[:2000])
+
+    # Build enriched title and mitigation
+    if attack_hint:
+        title = f"ML-detected {attack_hint.replace('_', ' ')} (DeBERTa classifier)"
+        base_mitigation = _ATTACK_HINT_MITIGATIONS.get(
+            attack_hint,
+            "The ML classifier detected language consistent with a prompt-injection attack. "
+            "Review the flagged text for override/coercion instructions, hidden directives, "
+            "or attempts to exfiltrate secrets.",
+        )
+        # Elevate exfiltration and supply_chain to CRITICAL
+        if attack_hint in {"exfiltration", "supply_chain"} and severity == Severity.HIGH:
+            severity = Severity.CRITICAL
+    else:
+        title = "ML-detected prompt injection (DeBERTa classifier)"
+        base_mitigation = (
+            "The ML classifier detected language consistent with a prompt-injection attack. "
+            "Review the flagged text for override/coercion instructions, hidden directives, "
+            "or attempts to exfiltrate secrets."
+        )
+
+    mitigation = (
+        f"{base_mitigation} "
+        f"Model: {_MODEL_ID} | Backend: {backend} | Score: {confidence:.3f}"
+        + (f" | Attack type: {attack_hint}" if attack_hint else "")
+    )
+
     return [
         Finding(
             id="PINJ-ML-001",
             category="prompt_injection_ml",
             severity=severity,
             confidence=confidence,
-            title="ML-detected prompt-injection intent (DeBERTa classifier)",
+            title=title,
             evidence_path=str(path),
             snippet=best_snippet,
-            mitigation=(
-                "The ML classifier detected language consistent with a prompt-injection attack. "
-                "Review the flagged text for override/coercion instructions, hidden directives, "
-                "or attempts to exfiltrate secrets. "
-                f"Model: {_MODEL_ID} | Backend: {backend} | Score: {confidence:.3f}"
-            ),
+            mitigation=mitigation,
+            attack_hint=attack_hint,
         )
-    ]
+    ] + age_findings
