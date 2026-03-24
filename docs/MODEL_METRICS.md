@@ -18,6 +18,35 @@ run against the same 181-file held-out set (116 benign, 65 injection) that is
 
 ## Evaluation History
 
+### v10718-5ep — M7 obfuscation + corpus migration + fp16 (2026-03-23) 🔄 IN PROGRESS
+
+**Training corpus:** 10,718 examples (benign=6,317, injection=4,401)
+**Architecture:** DeBERTa-v3-base fine-tuned via LoRA (r=64), exported to ONNX (fp16)
+**Key changes from v7458:**
+
+| Change | v7458 | v10718 |
+|---|---|---|
+| LoRA rank | r=32 | **r=64** |
+| Epochs | 3 | **5** |
+| ONNX export | INT8 (broken) | **FP16** |
+| Corpus size | 7,277 | **10,718** |
+| F1 gate | 0.77 | **0.85** |
+| Corpus home | public repo (split-brain) | **private skillscan-corpus** |
+
+**INT8 quantization bug (root cause):** The `QOperator/avx512_vnni` INT8 quantization
+corrupts DeBERTa-v3's relative position attention weights, collapsing macro F1 from
+0.8448 to 0.3238. The non-quantized fp32 model correctly scores F1=0.8449. FP16
+provides ~2× size reduction with zero quality loss and better CPU latency than INT8.
+
+**Corpus migration:** All training data and ML scripts now live exclusively in the
+private `kurtpayne/skillscan-corpus` repository. The public `skillscan-security` repo
+no longer contains corpus data or training scripts. This eliminates the split-brain
+problem that caused the 7,277-example corpus to be lost between sessions.
+
+*Results pending — run in progress on Modal GPU.*
+
+---
+
 ### v7458-3ep — Full corpus retrain (2026-03-22) ✅ F1 gate PASSED
 
 **Training corpus:** 7,277 examples (LLM-generated + hand-crafted + trace-verified)
@@ -178,23 +207,25 @@ training set had only 54 benign examples before the 2026-03-22 expansion to 188.
 | v1290-3ep | 711/449 | 0.2607 | 96.6% | 18.5% | Baseline — severe injection bias |
 | v1278-3ep | 911/367 | 0.2690 | 95.7% | 18.5% | Post-expansion — negligible improvement |
 | **v7458-3ep** | **7,277** | **0.8448** | **15.7%** | **9.2%** | **Full corpus — F1 gate PASSED** |
+| v10718-5ep | 10,718 | *pending* | *pending* | *pending* | r=64, 5ep, fp16, M7 obfuscation |
 
 ---
 
-## Next Steps (Milestone 7)
+## Next Steps (Post v10718)
 
-The 12 injection eval examples still scoring 0.0 are all obfuscation-style variants.
-Targeted corpus expansion on these patterns is the highest-priority action:
+The v10718-5ep run is in progress. After results are available:
 
-1. **Add 50+ obfuscation training examples** — markdown injection, LaTeX injection,
-   tool name spoofing, exfil via error messages, fake changelogs, conditional triggers,
-   supply chain dependency injection, webhook exfil logging, author field injection,
-   RSS indirect injection, prompt leak via translation, context flooding.
+1. **If F1 gate passes (≥ 0.85):** Update this file with results. Review per-archetype
+   breakdown to identify any remaining FN categories.
 
-2. **Run back-translation augmentation** — `scripts/backtranslate_augment.py` (already
-   written) generates 4–5 natural English variants per failing example.
+2. **If F1 gate fails:** Investigate per-archetype breakdown. Likely causes:
+   - Injection recall still low on indirect/subtle patterns (pi22, pi24, pi59, pi61)
+   - Hard-negative benign examples causing FP regression
+   - Class weight imbalance (benign=6,317 vs injection=4,401 is 1.43:1, better than v7458)
 
-3. **Trigger new fine-tune** — Target: injection F1 ≥ 0.85, FPR ≤ 12%.
+3. **Corpus commit policy (enforced):** All corpus changes must be committed to
+   `kurtpayne/skillscan-corpus` before triggering a fine-tune. The public
+   `skillscan-security` repo no longer accepts corpus data (gitignored).
 
 ---
 
