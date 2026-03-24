@@ -74,6 +74,7 @@ The injection recall improvement (+0.119) is the main story. The 12 injection ev
 | `exfil_channels.yaml` not merged into `default.yaml` | **Low** | M6 |
 | `docs/RELEASE_ONBOARDING.md` stale | **Low** | M10 |
 | `docs/PROMPT_INJECTION_CORPUS.md` references non-existent script | **Low** | M10 |
+| No warning when ML model is not installed | **Low** | M10.5 |
 
 ---
 
@@ -183,6 +184,24 @@ The VS Code extension is scaffolded but blocked by Microsoft's account registrat
 - Resolve the `docs/PROMPT_INJECTION_CORPUS.md` reference to a non-existent script (delete or fix).
 
 **Acceptance criteria:** All docs reflect current state. No references to non-existent files or scripts. `skillscan --version` output matches `pyproject.toml`.
+
+---
+
+## Milestone 10.5 — Model UX: Missing-Model Detection & Guided Download
+
+**Goal:** Give users a clear, actionable error when the ML model is not installed, instead of a silent failure or cryptic traceback.
+
+Currently, if a user runs `skillscan` without having run `skillscan model sync`, the ML detector silently falls back to rule-only mode with no indication that the model layer is inactive. Users have no way to know they are getting reduced injection recall.
+
+**Actions:**
+- In `ml_detector.py`, detect the missing-model case at startup and emit a structured warning: `[WARN] ML model not installed — injection recall is reduced. Run: skillscan model sync`.
+- In the CLI (`cli.py`), intercept the missing-model warning and offer an interactive prompt when running in a TTY: `ML model not found. Download now? [Y/n]`. If the user confirms, invoke `skillscan model sync` inline before proceeding with the scan.
+- Add a `--no-model` flag to explicitly opt out of the model layer and suppress the warning (useful in CI environments where the model is intentionally excluded to save disk space).
+- Add a `--require-model` flag that exits with a non-zero code if the model is not installed (useful for gating CI jobs on full-fidelity scans).
+- Ensure `skillscan model sync` prints the model version, size, and a brief description of what it enables after a successful download.
+- Add a test in `tests/test_ml_detector.py` that asserts the correct warning is emitted when the model directory is absent.
+
+**Acceptance criteria:** Running `skillscan scan <path>` without a model installed prints the warning and offers the interactive download prompt (TTY only). `--no-model` suppresses the warning. `--require-model` exits non-zero when the model is absent. `skillscan model sync` output is informative.
 
 ---
 
