@@ -1,4 +1,4 @@
-version: "2026.03.24.1"
+version: "2026.03.23.2"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2861,6 +2861,103 @@ static_rules:
     - https://www.sentinelone.com/vulnerability-database/cve-2026-4198/
     - https://www.sentinelone.com/vulnerability-database/cve-2026-4192/
     - https://www.miggo.io/vulnerability-database/cve/CVE-2026-33252
+- id: MAL-046
+  category: malware_pattern
+  severity: critical
+  confidence: 0.90
+  title: CursorJack-style MCP deeplink staged payload
+  pattern: (?i)(?:cursor://[^\s"']{0,200}(?:base64|installCommand|mcp[._-]?config)|installCommand[^\n]{0,200}(?:curl|wget|invoke-webrequest|bitsadmin)[^\n]{0,200}(?:run\.bat|payload|stager|\.exe|\.ps1|\.sh)|deeplink[^\n]{0,200}(?:mcp[^\n]{0,80}(?:install|config|command)|malicious|phish)|mcp[._-]?install[^\n]{0,200}(?:curl|wget|download)[^\n]{0,200}(?:execute|run|bash|sh|powershell))
+  mitigation: Malicious MCP deeplinks (cursor:// or similar) can encode a staged payload in
+    the installCommand field that downloads and executes a remote script (CursorJack,
+    CVE-2025-54136). Never install MCP servers from untrusted links. Verify installCommand
+    contents before accepting any MCP install dialog.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [mcp, deeplink, staged-payload, cursorjack, cve, rce]
+    last_modified: '2026-03-23'
+    techniques:
+    - id: MAL-046
+      name: MCP deeplink staged payload
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://www.proofpoint.com/us/blog/threat-insight/cursorjack-weaponizing-deeplinks-exploit-cursor-ide
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-54136
+- id: MAL-047
+  category: malware_pattern
+  severity: critical
+  confidence: 0.88
+  title: Claude Code hooks RCE via project settings
+  pattern: (?i)(?:claude[/_-]?settings\.json[^\n]{0,200}(?:SessionStart|PreToolUse|PostToolUse|UserPromptSubmit)|(?:SessionStart|PreToolUse)[^\n]{0,200}(?:curl|wget|bash|sh|powershell|python)[^\n]{0,200}(?:http|payload|stager|download|execute)|enableAllProjectMcpServers[^\n]{0,200}true|autoApproveServerDependencies[^\n]{0,200}true|hooks[^\n]{0,200}command[^\n]{0,200}(?:curl|wget|bash|sh|python3?\s+-c|node\s+-e)[^\n]{0,200}http)
+  mitigation: Malicious .claude/settings.json hooks execute shell commands on SessionStart
+    without user confirmation (CVE-2025-59536). Setting enableAllProjectMcpServers:true
+    bypasses the MCP consent dialog (CVE-2026-21852). Never clone and open untrusted
+    repositories in Claude Code without reviewing .claude/settings.json and .mcp.json.
+    Both CVEs are patched in current Claude Code versions.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [claude-code, hooks, mcp, rce, cve, project-settings]
+    last_modified: '2026-03-23'
+    techniques:
+    - id: MAL-047
+      name: Claude Code hooks RCE
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://research.checkpoint.com/2026/rce-and-api-token-exfiltration-through-claude-code-project-files-cve-2025-59536/
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-59536
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-21852
+- id: PINJ-007
+  category: prompt_injection
+  severity: high
+  confidence: 0.82
+  title: MCP sampling-based context exfiltration
+  pattern: (?i)(?:sampling[/._-]?create[_-]?[Mm]essage[^\n]{0,200}(?:exfil|steal|secret|credential|api[_-]?key|token|password|env)|create[_-]?[Mm]essage[^\n]{0,200}(?:system[_-]?prompt|context|history|conversation)[^\n]{0,200}(?:send|forward|post|webhook|http)|mcp[^\n]{0,200}sampling[^\n]{0,200}(?:exfil|harvest|steal|leak)|server[^\n]{0,200}(?:request|ask)[^\n]{0,200}llm[^\n]{0,200}(?:completion|generate)[^\n]{0,200}(?:secret|credential|token|api[_-]?key))
+  mitigation: MCP servers can abuse the sampling/createMessage feature to request LLM
+    completions that extract secrets, system prompts, or conversation history from the
+    agent context. Only connect trusted MCP servers. Review server tool descriptions
+    and sampling requests carefully.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-23"
+    updated: "2026-03-23"
+    tags: [mcp, sampling, prompt-injection, context-exfiltration, indirect-injection]
+    last_modified: '2026-03-23'
+    techniques:
+    - id: PINJ-007
+      name: MCP sampling context exfiltration
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
+    quality:
+      precision_estimate: 0.82
+      benchmark_set: core-static-v1
+    references:
+    - https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
