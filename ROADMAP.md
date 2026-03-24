@@ -623,6 +623,15 @@ The following enhancements increase the report's credibility and utility for ent
 
 **Dependency vulnerability section (medium priority).** For skills that reference `pip install` or `npm install` commands, extract the package names and versions and cross-reference against the vuln DB. Surface any CVEs as a separate "Dependency Vulnerabilities" section. Natural complement to the existing supply chain detection rules.
 
+**Token usage and skill cost estimate (medium priority).** Each trace run should record the token counts consumed by the traced model: prompt tokens, completion tokens, and total tokens per fuzz input, plus an aggregate for the full trace run. The report surfaces this as a "Skill Cost Profile" table:
+
+| Model | Prompt tokens | Completion tokens | Total tokens | Est. cost (USD) |
+|---|---|---|---|---|
+| claude-sonnet-4-5 | 4,821 | 312 | 5,133 | ~$0.016 |
+| gpt-4.1 | 4,756 | 298 | 5,054 | ~$0.013 |
+
+This serves two purposes: (1) **model comparison** — a skill that consumes 3× more tokens on one model than another may be exploiting that model's verbosity or context-expansion behavior, which is itself a signal; (2) **enterprise cost estimation** — a security team deploying a skill across 1,000 users per day needs to know the per-invocation LLM cost before approving it. Implementation: `skillscan-trace` already calls the LLM API; capture `usage` from the API response and include it in the trace JSON output (`{model, input_tokens, output_tokens, total_tokens, estimated_cost_usd}` per fuzz run). The report compiler aggregates by model and renders the table. Estimated cost uses published API pricing at report generation time — include a note that pricing may change.
+
 **Delta / baseline comparison (lower priority).** If a previous scan report exists for the same skill, include a delta section: "3 new findings since last scan, 1 resolved." Creates recurring scan value — a customer who scans on every PR merge needs to know what changed. Prerequisite: `skillscan diff` (already implemented).
 
 ### Report structure (canonical)
@@ -631,9 +640,10 @@ The following enhancements increase the report's credibility and utility for ent
 2. Detection layers active — table: layer, type, findings count
 3. Per-skill findings — static findings with evidence + dynamic trace narrative
 4. IOC and domain analysis — table: domain, skill, IOC listed, trace observed
-5. Methodology and limitations — honest caveats (required for enterprise credibility)
-6. Remediation guidance — table: skill, priority, action
-7. Appendix — scan configuration + file integrity manifest
+5. **Skill cost profile** — token usage per model per fuzz run, aggregate totals, estimated USD cost
+6. Methodology and limitations — honest caveats (required for enterprise credibility)
+7. Remediation guidance — table: skill, priority, action
+8. Appendix — scan configuration + file integrity manifest
 
 ### SaaS report delivery (future)
 
