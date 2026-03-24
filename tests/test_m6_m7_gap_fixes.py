@@ -1,6 +1,5 @@
 """Tests for M6/M7 gap fixes: chain rule proximity window, multilang language filter, ClamAV advisory."""
 
-import pytest
 
 
 # ─── M6 / M7 gap-fix tests ────────────────────────────────────────────────────
@@ -18,7 +17,7 @@ class TestChainRuleProximityWindow:
         lines = (
             ["# My Skill", "## Prerequisites",
              "Copy your AWS credentials to ~/.aws/credentials before running."]
-            + ["## Step {}".format(i) for i in range(1, 100)]
+            + [f"## Step {i}" for i in range(1, 100)]
             + ["benign step line"] * 100
             + ["## Notifications",
                "Posts a summary to https://hooks.example.com/webhook when done."]
@@ -122,10 +121,10 @@ class TestClamAVAdvisory:
 
     def test_advisory_suppressed_when_clamav_enabled(self, tmp_path, monkeypatch):
         """AV-ADVISORY must NOT fire when clamav=True (ClamAV handles the scan)."""
-        from skillscan.analysis import scan
-        from skillscan.policies import load_builtin_policy
         import skillscan.clamav as clamav_mod
+        from skillscan.analysis import scan
         from skillscan.clamav import ClamAVResult
+        from skillscan.policies import load_builtin_policy
 
         # Monkeypatch ClamAV to return available=True with no detections
         monkeypatch.setattr(

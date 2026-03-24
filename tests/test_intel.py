@@ -109,14 +109,16 @@ def test_merge_user_intel_ignores_unreadable_source(monkeypatch, tmp_path: Path)
 # ---------------------------------------------------------------------------
 
 def _bundled_ioc_db_path():
-    import skillscan
     from pathlib import Path
+
+    import skillscan
     return Path(skillscan.__file__).parent / "data" / "intel" / "ioc_db.json"
 
 
 def _bundled_vuln_db_path():
-    import skillscan
     from pathlib import Path
+
+    import skillscan
     return Path(skillscan.__file__).parent / "data" / "intel" / "vuln_db.json"
 
 
@@ -144,7 +146,7 @@ def test_bundled_ioc_db_parses_correctly():
     db = json.loads(db_path.read_text(encoding="utf-8"))
     for key in ("domains", "ips", "cidrs", "urls"):
         entries = db.get(key, [])
-        assert isinstance(entries, list), f"ioc_db[key] is not a list"
+        assert isinstance(entries, list), "ioc_db[key] is not a list"
         for entry in entries:
             assert isinstance(entry, str) and entry.strip()
 

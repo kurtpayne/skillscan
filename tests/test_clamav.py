@@ -53,6 +53,7 @@ def test_clamav_timeout(monkeypatch, tmp_path: Path) -> None:
 # is a hard gate.
 
 import shutil
+
 import pytest
 
 
