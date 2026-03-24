@@ -530,6 +530,7 @@ tests/test_intel_update.py
 tests/test_ioc_extraction.py
 tests/test_junit.py
 tests/test_m12_archive_multilang.py
+tests/test_m6_m7_gap_fixes.py
 tests/test_ml_detector.py
 tests/test_model_sync.py
 tests/test_policies_more.py
