@@ -82,6 +82,8 @@ examples/showcase/103_api_traffic_hijack_settings/SKILL.md
 examples/showcase/104_sqlbot_prompt_injection_rce/SKILL.md
 examples/showcase/105_rag_poisoning_attack_chain/SKILL.md
 examples/showcase/106_github_actions_tag_repointing/SKILL.md
+examples/showcase/107_stoatwaffle_vscode_malware/SKILL.md
+examples/showcase/108_mcp_server_command_injection_cve/SKILL.md
 examples/showcase/10_openai_style/gpt_actions.json
 examples/showcase/10_openai_style/openapi.json
 examples/showcase/11_claude_style/CLAUDE.md
