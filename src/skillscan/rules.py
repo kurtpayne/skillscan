@@ -25,6 +25,11 @@ class RuleMetadata(BaseModel):
     lifecycle: dict[str, str | list[str]] = Field(default_factory=dict)
     quality: dict[str, str | float] = Field(default_factory=dict)
     references: list[str] = Field(default_factory=list)
+    language: str | None = None  # e.g. "javascript", "ruby", "go", "rust"
+    author: str | None = None
+    created: str | None = None
+    updated: str | None = None
+    last_modified: str | None = None
 
 
 class StaticRule(BaseModel):
@@ -66,6 +71,7 @@ class CompiledStaticRule:
     title: str
     pattern: re.Pattern[str]
     mitigation: str | None
+    language: str | None = None  # e.g. "javascript", "ruby", "go", "rust"
 
 
 @dataclass
@@ -183,6 +189,9 @@ def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
             title=r.title,
             pattern=re.compile(r.pattern, re.IGNORECASE),
             mitigation=r.mitigation,
+            language=(
+                r.metadata.language if r.metadata else None
+            ),
         )
         for r in rp.static_rules
     ]

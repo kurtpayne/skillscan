@@ -10,6 +10,14 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- `AV-ADVISORY` finding (LOW): emitted when script files (`.py`, `.sh`, `.rb`, `.js`, `.ts`, `.go`, `.rs`, `.pl`, `.ps1`) are present in the skill directory but `--clamav` was not requested — advises the user to run with ClamAV or inspect the scripts manually.
+
+### Fixed
+- **Chain rule proximity window** (`_CHAIN_WINDOW_LINES = 40`): chain rules (`CHN-001` through `CHN-015`) now only fire when all required actions appear within 40 lines of each other. Previously the whole file was treated as a single window, causing false positives on large SKILL.md files where benign patterns appeared hundreds of lines apart.
+- **Multilang language filter**: JavaScript, Ruby, Go, and Rust rules now only apply to files with matching extensions (`.js/.ts/.mjs/.cjs`, `.rb`, `.go`, `.rs` respectively). Previously these rules were applied to all text files, causing cross-language false positives.
+
+
+### Added
 - **M5 — Intel & Vuln DB Depth**: bundled IOC DB expanded to **5,500 entries** (3,951 domains, 8 IPs, 1,538 CIDRs, 3 URLs) by adding Hagezi DoH bypass domains as a fourth bundled feed (`hagezi_doh_domains`). Vuln DB covers **23 Python packages** and **4 npm packages** with 111 vulnerable versions sourced from OSV.dev. Five CI gate tests added to `tests/test_intel.py` to prevent silent regression below the 5,000-entry and 20-package thresholds. Daily update skill (`skillscan-intel-update`) created and scheduled at 10:00 PDT.
 - **M19 — Skill Fuzzer** (`tools/skill-fuzzer/`): LLM-powered adversarial SKILL.md variant generator. Supports five mutation strategies: `evasion`, `injection`, `benign_drift`, `obfuscation`, and `authority`. Uses any OpenAI-compatible API (GPT-4.1-mini default, Ollama-compatible). Generates unified diffs and optional `skillscan` scan results per variant. Outputs `summary.json` with evasion/false-positive rates. Installable as `pip install skillscan-security[fuzzer]`.
 - **`[project.optional-dependencies].fuzzer`** extra in `pyproject.toml` (`openai>=1.30.0`, `click>=8.1.0`).

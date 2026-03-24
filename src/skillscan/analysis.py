@@ -90,6 +90,21 @@ VulnPackageMap = dict[str, VulnVersionMap]
 VulnDB = dict[str, VulnPackageMap]
 
 BYTECODE_SUFFIXES = {".pyc", ".pyo"}
+SCRIPT_SUFFIXES = {".py", ".sh", ".bash", ".rb", ".js", ".ts", ".mjs", ".cjs", ".go", ".rs", ".pl", ".ps1", ".psm1"}
+
+# Language tag → file extensions (for multilang rule filtering)
+_LANG_EXTENSIONS: dict[str, frozenset[str]] = {
+    "javascript": frozenset({".js", ".ts", ".mjs", ".cjs"}),
+    "ruby": frozenset({".rb"}),
+    "go": frozenset({".go"}),
+    "rust": frozenset({".rs"}),
+    "python": frozenset({".py"}),
+    "shell": frozenset({".sh", ".bash", ".zsh"}),
+}
+
+# Proximity window for chain rule detection (lines)
+_CHAIN_WINDOW_LINES = 40
+
 LIBRARY_SUFFIXES = {".so", ".dll", ".dylib", ".a"}
 EXECUTABLE_SUFFIXES = {".exe", ".msi", ".com"}
 KNOWN_BINARY_SUFFIXES = {
@@ -530,11 +545,39 @@ def _prepare_analysis_text(text: str) -> str:
 
 
 def _extract_actions(text: str, action_patterns: dict[str, re.Pattern[str]]) -> set[str]:
+    """Return the set of action names whose patterns match anywhere in *text*.
+
+    Used for whole-file matching (backward-compatible). For chain rule detection
+    use :func:`_extract_actions_windowed` which applies a proximity constraint.
+    """
     actions: set[str] = set()
     for action, pattern in action_patterns.items():
         if pattern.search(text):
             actions.add(action)
     return actions
+
+
+def _extract_actions_windowed(
+    text: str,
+    action_patterns: dict[str, re.Pattern[str]],
+    window_lines: int = _CHAIN_WINDOW_LINES,
+) -> list[set[str]]:
+    """Return a list of action sets, one per sliding window of *window_lines* lines.
+
+    For files shorter than *window_lines* a single whole-file window is returned,
+    preserving the original behaviour for small skill files.
+    """
+    lines = text.splitlines()
+    if len(lines) <= window_lines:
+        return [_extract_actions(text, action_patterns)]
+    windows: list[set[str]] = []
+    step = max(1, window_lines // 2)  # 50 % overlap
+    for start in range(0, len(lines), step):
+        chunk = "\n".join(lines[start : start + window_lines])
+        window_actions = _extract_actions(chunk, action_patterns)
+        if window_actions:
+            windows.append(window_actions)
+    return windows if windows else [set()]
 
 
 def _normalize_domain(value: str) -> str:
@@ -820,13 +863,46 @@ def scan(
                         )
                     )
 
+        # Advisory: if script files are present but ClamAV was not requested,
+        # emit a single LOW advisory so the report can recommend a deeper scan.
+        if not clamav:
+            script_files = [
+                p for p in files if p.suffix.lower() in SCRIPT_SUFFIXES
+            ]
+            if script_files:
+                sample = ", ".join(p.name for p in script_files[:3])
+                if len(script_files) > 3:
+                    sample += f" (+{len(script_files) - 3} more)"
+                findings.append(
+                    Finding(
+                        id="AV-ADVISORY",
+                        category="artifact_malware",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title="Bundled script files detected — ClamAV scan not performed",
+                        evidence_path=str(prepared.root),
+                        snippet=sample,
+                        mitigation=(
+                            "This skill bundles executable script files. "
+                            "Re-run with --clamav to perform a malware artifact scan on these files. "
+                            "Alternatively, manually inspect the scripts before loading this skill."
+                        ),
+                    )
+                )
+
         for path in files:
             text = _safe_read_text(path)
             if not text:
                 continue
             analysis_text = _prepare_analysis_text(text)
 
+            file_ext = path.suffix.lower()
             for rule in ruleset.static_rules:
+                # Language-scoped rules only apply to matching file extensions.
+                if rule.language is not None:
+                    allowed_exts = _LANG_EXTENSIONS.get(rule.language)
+                    if allowed_exts is not None and file_ext not in allowed_exts:
+                        continue
                 for line_no, line in enumerate(analysis_text.splitlines(), 1):
                     if rule.pattern.search(line):
                         findings.append(
@@ -881,22 +957,31 @@ def scan(
 
             iocs.extend(_extract_iocs(path, analysis_text))
 
-            actions = _extract_actions(analysis_text, ruleset.action_patterns)
-            for chain_rule in ruleset.chain_rules:
-                if chain_rule.all_of.issubset(actions):
-                    findings.append(
-                        Finding(
-                            id=chain_rule.id,
-                            category=chain_rule.category,
-                            severity=chain_rule.severity,
-                            confidence=chain_rule.confidence,
-                            title=chain_rule.title,
-                            evidence_path=str(path),
-                            snippet=chain_rule.snippet or " + ".join(sorted(chain_rule.all_of)),
-                            mitigation=chain_rule.mitigation,
-                            chain_actions=sorted(chain_rule.all_of),
+            # Chain rules: use windowed extraction to enforce proximity constraint.
+            # A chain rule fires only if all required actions appear within the
+            # same _CHAIN_WINDOW_LINES-line window, reducing false positives on
+            # large files where benign patterns appear far apart.
+            windows = _extract_actions_windowed(analysis_text, ruleset.action_patterns)
+            fired_chain_ids: set[str] = set()
+            for window_actions in windows:
+                for chain_rule in ruleset.chain_rules:
+                    if chain_rule.id in fired_chain_ids:
+                        continue
+                    if chain_rule.all_of.issubset(window_actions):
+                        fired_chain_ids.add(chain_rule.id)
+                        findings.append(
+                            Finding(
+                                id=chain_rule.id,
+                                category=chain_rule.category,
+                                severity=chain_rule.severity,
+                                confidence=chain_rule.confidence,
+                                title=chain_rule.title,
+                                evidence_path=str(path),
+                                snippet=chain_rule.snippet or " + ".join(sorted(chain_rule.all_of)),
+                                mitigation=chain_rule.mitigation,
+                                chain_actions=sorted(chain_rule.all_of),
+                            )
                         )
-                    )
 
             lower = path.name.lower()
             if lower == "requirements.txt":
