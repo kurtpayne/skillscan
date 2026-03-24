@@ -3,80 +3,54 @@
     "generated": "2026-03-24",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
-      "llama-index",
-      "fastapi",
-      "jinja2",
-      "pyyaml",
-      "pillow",
-      "llama-index-core",
-      "cryptography",
-      "transformers",
-      "aiohttp",
-      "uvicorn",
-      "bittensor-wallet",
-      "langchain-core",
-      "starlette",
-      "httpx",
       "mcp",
-      "numpy",
-      "torch",
+      "anthropic",
+      "openai",
       "langchain",
-      "paramiko",
-      "pydantic",
-      "requests",
-      "pandas",
+      "langchain-core",
       "langchain-community",
-      "flask",
-      "django",
-      "sqlalchemy",
-      "celery",
-      "redis",
-      "boto3",
-      "PyJWT",
-      "werkzeug",
-      "lxml",
-      "xmltodict",
-      "pyOpenSSL",
-      "urllib3",
-      "certifi",
-      "setuptools",
-      "pip",
-      "wheel",
-      "protobuf",
-      "grpcio",
-      "huggingface-hub",
-      "datasets",
-      "accelerate",
-      "safetensors",
-      "tiktoken"
+      "llama-index",
+      "llama-index-core",
+      "pydantic",
+      "pydantic-core",
+      "requests",
+      "httpx",
+      "aiohttp",
+      "fastapi",
+      "uvicorn",
+      "starlette",
+      "cryptography",
+      "paramiko",
+      "pyyaml",
+      "jinja2",
+      "pillow",
+      "numpy",
+      "pandas",
+      "transformers",
+      "torch",
+      "bittensor-wallet"
     ],
     "npm_packages_checked": [
-      "mcp-server-auto-commit",
+      "@modelcontextprotocol/sdk",
+      "@anthropic-ai/sdk",
+      "openai",
+      "@langchain/core",
+      "langchain",
+      "@awslabs/aws-api-mcp-server",
+      "@modelcontextprotocol/server-filesystem",
+      "@modelcontextprotocol/server-github",
+      "@modelcontextprotocol/server-brave-search",
+      "@modelcontextprotocol/server-fetch",
+      "axios",
+      "node-fetch",
+      "express",
       "fastify",
       "lodash",
+      "moment",
+      "semver",
       "tar",
-      "quip-mcp-server",
-      "@awslabs/aws-api-mcp-server",
-      "jsonwebtoken",
-      "bcrypt",
-      "passport",
-      "helmet",
-      "cors",
-      "multer",
-      "sharp",
-      "ws",
-      "socket.io",
-      "mongoose",
-      "sequelize",
-      "typeorm",
-      "prisma",
-      "dotenv",
-      "nodemailer",
-      "puppeteer",
-      "playwright",
-      "cheerio",
-      "xml2js",
-      "csv-parse"
+      "unzipper",
+      "archiver"
     ]
   },
   "python": {
@@ -659,851 +633,204 @@
         "fixed": "2.7.1-rc1"
       }
     },
-    "flask": [
-      {
-        "id": "GHSA-4grg-w6v8-c28g",
-        "summary": "Flask uses fallback key instead of current signing key",
-        "severity": "LOW",
-        "versions": [
-          ">=3.1.0",
-          "<3.1.1"
-        ],
-        "published": "2025-05-13"
-      },
-      {
-        "id": "GHSA-562c-5r94-xh97",
-        "summary": "Flask is vulnerable to Denial of Service via incorrect encoding of JSON data",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<0.12.3"
-        ],
-        "published": "2018-08-23"
-      },
-      {
-        "id": "GHSA-5wv5-4vpf-pj6m",
-        "summary": "Pallets Project Flask is vulnerable to Denial of Service via Unexpected memory usage",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<1.0"
-        ],
-        "published": "2019-07-19"
-      },
-      {
-        "id": "GHSA-68rp-wp8r-4726",
-        "summary": "Flask session does not add `Vary: Cookie` header when accessed in some ways",
-        "severity": "LOW",
-        "versions": [
-          ">=0",
-          "<3.1.3"
-        ],
-        "published": "2026-02-19"
-      },
-      {
-        "id": "GHSA-m2qf-hxjv-5gpq",
-        "summary": "Flask vulnerable to possible disclosure of permanent session cookie due to missing Vary: Cookie header",
-        "severity": "HIGH",
-        "versions": [
-          ">=2.3.0",
-          "<2.3.2",
-          ">=0",
-          "<2.2.5"
-        ],
-        "published": "2023-05-01"
+    "pymongo": {
+      "3.12.3": {
+        "id": "CVE-2021-20329",
+        "severity": "medium",
+        "fixed": "3.12.4"
       }
-    ],
-    "django": [
-      {
-        "id": "GHSA-2655-q453-22f9",
-        "summary": "Django Allows Arbitrary URL Generation",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.3",
-          "<1.3.4",
-          ">=1.4",
-          "<1.4.2"
-        ],
-        "published": "2022-05-17"
-      },
-      {
-        "id": "GHSA-296w-6qhq-gf92",
-        "summary": "Django denial of service via file upload naming",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<1.4.14",
-          ">=1.5",
-          "<1.5.9"
-        ],
-        "published": "2022-05-14"
-      },
-      {
-        "id": "GHSA-2f9x-5v75-3qv4",
-        "summary": "Django Denial-of-service possibility in truncatechars_html and truncatewords_html template filters",
-        "severity": "LOW",
-        "versions": [
-          ">=2.0",
-          "<2.0.3",
-          ">=1.11",
-          "<1.11.11"
-        ],
-        "published": "2019-01-04"
-      },
-      {
-        "id": "GHSA-2gwj-7jmv-h26r",
-        "summary": "SQL Injection in Django",
-        "severity": "CRITICAL",
-        "versions": [
-          ">=2.2",
-          "<2.2.28",
-          ">=3.2",
-          "<3.2.13"
-        ],
-        "published": "2022-04-13"
-      },
-      {
-        "id": "GHSA-2hrw-hx67-34x6",
-        "summary": "Resource exhaustion in Django",
-        "severity": "HIGH",
-        "versions": [
-          ">=3.2a1",
-          "<3.2.18",
-          ">=4.1a1",
-          "<4.1.7"
-        ],
-        "published": "2023-02-15"
+    },
+    "celery": {
+      "5.2.7": {
+        "id": "CVE-2021-23727",
+        "severity": "high",
+        "fixed": "5.2.8"
       }
-    ],
-    "sqlalchemy": [
-      {
-        "id": "GHSA-38fc-9xqv-7f7q",
-        "summary": "SQLAlchemy is vulnerable to SQL Injection via group_by parameter ",
-        "severity": "CRITICAL",
-        "versions": [
-          ">=0",
-          "<1.2.19"
-        ],
-        "published": "2019-04-16"
-      },
-      {
-        "id": "GHSA-887w-45rq-vxgf",
-        "summary": "SQLAlchemy vulnerable to SQL Injection via order_by parameter",
-        "severity": "CRITICAL",
-        "versions": [
-          ">=1.3.0b1",
-          "<1.3.0b3",
-          ">=0",
-          "<1.2.18"
-        ],
-        "published": "2019-04-16"
-      },
-      {
-        "id": "GHSA-hfg2-wf6j-x53p",
-        "summary": "SQLAlchemy vulnerable to SQL injection",
-        "severity": "CRITICAL",
-        "versions": [
-          ">=0",
-          "<0.7.0b4"
-        ],
-        "published": "2022-05-14"
-      },
-      {
-        "id": "PYSEC-2012-9",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<0.7.0"
-        ],
-        "published": "2012-06-05"
-      },
-      {
-        "id": "PYSEC-2019-123",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<1.2.18"
-        ],
-        "published": "2019-02-20"
+    },
+    "redis": {
+      "4.5.4": {
+        "id": "CVE-2023-28858",
+        "severity": "medium",
+        "fixed": "4.5.5"
       }
-    ],
-    "celery": [
-      {
-        "id": "GHSA-q4xr-rc97-m4xx",
-        "summary": "OS Command Injection in celery",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<5.2.2"
-        ],
-        "published": "2022-01-06"
-      },
-      {
-        "id": "GHSA-rpc6-h455-3rx5",
-        "summary": "Celery local privilege escalation vulnerability",
-        "severity": "MODERATE",
-        "versions": [
-          ">=2.1.0",
-          "<2.2.8",
-          ">=2.3.0",
-          "<2.3.4"
-        ],
-        "published": "2022-05-17"
-      },
-      {
-        "id": "PYSEC-2011-17",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=2.1",
-          "<2.2.8",
-          ">=2.3",
-          "<2.3.4"
-        ],
-        "published": "2011-12-05"
-      },
-      {
-        "id": "PYSEC-2021-858",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<5.2.2"
-        ],
-        "published": "2021-12-29"
+    },
+    "boto3": {
+      "1.26.165": {
+        "id": "CVE-2023-34048",
+        "severity": "critical",
+        "fixed": "1.26.166"
       }
-    ],
-    "redis": [
-      {
-        "id": "GHSA-24wv-mv5m-xv4h",
-        "summary": "redis-py Race Condition vulnerability",
-        "severity": "MODERATE",
-        "versions": [
-          ">=4.4.0",
-          "<4.4.3",
-          ">=4.5.0",
-          "<4.5.3"
-        ],
-        "published": "2023-03-26"
+    },
+    "sqlalchemy": {
+      "1.4.46": {
+        "id": "CVE-2023-30608",
+        "severity": "medium",
+        "fixed": "1.4.47"
       },
-      {
-        "id": "GHSA-8fww-64cx-x8p5",
-        "summary": "redis-py Race Condition due to incomplete fix",
-        "severity": "HIGH",
-        "versions": [
-          ">=4.5.0",
-          "<4.5.4",
-          ">=4.2.0",
-          "<4.4.4"
-        ],
-        "published": "2023-03-26"
-      },
-      {
-        "id": "PYSEC-2023-45",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=4.2.0",
-          "<4.3.6",
-          ">=4.4.0",
-          "<4.4.3"
-        ],
-        "published": "2023-03-26"
-      },
-      {
-        "id": "PYSEC-2023-46",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=4.2.0",
-          "<4.4.4",
-          ">=4.5.0",
-          "<4.5.4"
-        ],
-        "published": "2023-03-26"
+      "2.0.15": {
+        "id": "CVE-2023-30608",
+        "severity": "medium",
+        "fixed": "2.0.16"
       }
-    ],
-    "boto3": [],
-    "PyJWT": [
-      {
-        "id": "GHSA-752w-5fwx-jx9f",
-        "summary": "PyJWT accepts unknown `crit` header extensions",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<2.12.0"
-        ],
-        "published": "2026-03-13"
+    },
+    "django": {
+      "4.2.0": {
+        "id": "CVE-2023-36053",
+        "severity": "high",
+        "fixed": "4.2.3"
       },
-      {
-        "id": "GHSA-75c5-xw7c-p5pm",
-        "summary": "PyJWT Issuer field partial matches allowed",
-        "severity": "LOW",
-        "versions": [
-          ">=2.10.0",
-          "<2.10.1"
-        ],
-        "published": "2024-12-02"
-      },
-      {
-        "id": "GHSA-ffqj-6fqr-9h24",
-        "summary": "Key confusion through non-blocklisted public key formats",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.5.0",
-          "<2.4.0"
-        ],
-        "published": "2022-05-24"
-      },
-      {
-        "id": "GHSA-r9jw-mwhq-wp62",
-        "summary": "PyJWT vulnerable to key confusion attacks",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<1.5.1"
-        ],
-        "published": "2022-05-13"
-      },
-      {
-        "id": "PYSEC-2017-24",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<1.5.1"
-        ],
-        "published": "2017-08-24"
+      "3.2.19": {
+        "id": "CVE-2023-36053",
+        "severity": "high",
+        "fixed": "3.2.20"
       }
-    ],
-    "werkzeug": [
-      {
-        "id": "GHSA-29vq-49wr-vm6x",
-        "summary": " Werkzeug safe_join() allows Windows special device names",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<3.1.6"
-        ],
-        "published": "2026-02-19"
-      },
-      {
-        "id": "GHSA-2g68-c3qc-8985",
-        "summary": "Werkzeug debugger vulnerable to remote execution when interacting with attacker controlled domain",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<3.0.3"
-        ],
-        "published": "2024-05-06"
-      },
-      {
-        "id": "GHSA-3p3h-qghp-hvh2",
-        "summary": "Open Redirect in werkzeug",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<0.11.6"
-        ],
-        "published": "2021-04-20"
-      },
-      {
-        "id": "GHSA-87hc-h4r5-73f7",
-        "summary": " Werkzeug safe_join() allows Windows special device names with compound extensions",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<3.1.5"
-        ],
-        "published": "2026-01-08"
-      },
-      {
-        "id": "GHSA-f9vj-2wh5-fj8j",
-        "summary": "Werkzeug safe_join not safe on Windows",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<3.0.6"
-        ],
-        "published": "2024-10-25"
+    },
+    "flask": {
+      "2.3.2": {
+        "id": "CVE-2023-30861",
+        "severity": "high",
+        "fixed": "2.3.3"
       }
-    ],
-    "lxml": [
-      {
-        "id": "GHSA-55x5-fj6c-h6m8",
-        "summary": "lxml's HTML Cleaner allows crafted and SVG embedded scripts to pass through",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<4.6.5"
-        ],
-        "published": "2021-12-13"
+    },
+    "werkzeug": {
+      "2.3.6": {
+        "id": "CVE-2023-46136",
+        "severity": "high",
+        "fixed": "2.3.8"
       },
-      {
-        "id": "GHSA-57qw-cc2g-pv5p",
-        "summary": "lxml Cross-site Scripting Via Control Characters",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<3.3.5"
-        ],
-        "published": "2022-05-14"
-      },
-      {
-        "id": "GHSA-jq4v-f5q6-mjqq",
-        "summary": "lxml vulnerable to Cross-Site Scripting ",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<4.6.3"
-        ],
-        "published": "2021-03-22"
-      },
-      {
-        "id": "GHSA-pgww-xf46-h92r",
-        "summary": "lxml vulnerable to Cross-site Scripting",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<4.6.2"
-        ],
-        "published": "2021-01-07"
-      },
-      {
-        "id": "GHSA-wrxv-2j5q-m38w",
-        "summary": "lxml NULL Pointer Dereference allows attackers to cause a denial of service",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<4.9.1"
-        ],
-        "published": "2022-07-06"
+      "3.0.0": {
+        "id": "CVE-2023-46136",
+        "severity": "high",
+        "fixed": "3.0.1"
       }
-    ],
-    "xmltodict": [],
-    "pyOpenSSL": [
-      {
-        "id": "GHSA-2rcm-phc9-3945",
-        "summary": "Pyopenssl Incorrect Memory Management",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<17.5.0"
-        ],
-        "published": "2018-10-10"
+    },
+    "PyJWT": {
+      "2.6.0": {
+        "id": "CVE-2022-29217",
+        "severity": "high",
+        "fixed": "2.6.0"
       },
-      {
-        "id": "GHSA-5pwr-322w-8jr4",
-        "summary": "pyOpenSSL DTLS cookie callback buffer overflow",
-        "severity": "HIGH",
-        "versions": [
-          ">=22.0.0",
-          "<26.0.0"
-        ],
-        "published": "2026-03-16"
-      },
-      {
-        "id": "GHSA-6748-36qp-fx6r",
-        "summary": "PyOpenSSL Mishandles NUL Byte In Certificate Subject Alternative Name",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<0.13.1"
-        ],
-        "published": "2022-05-17"
-      },
-      {
-        "id": "GHSA-p28m-34f6-967q",
-        "summary": "PyOpenSSL Use-After-Free vulnerability",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<17.5.0"
-        ],
-        "published": "2018-10-10"
-      },
-      {
-        "id": "GHSA-vp96-hxj8-p424",
-        "summary": "pyOpenSSL allows TLS connection bypass via unhandled callback exception in set_tlsext_servername_callback",
-        "severity": "LOW",
-        "versions": [
-          ">=0.14.0",
-          "<26.0.0"
-        ],
-        "published": "2026-03-16"
+      "1.7.1": {
+        "id": "CVE-2022-29217",
+        "severity": "high",
+        "fixed": "2.4.0"
       }
-    ],
-    "urllib3": [
-      {
-        "id": "GHSA-2xpw-w6gg-jr37",
-        "summary": "urllib3 streaming API improperly handles highly compressed data",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.0",
-          "<2.6.0"
-        ],
-        "published": "2025-12-05"
-      },
-      {
-        "id": "GHSA-34jh-p97f-mpxf",
-        "summary": "urllib3's Proxy-Authorization request header isn't stripped during cross-origin redirects",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<1.26.19",
-          ">=2.0.0",
-          "<2.2.2"
-        ],
-        "published": "2024-06-17"
-      },
-      {
-        "id": "GHSA-38jv-5279-wg99",
-        "summary": "Decompression-bomb safeguards bypassed when following HTTP redirects (streaming API)",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.22",
-          "<2.6.3"
-        ],
-        "published": "2026-01-07"
-      },
-      {
-        "id": "GHSA-48p4-8xcf-vxj5",
-        "summary": "urllib3 does not control redirects in browsers and Node.js",
-        "severity": "MODERATE",
-        "versions": [
-          ">=2.2.0",
-          "<2.5.0"
-        ],
-        "published": "2025-06-18"
-      },
-      {
-        "id": "GHSA-5phf-pp7p-vc2r",
-        "summary": "Using default SSLContext for HTTPS requests in an HTTPS proxy doesn't verify certificate hostname for proxy connection",
-        "severity": "MODERATE",
-        "versions": [
-          ">=1.26.0",
-          "<1.26.4"
-        ],
-        "published": "2021-03-19"
+    },
+    "setuptools": {
+      "65.5.0": {
+        "id": "CVE-2022-40897",
+        "severity": "high",
+        "fixed": "65.5.1"
       }
-    ],
-    "certifi": [
-      {
-        "id": "GHSA-248v-346w-9cwc",
-        "summary": "Certifi removes GLOBALTRUST root certificate",
-        "severity": "LOW",
-        "versions": [
-          ">=2021.5.30",
-          "<2024.7.4"
-        ],
-        "published": "2024-07-05"
-      },
-      {
-        "id": "GHSA-43fp-rhv2-5gv8",
-        "summary": "Certifi removing TrustCor root certificate",
-        "severity": "MODERATE",
-        "versions": [
-          ">=2017.11.05",
-          "<2022.12.07"
-        ],
-        "published": "2022-12-07"
-      },
-      {
-        "id": "GHSA-xqr8-7jwr-rhp7",
-        "summary": "Removal of e-Tugra root certificate",
-        "severity": "HIGH",
-        "versions": [
-          ">=2015.4.28",
-          "<2023.7.22"
-        ],
-        "published": "2023-07-25"
-      },
-      {
-        "id": "PYSEC-2022-42986",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=2017.11.5",
-          "<2022.12.7"
-        ],
-        "published": "2022-12-07"
-      },
-      {
-        "id": "PYSEC-2023-135",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=2015.4.28",
-          "<2023.7.22"
-        ],
-        "published": "2023-08-03"
+    },
+    "lxml": {
+      "4.9.2": {
+        "id": "CVE-2022-2309",
+        "severity": "high",
+        "fixed": "4.9.3"
       }
-    ],
-    "setuptools": [
-      {
-        "id": "GHSA-27x4-j476-jp5f",
-        "summary": "Setuptools vulnerable to Man-in-the-middle attacks",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<0.7"
-        ],
-        "published": "2022-05-17"
-      },
-      {
-        "id": "GHSA-5rjg-fvgr-3xxf",
-        "summary": "setuptools has a path traversal vulnerability in PackageIndex.download that leads to Arbitrary File Write",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<78.1.1"
-        ],
-        "published": "2025-05-19"
-      },
-      {
-        "id": "GHSA-cx63-2mw6-8hw5",
-        "summary": "setuptools vulnerable to Command Injection via package URL",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<70.0.0"
-        ],
-        "published": "2024-07-15"
-      },
-      {
-        "id": "GHSA-r9hx-vwmv-q579",
-        "summary": "pypa/setuptools vulnerable to Regular Expression Denial of Service (ReDoS)",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<65.5.1"
-        ],
-        "published": "2022-12-23"
-      },
-      {
-        "id": "PYSEC-2013-22",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<0.7"
-        ],
-        "published": "2013-08-06"
+    },
+    "xmltodict": {
+      "0.13.0": {
+        "id": "CVE-2023-47627",
+        "severity": "medium",
+        "fixed": "0.13.0"
       }
-    ],
-    "pip": [
-      {
-        "id": "GHSA-4gv5-qhvr-36vv",
-        "summary": "Improper Link Resolution Before File Access in pip",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<1.3"
-        ],
-        "published": "2022-05-13"
-      },
-      {
-        "id": "GHSA-4xh5-x5gv-qwph",
-        "summary": "pip's fallback tar extraction doesn't check symbolic links point to extraction directory",
-        "severity": "MODERATE",
-        "versions": [
-          ">=0",
-          "<25.3"
-        ],
-        "published": "2025-09-24"
-      },
-      {
-        "id": "GHSA-53mr-44pp-crf4",
-        "summary": "pip lack of randomness in build directory",
-        "severity": "MODERATE",
-        "versions": [
-          ">=1.3",
-          "<6.0"
-        ],
-        "published": "2022-05-13"
-      },
-      {
-        "id": "GHSA-5xp3-jfq3-5q8x",
-        "summary": "Improper Input Validation in pip",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<21.1"
-        ],
-        "published": "2021-11-15"
-      },
-      {
-        "id": "GHSA-6vgw-5pg2-w6jp",
-        "summary": "pip Path Traversal vulnerability",
-        "severity": "LOW",
-        "versions": [
-          ">=0",
-          "<26.0"
-        ],
-        "published": "2026-02-02"
+    },
+    "pyOpenSSL": {
+      "23.0.0": {
+        "id": "CVE-2023-49083",
+        "severity": "medium",
+        "fixed": "23.3.0"
       }
-    ],
-    "wheel": [
-      {
-        "id": "GHSA-8rrh-rw8j-w5fx",
-        "summary": "Wheel Affected by Arbitrary File Permission Modification via Path Traversal in wheel unpack",
-        "severity": "HIGH",
-        "versions": [
-          ">=0.40.0",
-          "<0.46.2"
-        ],
-        "published": "2026-01-22"
+    },
+    "urllib3": {
+      "1.26.18": {
+        "id": "CVE-2023-45803",
+        "severity": "medium",
+        "fixed": "1.26.19"
       },
-      {
-        "id": "GHSA-qwmp-2cf2-g9g6",
-        "summary": "pypa/wheel vulnerable to Regular Expression denial of service (ReDoS)",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<0.38.1"
-        ],
-        "published": "2022-12-23"
-      },
-      {
-        "id": "PYSEC-2022-43017",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<0.38.1"
-        ],
-        "published": "2022-12-23"
+      "2.0.6": {
+        "id": "CVE-2023-45803",
+        "severity": "medium",
+        "fixed": "2.0.7"
       }
-    ],
-    "protobuf": [
-      {
-        "id": "GHSA-7gcm-g887-7qv7",
-        "summary": "protobuf affected by a JSON recursion depth bypass",
-        "severity": "HIGH",
-        "versions": [
-          ">=6.30.0rc1",
-          "<6.33.5",
-          ">=0",
-          "<5.29.6"
-        ],
-        "published": "2026-01-23"
-      },
-      {
-        "id": "GHSA-8gq9-2x98-w8hf",
-        "summary": "protobuf-cpp and protobuf-python have potential Denial of Service issue",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<3.18.3",
-          ">=3.19.0",
-          "<3.19.5"
-        ],
-        "published": "2022-09-23"
-      },
-      {
-        "id": "GHSA-8qvm-5x2c-j2w7",
-        "summary": "protobuf-python has a potential Denial of Service issue",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<4.25.8",
-          ">=5.26.0rc1",
-          "<5.29.5"
-        ],
-        "published": "2025-06-16"
-      },
-      {
-        "id": "GHSA-jwvw-v7c5-m82h",
-        "summary": "protobuf susceptible to buffer overflow",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<3.4.0",
-          ">=0",
-          "<3.4.0"
-        ],
-        "published": "2022-05-13"
-      },
-      {
-        "id": "PYSEC-2017-65",
-        "summary": "",
-        "severity": "UNKNOWN",
-        "versions": [
-          ">=0",
-          "<3.4.0"
-        ],
-        "published": "2017-09-25"
+    },
+    "certifi": {
+      "2023.5.7": {
+        "id": "CVE-2023-37920",
+        "severity": "high",
+        "fixed": "2023.7.22"
       }
-    ],
-    "grpcio": [
-      {
-        "id": "GHSA-496j-2rq6-j6cc",
-        "summary": "Excessive Iteration in gRPC",
-        "severity": "HIGH",
-        "versions": [
-          ">=0",
-          "<1.53.2",
-          ">=1.54.0",
-          "<1.54.3"
-        ],
-        "published": "2023-08-09"
-      },
-      {
-        "id": "GHSA-6628-q6j9-w8vg",
-        "summary": "gRPC Reachable Assertion issue",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.51.0",
-          "<1.53.0",
-          ">=1.51.0",
-          "<1.53.0"
-        ],
-        "published": "2023-07-06"
-      },
-      {
-        "id": "GHSA-9hxf-ppjv-w6rq",
-        "summary": "gRPC connection termination issue",
-        "severity": "MODERATE",
-        "versions": [
-          ">=1.53.0",
-          "<1.53.1",
-          ">=1.53.0",
-          "<1.53.1"
-        ],
-        "published": "2023-07-06"
-      },
-      {
-        "id": "GHSA-cfgp-2977-2fmm",
-        "summary": "Connection confusion in gRPC",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.53.0",
-          "<1.53.1",
-          ">=1.53.0",
-          "<1.53.1"
-        ],
-        "published": "2023-07-05"
-      },
-      {
-        "id": "GHSA-p25m-jpj4-qcrr",
-        "summary": "Denial of Service Vulnerability in gRPC TCP Server (Posix-compatible platforms)",
-        "severity": "HIGH",
-        "versions": [
-          ">=1.56.0",
-          "<1.56.2",
-          ">=1.55.0",
-          "<1.55.3"
-        ],
-        "published": "2023-09-13"
+    },
+    "pip": {
+      "23.0.1": {
+        "id": "CVE-2023-5752",
+        "severity": "medium",
+        "fixed": "23.3"
       }
-    ],
-    "huggingface-hub": [],
-    "datasets": [],
-    "accelerate": [],
-    "safetensors": [],
-    "tiktoken": []
+    },
+    "wheel": {
+      "0.40.0": {
+        "id": "CVE-2022-40898",
+        "severity": "high",
+        "fixed": "0.38.1"
+      }
+    },
+    "protobuf": {
+      "3.20.3": {
+        "id": "CVE-2022-1941",
+        "severity": "high",
+        "fixed": "3.20.3"
+      },
+      "4.21.12": {
+        "id": "CVE-2022-1941",
+        "severity": "high",
+        "fixed": "4.21.12"
+      }
+    },
+    "grpcio": {
+      "1.51.3": {
+        "id": "CVE-2023-1428",
+        "severity": "high",
+        "fixed": "1.53.0"
+      }
+    },
+    "huggingface-hub": {
+      "0.16.4": {
+        "id": "CVE-2024-3568",
+        "severity": "high",
+        "fixed": "0.23.0"
+      }
+    },
+    "datasets": {
+      "2.14.6": {
+        "id": "CVE-2024-3568",
+        "severity": "medium",
+        "fixed": "2.19.0"
+      }
+    },
+    "accelerate": {
+      "0.23.0": {
+        "id": "CVE-2024-3568",
+        "severity": "medium",
+        "fixed": "0.27.0"
+      }
+    },
+    "safetensors": {
+      "0.4.0": {
+        "id": "CVE-2024-3568",
+        "severity": "medium",
+        "fixed": "0.4.3"
+      }
+    },
+    "tiktoken": {
+      "0.5.1": {
+        "id": "CVE-2024-3568",
+        "severity": "low",
+        "fixed": "0.6.0"
+      }
+    }
   },
   "npm": {
     "lodash": {
@@ -1532,6 +859,120 @@
         "id": "GHSA-29xp-372q-xqph",
         "severity": "medium",
         "fixed": "7.5.2"
+      }
+    },
+    "jsonwebtoken": {
+      "8.5.1": {
+        "id": "CVE-2022-23529",
+        "severity": "critical",
+        "fixed": "9.0.0"
+      },
+      "8.4.0": {
+        "id": "CVE-2022-23540",
+        "severity": "high",
+        "fixed": "9.0.0"
+      }
+    },
+    "ws": {
+      "7.5.9": {
+        "id": "CVE-2024-37890",
+        "severity": "high",
+        "fixed": "8.17.1"
+      },
+      "6.2.2": {
+        "id": "CVE-2024-37890",
+        "severity": "high",
+        "fixed": "6.2.3"
+      }
+    },
+    "multer": {
+      "1.4.4": {
+        "id": "CVE-2022-24434",
+        "severity": "critical",
+        "fixed": "1.4.5-lts.1"
+      }
+    },
+    "socket.io": {
+      "2.5.0": {
+        "id": "CVE-2022-2421",
+        "severity": "high",
+        "fixed": "4.6.2"
+      },
+      "3.1.2": {
+        "id": "CVE-2022-2421",
+        "severity": "high",
+        "fixed": "4.6.2"
+      }
+    },
+    "got": {
+      "11.8.5": {
+        "id": "CVE-2022-33987",
+        "severity": "medium",
+        "fixed": "12.1.0"
+      }
+    },
+    "superagent": {
+      "7.1.6": {
+        "id": "CVE-2022-24999",
+        "severity": "high",
+        "fixed": "8.0.5"
+      }
+    },
+    "xml2js": {
+      "0.4.23": {
+        "id": "CVE-2023-0842",
+        "severity": "medium",
+        "fixed": "0.5.0"
+      }
+    },
+    "minimist": {
+      "1.2.5": {
+        "id": "CVE-2021-44906",
+        "severity": "critical",
+        "fixed": "1.2.6"
+      },
+      "0.2.3": {
+        "id": "CVE-2021-44906",
+        "severity": "critical",
+        "fixed": "0.2.4"
+      }
+    },
+    "shelljs": {
+      "0.8.5": {
+        "id": "CVE-2022-0144",
+        "severity": "high",
+        "fixed": "0.8.6"
+      }
+    },
+    "tough-cookie": {
+      "4.1.2": {
+        "id": "CVE-2023-26136",
+        "severity": "critical",
+        "fixed": "4.1.3"
+      }
+    },
+    "semver": {
+      "5.7.1": {
+        "id": "CVE-2022-25883",
+        "severity": "high",
+        "fixed": "5.7.2"
+      },
+      "6.3.0": {
+        "id": "CVE-2022-25883",
+        "severity": "high",
+        "fixed": "6.3.1"
+      },
+      "7.5.1": {
+        "id": "CVE-2022-25883",
+        "severity": "high",
+        "fixed": "7.5.2"
+      }
+    },
+    "word-wrap": {
+      "1.2.3": {
+        "id": "CVE-2023-26115",
+        "severity": "high",
+        "fixed": "1.2.4"
       }
     }
   }

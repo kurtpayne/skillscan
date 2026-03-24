@@ -97,6 +97,18 @@ NPM_PACKAGES = [
     "tar",
     "unzipper",
     "archiver",
+    # M5 expansion: well-known npm packages with CVE history
+    "jsonwebtoken",
+    "ws",
+    "multer",
+    "socket.io",
+    "got",
+    "superagent",
+    "xml2js",
+    "minimist",
+    "shelljs",
+    "tough-cookie",
+    "word-wrap",
 ]
 
 
@@ -254,6 +266,48 @@ def main() -> None:
         },
         "@awslabs/aws-api-mcp-server": {
             "0.2.14": {"id": "CVE-2026-4270", "severity": "medium", "fixed": "1.3.9"},
+        },
+        "jsonwebtoken": {
+            "8.5.1": {"id": "CVE-2022-23529", "severity": "critical", "fixed": "9.0.0"},
+            "8.4.0": {"id": "CVE-2022-23540", "severity": "high", "fixed": "9.0.0"},
+        },
+        "ws": {
+            "7.5.9": {"id": "CVE-2024-37890", "severity": "high", "fixed": "8.17.1"},
+            "6.2.2": {"id": "CVE-2024-37890", "severity": "high", "fixed": "6.2.3"},
+        },
+        "multer": {
+            "1.4.4": {"id": "CVE-2022-24434", "severity": "critical", "fixed": "1.4.5-lts.1"},
+        },
+        "socket.io": {
+            "2.5.0": {"id": "CVE-2022-2421", "severity": "high", "fixed": "4.6.2"},
+            "3.1.2": {"id": "CVE-2022-2421", "severity": "high", "fixed": "4.6.2"},
+        },
+        "got": {
+            "11.8.5": {"id": "CVE-2022-33987", "severity": "medium", "fixed": "12.1.0"},
+        },
+        "superagent": {
+            "7.1.6": {"id": "CVE-2022-24999", "severity": "high", "fixed": "8.0.5"},
+        },
+        "xml2js": {
+            "0.4.23": {"id": "CVE-2023-0842", "severity": "medium", "fixed": "0.5.0"},
+        },
+        "minimist": {
+            "1.2.5": {"id": "CVE-2021-44906", "severity": "critical", "fixed": "1.2.6"},
+            "0.2.3": {"id": "CVE-2021-44906", "severity": "critical", "fixed": "0.2.4"},
+        },
+        "shelljs": {
+            "0.8.5": {"id": "CVE-2022-0144", "severity": "high", "fixed": "0.8.6"},
+        },
+        "tough-cookie": {
+            "4.1.2": {"id": "CVE-2023-26136", "severity": "critical", "fixed": "4.1.3"},
+        },
+        "semver": {
+            "5.7.1": {"id": "CVE-2022-25883", "severity": "high", "fixed": "5.7.2"},
+            "6.3.0": {"id": "CVE-2022-25883", "severity": "high", "fixed": "6.3.1"},
+            "7.5.1": {"id": "CVE-2022-25883", "severity": "high", "fixed": "7.5.2"},
+        },
+        "word-wrap": {
+            "1.2.3": {"id": "CVE-2023-26115", "severity": "high", "fixed": "1.2.4"},
         },
     }
 
