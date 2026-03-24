@@ -632,13 +632,6 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
-    },
-    "langflow": {
-      "1.2.0": {
-        "id": "CVE-2026-33017",
-        "severity": "critical",
-        "fixed": "unpatched"
-      }
     }
   },
   "npm": {
@@ -668,36 +661,6 @@
         "id": "GHSA-29xp-372q-xqph",
         "severity": "medium",
         "fixed": "7.5.2"
-      }
-    },
-    "mcp-server-auto-commit": {
-      "1.0.0": {
-        "id": "CVE-2026-4198",
-        "severity": "medium",
-        "fixed": "unpatched"
-      }
-    },
-    "quip-mcp-server": {
-      "1.0.0": {
-        "id": "CVE-2026-4192",
-        "severity": "high",
-        "fixed": "unpatched"
-      }
-    },
-    "checkmarx/ast-github-action": {
-      "3.0.0": {
-        "id": "CVE-2026-33634",
-        "severity": "critical",
-        "fixed": "unpatched"
-      }
-    }
-  },
-  "go": {
-    "github.com/modelcontextprotocol/go-sdk": {
-      "1.4.0": {
-        "id": "CVE-2026-33252",
-        "severity": "high",
-        "fixed": "1.4.1"
       }
     }
   }
