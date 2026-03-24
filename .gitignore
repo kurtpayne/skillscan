@@ -48,3 +48,11 @@ ENV/
 
 # Logs
 *.log
+
+# Training corpus and ML scripts — live in private kurtpayne/skillscan-corpus repo
+corpus/
+scripts/finetune_modal.py
+scripts/scrape_benign_corpus.py
+scripts/scrape_curated_repos.py
+scripts/scrape_alirezarezvani.py
+scripts/scrape_hard_negatives.py
