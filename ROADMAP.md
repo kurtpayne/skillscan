@@ -231,6 +231,46 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ---
 
+## Milestone 10.7 — CLI UX Audit & Command Consolidation
+
+**Goal:** Reduce user friction by consolidating fragmented sub-commands into a coherent, discoverable CLI surface.
+
+**Problem statement:** The CLI has grown organically and now has multiple overlapping entry points for related operations:
+
+- **Update fragmentation**: `skillscan update-rules`, `skillscan update-ioc`, `skillscan update-model`, and `skillscan-intel-daily-update` are four separate commands that users must know about and run independently. A user who runs `skillscan update` expects everything to be current.
+- **Diff sub-command sprawl**: `skillscan diff` and `skillscan-lint diff` overlap in scope. The distinction between a security diff and a quality diff is not obvious to new users.
+- **Model management opacity**: There is no single command that shows the user what version of the model is installed, whether it is current, and how to update it. `skillscan model` does not exist yet.
+- **Inconsistent naming**: Some commands use hyphens (`update-rules`), others use underscores in the underlying Python, and the lint tool uses a separate binary name.
+
+**Proposed consolidated surface:**
+
+| New command | Replaces | Notes |
+|---|---|---|
+| `skillscan update` | `update-rules`, `update-ioc`, `update-model`, `skillscan-intel-daily-update` | Updates all components; `--rules`, `--ioc`, `--model` flags for selective updates |
+| `skillscan model status` | *(missing)* | Shows installed version, HF Hub latest, and whether an update is available |
+| `skillscan model sync` | *(missing)* | Downloads/updates the ML model with progress bar |
+| `skillscan diff` | `skillscan diff` + `skillscan-lint diff` | Unified diff with `--security` / `--quality` / `--all` flags |
+| `skillscan lint` | `skillscan-lint` | Alias; `skillscan-lint` binary remains for backward compat |
+
+**Remaining actions:**
+- [ ] Audit all CLI entry points and document current surface in `docs/CLI_REFERENCE.md`
+- [ ] Design the consolidated command hierarchy (use Click groups)
+- [ ] Implement `skillscan update` as a meta-command that runs all update sub-steps in order with a single progress display
+- [ ] Implement `skillscan model status` and `skillscan model sync` (prerequisite: Milestone 10.5)
+- [ ] Unify `skillscan diff` to accept `--security` and `--quality` flags
+- [ ] Add `skillscan-lint` as an alias under the main `skillscan` group
+- [ ] Update `--help` text, man page, and README to reflect the new surface
+- [ ] Add deprecation warnings on old command names with migration hints
+- [ ] Update GitHub Actions integration templates to use new commands
+
+**Acceptance criteria:**
+- A new user can run `skillscan update` and have rules, IOC DB, and model all current
+- `skillscan --help` shows a coherent, scannable command list with no redundancy
+- All old command names still work but print a deprecation hint pointing to the new name
+- CI workflow uses only the new command surface
+
+---
+
 ## Milestone 11 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
