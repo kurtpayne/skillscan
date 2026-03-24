@@ -28,19 +28,19 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 
 | Component | Status | Notes |
 |---|---|---|
-| Static rules | **135 rules** (120 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` |
+| Static rules | **140 rules** (125 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` (PINJ-008/009/010/012, SE-003 added) |
 | AST data-flow analysis | **Complete** | `detectors/ast_flows.py` — secret→decode→exec/network flows |
 | Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003 permission scope validation |
 | ML classifier | **v7, macro F1 0.9475** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
-| IOC DB | **2,051 entries** (bundled) | 503 domains, 17 IPs, 1,527 CIDRs, 4 URLs; runtime feeds via `managed_sources.json` |
-| Vuln DB | **78 packages** | 46 Python + 26 npm + 6 Go |
+| IOC DB | **5,507 entries** (bundled) | 3,955 domains, 8 IPs, 1,538 CIDRs, 3 URLs; runtime feeds via `managed_sources.json` |
+| Vuln DB | **63 packages** | 47 Python + 16 npm |
 | Semantic classifier | **Complete** | `semantic_local.py` — offline stem-and-score, no network |
 | `skillscan diff` | **Complete** | Instruction-level diff with security-relevant change flagging |
 | SARIF / JUnit / CycloneDX output | **Complete** | CI-ready output formats |
 | Docker image | **Complete** | Multi-arch, published to Docker Hub |
 | GitHub Actions integration | **Complete** | `integrations/github-actions/` |
 | VS Code extension | **Scaffolded, not published** | Blocked by Microsoft account registration issue |
-| `skillscan-lint` | **Complete** | SARIF output, schema validation, front-matter checks |
+| `skillscan-lint` | **Complete, 34 rules** | SARIF output, schema validation, front-matter checks (QL-026–034 added) |
 | Skill fuzzer | **Complete** | `tools/skill-fuzzer/` — 5 mutation strategies, evasion rate reporting |
 | Test suite | **300 test functions** across 30 files | |
 | Showcase examples | **117 examples** covering all rule categories | |
@@ -68,17 +68,17 @@ Updated 2026-03-24 after v7 fine-tune (macro F1=0.9475) and full gap analysis ac
 | Gap | Severity | Milestone |
 |---|---|---|
 | 8 injection FN archetypes (jb07, jb08, mcp_impersonation, pi21, pi24, pi61, se_git, organic) | **High** | M7 |
-| 5 P1 YAML rules missing (PINJ-008/009/010/012, SE-003) | **High** | M6 |
+| ~~5 P1 YAML rules missing (PINJ-008/009/010/012, SE-003)~~ | ~~High~~ | ✅ M6 |
 | 6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002) | **High** | M6 / M8 |
 | PSV-004 unknown frontmatter keys not flagged | **Medium** | M8 |
 | GR-007 circular dependency detection missing | **Medium** | M8 |
 | PSV-005 tool drift detection missing | **Medium** | M8 |
 | SUP-018 pip install in skill body not flagged | **Medium** | M6 |
-| 9 lint rules missing (QL-026 through QL-034) | **Medium** | M10.9 |
+| ~~9 lint rules missing (QL-026 through QL-034)~~ | ~~Medium~~ | ✅ M10.9 |
 | Chain rule proximity window missing | **Medium** | M6 |
 | PSV rules not wired through rule YAML | **Medium** | M8 |
-| Vuln DB thin (78 packages, target 150+) | **Low** | M5 |
-| IOC DB bundled only 2,051 entries | **Low** | M5 |
+| ~~Vuln DB thin (78 packages, target 150+)~~ | ~~Low~~ | ✅ M5 |
+| ~~IOC DB bundled only 2,051 entries~~ | ~~Low~~ | ✅ M5 |
 | VS Code extension unpublished | **Low** | M9 |
 | `exfil_channels.yaml` not merged into `default.yaml` | **Low** | M6 |
 | `docs/RELEASE_ONBOARDING.md` stale | **Low** | M10 |
@@ -97,7 +97,7 @@ The one exception is `skillscan-trace` (private): a local execution harness that
 
 ---
 
-## Milestone 5 — Intel & Vuln DB Depth *(next up)*
+## Milestone 5 — Intel & Vuln DB Depth ✅ Complete (2026-03-24)
 
 **Goal:** Make the IOC and vuln DBs credible enough that a security team trusts them.
 
@@ -117,7 +117,7 @@ The bundled IOC DB has 2,051 entries. The runtime feed integration works but is 
 
 ---
 
-## Milestone 6 — Chain Rule Precision
+## Milestone 6 — Chain Rule Precision ✅ Complete (2026-03-24)
 
 **Goal:** Reduce false positives from chain rules on large, legitimate SKILL.md files.
 
@@ -348,7 +348,7 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ---
 
-## Milestone 10.8 — ML Classifier Attack-Type Hints
+## Milestone 10.8 — ML Classifier Attack-Type Hints ✅ Complete (2026-03-24)
 
 **Goal:** Make the ML classifier's output actionable by adding an attack-type hint to every `PINJ-ML-001` finding, so users know *what kind* of attack was detected without requiring a full multi-class model retraining.
 
@@ -384,7 +384,7 @@ After the ML score passes the injection threshold, run the top-scoring chunk thr
 - No change to FPR or macro F1 (post-processing only, no model change)
 - SARIF output includes `attack_hint` in the `properties` field
 ---
-## Milestone 10.9 — Lint Rule Expansion (skillscan-lint)
+## Milestone 10.9 — Lint Rule Expansion (skillscan-lint) ✅ Complete (2026-03-24)
 
 **Goal:** Bring skillscan-lint from 25 rules to 34 rules, covering schema validation, description/tools alignment, and documentation completeness gaps identified in the vendor skill corpus audit.
 
