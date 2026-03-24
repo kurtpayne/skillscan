@@ -147,6 +147,11 @@ def run_finetune(
         parts = Path(rel_path).parts
         if not parts:
             continue
+        # Support both flat (category/file.md) and nested
+        # (training_corpus/category/[subdir/]file.md) layouts.
+        if parts[0] == "training_corpus" and len(parts) >= 2:
+            # Shift: treat parts[1] as the category
+            parts = parts[1:]
         category = parts[0]
         if category == "held_out_eval":
             continue  # reserved for eval
