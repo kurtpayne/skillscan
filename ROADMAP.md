@@ -271,6 +271,44 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ---
 
+## Milestone 10.8 — ML Classifier Attack-Type Hints
+
+**Goal:** Make the ML classifier's output actionable by adding an attack-type hint to every `PINJ-ML-001` finding, so users know *what kind* of attack was detected without requiring a full multi-class model retraining.
+
+**Problem statement:** The current ML classifier outputs a single binary label (`INJECTION` / `BENIGN`) with a confidence score. All injection findings produce the same generic `PINJ-ML-001` title regardless of whether the attack is a jailbreak, a credential exfiltration attempt, a supply-chain hook, or an indirect injection. Users cannot prioritize or triage findings without reading the raw snippet.
+
+**Proposed approach — lightweight post-processing (no retraining required):**
+
+After the ML score passes the injection threshold, run the top-scoring chunk through a deterministic keyword classifier that maps it to the most likely attack category. This adds an `attack_hint` field to the finding's metadata and enriches the `title` and `mitigation` text.
+
+| Attack hint | Key signals | Severity modifier |
+|---|---|---|
+| `jailbreak` | "developer mode", "DAN", "unrestricted", "ignore previous", "pretend you are" | HIGH |
+| `social_engineering` | "urgent", "deprecated", "verify your", "confirm credentials", "reward", "vendor" | HIGH |
+| `exfiltration` | DNS patterns, webhook URLs, `curl`, `wget`, error message + secret, base64 + send | CRITICAL |
+| `supply_chain` | package names + install + hook, `setup.py`, `__init__` + exec | CRITICAL |
+| `indirect_injection` | RSS, changelog, tool result, "when you read", "if this appears" | MEDIUM |
+| `prompt_injection` | role override, context extraction, goal hijack, system prompt leak | HIGH |
+
+**Future path to full multi-class:** Once the training corpus has ≥200 labeled examples per attack class (currently ~10/class), replace the keyword post-processor with a proper multi-label DeBERTa head. The attack-hint field in the Finding schema is forward-compatible with this upgrade.
+
+**Remaining actions:**
+- [ ] Add `attack_hint: str | None` field to the `Finding` dataclass in `models.py`
+- [ ] Implement `_classify_attack_type(text: str) -> str` in `ml_detector.py` using a priority-ordered keyword ruleset
+- [ ] Enrich `PINJ-ML-001` title: `"ML-detected {attack_hint} (DeBERTa classifier)"` when hint is available
+- [ ] Add attack-type-specific mitigation text for each hint category
+- [ ] Update SARIF output to include `attack_hint` as a property bag entry
+- [ ] Add unit tests for each attack hint category
+- [ ] Update `docs/DETECTION_RULES.md` to document the attack hint taxonomy
+
+**Acceptance criteria:**
+- `PINJ-ML-001` findings include a non-null `attack_hint` for ≥80% of injection examples in the held-out eval set
+- Attack hint accuracy (correct category) ≥70% on the labeled eval set
+- No change to FPR or macro F1 (post-processing only, no model change)
+- SARIF output includes `attack_hint` in the `properties` field
+
+---
+
 ## Milestone 11 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
