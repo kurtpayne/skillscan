@@ -200,6 +200,10 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-045" for f in findings_110)
     findings_111 = _scan("examples/showcase/108_mcp_server_command_injection_cve").findings
     assert any(f.id == "SUP-016" for f in findings_111)
+    findings_112 = _scan("examples/showcase/100_langflow_rce_build_public_tmp").findings
+    assert any(f.id == "MAL-048" for f in findings_112)
+    findings_113 = _scan("examples/showcase/101_checkmarx_actions_teampcp").findings
+    assert any(f.id == "SUP-017" for f in findings_113)
 
 
 def test_showcase_policy_block_domain() -> None:

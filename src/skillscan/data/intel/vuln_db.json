@@ -632,6 +632,13 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
+    },
+    "langflow": {
+      "1.2.0": {
+        "id": "CVE-2026-33017",
+        "severity": "critical",
+        "fixed": "unpatched"
+      }
     }
   },
   "npm": {
@@ -674,6 +681,13 @@
       "1.0.0": {
         "id": "CVE-2026-4192",
         "severity": "high",
+        "fixed": "unpatched"
+      }
+    },
+    "checkmarx/ast-github-action": {
+      "3.0.0": {
+        "id": "CVE-2026-33634",
+        "severity": "critical",
         "fixed": "unpatched"
       }
     }

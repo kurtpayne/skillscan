@@ -48,3 +48,5 @@
 | `SUP-015` | critical | GitHub Actions supply chain compromise via release tag repointing | `106_github_actions_tag_repointing` | github-actions, supply-chain, tag-repointing, credential-theft, trivy |
 | `MAL-045` | high | StoatWaffle Node.js malware family (WaterPlum/Contagious Interview) | `107_stoatwaffle_vscode_malware` | malware, nodejs, stoatwaffle, waterplum, contagious-interview, vscode, rat, stealer |
 | `SUP-016` | high | Vulnerable MCP server package with command injection | `108_mcp_server_command_injection_cve` | mcp, supply-chain, command-injection, rce, cve, vulnerability |
+| `MAL-048` | critical | Langflow unauthenticated RCE via build_public_tmp endpoint (CVE-2026-33017) | `100_langflow_rce_build_public_tmp` | langflow, rce, cve, ai-pipeline, unauthenticated, supply-chain |
+| `SUP-017` | critical | Checkmarx GitHub Actions supply chain compromise (TeamPCP, CVE-2026-33634) | `101_checkmarx_actions_teampcp` | supply-chain, github-actions, checkmarx, teampcp, credential-theft, tag-repointing |

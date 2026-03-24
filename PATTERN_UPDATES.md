@@ -1,3 +1,42 @@
+## 2026-03-24 (batch 2) — Langflow RCE (CVE-2026-33017), Checkmarx GitHub Actions Compromise (CVE-2026-33634)
+
+**Sources:**
+- [The Hacker News — Critical Langflow Flaw CVE-2026-33017 Enables Unauthenticated RCE](https://thehackernews.com/2026/03/critical-langflow-flaw-cve-2026-33017.html)
+- [Sysdig — CVE-2026-33017: How Attackers Compromised Langflow AI Pipelines in 20 Hours](https://www.sysdig.com/blog/cve-2026-33017-how-attackers-compromised-langflow-ai-pipelines-in-20-hours)
+- [The Hacker News — TeamPCP Hacks Checkmarx GitHub Actions](https://thehackernews.com/2026/03/teampcp-hacks-checkmarx-github-actions.html)
+- [StepSecurity — Checkmarx KICS GitHub Action Compromised: Malware Injected in All Git Tags](https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags)
+
+**Event Summary:** Two new detection rules, two new CVEs, one new IOC domain, and two new IOC IPs were added. Sysdig and The Hacker News documented CVE-2026-33017, a critical unauthenticated remote code execution vulnerability in Langflow where attackers exploit the /api/v1/build_public_tmp/{flow_id}/flow endpoint to inject arbitrary Python code, achieving full server compromise within 20 hours of initial access. StepSecurity and The Hacker News documented CVE-2026-33634, the TeamPCP supply chain compromise of Checkmarx GitHub Actions (ast-github-action, kics-github-action) where attackers force-pushed malicious commits to all release tags, exfiltrating SSH keys, cloud credentials, and CI/CD secrets to the checkmarx.zone typosquatted domain.
+
+**New Patterns Added:**
+
+### MAL-048: Langflow unauthenticated RCE via build_public_tmp endpoint
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.87
+- **Pattern:** Detects Langflow build_public_tmp exploitation, CVE-2026-33017 references, malicious flow data injection with code execution payloads, and reverse shell attempts via the unauthenticated API endpoint.
+- **Justification:** Direct detection of the Langflow unauthenticated RCE attack documented by Sysdig and The Hacker News. Attackers exploit the build_public_tmp endpoint to inject arbitrary Python code without authentication.
+
+### SUP-017: Checkmarx GitHub Actions supply chain compromise (TeamPCP)
+- **Category:** supply_chain
+- **Severity:** critical
+- **Confidence:** 0.88
+- **Pattern:** Detects Checkmarx action compromise indicators, checkmarx.zone exfiltration domain, CVE-2026-33634 references, ast-github-action/kics-github-action tag repointing, and TeamPCP malware artifacts (tpcp.tar.gz).
+- **Justification:** Detection of the TeamPCP supply chain compromise of Checkmarx GitHub Actions documented by StepSecurity and The Hacker News. Extends existing TeamPCP coverage (SUP-015) to the Checkmarx action family.
+
+**IOC Updates:**
+- Added 1 TeamPCP exfiltration domain: checkmarx.zone
+- Added 2 IPs: 173.212.205.251 (Langflow exploitation), 83.142.209.11 (TeamPCP Checkmarx C2)
+
+**Vulnerability Updates:**
+- Added CVE-2026-33017 (critical, langflow 1.2.0, unpatched) — unauthenticated RCE via build_public_tmp
+- Added CVE-2026-33634 (critical, checkmarx/ast-github-action 3.0.0, unpatched) — supply chain compromise via tag repointing
+
+**Corpus Updates:**
+- Organic eval holdouts for MAL-048 and SUP-017 added to private skillscan-corpus repo
+
+---
+
 ## 2026-03-24 — StoatWaffle Malware Family, MCP Server Command Injection CVEs
 
 **Sources:**

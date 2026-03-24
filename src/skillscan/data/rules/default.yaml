@@ -1,4 +1,4 @@
-version: "2026.03.23.2"
+version: "2026.03.24.1"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2958,6 +2958,72 @@ static_rules:
       benchmark_set: core-static-v1
     references:
     - https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/
+- id: MAL-048
+  category: malware_pattern
+  severity: critical
+  confidence: 0.87
+  title: Langflow unauthenticated RCE via build_public_tmp endpoint
+  pattern: (?i)(?:langflow[^\n]{0,200}(?:build_public_tmp|remote[_\s-]?code[_\s-]?execut|unauthenticat[^\n]{0,80}rce|CVE-2026-33017)|build_public_tmp[^\n]{0,200}(?:flow|exec|code|payload|reverse[_\s-]?shell|os\.system|subprocess)|CVE-2026-33017|/api/v1/build_public_tmp/[^\n]{0,200}(?:flow|exec|payload)|langflow[^\n]{0,200}(?:pipeline|flow)[^\n]{0,200}(?:inject|malicious|arbitrary[_\s-]?code))
+  mitigation: Langflow versions prior to the fix for CVE-2026-33017 allow unauthenticated
+    remote code execution via the /api/v1/build_public_tmp/{flow_id}/flow endpoint.
+    Attackers inject arbitrary Python code in the flow data parameter to execute commands,
+    read environment variables, and obtain reverse shells. Update Langflow immediately
+    and restrict access to the build_public_tmp API endpoint.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-24"
+    updated: "2026-03-24"
+    tags: [langflow, rce, cve, ai-pipeline, unauthenticated, supply-chain]
+    last_modified: '2026-03-24'
+    techniques:
+    - id: MAL-048
+      name: Langflow build_public_tmp RCE
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-24"
+      last_modified: "2026-03-24"
+    quality:
+      precision_estimate: 0.87
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/03/critical-langflow-flaw-cve-2026-33017.html
+    - https://www.sysdig.com/blog/cve-2026-33017-how-attackers-compromised-langflow-ai-pipelines-in-20-hours
+- id: SUP-017
+  category: supply_chain
+  severity: critical
+  confidence: 0.88
+  title: Checkmarx GitHub Actions supply chain compromise (TeamPCP)
+  pattern: (?i)(?:checkmarx[/._-]?(?:ast|kics)[_\s-]?(?:github)?[_\s-]?action[^\n]{0,200}(?:compromis|malicious|backdoor|credential[_\s-]?steal|tag[_\s-]?repoin)|checkmarx\.zone|CVE-2026-33634|(?:ast-github-action|kics-github-action)[^\n]{0,200}(?:compromis|malicious|force[_\s-]?push|tag[_\s-]?repoin)|tpcp\.tar\.gz[^\n]{0,200}(?:checkmarx|ast|kics)|(?:cx-dev-assist|ast-results)[^\n]{0,200}(?:malicious|compromis|backdoor))
+  mitigation: TeamPCP compromised Checkmarx GitHub Actions (ast-github-action,
+    kics-github-action) by force-pushing malicious commits to release tags
+    (CVE-2026-33634). The malware exfiltrates SSH keys, cloud credentials, and
+    CI/CD secrets to checkmarx.zone. Pin all GitHub Actions to full commit SHAs
+    instead of mutable tags. Audit CI/CD logs for connections to checkmarx.zone.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-24"
+    updated: "2026-03-24"
+    tags: [supply-chain, github-actions, checkmarx, teampcp, credential-theft, tag-repointing]
+    last_modified: '2026-03-24'
+    techniques:
+    - id: SUPPLY-017
+      name: Supply chain risk
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-24"
+      last_modified: "2026-03-24"
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/03/teampcp-hacks-checkmarx-github-actions.html
+    - https://www.stepsecurity.io/blog/checkmarx-kics-github-action-compromised-malware-injected-in-all-git-tags
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
