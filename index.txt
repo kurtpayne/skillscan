@@ -30,6 +30,7 @@ docs/COMMANDS.md
 docs/DETECTION_MODEL.md
 docs/DISTRIBUTION.md
 docs/EXAMPLES.md
+docs/GAP_ANALYSIS.md
 docs/GITHUB_ACTIONS.md
 docs/INTEL.md
 docs/MODEL_METRICS.md
