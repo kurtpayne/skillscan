@@ -139,7 +139,7 @@ def run_finetune(
     INJECTION_DIRS = frozenset({
         "prompt_injection", "malicious", "social_engineering",
         "adversarial", "jailbreak_distillations", "augmented",
-        "benchmark_injection", "agent_hijacker",
+        "benchmark_injection", "agent_hijacker", "obfuscation_injection",
     })
     examples: list[tuple[str, int]] = []
 
