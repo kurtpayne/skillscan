@@ -1,4 +1,4 @@
-version: "2026.03.23.2"
+version: "2026.03.24.1"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -2606,11 +2606,21 @@ static_rules:
     deploys a rogue MCP server to poison AI coding assistant toolchains via prompt
     injection. Audit npm dependencies for any of the listed package names.
   metadata:
+    version: "1.0.0"
+    status: active
     author: skillscan
     created: "2026-03-23"
     updated: "2026-03-23"
     tags: [supply-chain, npm-worm, mcp-poisoning, credential-theft, ai-toolchain]
     last_modified: '2026-03-23'
+    techniques:
+    - id: EXEC-043
+      name: Execution or malware behavior
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
     quality:
       precision_estimate: 0.87
       benchmark_set: core-static-v1
@@ -2630,11 +2640,21 @@ static_rules:
     GitHub issue titles processed by AI triage bots, leading to npm token theft and
     supply chain compromise. Sanitize all external data before passing to AI agents.
   metadata:
+    version: "1.0.0"
+    status: active
     author: skillscan
     created: "2026-03-23"
     updated: "2026-03-23"
     tags: [prompt-injection, indirect-injection, ai-agent, supply-chain, lateral-movement]
     last_modified: '2026-03-23'
+    techniques:
+    - id: PROMPTINJ-005
+      name: Prompt injection
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
     quality:
       precision_estimate: 0.84
       benchmark_set: core-static-v1
@@ -2653,11 +2673,21 @@ static_rules:
     8.8) that allows an authorized attacker to escalate privileges over a network.
     Do not expose Azure MCP Server endpoints to untrusted networks without patching.
   metadata:
+    version: "1.0.0"
+    status: active
     author: skillscan
     created: "2026-03-23"
     updated: "2026-03-23"
     tags: [azure, mcp-server, ssrf, privilege-escalation, cve]
     last_modified: '2026-03-23'
+    techniques:
+    - id: SUPPLY-014
+      name: Supply chain risk
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
     quality:
       precision_estimate: 0.85
       benchmark_set: core-static-v1
@@ -2677,11 +2707,21 @@ static_rules:
     agent to execute arbitrary system commands as the postgres user via COPY TO
     PROGRAM. Restrict SQL agent permissions and sanitize all uploaded data.
   metadata:
+    version: "1.0.0"
+    status: active
     author: skillscan
     created: "2026-03-23"
     updated: "2026-03-23"
     tags: [prompt-injection, rce, sql, postgres, ai-agent, cve]
     last_modified: '2026-03-23'
+    techniques:
+    - id: EXEC-044
+      name: Execution or malware behavior
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
     quality:
       precision_estimate: 0.86
       benchmark_set: core-static-v1
@@ -2700,11 +2740,21 @@ static_rules:
     Kubernetes service account tokens and exfiltrate sensitive data. Implement
     content filtering on RAG inputs and monitor for anomalous retrieval patterns.
   metadata:
+    version: "1.0.0"
+    status: active
     author: skillscan
     created: "2026-03-23"
     updated: "2026-03-23"
     tags: [rag, prompt-injection, ai-agent, knowledge-base, data-poisoning]
     last_modified: '2026-03-23'
+    techniques:
+    - id: PROMPTINJ-006
+      name: Prompt injection
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
     quality:
       precision_estimate: 0.84
       benchmark_set: core-static-v1
@@ -2721,17 +2771,96 @@ static_rules:
     a malicious commit containing a credential stealer in entrypoint.sh. Always
     verify action integrity via SHA pinning and monitor for unexpected tag changes.
   metadata:
+    version: "1.0.0"
+    status: active
     author: skillscan
     created: "2026-03-23"
     updated: "2026-03-23"
     tags: [github-actions, supply-chain, tag-repointing, credential-theft, trivy]
     last_modified: '2026-03-23'
+    techniques:
+    - id: SUPPLY-015
+      name: Supply chain risk
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-23"
+      last_modified: "2026-03-23"
     quality:
       precision_estimate: 0.88
       benchmark_set: core-static-v1
     references:
     - https://www.crowdstrike.com/en-us/blog/from-scanner-to-stealer-inside-the-trivy-action-supply-chain-compromise/
     - https://www.stepsecurity.io/blog/trivy-compromised-a-second-time---malicious-v0-69-4-release
+- id: MAL-045
+  category: malware_pattern
+  severity: high
+  confidence: 0.86
+  title: StoatWaffle Node.js malware family (WaterPlum/Contagious Interview)
+  pattern: (?i)(?:stoat[_\s-]?waffle|pylang[_\s-]?ghost|invisible[_\s-]?ferret|flexible[_\s-]?ferret|otter[_\s-]?cookie[^\n]{0,80}(?:malware|c2|stealer|rat|backdoor)|vscode-bootstrap\.cmd|env\.npl[^\n]{0,80}(?:download|fetch|c2|payload)|waterplum[^\n]{0,80}(?:team|malware|campaign)|contagious[_\s-]?interview[^\n]{0,80}(?:malware|campaign|attack))
+  mitigation: Remove StoatWaffle malware artifacts. This is a modular Node.js
+    malware deployed by WaterPlum Team 8 (Contagious Interview campaign) via
+    malicious VSCode repositories with tasks.json auto-run triggers. The malware
+    includes a credential stealer targeting browsers and crypto wallets, and a
+    RAT module for persistent remote access. Remove vscode-bootstrap.cmd and
+    env.npl files and scan for C2 communications.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-24"
+    updated: "2026-03-24"
+    tags: [malware, nodejs, stoatwaffle, waterplum, contagious-interview, vscode, rat, stealer]
+    last_modified: '2026-03-24'
+    techniques:
+    - id: EXEC-045
+      name: Execution or malware behavior
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-24"
+      last_modified: "2026-03-24"
+    quality:
+      precision_estimate: 0.86
+      benchmark_set: core-static-v1
+    references:
+    - https://securityonline.info/vscode-trap-stoatwaffle-malware-snaring-developers/
+    - https://www.cryptika.com/waterplum-deploys-new-stoatwaffle-malware-in-vscode-based-supply-chain-campaign/
+    - https://thehackernews.com/2026/03/north-korean-hackers-abuse-vs-code-auto.html
+- id: SUP-016
+  category: supply_chain
+  severity: high
+  confidence: 0.85
+  title: Vulnerable MCP server package with command injection
+  pattern: (?i)(?:mcp-server-auto-commit[^\n]{0,80}(?:command[_\s-]?inject|rce|getGitChanges|unsanitiz)|quip-mcp-server[^\n]{0,80}(?:rce|command[_\s-]?inject|remote[_\s-]?code)|CVE-2026-4198|CVE-2026-4192|CVE-2026-33252|mcp[_\s-]?(?:go|sdk)[^\n]{0,80}(?:CSRF|cross[_\s-]?site|streamable[_\s-]?http)[^\n]{0,80}(?:tool[_\s-]?execut|rce|arbitrary))
+  mitigation: Update or remove vulnerable MCP server packages. CVE-2026-4198
+    affects mcp-server-auto-commit 1.0.0 (command injection in getGitChanges).
+    CVE-2026-4192 affects quip-mcp-server 1.0.0 (RCE). CVE-2026-33252 affects
+    MCP Go SDK <= 1.4.0 (CSRF enables arbitrary tool execution via cross-site
+    POST requests). Update to patched versions immediately.
+  metadata:
+    version: "1.0.0"
+    status: active
+    author: skillscan
+    created: "2026-03-24"
+    updated: "2026-03-24"
+    tags: [mcp, supply-chain, command-injection, rce, cve, vulnerability]
+    last_modified: '2026-03-24'
+    techniques:
+    - id: SUPPLY-016
+      name: Supply chain risk
+    applies_to:
+      contexts: [source, workflow]
+    lifecycle:
+      introduced: "2026-03-24"
+      last_modified: "2026-03-24"
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://www.sentinelone.com/vulnerability-database/cve-2026-4198/
+    - https://www.sentinelone.com/vulnerability-database/cve-2026-4192/
+    - https://www.miggo.io/vulnerability-database/cve/CVE-2026-33252
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b

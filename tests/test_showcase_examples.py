@@ -196,6 +196,10 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "PINJ-006" for f in findings_108)
     findings_109 = _scan("examples/showcase/106_github_actions_tag_repointing").findings
     assert any(f.id == "SUP-015" for f in findings_109)
+    findings_110 = _scan("examples/showcase/107_stoatwaffle_vscode_malware").findings
+    assert any(f.id == "MAL-045" for f in findings_110)
+    findings_111 = _scan("examples/showcase/108_mcp_server_command_injection_cve").findings
+    assert any(f.id == "SUP-016" for f in findings_111)
 
 
 def test_showcase_policy_block_domain() -> None:
