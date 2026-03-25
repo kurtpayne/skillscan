@@ -1916,3 +1916,34 @@ def test_new_patterns_2026_03_25() -> None:
     assert sup019.pattern.search("pip install litellm==1.82.9") is None
     assert sup019.pattern.search("pip install litellm==1.83.0") is None
     assert sup019.pattern.search("pip install litellm") is None
+
+def test_new_patterns_2026_03_25_v2() -> None:
+    """SUP-020 and PINJ-015 rules added 2026-03-25 (batch 2)."""
+    compiled = load_compiled_builtin_rulepack()
+    # SUP-020: ClawHavoc malicious ClawHub skill typosquat names
+    sup020_rules = [r for r in compiled.static_rules if r.id == "SUP-020"]
+    assert len(sup020_rules) >= 1
+    sup020 = sup020_rules[0]
+    assert sup020.pattern.search("clawhub install solana-wallet-tracker") is not None
+    assert sup020.pattern.search("clawhub install polymarket-trader") is not None
+    assert sup020.pattern.search("clawhub install yahoo-finance-pro") is not None
+    assert sup020.pattern.search("clawhub1") is not None
+    assert sup020.pattern.search("clawhubb") is not None
+    assert sup020.pattern.search("clawhubcli") is not None
+    assert sup020.pattern.search("auto-updater-agent") is not None
+    assert sup020.pattern.search("x-trends-tracker") is not None
+    assert sup020.pattern.search("rankaj") is not None
+    # Negative: legitimate ClawHub usage
+    assert sup020.pattern.search("clawhub install my-skill") is None
+    assert sup020.pattern.search("clawhub marketplace") is None
+    # PINJ-015: Prompt poaching via malicious browser extension
+    pinj015_rules = [r for r in compiled.static_rules if r.id == "PINJ-015"]
+    assert len(pinj015_rules) >= 1
+    pinj015 = pinj015_rules[0]
+    _poach = "install chrome browser extension to intercept and capture prompt messages"
+    assert pinj015.pattern.search(_poach) is not None
+    assert pinj015.pattern.search("prompt poach") is not None
+    assert pinj015.pattern.search("urban vpn proxy") is not None
+    # Negative: normal browser extension usage
+    assert pinj015.pattern.search("install a browser extension for dark mode") is None
+    assert pinj015.pattern.search("chrome extension for password manager") is None

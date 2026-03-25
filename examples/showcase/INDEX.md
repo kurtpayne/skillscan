@@ -135,3 +135,5 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 
 118. `118_litellm_pth_persistence`: expects MAL-049 (LiteLLM .pth persistence and sysmon backdoor)
 119. `119_litellm_compromised_version`: expects SUP-019 (Compromised LiteLLM package version reference)
+120. `120_clawhavoc_typosquat_skills`: ClawHavoc malicious ClawHub skill typosquat names including solana-wallet-tracker, polymarket-trader, and yahoo-finance-pro from the campaign that planted 1,184+ malicious skills on ClawHub (`SUP-020`)
+121. `121_prompt_poaching_extension`: Prompt poaching via malicious browser extension that intercepts and captures prompt messages sent to AI assistants for exfiltration (`PINJ-015`)

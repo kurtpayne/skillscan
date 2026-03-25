@@ -1,4 +1,4 @@
-version: 2026.03.25.1
+version: 2026.03.25.2
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -3767,6 +3767,86 @@ static_rules:
     - https://www.sonatype.com/blog/compromised-litellm-pypi-package-delivers-multi-stage-credential-stealer
     - https://attack.mitre.org/techniques/T1195/001/
 
+- id: SUP-020
+  category: supply_chain
+  severity: high
+  confidence: 0.88
+  title: ClawHavoc malicious ClawHub skill typosquat names
+  pattern: (?i)(?:clawhub1|clawhubb|clawhubcli|clawwhub|cllawhub|solana-wallet-tracker|youtube-summarize-pro|polymarket-(?:trader|pro|all-in-one)|polytrading|youtube-(?:thumbnail-grabber|video-downloader)|auto-updater-agent|yahoo-finance-pro|x-trends-tracker|better-polymarket|rankaj)
+  mitigation: |
+    These skill names are known-malicious typosquats from the ClawHavoc campaign that planted 1,184+
+    malicious skills on ClawHub. They masquerade as cryptocurrency wallets, YouTube utilities, and
+    trading tools but deliver Atomic Stealer (AMOS) on macOS, keyloggers on Windows, or reverse
+    shell backdoors. Remove any reference to these skills immediately.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-25'
+    updated: '2026-03-25'
+    tags:
+    - supply-chain
+    - clawhavoc
+    - typosquat
+    - openclaw
+    - clawhub
+    last_modified: '2026-03-25'
+    techniques:
+    - id: SUP-020
+      name: ClawHavoc malicious ClawHub skill typosquat names
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-25'
+      last_modified: '2026-03-25'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html
+    - https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now
+    - https://owasp.org/www-project-agentic-skills-top-10/
+- id: PINJ-015
+  category: prompt_injection
+  severity: high
+  confidence: 0.85
+  title: Prompt poaching via malicious browser extension installation
+  pattern: (?i)(?:(?:install|add|enable|load)[_\s-]?(?:browser|chrome|firefox|edge)[_\s-]?(?:browser[_\s-]?)?extension[^\n]{0,120}(?:intercept|capture|steal|harvest|exfil|forward|relay)[^\n]{0,80}(?:prompt|query|message|conversation|chat)|(?:intercept|capture|steal|harvest|exfil|forward|relay)[^\n]{0,80}(?:prompt|query|message|conversation|chat)[^\n]{0,120}(?:browser|chrome|firefox|edge)[_\s-]?(?:browser[_\s-]?)?extension|urban[_\s-]?vpn[_\s-]?proxy|prompt[_\s-]?poach)
+  mitigation: |
+    Do not install browser extensions that intercept, capture, or relay prompts sent to AI assistants.
+    The "prompt poaching" technique uses malicious browser extensions to steal user prompts containing
+    sensitive information such as code, credentials, and business logic. Remove any extension that
+    requests permissions to read or modify AI assistant pages.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-25'
+    updated: '2026-03-25'
+    tags:
+    - prompt-injection
+    - browser-extension
+    - prompt-poaching
+    - data-theft
+    last_modified: '2026-03-25'
+    techniques:
+    - id: PINJ-015
+      name: Prompt poaching via malicious browser extension
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-25'
+      last_modified: '2026-03-25'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now
+    - https://attack.mitre.org/techniques/T1557/
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b

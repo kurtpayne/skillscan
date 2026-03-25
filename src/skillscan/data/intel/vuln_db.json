@@ -843,6 +843,13 @@
         "severity": "critical",
         "fixed": "1.82.9"
       }
+    },
+    "openclaw": {
+      "2026.1.28": {
+        "id": "CVE-2026-25253",
+        "severity": "critical",
+        "fixed": "2026.1.29"
+      }
     }
   },
   "npm": {
@@ -986,6 +993,13 @@
         "id": "CVE-2023-26115",
         "severity": "high",
         "fixed": "1.2.4"
+      }
+    },
+    "trivy": {
+      "0.69.4": {
+        "id": "CVE-2026-28353",
+        "severity": "critical",
+        "fixed": "0.69.5"
       }
     }
   }
