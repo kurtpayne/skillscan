@@ -115,6 +115,8 @@ examples/showcase/115_pip_install_typosquat/SKILL.md
 examples/showcase/116_unknown_fm_key_injection/skill-a/SKILL.md
 examples/showcase/117_circular_skill_dep/skill-a/SKILL.md
 examples/showcase/117_circular_skill_dep/skill-b/SKILL.md
+examples/showcase/118_litellm_pth_persistence/SKILL.md
+examples/showcase/119_litellm_compromised_version/SKILL.md
 examples/showcase/11_claude_style/CLAUDE.md
 examples/showcase/11_claude_style/claude_skill.yaml
 examples/showcase/12_benign_minimal/SKILL.md
