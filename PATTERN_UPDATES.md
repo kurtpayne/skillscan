@@ -1,3 +1,29 @@
+## 2026-03-25 — ClawHavoc Typosquat Skills & Prompt Poaching Extension Detection
+**Sources:**
+- [The Hacker News — Researchers Find 341+ Malicious ClawHub Skills](https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html)
+- [Reco AI — OpenClaw: The AI Agent Security Crisis Unfolding Right Now](https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now)
+- [OWASP Agentic Skills Top 10](https://owasp.org/www-project-agentic-skills-top-10/)
+- [Snyk — Trivy GitHub Actions Supply Chain Compromise (CVE-2026-28353)](https://snyk.io/articles/trivy-github-actions-supply-chain-compromise/)
+**Event Summary:** Two new detection rules, five new IOC domains, and two new vulnerability database entries were added. The ClawHavoc campaign planted 1,184+ malicious skills on ClawHub using typosquat names (clawhub1, clawhubb, clawhubcli, solana-wallet-tracker, polymarket-trader, etc.) that deliver Atomic Stealer on macOS, keyloggers on Windows, and reverse shell backdoors. Additionally, prompt poaching via malicious browser extensions was identified as a new attack vector where extensions intercept prompts sent to AI assistants. Two critical CVEs were added to the vulnerability database: CVE-2026-25253 (OpenClaw RCE via WebSocket hijacking, fixed in 2026.1.29) and CVE-2026-28353 (Trivy VS Code extension compromise, CVSS 10.0).
+**New Patterns Added:**
+### SUP-020: ClawHavoc malicious ClawHub skill typosquat names
+- **Category:** supply_chain
+- **Severity:** high
+- **Confidence:** 0.88
+- **Pattern:** Detects known-malicious ClawHub skill names from the ClawHavoc campaign including clawhub1, clawhubb, clawhubcli, clawwhub, cllawhub, solana-wallet-tracker, youtube-summarize-pro, polymarket-trader, polymarket-pro, polytrading, auto-updater-agent, yahoo-finance-pro, x-trends-tracker, better-polymarket, and rankaj.
+- **Justification:** Direct detection of the ClawHavoc campaign's malicious skill names documented by The Hacker News, Reco AI, and OWASP. Extends existing OpenClaw ecosystem coverage (EXF-017, MAL-035) to the ClawHub marketplace supply chain.
+### PINJ-015: Prompt poaching via malicious browser extension installation
+- **Category:** prompt_injection
+- **Severity:** high
+- **Confidence:** 0.85
+- **Pattern:** Detects instructions to install browser extensions that intercept, capture, or relay prompts sent to AI assistants, including the known "Urban VPN Proxy" prompt poaching extension and generic prompt poaching terminology.
+- **Justification:** New attack vector where malicious browser extensions steal prompts containing sensitive code, credentials, and business logic sent to AI assistants. Documented by Reco AI in the OpenClaw security crisis report.
+**IOC Updates:**
+- Added 5 ClawHavoc typosquat domains: clawhub1.xyz, clawhubb.com, clawhubcli.io, clawwhub.dev, cllawhub.net
+**Vulnerability Database Updates:**
+- CVE-2026-25253: OpenClaw < 2026.1.29 critical RCE via WebSocket hijacking
+- CVE-2026-28353: Trivy VS Code extension 0.69.4 critical supply chain compromise
+
 ## 2026-03-25 — LiteLLM PyPI Supply Chain Compromise (TeamPCP)
 
 **Sources:**
