@@ -20,8 +20,6 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `AST-002` | critical | Potential secret data sent to network sink |  |
-| `MAL-042` | critical | CanisterWorm Kubernetes wiper with geopolitical targeting | malware_pattern, mal, kubernetes, wiper |
-| `EXEC-041` | high | API traffic hijacking via AI agent settings override | exfiltration, exec, api-hijack |
 
 ## Chain Rules
 
@@ -42,13 +40,3 @@
 | `CHN-012` | critical | Stealth concealment with network exfiltration chain | `stealth_conceal + network` | stealth, exfiltration, covert-channel, deception |
 | `CHN-013` | critical | Container escape with host path mount chain | `container_escape + host_path_mount` | container-escape, privilege-escalation, host-compromise |
 | `CHN-014` | critical | Container escape with secret access chain | `container_escape + secret_access` | container-escape, credential-theft, privilege-escalation |
-| `MAL-043` | high | SANDWORM_MODE npm worm with McpInject AI toolchain poisoning | `100_sandworm_mode_npm_worm` | supply-chain, npm-worm, mcp-poisoning, credential-theft, ai-toolchain |
-| `PINJ-005` | high | Clinejection indirect prompt injection via external data fields | `101_clinejection_indirect_prompt_injection` | prompt-injection, indirect-injection, ai-agent, supply-chain, lateral-movement |
-| `SUP-014` | high | Azure MCP Server SSRF privilege escalation (CVE-2026-26118) | `102_azure_mcp_ssrf_privilege_escalation` | azure, mcp-server, ssrf, privilege-escalation, cve |
-| `MAL-044` | critical | SQLBot stored prompt injection to RCE via COPY TO PROGRAM | `104_sqlbot_prompt_injection_rce` | prompt-injection, rce, sql, postgres, ai-agent, cve |
-| `PINJ-006` | high | RAG poisoning multi-stage AI agent attack chain | `105_rag_poisoning_attack_chain` | rag, prompt-injection, ai-agent, knowledge-base, data-poisoning |
-| `SUP-015` | critical | GitHub Actions supply chain compromise via release tag repointing | `106_github_actions_tag_repointing` | github-actions, supply-chain, tag-repointing, credential-theft, trivy |
-| `MAL-045` | high | StoatWaffle Node.js malware family (WaterPlum/Contagious Interview) | `107_stoatwaffle_vscode_malware` | malware, nodejs, stoatwaffle, waterplum, contagious-interview, vscode, rat, stealer |
-| `SUP-016` | high | Vulnerable MCP server package with command injection | `108_mcp_server_command_injection_cve` | mcp, supply-chain, command-injection, rce, cve, vulnerability |
-| `MAL-048` | critical | Langflow unauthenticated RCE via build_public_tmp endpoint (CVE-2026-33017) | `100_langflow_rce_build_public_tmp` | langflow, rce, cve, ai-pipeline, unauthenticated, supply-chain |
-| `SUP-017` | critical | Checkmarx GitHub Actions supply chain compromise (TeamPCP, CVE-2026-33634) | `101_checkmarx_actions_teampcp` | supply-chain, github-actions, checkmarx, teampcp, credential-theft, tag-repointing |

@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-24",
+    "generated": "2026-03-25",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -28,7 +28,8 @@
       "pandas",
       "transformers",
       "torch",
-      "bittensor-wallet"
+      "bittensor-wallet",
+      "litellm"
     ],
     "npm_packages_checked": [
       "@modelcontextprotocol/sdk",
@@ -829,6 +830,18 @@
         "id": "CVE-2024-3568",
         "severity": "low",
         "fixed": "0.6.0"
+      }
+    },
+    "litellm": {
+      "1.82.7": {
+        "id": "PYPI-BACKDOOR-2026-0325-LITELLM",
+        "severity": "critical",
+        "fixed": "1.82.9"
+      },
+      "1.82.8": {
+        "id": "PYPI-BACKDOOR-2026-0325-LITELLM",
+        "severity": "critical",
+        "fixed": "1.82.9"
       }
     }
   },

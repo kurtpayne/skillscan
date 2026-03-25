@@ -1883,3 +1883,36 @@ def test_new_patterns_2026_03_24_batch2() -> None:
     # Negative: normal Checkmarx usage
     assert sup017.pattern.search("checkmarx scan results") is None
     assert sup017.pattern.search("uses: checkmarx/ast-github-action@v3") is None
+
+
+def test_new_patterns_2026_03_25() -> None:
+    """MAL-049 and SUP-019 rules added 2026-03-25."""
+    compiled = load_compiled_builtin_rulepack()
+    # MAL-049: LiteLLM .pth file persistence and sysmon backdoor (TeamPCP)
+    mal049_rules = [r for r in compiled.static_rules if r.id == "MAL-049"]
+    assert len(mal049_rules) >= 1
+    mal049 = mal049_rules[0]
+    assert mal049.pattern.search("litellm_init.pth") is not None
+    assert mal049.pattern.search("site-packages/litellm_init.pth") is not None
+    assert mal049.pattern.search("~/.config/sysmon/sysmon.py") is not None
+    assert mal049.pattern.search(".config/systemd/user/sysmon.service") is not None
+    assert mal049.pattern.search("/tmp/pglog") is not None
+    assert mal049.pattern.search("/tmp/.pg_state") is not None
+    assert mal049.pattern.search("models.litellm.cloud") is not None
+    assert mal049.pattern.search("tpcp.tar.gz litellm proxy credential rotation") is not None
+    # Negative: normal litellm usage
+    assert mal049.pattern.search("pip install litellm") is None
+    assert mal049.pattern.search("from litellm import completion") is None
+    # SUP-019: Compromised LiteLLM package version reference
+    sup019_rules = [r for r in compiled.static_rules if r.id == "SUP-019"]
+    assert len(sup019_rules) >= 1
+    sup019 = sup019_rules[0]
+    assert sup019.pattern.search("pip install litellm==1.82.7") is not None
+    assert sup019.pattern.search("pip3 install litellm==1.82.8") is not None
+    assert sup019.pattern.search("pip install litellm==1.82.8 openai anthropic") is not None
+    assert sup019.pattern.search("poetry add litellm==1.82.7") is not None
+    assert sup019.pattern.search("uv pip install litellm==1.82.8") is not None
+    # Negative: safe litellm versions
+    assert sup019.pattern.search("pip install litellm==1.82.9") is None
+    assert sup019.pattern.search("pip install litellm==1.83.0") is None
+    assert sup019.pattern.search("pip install litellm") is None
