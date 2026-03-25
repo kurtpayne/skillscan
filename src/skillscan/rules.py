@@ -101,10 +101,10 @@ def _merge_rulepacks(rulepacks: list[RulePack]) -> RulePack:
 
     for rp in rulepacks:
         versions.append(rp.version)
-        for rule in rp.static_rules:
-            static_by_id[rule.id] = rule  # last writer wins
-        for rule in rp.chain_rules:
-            chain_by_id[rule.id] = rule  # last writer wins
+        for srule in rp.static_rules:
+            static_by_id[srule.id] = srule  # last writer wins
+        for crule in rp.chain_rules:
+            chain_by_id[crule.id] = crule  # last writer wins
         action_patterns.update(rp.action_patterns)
         capability_patterns.update(rp.capability_patterns)
 

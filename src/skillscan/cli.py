@@ -944,17 +944,17 @@ def suppress_check(
 
         if result.expired_entries:
             console.print("\n[bold red]Expired suppressions:[/]")
-            for e in result.expired_entries:
-                path_info = f" ({e.evidence_path})" if e.evidence_path else ""
-                console.print(f"  [red]EXPIRED[/] {e.id}{path_info} — expired {e.expires}: {e.reason}")
+            for exp in result.expired_entries:
+                path_info = f" ({exp.evidence_path})" if exp.evidence_path else ""
+                console.print(f"  [red]EXPIRED[/] {exp.id}{path_info} — expired {exp.expires}: {exp.reason}")
 
         if result.expiring_soon:
             console.print(f"\n[bold yellow]Expiring within {warn_days} days:[/]")
-            for e in result.expiring_soon:
-                path_info = f" ({e.evidence_path})" if e.evidence_path else ""
+            for soon in result.expiring_soon:
+                path_info = f" ({soon.evidence_path})" if soon.evidence_path else ""
                 console.print(
-                    f"  [yellow]WARN[/] {e.id}{path_info} — expires {e.expires} "
-                    f"({e.days_remaining}d): {e.reason}"
+                    f"  [yellow]WARN[/] {soon.id}{path_info} — expires {soon.expires} "
+                    f"({soon.days_remaining}d): {soon.reason}"
                 )
 
     if result.expiring_soon or result.expired_count > 0:
