@@ -172,12 +172,7 @@ def _safe_extract_tar(src: Path, dst: Path, max_files: int, max_bytes: int) -> N
             if total > max_bytes:
                 raise ScanError("Archive exceeds max bytes limit")
         # filter='data' was added in Python 3.12; use manual extraction on 3.11
-        import sys
-        if sys.version_info >= (3, 12):
-            tf.extractall(dst, filter="data")
-        else:
-            for member in members:
-                tf.extract(member, dst)
+        tf.extractall(dst, filter="data")
 
 
 def _safe_extract_7z(src: Path, dst: Path, max_files: int, max_bytes: int) -> None:
@@ -1087,8 +1082,9 @@ def scan(
                             evidence_path=str(target),
                             snippet=f"{archive_name}: {reason}",
                             mitigation=(
-                                "Install skillscan[archives] for expanded archive support, or manually inspect "
-                                "the archive contents before loading this skill."
+                                "Install skillscan[archives] for expanded archive "
+                                "support, or manually inspect the archive contents "
+                                "before loading this skill."
                             ),
                         )
                     )
