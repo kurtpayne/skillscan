@@ -403,6 +403,25 @@ The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 
 **Acceptance criteria:** `skillscan-lint` rule count reaches 34. All 9 new rules have unit tests and at least 2 showcase examples each. No regression on existing showcase examples.
 
 ---
+## Milestone 10.10 — HuggingFace Model Card
+
+**Goal:** Write a complete, professional model card for `kurtpayne/skillscan-deberta-adapter` so security teams evaluating the tool can understand what the model does, how it was trained, and what its limitations are.
+
+**Actions:**
+- Fill out the HuggingFace model card with:
+  - Model description: DeBERTa-v3-base + LoRA adapter fine-tuned for prompt injection / malicious skill detection in SKILL.md files
+  - Training data summary: corpus size, class balance, data sources (synthetic + organic), corpus date range
+  - Evaluation results table: macro F1, benign F1, injection F1, FPR, enterprise benign eval — for v5 and v7
+  - Intended use and out-of-scope use
+  - Limitations and known failure modes (8 FN archetypes, indirect injection ceiling)
+  - How to use: `skillscan model sync` CLI command, not for direct HuggingFace inference
+  - License and citation
+- Add a `MODEL_CARD.md` to the skillscan-security repo that mirrors the HuggingFace card (single source of truth, synced on model publish)
+- Update `docs/MODEL_METRICS.md` to reference the model card
+
+**Acceptance criteria:** Model card is live on HuggingFace with all sections filled. `MODEL_CARD.md` exists in the repo and matches. No placeholder sections remain.
+
+---
 ## Milestone 1111 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
