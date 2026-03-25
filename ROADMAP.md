@@ -1,6 +1,6 @@
 # SkillScan Roadmap
 
-> **Last updated:** 2026-03-24
+> **Last updated:** 2026-03-25
 > **Version:** 0.3.2
 >
 > SkillScan was designed and directed by Kurt Payne and built with [Manus](https://manus.im).
@@ -589,16 +589,16 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 
 ### Detection Quality
 
-| Metric | Current (2026-03-24) | Target (v0.4.0) | Target (v1.0) |
+| Metric | Current (2026-03-25) | Target (v0.4.0) | Target (v1.0) |
 |---|---|---|---|
-| Static + chain rules | 135 (120 static + 15 chain) | 150+ | 175+ |
-| ML corpus size (training) | 11,461 examples | 15,000+ | 25,000+ |
-| ML macro F1 (held-out) | **0.911** (v5, 2026-03-24, gate PASSED) | ≥ 0.93 | **≥ 0.95** |
-| ML injection F1 | 0.8903 | ≥ 0.92 | ≥ 0.95 |
-| ML FPR | 11.45% | ≤ 8% | ≤ 5% |
-| IOC DB entries (bundled) | 2,051 | 5,000+ | 20,000+ |
-| Vuln DB packages | 35 | 50+ | 150+ |
-| Showcase examples | 117 | 130+ | 150+ |
+| Static + chain rules | **137** (134 static + 15 chain + 17 multilang) | 150+ | 175+ |
+| ML corpus size (training) | **16,589 examples** | 20,000+ | 25,000+ |
+| ML macro F1 (held-out) | **0.9608** (v8, 2026-03-25, gate PASSED) | ≥ 0.97 | **≥ 0.97** |
+| ML injection F1 | **0.9435** | ≥ 0.95 | ≥ 0.97 |
+| ML FPR | **3.69%** | ≤ 2% | ≤ 2% |
+| IOC DB entries (bundled) | **5,507** | 10,000+ | 20,000+ |
+| Vuln DB packages | **63** | 100+ | 150+ |
+| Showcase examples | **119** | 130+ | 150+ |
 
 ### Ecosystem Coverage
 
@@ -610,27 +610,31 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 | SARIF / JUnit / CycloneDX output | complete | complete |
 | skillscan-core package | not extracted | PyPI published |
 | Skill fingerprinting | not implemented | complete (M17) |
-| PSV rules in rule YAML | implemented in graph, not in YAML | wired (M8) |
+| PSV rules in rule YAML | **complete (M8)** | complete |
 | Instruction-level diff | complete | + suppression integration (M16) |
 | Similarity hashing | not implemented | complete (M17) |
 | Public scan feed | scaffolded | daily cron, 50+ skills (M14) |
 | SaaS scanner | not started | post-v1.0, when quality bar met |
 
-### Milestone Priority Order
+### Milestone Priority Order (updated 2026-03-25)
+
+M5, M6, M7, M7.5, M8 are complete. Priority order for remaining work:
 
 | Priority | Milestone | Rationale |
 |---|---|---|
-| 1 | **M5 — Intel & Vuln DB Depth** | Makes the product credible to security teams |
-| 2 | **M7 — ML Injection Recall** | Closes the last major quality gap; enables SaaS prerequisite |
-| 3 | **M6 — Chain Rule Precision** | Reduces false positives; improves enterprise CI/CD trust |
-| 4 | **M8 — Skill Graph / PSV Wiring** | Makes PSV rules first-class citizens |
-| 5 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
-| 6 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
-| 7 | **M11 — Hardening & PyPI** | Required for enterprise CI/CD |
-| 8 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
-| 9 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
-| 10 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
-| — | **SaaS** | Post-v1.0; requires FPR ≤ 2%, detection ≥ 85% |
+| 1 | **M10.5 — Model UX** | Low-effort, high-impact: users don't know model is missing; blocks M10.7 |
+| 2 | **M10.7 — CLI UX Audit** | Consolidates fragmented commands; includes PSV-005; unblocks M14.5 |
+| 3 | **M14.5 — Model Details on Website** | Now unblocked (M7 ≥0.95 met); primary trust signal for enterprise evaluators |
+| 4 | **M10.10 — HuggingFace Model Card** | Credibility for security teams evaluating the model |
+| 5 | **M10.12 — Feedback Mechanism** | FP/FN reports are highest-value corpus signal; GitHub issue templates |
+| 6 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
+| 7 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
+| 8 | **M11 — Hardening & PyPI** | Required for enterprise CI/CD |
+| 9 | **M10.6 — Organic Eval Pipeline** | Closes feedback loop between pattern-updater and model |
+| 10 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
+| 11 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
+| 12 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
+| — | **SaaS** | Post-v1.0; FPR now 3.69% (below 5% bar); needs to reach 2% |
 
 ---
 
