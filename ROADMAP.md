@@ -422,6 +422,23 @@ The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 
 **Acceptance criteria:** Model card is live on HuggingFace with all sections filled. `MODEL_CARD.md` exists in the repo and matches. No placeholder sections remain.
 
 ---
+## Milestone 10.11 — License Files Across All Repos
+
+**Goal:** Ensure every public SkillScan repo and the HuggingFace model have an explicit, consistent license so users and enterprise security teams know their rights.
+
+**Background:** `skillscan-security` already has an Apache 2.0 `LICENSE` file. The other repos and the HuggingFace model card are missing license declarations.
+
+**Actions:**
+- Add `LICENSE` (Apache 2.0) to `skillscan-lint` repo
+- Add `LICENSE` (Apache 2.0) to `skillscan-website` repo (if public)
+- Add `license: apache-2.0` to the HuggingFace model card YAML front-matter for `kurtpayne/skillscan-deberta-adapter`
+- Add a `## License` section to `README.md` in each repo pointing to the LICENSE file
+- Confirm the SPDX identifier `Apache-2.0` appears in `pyproject.toml` for `skillscan-security` and `skillscan-lint`
+- Decide on license for the ML model weights specifically: Apache 2.0 covers the adapter code; the base model (DeBERTa-v3-base) is MIT — document both in the model card
+
+**Acceptance criteria:** All repos have a `LICENSE` file. HuggingFace model card declares `apache-2.0`. `pyproject.toml` files include `license = "Apache-2.0"`. README files reference the license.
+
+---
 ## Milestone 1111 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
