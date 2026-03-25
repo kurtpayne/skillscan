@@ -157,7 +157,7 @@ def test_showcase_detection_rules() -> None:
     findings_89 = _scan("examples/showcase/89_clickfix_webdav_share_exec").findings
     assert any(f.id == "MAL-034" for f in findings_89)
     findings_90 = _scan("examples/showcase/90_electron_asar_c2_injection").findings
-    assert any(f.id == "MAL-035" for f in findings_90)
+    assert any(f.id == "MAL-041" for f in findings_90)  # Trojanized Electron app.asar C2 payload injection
     findings_91 = _scan("examples/showcase/91_ai_gated_malware_llm_c2").findings
     assert any(f.id == "MAL-036" for f in findings_91)
     findings_92 = _scan("examples/showcase/92_npm_postinstall_env_exfil").findings

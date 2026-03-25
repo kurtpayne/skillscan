@@ -118,7 +118,7 @@ static_rules:
   severity: high
   confidence: 0.90
   title: Ruby backtick or system() shell execution
-  pattern: (?:`[^`]+`|(?<!\w)(?:system|exec|spawn)\s*\(|Kernel\s*\.\s*(?:system|exec|spawn)\s*\()
+  pattern: (?:`[^`]*[\s|;&>][^`]*`|(?<!\w)(?:system|exec|spawn)\s*\(|Kernel\s*\.\s*(?:system|exec|spawn)\s*\()
   mitigation: >
     Avoid backtick execution, system(), exec(), and spawn() in skill code.
     If shell commands are required, validate all arguments and avoid user-controlled input.
