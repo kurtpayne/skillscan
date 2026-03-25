@@ -18,7 +18,7 @@ The two user-facing products are:
 
 These two tools are the product. The behavioral tracer (`skillscan-trace`) and training corpus (`skillscan-corpus`) are private infrastructure that improve the ML model and validate detection rules. They do not ship to users and are not part of the public roadmap.
 
-**SaaS scanner** (token-gated hosted scanning with permanent report URLs) is a future phase. It is not on the active roadmap. The prerequisite is a false positive rate below 2% on benign skills and a detection rate above 85% on the malicious corpus. The current ML model (v8, macro F1 0.9608, FPR 3.69%) is approaching the SaaS bar — FPR is now below the 5% threshold but needs to reach 2% before SaaS launch. The SaaS design is documented in `skillscan-trace/ROADMAP.md` Phase 3 for reference when the time comes.
+**SaaS scanner** (token-gated hosted scanning with permanent report URLs) is a future phase. It is not on the active roadmap. The prerequisite is a false positive rate below 2% on benign skills and a detection rate above 85% on the malicious corpus. The current ML model (v9, macro F1 0.9752, FPR 1.89%) has now crossed both SaaS quality thresholds (F1 ≥ 0.97 ✅, FPR ≤ 2% ✅). The remaining SaaS prerequisites are product-completeness items: M10.x CLI polish, M14.5 website model page, and HuggingFace model card. The SaaS design is documented in `skillscan-trace/ROADMAP.md` Phase 3 for reference when the time comes.
 
 ---
 
@@ -31,7 +31,7 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 | Static rules | **137 rules** (134 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` (PINJ-008–014, EXF-018/019, SE-002/003, SUP-018, PSV-001–004, GR-007 added) |
 | AST data-flow analysis | **Complete** | `detectors/ast_flows.py` — secret→decode→exec/network flows |
 | Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003/004 + GR-007 cycle detection |
-| ML classifier | **v8, macro F1 0.9608** | DeBERTa-v3-base + LoRA, FP16 ONNX re-export in progress, HuggingFace Hub |
+| ML classifier | **v9, macro F1 0.9752** | DeBERTa-v3-base + LoRA, FP32 ONNX (~350 MB), HuggingFace Hub (`18161-5ep`) |
 | IOC DB | **5,507 entries** (bundled) | 3,955 domains, 8 IPs, 1,538 CIDRs, 3 URLs; runtime feeds via `managed_sources.json` |
 | Vuln DB | **63 packages** | 47 Python + 16 npm |
 | Semantic classifier | **Complete** | `semantic_local.py` — offline stem-and-score, no network |
@@ -49,21 +49,21 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 
 Model history (all runs that passed the F1 gate):
 
-| Metric | v7458 (2026-03-22) | v11461 (2026-03-24) | **v16589 (2026-03-25)** | Target (v1.0) |
-|---|---|---|---|---|
-| Training corpus | 7,277 examples | 11,461 examples | **16,589 examples** | 25,000+ |
-| Eval set | 181 examples | 201 examples | **444 examples** | 500+ |
-| Macro F1 | 0.8448 | 0.9110 | **0.9608** | **≥ 0.97** |
-| Benign F1 | 0.9040 | 0.9317 | **0.9781** | ≥ 0.99 |
-| Injection F1 | 0.7857 | 0.8903 | **0.9435** | ≥ 0.97 |
-| FPR | 15.7% | 11.45% | **3.69%** | ≤ 2% |
-| Enterprise benign FPR | — | 11.45% | **3.69%** | ≤ 2% |
+| Metric | v7458 (2026-03-22) | v11461 (2026-03-24) | v16589 (2026-03-25) | **v18161 (2026-03-25)** | Target (v1.0) |
+|---|---|---|---|---|---|
+| Training corpus | 7,277 | 11,461 | 16,589 | **18,161** | 25,000+ |
+| Eval set | 181 | 201 | 444 | **444** | 500+ |
+| Macro F1 | 0.8448 | 0.9110 | 0.9608 | **0.9752** | **≥ 0.97 ✅** |
+| Benign F1 | 0.9040 | 0.9317 | 0.9781 | **—** | ≥ 0.99 |
+| Injection F1 | 0.7857 | 0.8903 | 0.9435 | **—** | ≥ 0.97 |
+| FPR | 15.7% | 11.45% | 3.69% | **1.89%** | **≤ 2% ✅** |
+| Enterprise benign FPR | — | 11.45% | 3.69% | **1.89%** | ≤ 2% ✅ |
 
-v8 improvements over v11461: macro F1 +4.98pp (0.911 → 0.961), FPR −7.76pp (11.5% → 3.7%), injection F1 +5.32pp (0.890 → 0.944). F1 gate raised to 0.92 and cleared at 0.9608. 6 of 9 targeted zero-recall archetypes resolved. 8 persistent zeros remain for v9.
+v9 improvements over v8: macro F1 +1.44pp (0.9608 → 0.9752), FPR halved (3.69% → 1.89%). Both SaaS quality targets now met. ONNX confirmed as FP32 — FP16 conversion produces no size reduction for DeBERTa-v3; INT8 causes F1 collapse. 8 persistent FN archetypes remain for v10 corpus work.
 
 ### Open gaps
 
-Updated 2026-03-25 after v8 fine-tune (macro F1=0.9608) and CI fix. Full analysis: `docs/GAP_ANALYSIS.md`.
+Updated 2026-03-25 after v9 fine-tune (macro F1=0.9752, FPR=1.89%). Full analysis: `docs/GAP_ANALYSIS.md`.
 
 | Gap | Severity | Milestone |
 |---|---|---|
@@ -573,7 +573,7 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 
 ## Risks & Guardrails
 
-**False positives from ML detection.** Guardrail: ML findings are advisory by default; threshold is 0.70; current FPR is 15.7%, acceptable for offline use but not for SaaS. Milestone 7 targets FPR ≤ 12%.
+**False positives from ML detection.** Guardrail: ML findings are advisory by default; threshold is 0.70; current FPR is 1.89% (v9, 2026-03-25), below both the offline target (≤ 5%) and the SaaS target (≤ 2%). Milestone 7 resolved the FPR gap.
 
 **Performance regressions from extra scanners.** Guardrail: strict budgets (timeout, bytes, files), benchmark gates in CI.
 
@@ -592,10 +592,10 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 | Metric | Current (2026-03-25) | Target (v0.4.0) | Target (v1.0) |
 |---|---|---|---|
 | Static + chain rules | **137** (134 static + 15 chain + 17 multilang) | 150+ | 175+ |
-| ML corpus size (training) | **16,589 examples** | 20,000+ | 25,000+ |
-| ML macro F1 (held-out) | **0.9608** (v8, 2026-03-25, gate PASSED) | ≥ 0.97 | **≥ 0.97** |
-| ML injection F1 | **0.9435** | ≥ 0.95 | ≥ 0.97 |
-| ML FPR | **3.69%** | ≤ 2% | ≤ 2% |
+| ML corpus size (training) | **18,161 examples** | 20,000+ | 25,000+ |
+| ML macro F1 (held-out) | **0.9752** (v9, 2026-03-25, gate PASSED) ✅ | ≥ 0.97 ✅ | **≥ 0.97** |
+| ML injection F1 | **—** (v9 per-class not yet extracted) | ≥ 0.95 | ≥ 0.97 |
+| ML FPR | **1.89%** ✅ | ≤ 2% ✅ | ≤ 2% |
 | IOC DB entries (bundled) | **5,507** | 10,000+ | 20,000+ |
 | Vuln DB packages | **63** | 100+ | 150+ |
 | Showcase examples | **119** | 130+ | 150+ |
@@ -634,7 +634,7 @@ M5, M6, M7, M7.5, M8 are complete. Priority order for remaining work:
 | 10 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
 | 11 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
 | 12 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
-| — | **SaaS** | Post-v1.0; FPR now 3.69% (below 5% bar); needs to reach 2% |
+| — | **SaaS** | Post-v1.0; FPR now 1.89% ✅ and F1 0.9752 ✅ — both quality thresholds met; remaining prerequisite is product completeness (M10.x, M14.5, model card) |
 
 ---
 
