@@ -9,12 +9,9 @@ Tests cover:
 """
 from __future__ import annotations
 
-import pytest
-
-from skillscan.ml_detector import _classify_attack_type, _ATTACK_HINT_RULES
+from skillscan.ml_detector import _classify_attack_type
 from skillscan.models import Finding, Severity
 from skillscan.sarif import report_to_sarif
-
 
 # ---------------------------------------------------------------------------
 # _classify_attack_type unit tests
@@ -137,8 +134,8 @@ class TestClassifyAttackType:
 
 def _make_mock_report(attack_hint: str | None):
     """Build a minimal ScanReport with one PINJ-ML-001 finding."""
-    from skillscan.models import ScanReport, ScanMetadata
-    from datetime import UTC, datetime
+
+    from skillscan.models import ScanMetadata, ScanReport
 
     finding = Finding(
         id="PINJ-ML-001",

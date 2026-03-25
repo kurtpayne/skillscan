@@ -14,21 +14,17 @@ Tests cover:
 """
 from __future__ import annotations
 
-import textwrap
 import tempfile
+import textwrap
 from pathlib import Path
 
 import pytest
 
 from skillscan.detectors.skill_graph import (
-    skill_graph_findings,
-    _check_unknown_frontmatter_keys,
-    _check_circular_deps,
-    _find_cycles,
     SkillNode,
-    SkillGraph,
+    _check_unknown_frontmatter_keys,
+    skill_graph_findings,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -229,6 +225,7 @@ class TestRuleListIntegration:
 
     def test_sentinel_pattern_never_matches(self):
         import re
+
         from skillscan.rules import load_builtin_rulepack
         rp = load_builtin_rulepack()
         for r in rp.static_rules:

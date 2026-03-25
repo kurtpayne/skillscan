@@ -984,7 +984,11 @@ def scan(
             for chain_rule in ruleset.chain_rules:
                 if chain_rule.id in fired_chain_ids:
                     continue
-                effective_window = chain_rule.window_lines if chain_rule.window_lines is not None else _CHAIN_WINDOW_LINES
+                effective_window = (
+                    chain_rule.window_lines
+                    if chain_rule.window_lines is not None
+                    else _CHAIN_WINDOW_LINES
+                )
                 for window_actions in _get_windows(effective_window):
                     if chain_rule.all_of.issubset(window_actions):
                         fired_chain_ids.add(chain_rule.id)
