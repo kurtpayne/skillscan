@@ -75,12 +75,12 @@ Updated 2026-03-24 after v7 fine-tune (macro F1=0.9475) and full gap analysis ac
 | PSV-005 tool drift detection missing | **Medium** | M8 |
 | SUP-018 pip install in skill body not flagged | **Medium** | M6 |
 | ~~9 lint rules missing (QL-026 through QL-034)~~ | ~~Medium~~ | ✅ M10.9 |
-| Chain rule proximity window missing | **Medium** | M6 |
+| ~~Chain rule proximity window missing~~ | ~~Medium~~ | ✅ M6 |
 | PSV rules not wired through rule YAML | **Medium** | M8 |
 | ~~Vuln DB thin (78 packages, target 150+)~~ | ~~Low~~ | ✅ M5 |
 | ~~IOC DB bundled only 2,051 entries~~ | ~~Low~~ | ✅ M5 |
 | VS Code extension unpublished | **Low** | M9 |
-| `exfil_channels.yaml` not merged into `default.yaml` | **Low** | M6 |
+| ~~`exfil_channels.yaml` not merged into `default.yaml`~~ | ~~Low~~ | ✅ M6 |
 | `docs/RELEASE_ONBOARDING.md` stale | **Low** | M10 |
 | `docs/PROMPT_INJECTION_CORPUS.md` references non-existent script | **Low** | M10 |
 | No warning when ML model is not installed | **Low** | M10.5 |
