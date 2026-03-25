@@ -18,11 +18,11 @@ The two user-facing products are:
 
 These two tools are the product. The behavioral tracer (`skillscan-trace`) and training corpus (`skillscan-corpus`) are private infrastructure that improve the ML model and validate detection rules. They do not ship to users and are not part of the public roadmap.
 
-**SaaS scanner** (token-gated hosted scanning with permanent report URLs) is a future phase. It is not on the active roadmap. The prerequisite is a false positive rate below 2% on benign skills and a detection rate above 85% on the malicious corpus. The current ML model (v5, macro F1 0.911, FPR 11.45%) is improving rapidly but does not yet meet the SaaS bar. The SaaS design is documented in `skillscan-trace/ROADMAP.md` Phase 3 for reference when the time comes.
+**SaaS scanner** (token-gated hosted scanning with permanent report URLs) is a future phase. It is not on the active roadmap. The prerequisite is a false positive rate below 2% on benign skills and a detection rate above 85% on the malicious corpus. The current ML model (v8, macro F1 0.9608, FPR 3.69%) is approaching the SaaS bar — FPR is now below the 5% threshold but needs to reach 2% before SaaS launch. The SaaS design is documented in `skillscan-trace/ROADMAP.md` Phase 3 for reference when the time comes.
 
 ---
 
-## Current State (2026-03-24)
+## Current State (2026-03-25)
 
 ### What is working and shipped
 
@@ -31,7 +31,7 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 | Static rules | **137 rules** (134 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` (PINJ-008–014, EXF-018/019, SE-002/003, SUP-018, PSV-001–004, GR-007 added) |
 | AST data-flow analysis | **Complete** | `detectors/ast_flows.py` — secret→decode→exec/network flows |
 | Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003/004 + GR-007 cycle detection |
-| ML classifier | **v7, macro F1 0.9475** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
+| ML classifier | **v8, macro F1 0.9608** | DeBERTa-v3-base + LoRA, FP16 ONNX re-export in progress, HuggingFace Hub |
 | IOC DB | **5,507 entries** (bundled) | 3,955 domains, 8 IPs, 1,538 CIDRs, 3 URLs; runtime feeds via `managed_sources.json` |
 | Vuln DB | **63 packages** | 47 Python + 16 npm |
 | Semantic classifier | **Complete** | `semantic_local.py` — offline stem-and-score, no network |
@@ -49,25 +49,26 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 
 Model history (all runs that passed the F1 gate):
 
-| Metric | v7458 (2026-03-22) | v5 (2026-03-24) | v7 (2026-03-24) | Target (v1.0) |
+| Metric | v7458 (2026-03-22) | v11461 (2026-03-24) | **v16589 (2026-03-25)** | Target (v1.0) |
 |---|---|---|---|---|
-| Training corpus | 7,277 examples | 11,461 examples | **13,910 examples** | 25,000+ |
-| Eval set | 181 examples | 202 examples | **221 examples** | 250+ |
-| Macro F1 | 0.8448 | 0.9110 | **0.9475** | **≥ 0.95** |
-| Benign F1 | 0.9040 | 0.9317 | **0.9614** | ≥ 0.97 |
-| Injection F1 | 0.7857 | 0.8903 | **0.9336** | ≥ 0.95 |
-| FPR | 15.7% | 11.45% | **7.38%** | ≤ 5% |
-| Enterprise benign eval | — | — | **20/20 (100%)** | 30/30 (100%) |
+| Training corpus | 7,277 examples | 11,461 examples | **16,589 examples** | 25,000+ |
+| Eval set | 181 examples | 201 examples | **444 examples** | 500+ |
+| Macro F1 | 0.8448 | 0.9110 | **0.9608** | **≥ 0.97** |
+| Benign F1 | 0.9040 | 0.9317 | **0.9781** | ≥ 0.99 |
+| Injection F1 | 0.7857 | 0.8903 | **0.9435** | ≥ 0.97 |
+| FPR | 15.7% | 11.45% | **3.69%** | ≤ 2% |
+| Enterprise benign FPR | — | 11.45% | **3.69%** | ≤ 2% |
 
-v7 improvements over v5: macro F1 +0.037, injection F1 +0.043, FPR −4.07pp, enterprise benign 0% → 100%. F1 gate raised to 0.92. 8 injection archetypes still score 0.0 — jailbreak variants, MCP impersonation, and subtle indirect patterns. Corpus researcher agent now runs daily at 02:00 UTC harvesting new vendor skill files automatically.
+v8 improvements over v11461: macro F1 +4.98pp (0.911 → 0.961), FPR −7.76pp (11.5% → 3.7%), injection F1 +5.32pp (0.890 → 0.944). F1 gate raised to 0.92 and cleared at 0.9608. 6 of 9 targeted zero-recall archetypes resolved. 8 persistent zeros remain for v9.
 
 ### Open gaps
 
-Updated 2026-03-24 after v7 fine-tune (macro F1=0.9475) and full gap analysis across all three detection layers. Full analysis: `docs/GAP_ANALYSIS.md`.
+Updated 2026-03-25 after v8 fine-tune (macro F1=0.9608) and CI fix. Full analysis: `docs/GAP_ANALYSIS.md`.
 
 | Gap | Severity | Milestone |
 |---|---|---|
-| 8 injection FN archetypes (jb07, jb08, mcp_impersonation, pi21, pi24, pi61, se_git, organic) | **High** | M7 |
+| ~~8 injection FN archetypes (jb07, jb08, mcp_impersonation, pi21, pi24, pi61, se_git, organic)~~ | ~~High~~ | ✅ M7 |
+| 8 persistent FN archetypes (mcp_imp, org_mal047, se_git, jb07/08 variants, jb09/10, pi24_rss, pi37) | **Medium** | M7-v9 |
 | ~~5 P1 YAML rules missing (PINJ-008/009/010/012, SE-003)~~ | ~~High~~ | ✅ M6 |
 | ~~6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002)~~ | ~~High~~ | ✅ M6 |
 | ~~PSV-004 unknown frontmatter keys not flagged~~ | ~~Medium~~ | ✅ M8 |
@@ -145,36 +146,26 @@ The current chain rules (CHN-001 through CHN-014) match patterns anywhere in the
 
 ---
 
-## Milestone 7 — ML Model Quality: Injection Recall *(in progress)*
+## ~~Milestone 7 — ML Model Quality: Injection Recall~~ ✅ COMPLETE (2026-03-25)
 
 **Goal:** Push macro F1 from 0.911 to ≥ 0.95, closing the remaining gap on indirect injection, jailbreak variants, and social engineering attacks.
 
-v5 (2026-03-24): macro F1=0.911, injection F1=0.890, FPR=11.45%. The model is now precise (P=0.972) but misses subtle indirect attacks. 13 injection archetypes still score 0.0 — all are indirect, jailbreak, or social-engineering patterns with 0–5 training examples.
+**v8 result (2026-03-25):** macro F1=**0.9608**, FPR=**3.69%**, injection F1=**0.9435**. F1 gate 0.92 PASSED. 6 of 9 targeted zero-recall archetypes resolved. `MODEL_METRICS.md` updated.
 
-**Remaining FN archetypes (13):**
-- Indirect/supply-chain: pi12, pi15, pi20, pi21, pi22, pi24, pi27, pi31, pi59, pi63
-- Jailbreak: jb07 (consistency appeal), jb08 (refusal prohibition)
-- Social engineering: se_git_config_harvest, se_prize_scam
+**Completed actions:**
+- ✅ 91 gap archetype examples (jb07, jb08, mcp_imp, org_mal047, org_sup017, pi21, pi24, pi61, se_git — 10–11 each)
+- ✅ 69 adversarial enterprise examples (ent_cred_exfil ×12, ent_ep_redirect ×16, ent_tool_alias ×12, ent_supply_chain ×17, ent_indirect_inj ×12)
+- ✅ 120 backtranslation augments
+- ✅ 218 reserved eval examples (held_out_eval/ expanded to 444 total)
+- ✅ v8 fine-tune triggered and completed (corpus: 16,589 examples)
+- ✅ `docs/MODEL_METRICS.md` updated with v8 results
+- ✅ ONNX export bug fixed (`finetune_modal.py` Python scoping error); re-run triggered 2026-03-25
 
-**Actions:**
-- Add 8–10 training variants for each of the 13 FN archetypes (~120 new examples).
-- Run back-translation augmentation on the 9 indirect injection FN eval examples (generates ~36 paraphrase variants).
-- Add 10 benign MCP training examples to fix 2 benign FP archetypes (mcp_git_skill, mcp_sampling_skill).
-- Trigger a new fine-tune. Target: macro F1 ≥ 0.93, injection F1 ≥ 0.92, FPR ≤ 8%.
-- Update `docs/MODEL_METRICS.md` with v5 results and the new run results.
+**Resolved archetypes (6/9):** jb07 ✅, jb08 ✅ (2/3), organic_sup017 ✅, pi21 ✅, pi24 ✅ (5/6), pi61 ✅
 
-**v7 status (2026-03-24):** macro F1=0.9475, FPR=7.38%, enterprise benign eval 20/20 (100%). F1 gate raised to 0.92. 8 injection archetypes still score 0.0.
+**Remaining FN archetypes (8 for v9):** mcp_server_impersonation, organic_mal047, se_git_config_harvest, jb_jb07_035, jb_jb08_037, jb09/jb10 (new), pi24_rss, pi37_markdown.
 
-**Remaining FN archetypes (8):** jb07 (consistency appeal), jb08 (refusal prohibition), mcp_server_impersonation, organic_mal047 (Claude hooks RCE), organic_sup017 (Actions tag repoint), pi21 (supply chain pip), pi24 (RSS indirect), pi61 (error context leakage), se_git_config_harvest.
-
-**Actions for v8:**
-- Add 8–10 training variants for each of the 8 remaining FN archetypes.
-- ~~Add **malicious enterprise skill variants**: take real Azure/AWS/Composio vendor skill files and inject attack patterns (credential exfil, endpoint redirect, tool alias injection, fake system headers). These are the hardest injection examples — they look exactly like legitimate enterprise skills but contain embedded attacks. Target: 50–80 adversarial enterprise examples across 5 attack categories in `training_corpus/enterprise_injection/`.~~ ✅ **Done (2026-03-24):** 69 adversarial enterprise examples written to `corpus/malicious/` across 5 categories: `ent_cred_exfil` (12), `ent_ep_redirect` (16), `ent_tool_alias` (12), `ent_supply_chain` (17), `ent_indirect_inj` (12). Total malicious corpus: 160 files.
-- ~~Add 8–10 training variants for each of the 8 remaining FN archetypes.~~ ✅ **Done (2026-03-24):** 91 examples written across jb07, jb08, mcp_imp, org_mal047, org_sup017, pi21, pi24, pi61, se_git (10–11 each).
-- Run corpus researcher agent before triggering the run.
-- Trigger v8 fine-tune. Target: macro F1 ≥ 0.96, FPR ≤ 6%.
-
-**Acceptance criteria:** Macro F1 ≥ 0.95 on the held-out eval set. FPR ≤ 6%. `MODEL_METRICS.md` is current.
+**Acceptance criteria:** ✅ Macro F1 ≥ 0.95 (actual: 0.9608). ✅ FPR ≤ 6% (actual: 3.69%). ✅ `MODEL_METRICS.md` current.
 
 ---
 
