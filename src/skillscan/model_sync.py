@@ -72,7 +72,7 @@ class ModelStatus:
         if not self.installed:
             return (
                 "ML model not installed. "
-                "Run `skillscan model sync` to download (~50 MB)."
+                "Run `skillscan model sync` to download (~350 MB)."
             )
         age_str = f"{self.age_days:.0f}" if self.age_days is not None else "?"
         lines = [

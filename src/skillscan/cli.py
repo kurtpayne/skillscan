@@ -258,6 +258,25 @@ def scan_cmd(
             "Also configurable via SKILLSCAN_ML_DETECT env var."
         ),
     ),
+    no_model: bool = typer.Option(
+        False,
+        "--no-model",
+        envvar="SKILLSCAN_NO_MODEL",
+        help=(
+            "Explicitly opt out of the ML detection layer and suppress the "
+            "'ML layer inactive' notice. Useful in CI where the model is "
+            "intentionally excluded to save disk space."
+        ),
+    ),
+    require_model: bool = typer.Option(
+        False,
+        "--require-model",
+        envvar="SKILLSCAN_REQUIRE_MODEL",
+        help=(
+            "Exit with code 3 if --ml-detect is requested but the ML model "
+            "is not installed. Useful for gating CI jobs on full-fidelity scans."
+        ),
+    ),
     graph_scan: bool | None = typer.Option(
         None,
         "--graph/--no-graph",
@@ -281,7 +300,86 @@ def scan_cmd(
         help="Baseline delta output format: text|json",
     ),
 ) -> None:
+    import sys as _sys
+
     _load_dotenv()
+
+    # M10.5 — Model UX: missing-model detection and guided download
+    # -----------------------------------------------------------------
+    # 1. If --require-model is set, --ml-detect must also be set.
+    if require_model and not ml_detect:
+        console.print(
+            "[bold red]--require-model requires --ml-detect to be set as well.[/bold red]"
+        )
+        raise typer.Exit(2)
+
+    # 2. If --ml-detect is requested, check whether the model is installed.
+    if ml_detect and not no_model:
+        from skillscan.model_sync import get_model_status, sync_model
+
+        _model_status = get_model_status()
+        if not _model_status.installed:
+            # Interactive TTY: offer to download inline
+            if _sys.stdin.isatty() and _sys.stderr.isatty():
+                console.print(
+                    "[yellow]ML model not found.[/yellow] "
+                    "Download now (~350 MB)? [Y/n] ",
+                    end="",
+                )
+                _answer = input().strip().lower()
+                if _answer in {"", "y", "yes"}:
+                    console.print("[bold]Downloading ML adapter...[/bold]")
+                    _sync_result = sync_model(progress=True)
+                    if _sync_result.success and _sync_result.downloaded:
+                        console.print(
+                            f"[green]\u2713 Downloaded adapter v{_sync_result.version}[/green] "
+                            f"({_sync_result.bytes_downloaded // 1024} KB). "
+                            "ML detection enabled."
+                        )
+                    elif not _sync_result.success:
+                        console.print(
+                            f"[red]\u2717 Download failed:[/red] {_sync_result.message}"
+                        )
+                        if require_model:
+                            raise typer.Exit(3)
+                else:
+                    console.print("[dim]Skipping ML download. Running rule-only scan.[/dim]")
+                    if require_model:
+                        raise typer.Exit(3)
+                    ml_detect = False
+            else:
+                # Non-TTY (CI): just warn or hard-fail
+                if require_model:
+                    console.print(
+                        "[bold red]ML model not installed and --require-model is set.[/bold red] "
+                        "Run: skillscan model sync"
+                    )
+                    raise typer.Exit(3)
+                console.print(
+                    "[yellow]ML model not installed.[/yellow] "
+                    "Run: skillscan model sync",
+                    highlight=False,
+                )
+
+    # 3. Passive notice when ML layer is inactive (not --no-model, not --ml-detect,
+    #    not a machine-readable format — we don't pollute JSON/SARIF/JUnit/compact)
+    if not ml_detect and not no_model and format not in {"json", "sarif", "junit", "compact"}:
+        from skillscan.model_sync import get_model_status as _gms
+
+        _ms = _gms()
+        if _ms.installed:
+            console.print(
+                "[dim]ML layer inactive (add --ml-detect to enable injection recall)[/dim]",
+                highlight=False,
+            )
+        else:
+            console.print(
+                "[dim]ML layer inactive — model not installed. "
+                "Run: skillscan model sync, then add --ml-detect[/dim]",
+                highlight=False,
+            )
+    # -----------------------------------------------------------------
+
     if policy_profile not in BUILTIN_PROFILES:
         console.print(
             f"[bold red]Invalid --policy-profile:[/] {policy_profile}. "
@@ -830,7 +928,7 @@ def model_sync_cmd(
     """Download or update the ML prompt-injection adapter from HuggingFace Hub.
 
     This is the only way to download the model — it is never auto-downloaded.
-    The adapter is stored in ~/.skillscan/models/adapter/ (~50 MB).
+    The adapter is stored in ~/.skillscan/models/adapter/ (~350 MB).
     """
     from skillscan.model_sync import sync_model
 
@@ -840,8 +938,23 @@ def model_sync_cmd(
         if result.downloaded:
             console.print(
                 f"[green]\u2713 Downloaded adapter v{result.version}[/green] "
-                f"({result.bytes_downloaded // 1024} KB) — {result.message}"
+                f"({result.bytes_downloaded // 1024} KB)"
             )
+            console.print()
+            console.print("[bold]What this enables:[/bold]")
+            console.print(
+                "  DeBERTa-v3-base LoRA adapter fine-tuned on 16,589 examples of "
+                "prompt injection, jailbreaks, social engineering, and supply chain attacks."
+            )
+            console.print(
+                "  Macro F1: [green]0.9608[/green] | "
+                "Injection F1: [green]0.9435[/green] | "
+                "FPR: [green]3.69%[/green]"
+            )
+            console.print()
+            console.print("[bold]To use:[/bold]")
+            console.print("  skillscan scan <path> [bold cyan]--ml-detect[/bold cyan]")
+            console.print("  SKILLSCAN_ML_DETECT=1 skillscan scan <path>")
         else:
             console.print(f"[green]\u2713 {result.message}[/green]")
     else:
