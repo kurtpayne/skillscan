@@ -901,6 +901,9 @@ def scan(
 
             file_ext = path.suffix.lower()
             for rule in ruleset.static_rules:
+                # Graph-rule stubs are detected by skill_graph.py, not by pattern matching.
+                if rule.graph_rule:
+                    continue
                 # Language-scoped rules only apply to matching file extensions.
                 if rule.language is not None:
                     allowed_exts = _LANG_EXTENSIONS.get(rule.language)

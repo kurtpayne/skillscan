@@ -10,7 +10,8 @@ Rule IDs emitted:
   PSV-001         Skill instructions imply network access not declared in allowed-tools
   PSV-002         Skill instructions imply filesystem write not declared in allowed-tools
   PSV-003         Skill instructions imply shell execution not declared in allowed-tools
-
+  PSV-004         Unknown frontmatter key may be an injection vector
+  GR-007          Circular skill dependency detected
 Supported skill formats:
   SKILL.md         Standard SkillScan / ClawHub format (YAML front-matter + Markdown body)
   CLAUDE.md        Claude Projects format (same Markdown schema as SKILL.md)
@@ -719,8 +720,157 @@ def skill_graph_findings(root: Path) -> list[Finding]:
         findings.extend(_check_tool_grant_without_purpose(node))
         findings.extend(_check_memory_write(node))
         findings.extend(_check_permission_scope(node))
+        findings.extend(_check_unknown_frontmatter_keys(node))
 
     # Graph-level checks (require the full graph)
     findings.extend(_check_tool_escalation(graph))
+    findings.extend(_check_circular_deps(graph))
 
+    return findings
+
+# ---------------------------------------------------------------------------
+# PSV-004 — Unknown frontmatter keys
+# ---------------------------------------------------------------------------
+
+# Standard frontmatter keys recognised by the SkillScan / Manus skill schema.
+# Keys outside this set are flagged as potential injection vectors.
+_STANDARD_FM_KEYS: frozenset[str] = frozenset({
+    # Identity
+    "name", "version", "description", "author", "license",
+    # Capability declarations
+    "allowed-tools", "allowed_tools", "tools", "capabilities",
+    # Classification
+    "tags", "category", "categories",
+    # Documentation
+    "examples", "usage", "notes", "changelog", "updated",
+    # Compatibility
+    "compatibility", "prerequisites", "requires",
+    # Sub-skill references
+    "skills", "sub-skills", "sub_skills",
+    # Context / memory
+    "context",
+})
+
+# High-risk unknown keys that are common injection vectors
+_HIGH_RISK_UNKNOWN_KEYS: frozenset[str] = frozenset({
+    "system_override", "system_prompt", "behavior", "activation",
+    "override", "inject", "hidden", "secret", "confidential",
+    "instructions", "prompt", "jailbreak", "bypass",
+})
+
+
+def _check_unknown_frontmatter_keys(node: SkillNode) -> list[Finding]:
+    """PSV-004: frontmatter contains keys not in the standard schema.
+
+    Unknown keys can be used as injection vectors — e.g., 'system_override',
+    'behavior', 'activation' — that some agent runtimes may interpret as
+    privileged configuration.
+    """
+    if node.format not in ("skill_md", "claude_md"):  # only applies to SKILL.md / CLAUDE.md
+        return []
+    findings: list[Finding] = []
+    for key in node.raw_front_matter:
+        if key in _STANDARD_FM_KEYS:
+            continue
+        severity = Severity.HIGH if key.lower() in _HIGH_RISK_UNKNOWN_KEYS else Severity.MEDIUM
+        findings.append(Finding(
+            id="PSV-004",
+            category="permission_scope",
+            severity=severity,
+            confidence=0.70,
+            title=f"Unknown frontmatter key '{key}' may be an injection vector",
+            evidence_path=str(node.path),
+            snippet=f"{key}: {str(node.raw_front_matter[key])[:80]}",
+            mitigation=(
+                f"Remove the non-standard frontmatter key '{key}' or add it to your "
+                "organisation's approved schema. Keys like 'system_override', 'behavior', "
+                "and 'activation' are known injection vectors that some runtimes interpret "
+                "as privileged configuration."
+            ),
+        ))
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# GR-007 — Circular dependency detection
+# ---------------------------------------------------------------------------
+
+def _find_cycles(graph: SkillGraph) -> list[list[str]]:
+    """Return a list of cycles in the skill invocation graph (DFS-based).
+
+    Each cycle is represented as a list of node names forming the cycle,
+    e.g. ["skill-a", "skill-b", "skill-a"].
+    """
+    # Build adjacency list keyed by *name* (edges use names, not path keys)
+    all_names: set[str] = {n.name for n in graph.nodes.values()}
+    adj: dict[str, set[str]] = {name: set() for name in all_names}
+    for source, target, _edge_type in graph.edges:
+        if source in adj:
+            adj[source].add(target)
+
+    visited: set[str] = set()
+    rec_stack: set[str] = set()
+    cycles: list[list[str]] = []
+
+    def dfs(node: str, path: list[str]) -> None:
+        visited.add(node)
+        rec_stack.add(node)
+        path.append(node)
+        for neighbour in adj.get(node, set()):
+            if neighbour not in visited:
+                dfs(neighbour, path)
+            elif neighbour in rec_stack:
+                # Found a cycle — extract the cycle portion of the path
+                cycle_start = path.index(neighbour)
+                cycle = path[cycle_start:] + [neighbour]
+                cycles.append(cycle)
+        path.pop()
+        rec_stack.discard(node)
+
+    for node_name in list(adj.keys()):
+        if node_name not in visited:
+            dfs(node_name, [])
+
+    return cycles
+
+
+def _check_circular_deps(graph: SkillGraph) -> list[Finding]:
+    """GR-007: detect cycles in the skill invocation graph.
+
+    A cycle means skill A invokes skill B which (directly or transitively)
+    invokes skill A again. This can cause infinite loops and is often a sign
+    of a confused-deputy or escalation attack.
+    """
+    if len(graph.nodes) < 2:
+        return []
+    cycles = _find_cycles(graph)
+    if not cycles:
+        return []
+
+    findings: list[Finding] = []
+    seen_cycles: set[frozenset[str]] = set()
+    for cycle in cycles:
+        key = frozenset(cycle)
+        if key in seen_cycles:
+            continue
+        seen_cycles.add(key)
+        cycle_str = " → ".join(cycle)
+        # Use the first node in the cycle as the evidence path
+        first_node = cycle[0]
+        evidence_node = graph.nodes.get(first_node)
+        evidence_path = str(evidence_node.path) if evidence_node else ""
+        findings.append(Finding(
+            id="GR-007",
+            category="malware_pattern",
+            severity=Severity.HIGH,
+            confidence=0.90,
+            title=f"Circular skill dependency detected: {cycle_str}",
+            evidence_path=evidence_path,
+            snippet=cycle_str[:240],
+            mitigation=(
+                "Break the cycle by removing one of the skill invocation references. "
+                "Circular dependencies can cause infinite loops and may be used to "
+                "bypass per-skill rate limits or tool restrictions."
+            ),
+        ))
     return findings

@@ -3500,6 +3500,188 @@ static_rules:
     references:
     - https://owasp.org/www-project-top-10-for-large-language-model-applications/
     - https://atlas.mitre.org/techniques/AML.T0051
+
+# ---------------------------------------------------------------------------
+# PSV — Permission Scope Violation (graph-level, detected by skill_graph.py)
+# These stubs expose PSV rules in `skillscan rule list` and enable suppression.
+# The pattern is a sentinel that never matches; actual detection is graph-based.
+# ---------------------------------------------------------------------------
+- id: PSV-001
+  category: permission_scope
+  severity: medium
+  confidence: 0.75
+  title: Skill instructions imply network access not declared in allowed-tools
+  pattern: '(?!x)x'  # sentinel — never matches; detection is in skill_graph.py
+  graph_rule: true
+  mitigation: >
+    Add a network-capable tool (e.g., 'WebFetch', 'curl', 'web_search') to
+    'allowed-tools' in the skill frontmatter, or remove the network instruction.
+    Undeclared network access prevents operators from making informed trust decisions.
+  metadata:
+    version: '1.0'
+    status: stable
+    techniques:
+    - id: AML.T0051
+      name: LLM Plugin Compromise
+    tags:
+    - permission-scope
+    - network
+    - graph-rule
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.75
+      benchmark_set: graph-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
+
+- id: PSV-002
+  category: permission_scope
+  severity: medium
+  confidence: 0.72
+  title: Skill instructions imply filesystem write not declared in allowed-tools
+  pattern: '(?!x)x'  # sentinel — never matches; detection is in skill_graph.py
+  graph_rule: true
+  mitigation: >
+    Add a write-capable tool (e.g., 'Write', 'file_write', 'mcp__filesystem__write_file')
+    to 'allowed-tools', or remove the write instruction.
+    Undeclared filesystem writes can silently modify files outside the operator's awareness.
+  metadata:
+    version: '1.0'
+    status: stable
+    techniques:
+    - id: AML.T0051
+      name: LLM Plugin Compromise
+    tags:
+    - permission-scope
+    - filesystem
+    - graph-rule
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.72
+      benchmark_set: graph-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
+- id: PSV-003
+  category: permission_scope
+  severity: high
+  confidence: 0.80
+  title: Skill instructions imply shell execution not declared in allowed-tools
+  pattern: '(?!x)x'  # sentinel — never matches; detection is in skill_graph.py
+  graph_rule: true
+  mitigation: >
+    Add 'Bash' or 'computer' to 'allowed-tools' if shell execution is intentional,
+    or remove the shell execution instruction.
+    Undeclared shell execution is a high-risk indicator: it suggests the skill
+    may attempt to run commands without the operator's knowledge.
+  metadata:
+    version: '1.0'
+    status: stable
+    techniques:
+    - id: AML.T0051
+      name: LLM Plugin Compromise
+    tags:
+    - permission-scope
+    - shell
+    - graph-rule
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.80
+      benchmark_set: graph-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
+
+- id: PSV-004
+  category: permission_scope
+  severity: medium
+  confidence: 0.70
+  title: Unknown frontmatter key may be an injection vector
+  pattern: '(?!x)x'  # sentinel — never matches; detection is in skill_graph.py
+  graph_rule: true
+  mitigation: >
+    Remove the non-standard frontmatter key or add it to your organisation's approved schema.
+    Keys like 'system_override', 'behavior', and 'activation' are known injection vectors
+    that some runtimes interpret as privileged configuration.
+  metadata:
+    version: '1.0'
+    status: stable
+    techniques:
+    - id: AML.T0051
+      name: LLM Plugin Compromise
+    tags:
+    - permission-scope
+    - frontmatter
+    - graph-rule
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.70
+      benchmark_set: graph-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
+# ---------------------------------------------------------------------------
+# GR — Graph-level rules (detected by skill_graph.py)
+# ---------------------------------------------------------------------------
+- id: GR-007
+  category: malware_pattern
+  severity: high
+  confidence: 0.90
+  title: Circular skill dependency detected
+  pattern: '(?!x)x'  # sentinel — never matches; detection is in skill_graph.py
+  graph_rule: true
+  mitigation: >
+    Break the cycle by removing one of the skill invocation references.
+    Circular dependencies can cause infinite loops and may be used to bypass
+    per-skill rate limits or tool restrictions.
+  metadata:
+    version: '1.0'
+    status: stable
+    techniques:
+    - id: AML.T0051
+      name: LLM Plugin Compromise
+    tags:
+    - graph
+    - circular-dependency
+    - graph-rule
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: graph-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
