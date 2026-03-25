@@ -5,7 +5,9 @@ from pathlib import Path
 
 import yaml
 
-TECHNIQUE_ID_RE = re.compile(r"^[A-Z][A-Z0-9_-]*-\d{3}$")
+# Matches MITRE ATT&CK (e.g. T1234), ATLAS (e.g. AML.T0051), and custom IDs (e.g. PSV-001)
+# Note: ATLAS IDs use dot notation (AML.T0051) with no dash before the digits.
+TECHNIQUE_ID_RE = re.compile(r"^[A-Z][A-Z0-9._-]*\d{3,5}$")
 
 
 def test_static_rules_have_well_formed_metadata_blocks() -> None:
