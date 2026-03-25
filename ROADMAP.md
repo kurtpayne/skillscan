@@ -169,7 +169,8 @@ v5 (2026-03-24): macro F1=0.911, injection F1=0.890, FPR=11.45%. The model is no
 
 **Actions for v8:**
 - Add 8–10 training variants for each of the 8 remaining FN archetypes.
-- Add **malicious enterprise skill variants**: take real Azure/AWS/Composio vendor skill files and inject attack patterns (credential exfil, endpoint redirect, tool alias injection, fake system headers). These are the hardest injection examples — they look exactly like legitimate enterprise skills but contain embedded attacks. Target: 50–80 adversarial enterprise examples across 5 attack categories in `training_corpus/enterprise_injection/`.
+- ~~Add **malicious enterprise skill variants**: take real Azure/AWS/Composio vendor skill files and inject attack patterns (credential exfil, endpoint redirect, tool alias injection, fake system headers). These are the hardest injection examples — they look exactly like legitimate enterprise skills but contain embedded attacks. Target: 50–80 adversarial enterprise examples across 5 attack categories in `training_corpus/enterprise_injection/`.~~ ✅ **Done (2026-03-24):** 69 adversarial enterprise examples written to `corpus/malicious/` across 5 categories: `ent_cred_exfil` (12), `ent_ep_redirect` (16), `ent_tool_alias` (12), `ent_supply_chain` (17), `ent_indirect_inj` (12). Total malicious corpus: 160 files.
+- ~~Add 8–10 training variants for each of the 8 remaining FN archetypes.~~ ✅ **Done (2026-03-24):** 91 examples written across jb07, jb08, mcp_imp, org_mal047, org_sup017, pi21, pi24, pi61, se_git (10–11 each).
 - Run corpus researcher agent before triggering the run.
 - Trigger v8 fine-tune. Target: macro F1 ≥ 0.96, FPR ≤ 6%.
 
