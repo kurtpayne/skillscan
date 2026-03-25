@@ -110,6 +110,9 @@ examples/showcase/112_error_message_context_leak/SKILL.md
 examples/showcase/113_telemetry_conversation_harvest/SKILL.md
 examples/showcase/114_git_credentials_harvest/SKILL.md
 examples/showcase/115_pip_install_typosquat/SKILL.md
+examples/showcase/116_unknown_fm_key_injection/skill-a/SKILL.md
+examples/showcase/117_circular_skill_dep/skill-a/SKILL.md
+examples/showcase/117_circular_skill_dep/skill-b/SKILL.md
 examples/showcase/11_claude_style/CLAUDE.md
 examples/showcase/11_claude_style/claude_skill.yaml
 examples/showcase/12_benign_minimal/SKILL.md
@@ -328,6 +331,7 @@ tests/test_junit.py
 tests/test_m10_8_attack_hints.py
 tests/test_m12_archive_multilang.py
 tests/test_m6_m7_gap_fixes.py
+tests/test_m8_graph_rules.py
 tests/test_ml_detector.py
 tests/test_model_sync.py
 tests/test_policies_more.py
