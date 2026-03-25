@@ -28,8 +28,7 @@
       "pandas",
       "transformers",
       "torch",
-      "bittensor-wallet",
-      "litellm"
+      "bittensor-wallet"
     ],
     "npm_packages_checked": [
       "@modelcontextprotocol/sdk",
@@ -51,7 +50,18 @@
       "semver",
       "tar",
       "unzipper",
-      "archiver"
+      "archiver",
+      "jsonwebtoken",
+      "ws",
+      "multer",
+      "socket.io",
+      "got",
+      "superagent",
+      "xml2js",
+      "minimist",
+      "shelljs",
+      "tough-cookie",
+      "word-wrap"
     ]
   },
   "python": {
@@ -633,223 +643,6 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
-    },
-    "pymongo": {
-      "3.12.3": {
-        "id": "CVE-2021-20329",
-        "severity": "medium",
-        "fixed": "3.12.4"
-      }
-    },
-    "celery": {
-      "5.2.7": {
-        "id": "CVE-2021-23727",
-        "severity": "high",
-        "fixed": "5.2.8"
-      }
-    },
-    "redis": {
-      "4.5.4": {
-        "id": "CVE-2023-28858",
-        "severity": "medium",
-        "fixed": "4.5.5"
-      }
-    },
-    "boto3": {
-      "1.26.165": {
-        "id": "CVE-2023-34048",
-        "severity": "critical",
-        "fixed": "1.26.166"
-      }
-    },
-    "sqlalchemy": {
-      "1.4.46": {
-        "id": "CVE-2023-30608",
-        "severity": "medium",
-        "fixed": "1.4.47"
-      },
-      "2.0.15": {
-        "id": "CVE-2023-30608",
-        "severity": "medium",
-        "fixed": "2.0.16"
-      }
-    },
-    "django": {
-      "4.2.0": {
-        "id": "CVE-2023-36053",
-        "severity": "high",
-        "fixed": "4.2.3"
-      },
-      "3.2.19": {
-        "id": "CVE-2023-36053",
-        "severity": "high",
-        "fixed": "3.2.20"
-      }
-    },
-    "flask": {
-      "2.3.2": {
-        "id": "CVE-2023-30861",
-        "severity": "high",
-        "fixed": "2.3.3"
-      }
-    },
-    "werkzeug": {
-      "2.3.6": {
-        "id": "CVE-2023-46136",
-        "severity": "high",
-        "fixed": "2.3.8"
-      },
-      "3.0.0": {
-        "id": "CVE-2023-46136",
-        "severity": "high",
-        "fixed": "3.0.1"
-      }
-    },
-    "PyJWT": {
-      "2.6.0": {
-        "id": "CVE-2022-29217",
-        "severity": "high",
-        "fixed": "2.6.0"
-      },
-      "1.7.1": {
-        "id": "CVE-2022-29217",
-        "severity": "high",
-        "fixed": "2.4.0"
-      }
-    },
-    "setuptools": {
-      "65.5.0": {
-        "id": "CVE-2022-40897",
-        "severity": "high",
-        "fixed": "65.5.1"
-      }
-    },
-    "lxml": {
-      "4.9.2": {
-        "id": "CVE-2022-2309",
-        "severity": "high",
-        "fixed": "4.9.3"
-      }
-    },
-    "xmltodict": {
-      "0.13.0": {
-        "id": "CVE-2023-47627",
-        "severity": "medium",
-        "fixed": "0.13.0"
-      }
-    },
-    "pyOpenSSL": {
-      "23.0.0": {
-        "id": "CVE-2023-49083",
-        "severity": "medium",
-        "fixed": "23.3.0"
-      }
-    },
-    "urllib3": {
-      "1.26.18": {
-        "id": "CVE-2023-45803",
-        "severity": "medium",
-        "fixed": "1.26.19"
-      },
-      "2.0.6": {
-        "id": "CVE-2023-45803",
-        "severity": "medium",
-        "fixed": "2.0.7"
-      }
-    },
-    "certifi": {
-      "2023.5.7": {
-        "id": "CVE-2023-37920",
-        "severity": "high",
-        "fixed": "2023.7.22"
-      }
-    },
-    "pip": {
-      "23.0.1": {
-        "id": "CVE-2023-5752",
-        "severity": "medium",
-        "fixed": "23.3"
-      }
-    },
-    "wheel": {
-      "0.40.0": {
-        "id": "CVE-2022-40898",
-        "severity": "high",
-        "fixed": "0.38.1"
-      }
-    },
-    "protobuf": {
-      "3.20.3": {
-        "id": "CVE-2022-1941",
-        "severity": "high",
-        "fixed": "3.20.3"
-      },
-      "4.21.12": {
-        "id": "CVE-2022-1941",
-        "severity": "high",
-        "fixed": "4.21.12"
-      }
-    },
-    "grpcio": {
-      "1.51.3": {
-        "id": "CVE-2023-1428",
-        "severity": "high",
-        "fixed": "1.53.0"
-      }
-    },
-    "huggingface-hub": {
-      "0.16.4": {
-        "id": "CVE-2024-3568",
-        "severity": "high",
-        "fixed": "0.23.0"
-      }
-    },
-    "datasets": {
-      "2.14.6": {
-        "id": "CVE-2024-3568",
-        "severity": "medium",
-        "fixed": "2.19.0"
-      }
-    },
-    "accelerate": {
-      "0.23.0": {
-        "id": "CVE-2024-3568",
-        "severity": "medium",
-        "fixed": "0.27.0"
-      }
-    },
-    "safetensors": {
-      "0.4.0": {
-        "id": "CVE-2024-3568",
-        "severity": "medium",
-        "fixed": "0.4.3"
-      }
-    },
-    "tiktoken": {
-      "0.5.1": {
-        "id": "CVE-2024-3568",
-        "severity": "low",
-        "fixed": "0.6.0"
-      }
-    },
-    "litellm": {
-      "1.82.7": {
-        "id": "PYPI-BACKDOOR-2026-0325-LITELLM",
-        "severity": "critical",
-        "fixed": "1.82.9"
-      },
-      "1.82.8": {
-        "id": "PYPI-BACKDOOR-2026-0325-LITELLM",
-        "severity": "critical",
-        "fixed": "1.82.9"
-      }
-    },
-    "openclaw": {
-      "2026.1.28": {
-        "id": "CVE-2026-25253",
-        "severity": "critical",
-        "fixed": "2026.1.29"
-      }
     }
   },
   "npm": {
@@ -865,20 +658,6 @@
         "id": "CVE-2026-4270",
         "severity": "medium",
         "fixed": "1.3.9"
-      }
-    },
-    "fastify": {
-      "4.29.0": {
-        "id": "GHSA-mg2h-6x62-wpwc",
-        "severity": "high",
-        "fixed": "5.3.2"
-      }
-    },
-    "tar": {
-      "7.5.1": {
-        "id": "GHSA-29xp-372q-xqph",
-        "severity": "medium",
-        "fixed": "7.5.2"
       }
     },
     "jsonwebtoken": {
@@ -995,11 +774,18 @@
         "fixed": "1.2.4"
       }
     },
-    "trivy": {
-      "0.69.4": {
-        "id": "CVE-2026-28353",
-        "severity": "critical",
-        "fixed": "0.69.5"
+    "fastify": {
+      "4.29.0": {
+        "id": "GHSA-mg2h-6x62-wpwc",
+        "severity": "high",
+        "fixed": "5.3.2"
+      }
+    },
+    "tar": {
+      "7.5.1": {
+        "id": "GHSA-29xp-372q-xqph",
+        "severity": "medium",
+        "fixed": "7.5.2"
       }
     }
   }
