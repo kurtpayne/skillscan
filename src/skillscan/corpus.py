@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import types
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
@@ -44,7 +45,7 @@ def _find_corpus_manager() -> Path | None:
     return None
 
 
-def _load_corpus_manager() -> object:
+def _load_corpus_manager() -> types.ModuleType:
     """Import corpus_manager from skillscan-corpus, or fall back to bundled copy."""
     cm_path = _find_corpus_manager()
     if cm_path is not None:
