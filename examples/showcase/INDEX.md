@@ -132,3 +132,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 111. `108_mcp_server_command_injection_cve`: Vulnerable MCP server packages with command injection flaws including mcp-server-auto-commit (CVE-2026-4198), quip-mcp-server (CVE-2026-4192), and MCP Go SDK CSRF tool execution (CVE-2026-33252) (`SUP-016`)
 112. `100_langflow_rce_build_public_tmp`: Langflow unauthenticated RCE via build_public_tmp endpoint (CVE-2026-33017) where attackers inject arbitrary Python code through the flow data parameter to execute commands, read environment variables, and obtain reverse shells on unpatched Langflow instances (`MAL-048`)
 113. `101_checkmarx_actions_teampcp`: Checkmarx GitHub Actions supply chain compromise by TeamPCP (CVE-2026-33634) where attackers force-pushed malicious commits to release tags of ast-github-action and kics-github-action, exfiltrating SSH keys and cloud credentials to checkmarx.zone (`SUP-017`)
+
+118. `118_litellm_pth_persistence`: expects MAL-049 (LiteLLM .pth persistence and sysmon backdoor)
+119. `119_litellm_compromised_version`: expects SUP-019 (Compromised LiteLLM package version reference)

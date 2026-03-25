@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-24",
+    "generated": "2026-03-25",
     "bundled_sources": [
       "feodotracker_ips",
       "hagezi_doh_domains",
@@ -3964,7 +3964,9 @@
     "zuk.freemyip.com",
     "zulkas.top",
     "zxcvb.pp.ua",
-    "zycdjz.com"
+    "zycdjz.com",
+    "models.litellm.cloud",
+    "checkmarx.zone"
   ],
   "ips": [
     "144.31.224.98",
@@ -3974,7 +3976,8 @@
     "50.16.16.211",
     "54.91.154.110",
     "70.34.242.255",
-    "91.92.242.30"
+    "91.92.242.30",
+    "45.148.10.212"
   ],
   "cidrs": [
     "1.10.16.0/20",

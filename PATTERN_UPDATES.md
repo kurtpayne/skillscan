@@ -1,4 +1,41 @@
-## 2026-03-24 (batch 2) — Langflow RCE (CVE-2026-33017), Checkmarx GitHub Actions Compromise (CVE-2026-33634)
+## 2026-03-25 — LiteLLM PyPI Supply Chain Compromise (TeamPCP)
+
+**Sources:**
+- [Snyk — Poisoned Security Scanner Backdooring LiteLLM](https://snyk.io/articles/poisoned-security-scanner-backdooring-litellm/)
+- [BleepingComputer — Popular LiteLLM PyPI Package Compromised in TeamPCP Supply Chain Attack](https://www.bleepingcomputer.com/news/security/popular-litellm-pypi-package-compromised-in-teampcp-supply-chain-attack/)
+- [Sonatype — Compromised LiteLLM PyPI Package Delivers Multi-Stage Credential Stealer](https://www.sonatype.com/blog/compromised-litellm-pypi-package-delivers-multi-stage-credential-stealer)
+
+**Event Summary:** Two new detection rules, two new IOC domains, one new IOC IP, and one new vulnerable package entry were added. Snyk, BleepingComputer, and Sonatype documented the TeamPCP supply chain compromise of the LiteLLM PyPI package (versions 1.82.7 and 1.82.8) via a poisoned Trivy scanner in CI/CD. The malware injects a .pth file (litellm_init.pth) into site-packages for Python startup persistence, creates ~/.config/sysmon/sysmon.py and a systemd user service for long-term backdoor access, and exfiltrates SSH keys, cloud credentials, Kubernetes secrets, and cryptocurrency wallets to models.litellm.cloud.
+
+**New Patterns Added:**
+
+### MAL-049: LiteLLM .pth file persistence and sysmon backdoor (TeamPCP)
+- **Category:** malware_pattern
+- **Severity:** critical
+- **Confidence:** 0.90
+- **Pattern:** Detects litellm_init.pth persistence artifacts, ~/.config/sysmon/sysmon.py backdoor, sysmon.service systemd persistence, /tmp/pglog and /tmp/.pg_state state files, models.litellm.cloud C2 domain, and tpcp.tar.gz recovery archive references.
+- **Justification:** Direct detection of the TeamPCP LiteLLM supply chain compromise persistence mechanism documented by Snyk and BleepingComputer. Extends existing TeamPCP coverage (SUP-015, SUP-017) to the LiteLLM package family.
+
+### SUP-019: Compromised LiteLLM package version reference
+- **Category:** supply_chain
+- **Severity:** critical
+- **Confidence:** 0.92
+- **Pattern:** Detects pip/poetry/pipenv install commands referencing known-malicious LiteLLM versions 1.82.7 and 1.82.8, including Dockerfile and requirements.txt version pins.
+- **Justification:** Prevents installation of compromised LiteLLM versions that contain a multi-stage credential stealer. Documented by Sonatype and Snyk.
+
+**IOC Updates:**
+- Added 2 TeamPCP exfiltration domains: models.litellm.cloud, checkmarx.zone
+- Added 1 IP: 45.148.10.212 (Trivy compromise C2)
+
+**Vulnerability Updates:**
+- Added litellm 1.82.7 and 1.82.8 (critical, PYPI-BACKDOOR-2026-0325-LITELLM, fixed in 1.82.9) — compromised by TeamPCP via poisoned Trivy scanner
+
+**Corpus Updates:**
+- Organic eval holdouts for MAL-049 and SUP-019 added to evaluation directory in private skillscan-corpus repo
+
+---
+
+## 2026-03-24 — Langflow RCE CVE-2026-33017, Checkmarx GitHub Actions Compromise
 
 **Sources:**
 - [The Hacker News — Critical Langflow Flaw CVE-2026-33017 Enables Unauthenticated RCE](https://thehackernews.com/2026/03/critical-langflow-flaw-cve-2026-33017.html)

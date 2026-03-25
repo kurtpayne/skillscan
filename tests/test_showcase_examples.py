@@ -204,6 +204,10 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-048" for f in findings_112)
     findings_113 = _scan("examples/showcase/101_checkmarx_actions_teampcp").findings
     assert any(f.id == "SUP-017" for f in findings_113)
+    findings_114 = _scan("examples/showcase/118_litellm_pth_persistence").findings
+    assert any(f.id == "MAL-049" for f in findings_114)
+    findings_115 = _scan("examples/showcase/119_litellm_compromised_version").findings
+    assert any(f.id == "SUP-019" for f in findings_115)
 
 
 def test_showcase_policy_block_domain() -> None:

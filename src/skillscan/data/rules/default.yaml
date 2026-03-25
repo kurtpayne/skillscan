@@ -1,4 +1,4 @@
-version: 2026.03.24.1
+version: 2026.03.25.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -3681,6 +3681,91 @@ static_rules:
       benchmark_set: graph-v1
     references:
     - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+
+- id: MAL-049
+  category: malware_pattern
+  severity: critical
+  confidence: 0.90
+  title: LiteLLM .pth file persistence and sysmon backdoor (TeamPCP)
+  pattern: (?i)(?:litellm[_\s-]?init\.pth|site[_-]?packages[/\\][^\n]{0,80}\.pth[^\n]{0,80}(?:litellm|proxy_server)|~?/?(?:\.config|config)/sysmon/sysmon\.py|\.config/systemd/user/sysmon\.service|/tmp/pglog|/tmp/\.pg_state|models\.litellm\.cloud|tpcp\.tar\.gz[^\n]{0,200}(?:litellm|proxy|credential))
+  mitigation: |
+    The LiteLLM PyPI package (versions 1.82.7 and 1.82.8) was compromised by TeamPCP via a poisoned Trivy scanner in CI/CD.
+    The malware injects a .pth file (litellm_init.pth) into site-packages for Python startup persistence, creates
+    ~/.config/sysmon/sysmon.py and a systemd user service for long-term backdoor access, and exfiltrates SSH keys,
+    cloud credentials, and Kubernetes secrets to models.litellm.cloud. Remove compromised versions, audit for
+    persistence artifacts, and rotate all exposed credentials.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-25'
+    updated: '2026-03-25'
+    tags:
+    - supply-chain
+    - litellm
+    - teampcp
+    - pth-persistence
+    - credential-theft
+    - backdoor
+    last_modified: '2026-03-25'
+    techniques:
+    - id: MAL-049
+      name: LiteLLM .pth file persistence and sysmon backdoor
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-25'
+      last_modified: '2026-03-25'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://snyk.io/articles/poisoned-security-scanner-backdooring-litellm/
+    - https://www.bleepingcomputer.com/news/security/popular-litellm-pypi-package-compromised-in-teampcp-supply-chain-attack/
+    - https://attack.mitre.org/techniques/T1546/
+- id: SUP-019
+  category: supply_chain
+  severity: critical
+  confidence: 0.92
+  title: Compromised LiteLLM package version reference
+  pattern: (?i)(?:(?:pip(?:3)?\s+install|pip\s+install|python\s+-m\s+pip\s+install|uv\s+pip\s+install|poetry\s+add|pipenv\s+install)[^\n]{0,80}litellm[^\n]{0,40}(?:==\s*1\.82\.[78]|1\.82\.7|1\.82\.8)|litellm[=<>~!]=.*1\.82\.[78]|['"]litellm['"]\s*:\s*['"](?:1\.82\.7|1\.82\.8)['"])
+  mitigation: |
+    LiteLLM versions 1.82.7 and 1.82.8 are known-malicious, compromised by TeamPCP via a poisoned Trivy scanner.
+    These versions contain a multi-stage credential stealer that harvests SSH keys, cloud credentials, Kubernetes
+    secrets, and cryptocurrency wallets. Never install these versions. Update to a clean release and audit systems
+    that may have been exposed.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-25'
+    updated: '2026-03-25'
+    tags:
+    - supply-chain
+    - litellm
+    - teampcp
+    - compromised-package
+    - credential-theft
+    last_modified: '2026-03-25'
+    techniques:
+    - id: SUP-019
+      name: Compromised LiteLLM package version reference
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-25'
+      last_modified: '2026-03-25'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://snyk.io/articles/poisoned-security-scanner-backdooring-litellm/
+    - https://www.sonatype.com/blog/compromised-litellm-pypi-package-delivers-multi-stage-credential-stealer
+    - https://attack.mitre.org/techniques/T1195/001/
 
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
