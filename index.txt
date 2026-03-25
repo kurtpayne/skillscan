@@ -237,6 +237,7 @@ scripts/uninstall.sh
 scripts/validate_pattern_update.py
 scripts/validate_sbom.py
 src/skillscan/__init__.py
+src/skillscan/_corpus_manager_bundled.py
 src/skillscan/analysis.py
 src/skillscan/clamav.py
 src/skillscan/cli.py
