@@ -28,9 +28,9 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 
 | Component | Status | Notes |
 |---|---|---|
-| Static rules | **140 rules** (125 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` (PINJ-008/009/010/012, SE-003 added) |
+| Static rules | **137 rules** (134 static + 15 chain + 17 multilang) | `default.yaml`, `multilang.yaml` (PINJ-008–014, EXF-018/019, SE-002/003, SUP-018, PSV-001–004, GR-007 added) |
 | AST data-flow analysis | **Complete** | `detectors/ast_flows.py` — secret→decode→exec/network flows |
-| Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003 permission scope validation |
+| Skill graph / PSV | **Complete** | `detectors/skill_graph.py` — PSV-001/002/003/004 + GR-007 cycle detection |
 | ML classifier | **v7, macro F1 0.9475** | DeBERTa-v3-base + LoRA, ONNX INT8, HuggingFace Hub |
 | IOC DB | **5,507 entries** (bundled) | 3,955 domains, 8 IPs, 1,538 CIDRs, 3 URLs; runtime feeds via `managed_sources.json` |
 | Vuln DB | **63 packages** | 47 Python + 16 npm |
@@ -43,7 +43,7 @@ These two tools are the product. The behavioral tracer (`skillscan-trace`) and t
 | `skillscan-lint` | **Complete, 34 rules** | SARIF output, schema validation, front-matter checks (QL-026–034 added) |
 | Skill fuzzer | **Complete** | `tools/skill-fuzzer/` — 5 mutation strategies, evasion rate reporting |
 | Test suite | **300 test functions** across 30 files | |
-| Showcase examples | **117 examples** covering all rule categories | |
+| Showcase examples | **119 examples** covering all rule categories | |
 
 ### ML model state
 
@@ -69,14 +69,14 @@ Updated 2026-03-24 after v7 fine-tune (macro F1=0.9475) and full gap analysis ac
 |---|---|---|
 | 8 injection FN archetypes (jb07, jb08, mcp_impersonation, pi21, pi24, pi61, se_git, organic) | **High** | M7 |
 | ~~5 P1 YAML rules missing (PINJ-008/009/010/012, SE-003)~~ | ~~High~~ | ✅ M6 |
-| 6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002) | **High** | M6 / M8 |
-| PSV-004 unknown frontmatter keys not flagged | **Medium** | M8 |
-| GR-007 circular dependency detection missing | **Medium** | M8 |
+| ~~6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002)~~ | ~~High~~ | ✅ M6 |
+| ~~PSV-004 unknown frontmatter keys not flagged~~ | ~~Medium~~ | ✅ M8 |
+| ~~GR-007 circular dependency detection missing~~ | ~~Medium~~ | ✅ M8 |
 | PSV-005 tool drift detection missing | **Medium** | M8 |
-| SUP-018 pip install in skill body not flagged | **Medium** | M6 |
+| ~~SUP-018 pip install in skill body not flagged~~ | ~~Medium~~ | ✅ M6 |
 | ~~9 lint rules missing (QL-026 through QL-034)~~ | ~~Medium~~ | ✅ M10.9 |
 | ~~Chain rule proximity window missing~~ | ~~Medium~~ | ✅ M6 |
-| PSV rules not wired through rule YAML | **Medium** | M8 |
+| ~~PSV rules not wired through rule YAML~~ | ~~Medium~~ | ✅ M8 |
 | ~~Vuln DB thin (78 packages, target 150+)~~ | ~~Low~~ | ✅ M5 |
 | ~~IOC DB bundled only 2,051 entries~~ | ~~Low~~ | ✅ M5 |
 | VS Code extension unpublished | **Low** | M9 |
