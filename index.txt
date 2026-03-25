@@ -88,9 +88,11 @@ examples/showcase/102_azure_mcp_ssrf_privilege_escalation/SKILL.md
 examples/showcase/102_canisterworm_k8s_wiper/SKILL.md
 examples/showcase/102_fake_system_header/README.md
 examples/showcase/102_fake_system_header/SKILL.md
+examples/showcase/102_openclaw_wallet_draining_phishing/SKILL.md
 examples/showcase/103_agent_instruction_block/README.md
 examples/showcase/103_agent_instruction_block/SKILL.md
 examples/showcase/103_api_traffic_hijack_settings/SKILL.md
+examples/showcase/103_roguepilot_html_comment_injection/SKILL.md
 examples/showcase/104_prize_scam_se/README.md
 examples/showcase/104_prize_scam_se/SKILL.md
 examples/showcase/104_sqlbot_prompt_injection_rce/SKILL.md
