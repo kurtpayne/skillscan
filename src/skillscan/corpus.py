@@ -44,7 +44,7 @@ def _find_corpus_manager() -> Path | None:
     return None
 
 
-def _load_corpus_manager():
+def _load_corpus_manager() -> object:
     """Import corpus_manager from skillscan-corpus, or fall back to bundled copy."""
     cm_path = _find_corpus_manager()
     if cm_path is not None:
