@@ -439,6 +439,27 @@ The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 
 **Acceptance criteria:** All repos have a `LICENSE` file. HuggingFace model card declares `apache-2.0`. `pyproject.toml` files include `license = "Apache-2.0"`. README files reference the license.
 
 ---
+## Milestone 10.12 — Formalized Feedback Mechanism
+
+**Goal:** Give users a clear, low-friction way to report false positives, false negatives, and general feedback — and make that channel visible in every place a user might look.
+
+**Background:** Users currently have no obvious path to report issues. False positive and false negative reports are the highest-value signal for improving detection quality. GitHub Issues is the right channel for an open-source tool; the work here is formalizing it with templates, surfacing it in the right places, and wiring it into the CLI.
+
+**Actions:**
+- Create GitHub Issue templates in `skillscan-security/.github/ISSUE_TEMPLATE/`:
+  - `false_positive.yml` — structured form: rule ID, file snippet, expected vs actual verdict, skill source
+  - `false_negative.yml` — structured form: attack type, sample content (sanitized), why it should be flagged
+  - `feature_request.yml` — standard feature request template
+  - `bug_report.yml` — standard bug report with version, OS, command run, output
+- Add `CONTRIBUTING.md` to `skillscan-security` explaining the feedback process, how FP/FN reports feed into the corpus, and the review SLA
+- Add a `--feedback` flag to the CLI: `skillscan feedback` opens the GitHub Issues new-issue page in the default browser (or prints the URL if no browser is available)
+- Add a feedback nudge to the CLI output: when a scan returns BLOCK with high confidence, print a one-liner: `False positive? Report it: https://github.com/kurtpayne/skillscan-security/issues/new/choose`
+- Surface on the website: add a "Feedback" or "Report an Issue" link in the nav and on the scan results page
+- Add `SECURITY.md` with a responsible disclosure policy (private report via GitHub Security Advisories, 90-day disclosure window)
+
+**Acceptance criteria:** Issue templates are live on GitHub. `skillscan feedback` command works. Feedback URL appears in CLI BLOCK output. Website has a visible feedback link. `CONTRIBUTING.md` and `SECURITY.md` exist.
+
+---
 ## Milestone 1111 — Hardening & PyPI Publish
 
 **Goal:** Ensure the scanner is robust enough for enterprise CI/CD use.
