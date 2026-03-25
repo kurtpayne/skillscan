@@ -72,7 +72,7 @@ Updated 2026-03-24 after v7 fine-tune (macro F1=0.9475) and full gap analysis ac
 | ~~6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002)~~ | ~~High~~ | ✅ M6 |
 | ~~PSV-004 unknown frontmatter keys not flagged~~ | ~~Medium~~ | ✅ M8 |
 | ~~GR-007 circular dependency detection missing~~ | ~~Medium~~ | ✅ M8 |
-| PSV-005 tool drift detection missing | **Medium** | M8 |
+| PSV-005 tool drift detection missing | **Medium** | M10.7 |
 | ~~SUP-018 pip install in skill body not flagged~~ | ~~Medium~~ | ✅ M6 |
 | ~~9 lint rules missing (QL-026 through QL-034)~~ | ~~Medium~~ | ✅ M10.9 |
 | ~~Chain rule proximity window missing~~ | ~~Medium~~ | ✅ M6 |
@@ -335,6 +335,7 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 - [ ] Implement `skillscan update` as a meta-command that runs all update sub-steps in order with a single progress display
 - [ ] Implement `skillscan model status` and `skillscan model sync` (prerequisite: Milestone 10.5)
 - [ ] Unify `skillscan diff` to accept `--security` and `--quality` flags
+- [ ] Implement `PSV-005` — detect tool set expansion between skill versions (surface from `skillscan diff --security`); severity HIGH
 - [ ] Add `skillscan-lint` as an alias under the main `skillscan` group
 - [ ] Update `--help` text, man page, and README to reflect the new surface
 - [ ] Add deprecation warnings on old command names with migration hints
