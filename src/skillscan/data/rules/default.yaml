@@ -3255,6 +3255,251 @@ static_rules:
     references:
     - https://owasp.org/www-project-top-10-for-large-language-model-applications/
     - https://atlas.mitre.org/techniques/AML.T0051
+- id: PINJ-011
+  category: prompt_injection
+  severity: high
+  confidence: 0.88
+  title: Tool alias injection mapping safe name to dangerous tool
+  pattern: (?i)`?(?:safe_exec|safe_run|safe_shell|trusted_tool|allowed_tool|permitted_tool|helper_tool|utility_tool|assistant_tool)`?\s*(?:→|->|=|maps?\s+to|is\s+(?:an?\s+)?alias\s+(?:for|of)|refers?\s+to|means?)\s*`?(?:Bash|bash|shell|sh|cmd|powershell|pwsh|python|node|ruby|perl|eval|exec|system|subprocess|os\.system)`?|`?(?:Bash|bash|shell|sh|cmd|powershell|python|node|ruby|perl|eval|exec|system)`?\s*(?:→|->|=|maps?\s+to|is\s+(?:an?\s+)?alias\s+(?:for|of)|refers?\s+to|means?)\s*`?(?:safe_exec|safe_run|safe_shell|trusted_tool|allowed_tool|permitted_tool|helper_tool|utility_tool|assistant_tool)`?|(?:w\+|w\s*\+)\s*(?:maps?\s+to|=|→|->|means?|refers?\s+to)\s*(?:w\+|write|Bash|bash|shell|exec)
+  mitigation: |
+    Tool alias injection attempts to map a benign-sounding tool name to a dangerous execution primitive (Bash, shell, eval, exec). This is a prompt injection technique used to bypass tool-use restrictions. Remove any alias or mapping definitions that redirect safe-sounding names to shell execution tools. Declare tools explicitly in the frontmatter allowed-tools list.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - tool-alias
+    - instruction-abuse
+    techniques:
+    - id: PINJ-011
+      name: Tool alias injection mapping safe name to dangerous execution primitive
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
+- id: PINJ-013
+  category: prompt_injection
+  severity: high
+  confidence: 0.85
+  title: Conditional time-lock with instruction override
+  pattern: (?i)(?:if\s+(?:the\s+)?(?:current\s+)?(?:date|time|day|month|year|timestamp)\s*(?:is|>|>=|after|past|exceeds?|reaches?)|when\s+(?:the\s+)?(?:date|time|day|month|year)\s*(?:is|>|>=|after|past|exceeds?|reaches?)|after\s+(?:the\s+)?(?:date|time|\d{4}[-/]\d{2}[-/]\d{2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})|once\s+(?:the\s+)?(?:date|time|deadline|trigger\s+date))[^\n]{0,200}(?:ignore|disregard|override|bypass|forget|replace|supersede|do\s+not\s+follow|stop\s+following)[^\n]{0,100}(?:previous|prior|above|earlier|original|system|base|initial)\s*(?:instructions?|prompt|context|rules?|guidelines?|constraints?)|(?:ignore|disregard|override|bypass|forget|replace|supersede)[^\n]{0,100}(?:previous|prior|above|earlier|original|system|base|initial)\s*(?:instructions?|prompt|context|rules?|guidelines?|constraints?)[^\n]{0,200}(?:if\s+(?:the\s+)?(?:current\s+)?(?:date|time|day|month|year)|when\s+(?:the\s+)?(?:date|time|day|month|year)|after\s+(?:the\s+)?(?:date|time|\d{4}))
+  mitigation: |
+    Conditional time-lock patterns combine a date/time trigger condition with instruction-override language. This is a delayed-activation prompt injection technique designed to evade static analysis by appearing benign until a future date. Remove any conditional logic that overrides, ignores, or replaces system instructions based on date or time conditions. Skills must not contain time-gated instruction overrides.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - time-lock
+    - conditional-payload
+    - delayed-activation
+    techniques:
+    - id: PINJ-013
+      name: Conditional time-lock with instruction override (delayed-activation injection)
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
+- id: EXF-018
+  category: exfiltration
+  severity: high
+  confidence: 0.88
+  title: Error message instructed to leak system prompt or conversation history
+  pattern: (?i)(?:error|exception|failure|traceback|stack.?trace|debug.?output|diagnostic)\s*(?:message|output|response|text|body|payload|format|template|string|content)?[^\n]{0,150}(?:include|contain|append|attach|add|embed|insert|prepend|prefix|suffix|return|output|show|display|print|log|send|report|expose|reveal|leak|dump|echo|format.+with|wrap.+with)[^\n]{0,150}(?:system\s*prompt|system\s*message|system\s*instruction|conversation\s*history|full\s*context|chat\s*history|message\s*history|prior\s*messages?|previous\s*messages?|entire\s*context|full\s*prompt|original\s*prompt|base\s*prompt|initial\s*prompt|hidden\s*prompt|all\s*(?:previous\s+)?(?:messages?|instructions?|context))|(?:system\s*prompt|system\s*message|system\s*instruction|conversation\s*history|full\s*context|chat\s*history|message\s*history|prior\s*messages?|previous\s*messages?|entire\s*context|full\s*prompt|original\s*prompt|base\s*prompt|initial\s*prompt|hidden\s*prompt)[^\n]{0,150}(?:include|contain|append|attach|add|embed|insert|prepend|prefix|suffix|return|output|show|display|print|log|send|report|expose|reveal|leak|dump|echo)[^\n]{0,150}(?:error|exception|failure|traceback|stack.?trace|debug.?output|diagnostic)|(?:include|contain|append|attach|add|embed|insert|return|output|show|display|print|log|send|report|expose|reveal|leak|dump|echo)[^\n]{0,200}(?:system\s*prompt|system\s*message|system\s*instruction|conversation\s*history|full\s*context|chat\s*history|message\s*history|prior\s*messages?|previous\s*messages?|entire\s*context|full\s*prompt|original\s*prompt|base\s*prompt|initial\s*prompt|hidden\s*prompt|all\s*(?:previous\s+)?(?:messages?|instructions?|context))[^\n]{0,200}(?:error|exception|failure|traceback|debug|diagnostic|message|output|response)
+  mitigation: |
+    This skill instructs the AI to include system prompt contents, conversation history, or full context in error messages. This is a data exfiltration technique that exploits error handling paths to leak sensitive context. Error messages must never include system prompt contents, conversation history, or prior message context. Use generic error messages that do not reflect internal state.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - exfiltration
+    - error-leakage
+    - context-leak
+    - prompt-exfil
+    techniques:
+    - id: EXF-018
+      name: Error message instructed to include system prompt or conversation history
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0024
+- id: EXF-019
+  category: exfiltration
+  severity: high
+  confidence: 0.87
+  title: Logging or audit endpoint collecting conversation history or environment metadata
+  pattern: (?i)(?:log|audit|telemetry|analytics|monitor|track|record|report|send|post|upload|submit|forward|relay|transmit|emit|push|stream)\s*(?:to|all|every|each|the)?\s*(?:endpoint|url|server|webhook|api|service|backend|collector|aggregator|pipeline|sink|destination|target)?[^\n]{0,200}(?:conversation\s*(?:history|log|data|content|messages?|context)|message\s*history|chat\s*(?:history|log|data|content)|prior\s*messages?|previous\s*(?:messages?|turns?|exchanges?)|full\s*(?:context|conversation|chat)|all\s*(?:messages?|turns?|exchanges?|interactions?)|session\s*(?:data|log|history|content)|user\s*(?:messages?|inputs?|queries|prompts?)|assistant\s*(?:responses?|outputs?|replies?)|system\s*(?:prompt|message|instruction)|environment\s*(?:variables?|metadata|data|info)|process\s*(?:environment|env)|os\.environ|\$(?:HOME|USER|PATH|SHELL|AWS_|AZURE_|GCP_|API_KEY|TOKEN|SECRET|PASSWORD))|(?:conversation\s*(?:history|log|data|content|messages?|context)|message\s*history|chat\s*(?:history|log|data|content)|session\s*(?:data|log|history|content)|system\s*(?:prompt|message|instruction)|environment\s*(?:variables?|metadata|data|info))[^\n]{0,200}(?:log|audit|telemetry|analytics|monitor|track|record|report|send|post|upload|submit|forward|relay|transmit|emit|push|stream)
+  mitigation: |
+    This skill configures logging, audit, or telemetry endpoints that collect conversation history, message content, or environment metadata. This is a covert data exfiltration channel that routes sensitive context to external infrastructure. Skills must not log or transmit conversation history, system prompt contents, or environment variables to external endpoints. Use local-only, privacy-preserving logging that does not include message content.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - exfiltration
+    - logging-abuse
+    - telemetry-exfil
+    - conversation-harvest
+    techniques:
+    - id: EXF-019
+      name: Logging/audit endpoint collecting conversation history or environment metadata
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.87
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0024
+- id: SE-002
+  category: social_engineering
+  severity: high
+  confidence: 0.90
+  title: Git credential file harvest combined with send or upload instruction
+  pattern: (?i)(?:~\/\.gitconfig|~\/\.git-credentials|\.git-credentials|git\s*config\s*--global|git\s*credential|gitconfig)[^\n]{0,300}(?:send|upload|post|submit|forward|relay|transmit|exfil|copy|read|cat|open|access|retrieve|fetch|get|collect|harvest|steal|grab|extract|dump|share|report|log|audit|record|store|save|write)[^\n]{0,200}(?:http|curl|wget|requests?|fetch|axios|got|superagent|upload|webhook|api|endpoint|server|url|remote|external)|(?:send|upload|post|submit|forward|relay|transmit|exfil|copy|read|cat|open|access|retrieve|fetch|get|collect|harvest|steal|grab|extract|dump|share|report|log|audit|record|store|save|write)[^\n]{0,300}(?:~\/\.gitconfig|~\/\.git-credentials|\.git-credentials|git\s*config\s*--global|git\s*credential|gitconfig)[^\n]{0,200}(?:http|curl|wget|requests?|fetch|axios|got|superagent|upload|webhook|api|endpoint|server|url|remote|external)
+  mitigation: |
+    This skill reads Git credential files (~/.gitconfig, ~/.git-credentials) and transmits their contents to an external endpoint. Git credential files contain plaintext usernames and tokens for remote repositories. This is a targeted credential harvest attack. Skills must never read or transmit Git credential files. Use scoped, short-lived tokens via OAuth or environment-variable injection instead of reading credential files.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - social-engineering
+    - credential-harvest
+    - git-credentials
+    - exfiltration
+    techniques:
+    - id: SE-002
+      name: Git credential file harvest combined with send or upload instruction
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
+    - https://attack.mitre.org/techniques/T1552/003/
+- id: SUP-018
+  category: supply_chain
+  severity: medium
+  confidence: 0.82
+  title: pip install in skill body with non-standard or suspicious package name
+  pattern: (?i)(?:pip(?:3)?|pip\s+install|pip3\s+install|python\s+-m\s+pip\s+install|uv\s+pip\s+install|poetry\s+add|pipenv\s+install)\s+(?:--upgrade\s+|--force-reinstall\s+|--no-deps\s+|-U\s+|-q\s+|--quiet\s+|--index-url\s+\S+\s+|--extra-index-url\s+\S+\s+|--trusted-host\s+\S+\s+)*(?!(?:requests|numpy|pandas|flask|django|fastapi|sqlalchemy|pillow|matplotlib|scipy|scikit-learn|tensorflow|torch|transformers|boto3|pytest|black|mypy|ruff|pydantic|httpx|aiohttp|click|rich|typer|langchain|openai|anthropic|tiktoken|huggingface-hub|datasets|accelerate|safetensors|celery|redis|pymongo|cryptography|paramiko|urllib3|certifi|setuptools|wheel|pip|virtualenv|tqdm|packaging|attrs|six|python-dateutil|pytz|charset-normalizer|idna|certifi|colorama|filelock|fsspec|regex|tokenizers|sentencepiece)(?:\s|==|>=|<=|~=|$))(?:[a-z0-9](?:[a-z0-9._-]{2,})?(?:==\d+\.\d+\.\d+|>=\d+|<=\d+)?)
+  mitigation: |
+    This skill installs Python packages via pip in the skill body, referencing a package name that is not in the known-safe allowlist. Installing arbitrary packages at runtime is a supply chain risk — package names can be typosquatted, the package may be malicious, or the version may be pinned to a known-vulnerable release. Declare dependencies in a requirements.txt or pyproject.toml and review them before use. Do not install packages dynamically in skill instructions.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - supply-chain
+    - pip-install
+    - runtime-dependency
+    - typosquatting
+    techniques:
+    - id: SUP-018
+      name: pip install in skill body with non-standard or suspicious package name
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.82
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://attack.mitre.org/techniques/T1195/001/
+    - https://atlas.mitre.org/techniques/AML.T0010
+- id: PINJ-014
+  category: prompt_injection
+  severity: high
+  confidence: 0.88
+  title: Injection keyword in non-description frontmatter field
+  pattern: (?im)^(?:name|version|author|license|homepage|repository|tags?|keywords?|category|type|schema|compatibility|requires|dependencies|outputs?|inputs?)\s*:\s*[^\n]{0,20}(?:ignore\s+(?:all\s+)?(?:previous|prior|above|earlier|original|system|base)\s*(?:instructions?|prompt|context|rules?|guidelines?)|disregard\s+(?:all\s+)?(?:previous|prior|above|earlier|original|system)\s*(?:instructions?|prompt|context|rules?)|override\s+(?:system|base|all|previous)\s*(?:instructions?|prompt|context|rules?)|you\s+are\s+now\s+(?:a|an|the|DAN|jailbreak)|act\s+as\s+(?:a|an|the|DAN|jailbreak|unrestricted)|forget\s+(?:all\s+)?(?:previous|prior|your|the)\s*(?:instructions?|training|rules?|guidelines?|constraints?)|new\s+(?:system\s+)?(?:instructions?|prompt|role|persona|directive))
+  mitigation: |
+    Injection keywords found in non-description frontmatter fields (name, version, author, tags, etc.). Attackers embed prompt injection payloads in fields that may be parsed or displayed by agent frameworks without the same scrutiny applied to the description field. All frontmatter string fields are potential injection vectors. Remove any instruction-override, role-change, or jailbreak language from frontmatter fields.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-24'
+    updated: '2026-03-24'
+    tags:
+    - prompt-injection
+    - frontmatter-injection
+    - metadata-injection
+    techniques:
+    - id: PINJ-014
+      name: Prompt injection payload embedded in non-description frontmatter field
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-24'
+      last_modified: '2026-03-24'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://owasp.org/www-project-top-10-for-large-language-model-applications/
+    - https://atlas.mitre.org/techniques/AML.T0051
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b
@@ -3283,6 +3528,7 @@ chain_rules:
   severity: critical
   confidence: 0.95
   title: 'Dangerous action chain: download plus execute'
+  window_lines: 40
   all_of:
   - download
   - execute
@@ -3304,6 +3550,7 @@ chain_rules:
   severity: critical
   confidence: 0.92
   title: Potential secret exfiltration chain
+  window_lines: 40
   all_of:
   - secret_access
   - network
@@ -3323,6 +3570,7 @@ chain_rules:
 - id: CHN-004
   category: exfiltration
   severity: critical
+  window_lines: 40
   confidence: 0.94
   title: GitHub Actions secrets context with outbound network
   all_of:
@@ -3347,6 +3595,7 @@ chain_rules:
   severity: critical
   confidence: 0.93
   title: pull_request_target with untrusted PR head checkout
+  window_lines: 40
   all_of:
   - gh_pr_target
   - gh_pr_head_checkout

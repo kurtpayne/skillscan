@@ -52,6 +52,7 @@ class ChainRule(BaseModel):
     all_of: list[str]
     snippet: str = ""
     mitigation: str | None = None
+    window_lines: int | None = None  # Per-rule proximity window override; None = use global default
 
 
 class RulePack(BaseModel):
@@ -84,6 +85,7 @@ class CompiledChainRule:
     all_of: set[str]
     snippet: str
     mitigation: str | None
+    window_lines: int | None = None  # Per-rule proximity window override; None = use global default
 
 
 @dataclass
@@ -208,6 +210,7 @@ def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
             all_of=set(r.all_of),
             snippet=r.snippet,
             mitigation=r.mitigation,
+            window_lines=r.window_lines,
         )
         for r in rp.chain_rules
     ]

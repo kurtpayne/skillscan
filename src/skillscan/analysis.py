@@ -962,14 +962,27 @@ def scan(
 
             # Chain rules: use windowed extraction to enforce proximity constraint.
             # A chain rule fires only if all required actions appear within the
-            # same _CHAIN_WINDOW_LINES-line window, reducing false positives on
-            # large files where benign patterns appear far apart.
-            windows = _extract_actions_windowed(analysis_text, ruleset.action_patterns)
+            # same window, reducing false positives on large files where benign
+            # patterns appear far apart. Each rule can override the window size
+            # via its window_lines field; None means use the global default.
+            #
+            # We pre-compute windows for each unique window size to avoid
+            # redundant passes over the text.
+            _window_cache: dict[int, list[set[str]]] = {}
+
+            def _get_windows(wl: int) -> list[set[str]]:
+                if wl not in _window_cache:
+                    _window_cache[wl] = _extract_actions_windowed(
+                        analysis_text, ruleset.action_patterns, window_lines=wl
+                    )
+                return _window_cache[wl]
+
             fired_chain_ids: set[str] = set()
-            for window_actions in windows:
-                for chain_rule in ruleset.chain_rules:
-                    if chain_rule.id in fired_chain_ids:
-                        continue
+            for chain_rule in ruleset.chain_rules:
+                if chain_rule.id in fired_chain_ids:
+                    continue
+                effective_window = chain_rule.window_lines if chain_rule.window_lines is not None else _CHAIN_WINDOW_LINES
+                for window_actions in _get_windows(effective_window):
                     if chain_rule.all_of.issubset(window_actions):
                         fired_chain_ids.add(chain_rule.id)
                         findings.append(
@@ -985,6 +998,7 @@ def scan(
                                 chain_actions=sorted(chain_rule.all_of),
                             )
                         )
+                        break
 
             lower = path.name.lower()
             if lower == "requirements.txt":
