@@ -566,27 +566,148 @@ This is the primary distribution mechanism for the offline product. A developer 
 
 ---
 
-## Milestone 14.5 — Model Details on Website
+## Milestone 14.5 — Website Update (v1.0 docs + ML model + positioning)
 
-**Goal:** Surface the ML classifier's capabilities, training methodology, and current performance metrics on the SkillScan website so enterprise evaluators and developers can assess the model before deploying it.
+**Goal:** Bring the SkillScan website to v1.0 quality: more docs, more examples, prominent ML model page, and clear positioning as the offline-first enterprise-ready scanner. After this milestone, the product is ready for Trace as a Service.
 
-**Prerequisites:**
-- Milestone 7 (ML Model Quality) must reach macro F1 ≥ 0.95 before this milestone begins — the website should reflect a production-quality model, not a work-in-progress.
-- Milestone 10.7 (CLI UX Audit & Command Consolidation) should be complete so the product surface the website describes is stable and polished.
+**Prerequisites:** ✅ M7 (F1 ≥ 0.97 met at 0.9752), ✅ M10.7 (CLI surface stable). Both now complete.
 
-**Actions:**
-- Add a dedicated **Model** page (or expand the existing Docs section) covering:
-  - Architecture overview: DeBERTa-v3-base + LoRA adapter, classification head, ONNX INT8 inference pipeline
-  - Training data summary: corpus size, category breakdown, data sources (vendor skills, organic examples, back-translation augmentation)
-  - Current performance metrics: macro F1, precision/recall by category, FPR, eval set size — pulled from `docs/MODEL_METRICS.md`
-  - Version history table: each adapter version with its key improvements and metric deltas
-  - Known limitations: attack categories with lower recall, indirect injection coverage, enterprise jargon FP patterns
-- Update the **Home page** stats section to include the current macro F1 score alongside rule count and showcase count.
-- Add a **"How it works"** section explaining the two-layer detection approach (static rules + ML classifier) and when each layer fires.
-- Link from the Rules page to the Model page for findings that were ML-detected.
-- Keep metrics in sync with `docs/MODEL_METRICS.md` — the website should not have its own copy of the numbers.
+**Status:** Ready to implement.
 
-**Acceptance criteria:** Model page is live and accurate. F1 score shown on homepage. Architecture and training methodology are clearly explained. Page loads in < 2s. Content reviewed for accuracy against `docs/MODEL_METRICS.md`.
+---
+
+### 1. Homepage updates
+
+**Stats bar** — update the three key stats to reflect current state:
+- Rules: **137** (was lower)
+- ML Macro F1: **0.9752** (new stat — add this)
+- False Positive Rate: **1.89%** (new stat — add this)
+- Showcase examples: **119**
+
+**Hero section** — add a one-line positioning statement below the tagline that calls out the offline-only niche:
+> *Runs entirely on your machine. No API keys, no telemetry, no network calls at scan time.*
+
+**"How it works" section** — add a two-layer detection explainer to the homepage (or link to the Model page):
+- Layer 1: 137 static + chain + multilang rules — known attack patterns, structural violations, IOC matching
+- Layer 2: DeBERTa-v3 ML classifier — novel phrasing, jailbreaks, semantic attacks that rules can't catch
+- Explain that both layers run offline, results are deterministic, no model API call is made
+
+---
+
+### 2. New: Model page
+
+Add a dedicated `/model` route (or `/docs/model`) with the following sections:
+
+**Architecture overview**
+- Base model: `microsoft/deberta-v3-base`
+- Fine-tuning: LoRA (r=64), 5 epochs, trained on 18,161 examples
+- Inference: ONNX FP32 (~350 MB), runs on CPU via ONNX Runtime, no GPU required
+- Input: sliding-window chunking (512 tokens, 64-token stride), verdict = max-pool over chunks
+- Output: binary `BENIGN` / `INJECTION` with confidence score + attack-type hint
+
+**Current performance** (pull from `docs/MODEL_METRICS.md`, do not hardcode):
+- Macro F1: 0.9752
+- FPR: 1.89%
+- Eval set: 444 held-out examples (never used in training)
+- Training corpus: 18,161 examples
+
+**Version history table** — show all versions that passed the F1 gate:
+
+| Version | Corpus | Macro F1 | FPR | Key improvement |
+|---|---|---|---|---|
+| v1278 | 1,278 | 0.2690 | 95.7% | Baseline |
+| v7458 | 7,277 | 0.8448 | 15.7% | First gate pass |
+| v11461 | 11,461 | 0.9110 | 11.45% | Enterprise benign corpus |
+| v16589 | 16,589 | 0.9608 | 3.69% | Gap archetype closure |
+| **v18161** | **18,161** | **0.9752** | **1.89%** | **Current — SaaS quality thresholds met** |
+
+**What it detects** — attack category table (same as MODEL_CARD.md):
+Prompt injection, jailbreaks, indirect injection, exfiltration, supply chain, social engineering, MCP-specific attacks.
+
+**What it does not detect** — honest limitations section:
+Runtime-conditional payloads, indirect injection from external content fetched at runtime, infrastructure-level MCP trust, highly sophisticated multi-layer obfuscation.
+
+**Known failure modes** — the 8 persistent FN archetypes with descriptions.
+
+**HuggingFace link** — link to `kurtpayne/skillscan-deberta-adapter` model card.
+
+---
+
+### 3. Docs page expansion
+
+Add or expand the following docs sections on the website:
+
+**CLI reference** — surface the new `docs/CLI_REFERENCE.md` content as a readable web page. Key commands to highlight:
+- `skillscan update` — the one-command freshness guarantee
+- `skillscan scan --profile ci` — the CI/CD gate pattern
+- `skillscan scan --baseline <report.json>` — the PR diff pattern
+- `skillscan model install` / `skillscan model status`
+
+**Policy profiles** — add a "Policy Profiles" section explaining the 5 built-in profiles:
+- `strict` (default), `ci`, `balanced`, `permissive`, `enterprise`, `observe`
+- Include a "which profile should I use?" decision table
+
+**Suppression** — add a "Managing False Positives" section explaining `.skillscan-suppressions.yaml` with a worked example.
+
+**Custom rules** — add a "Writing Custom Rules" section with a minimal worked example from `docs/custom-rules-format.md`.
+
+---
+
+### 4. Examples page expansion
+
+The current examples page shows showcase examples. Expand it with:
+
+**Attack category breakdown** — group examples by attack category with counts:
+- Prompt injection (PINJ-*): N examples
+- Exfiltration (EXF-*): N examples
+- Social engineering (SE-*): N examples
+- Supply chain (SUP-*): N examples
+- Malware patterns (MAL-*): N examples
+- ML-detected (PINJ-ML-001): N examples
+
+**CI/CD integration example** — a copy-pasteable GitHub Actions workflow snippet using `skillscan scan --profile ci`.
+
+**Suppression example** — a copy-pasteable `.skillscan-suppressions.yaml` snippet for the most common FP scenario.
+
+---
+
+### 5. Positioning copy updates
+
+Update the website copy to reflect the offline-only niche and enterprise positioning:
+
+**Tagline / hero:** Emphasize *offline*, *no API keys*, *deterministic*, *CI/CD ready*.
+
+**Positioning statement** (for the About or landing section):
+> SkillScan is the only AI agent skill scanner that runs entirely on your machine. No model API, no cloud dependency, no telemetry. The same scan run twice on the same file produces the same result — always. That's the property enterprise security teams need for audit trails and reproducible CI gates.
+
+**Enterprise trust signals** to surface prominently:
+- FPR 1.89% on enterprise benign skill corpus
+- SARIF output for integration with existing SAST tooling
+- Policy profiles for CI/CD gating
+- Suppression file format for managing exceptions in PRs
+- Provenance block in every JSON report (version, rules SHA, model version, scanned_at)
+
+---
+
+### 6. Navigation / structure changes
+
+- Add `/model` to the top nav (between Docs and Rules, or as a Docs sub-page)
+- Add a "Report an issue" link in the footer pointing to GitHub Issues
+- Ensure the HuggingFace model card link is visible on the Model page
+
+---
+
+### Acceptance criteria
+
+- Homepage stats include F1 score and FPR
+- Model page is live with architecture, performance table, version history, and limitations
+- Docs page includes CLI reference, policy profiles, suppression, and custom rules sections
+- Examples page groups examples by attack category
+- Positioning copy calls out offline-only niche and enterprise trust signals
+- All metrics match `docs/MODEL_METRICS.md` (no hardcoded numbers that will go stale)
+- All pages load in < 2s
+- No broken links
+- After this milestone: proceed to Trace as a Service
 
 ---
 
