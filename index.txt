@@ -1,4 +1,8 @@
 .dockerignore
+.github/ISSUE_TEMPLATE/bug-report.md
+.github/ISSUE_TEMPLATE/false-negative.md
+.github/ISSUE_TEMPLATE/false-positive.md
+.github/ISSUE_TEMPLATE/feature-request.md
 .github/pull_request_template.md
 .github/workflows/ci.yml
 .github/workflows/codeql.yml
