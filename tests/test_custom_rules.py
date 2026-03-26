@@ -24,7 +24,6 @@ from skillscan.analysis import scan
 from skillscan.policies import load_builtin_policy
 from skillscan.rules import load_compiled_builtin_rulepack
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
