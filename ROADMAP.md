@@ -1,6 +1,6 @@
 # SkillScan Roadmap
 
-> **Last updated:** 2026-03-25
+> **Last updated:** 2026-03-26
 > **Version:** 0.3.2
 >
 > SkillScan was designed and directed by Kurt Payne and built with [Manus](https://manus.im).
@@ -73,7 +73,7 @@ Updated 2026-03-25 after v9 fine-tune (macro F1=0.9752, FPR=1.89%). Full analysi
 | ~~6 P2 YAML/graph rules missing (PINJ-011/013/014, EXF-018/019, SE-002)~~ | ~~High~~ | ✅ M6 |
 | ~~PSV-004 unknown frontmatter keys not flagged~~ | ~~Medium~~ | ✅ M8 |
 | ~~GR-007 circular dependency detection missing~~ | ~~Medium~~ | ✅ M8 |
-| PSV-005 tool drift detection missing | **Medium** | M10.7 |
+| ~~PSV-005 tool drift detection missing~~ | ~~Medium~~ | ✅ M10.7 |
 | ~~SUP-018 pip install in skill body not flagged~~ | ~~Medium~~ | ✅ M6 |
 | ~~9 lint rules missing (QL-026 through QL-034)~~ | ~~Medium~~ | ✅ M10.9 |
 | ~~Chain rule proximity window missing~~ | ~~Medium~~ | ✅ M6 |
@@ -300,7 +300,8 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ---
 
-## Milestone 10.7 — CLI UX Audit & Command Consolidation
+## ~~Milestone 10.7 — CLI UX Audit & Command Consolidation~~ ✅ COMPLETE (2026-03-26)
+**Status (2026-03-26): COMPLETE.** All 8 commands removed, 12 added/changed. Five built-in policy profiles shipped. Provenance `meta` block present in all scan reports. All six docs files written. 351 tests passing. PSV-005 tool-drift detection live via `scan --baseline`.
 
 **Goal:** Reduce user friction by rationalising the CLI surface into a coherent, discoverable set of commands. No backward-compat ceremony — the user base is small, move fast.
 

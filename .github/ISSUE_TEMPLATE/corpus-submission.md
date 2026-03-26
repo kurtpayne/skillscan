@@ -40,7 +40,7 @@ assignees: ''
 
 <!-- Paste the skill file content below, including YAML front matter if present.
      For multiple examples or files over ~100 lines, attach a .zip instead.
-     See docs/corpus-contribution-format.md for the full format spec. -->
+     See https://github.com/kurtpayne/skillscan-security/blob/main/docs/corpus-contribution-format.md for the full format spec. -->
 
 ```markdown
 ---
@@ -84,7 +84,7 @@ description:
 
 ## Checklist
 
-- [ ] I have read [docs/corpus-contribution-format.md](../docs/corpus-contribution-format.md)
+- [ ] I have read [docs/corpus-contribution-format.md](https://github.com/kurtpayne/skillscan-security/blob/main/docs/corpus-contribution-format.md)
 - [ ] The example does not contain real credentials, real PII, or real domain names belonging to actual organisations
 - [ ] The example is between 50 and 800 words
 - [ ] For bulk submissions (5+ examples): I have attached a `.zip` file instead of pasting inline
