@@ -1,6 +1,6 @@
 ---
 name: Corpus Submission
-about: Submit a new detection pattern or training example. Accepted patterns are added to the static rule layer — not the ML model. The ML model is retrained periodically from the private corpus; this template is for rule contributions, not model training data.
+about: Submit a skill sample (benign or malicious) to help improve detection. Accepted samples go into the training corpus, not the static rule layer.
 title: "[CORPUS] <brief description of example>"
 labels: corpus
 assignees: ''
