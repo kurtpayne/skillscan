@@ -9,18 +9,74 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
-- `AV-ADVISORY` finding (LOW): emitted when script files (`.py`, `.sh`, `.rb`, `.js`, `.ts`, `.go`, `.rs`, `.pl`, `.ps1`) are present in the skill directory but `--clamav` was not requested — advises the user to run with ClamAV or inspect the scripts manually.
+---
 
-### Fixed
-- **Chain rule proximity window** (`_CHAIN_WINDOW_LINES = 40`): chain rules (`CHN-001` through `CHN-015`) now only fire when all required actions appear within 40 lines of each other. Previously the whole file was treated as a single window, causing false positives on large SKILL.md files where benign patterns appeared hundreds of lines apart.
-- **Multilang language filter**: JavaScript, Ruby, Go, and Rust rules now only apply to files with matching extensions (`.js/.ts/.mjs/.cjs`, `.rb`, `.go`, `.rs` respectively). Previously these rules were applied to all text files, causing cross-language false positives.
+## [0.7.0] — 2026-03-26
 
+This release represents the largest single jump in SkillScan's history — ten milestones, 237 commits, and a complete rearchitecture of the ML detection layer, CLI surface, and threat intel pipeline since v0.3.1.
 
-### Added
-- **M5 — Intel & Vuln DB Depth**: bundled IOC DB expanded to **5,500 entries** (3,951 domains, 8 IPs, 1,538 CIDRs, 3 URLs) by adding Hagezi DoH bypass domains as a fourth bundled feed (`hagezi_doh_domains`). Vuln DB covers **23 Python packages** and **4 npm packages** with 111 vulnerable versions sourced from OSV.dev. Five CI gate tests added to `tests/test_intel.py` to prevent silent regression below the 5,000-entry and 20-package thresholds. Daily update skill (`skillscan-intel-update`) created and scheduled at 10:00 PDT.
-- **M19 — Skill Fuzzer** (`tools/skill-fuzzer/`): LLM-powered adversarial SKILL.md variant generator. Supports five mutation strategies: `evasion`, `injection`, `benign_drift`, `obfuscation`, and `authority`. Uses any OpenAI-compatible API (GPT-4.1-mini default, Ollama-compatible). Generates unified diffs and optional `skillscan` scan results per variant. Outputs `summary.json` with evasion/false-positive rates. Installable as `pip install skillscan-security[fuzzer]`.
-- **`[project.optional-dependencies].fuzzer`** extra in `pyproject.toml` (`openai>=1.30.0`, `click>=8.1.0`).
+### ML Model (M7 / M7.5)
+- **Production ML model**: DeBERTa-v3-base + LoRA adapter retrained from 111 examples (v0.3.1) to **18,161 examples** across 5 training runs. Final metrics: **F1 0.9752**, **FPR 1.89%**, precision 0.9738, recall 0.9766 on 1,817-example held-out eval set.
+- **Sliding-window chunking**: SKILL.md files longer than 512 tokens are chunked with 128-token overlap; worst-chunk verdict is reported. Eliminates blind spots on large files.
+- **ONNX FP32 export**: model exported to FP32 ONNX (was INT8). Eliminates quantization-induced false negatives on borderline examples.
+- **Attack-type hints** (M10.8): `PINJ-ML-*` findings now include `attack_type` field with human-readable label (e.g., `prompt_override`, `data_exfil`, `tool_poisoning`) derived from the top softmax class.
+- **Enterprise benign corpus** (M7.5): 2,400 enterprise SKILL.md files added to training corpus (Salesforce, SAP, ServiceNow, Workday, Jira, Confluence, GitHub, GitLab, Slack, Teams, Zoom, Notion, Asana, Linear, Figma, Stripe, Twilio, SendGrid, HubSpot, Zendesk, Datadog, PagerDuty, Splunk, Elastic). Reduces enterprise false-positive rate.
+- **`MODEL_CARD.md`**: published to HuggingFace Hub (`kurtpayne/skillscan-deberta-adapter`) with full architecture, training data, eval history, known FN archetypes, and usage instructions.
+
+### CLI Consolidation (M10.7)
+- **`skillscan update [--no-model]`**: single command to refresh rules, intel feeds, and ML model. Replaces `rule sync`, `intel sync`, and `model sync`.
+- **`model install [--repo] [--force]`**: replaces `model sync`. Accepts `--repo` for custom HuggingFace repos.
+- **`intel add --url <url>`**: URL-based intel feed registration. Replaces file-based `intel add <path>`.
+- **`intel lookup <indicator>`**: query the local IOC DB for a domain, IP, or CIDR.
+- **`policy list` / `policy show-default`**: list and inspect built-in policy profiles.
+- **`rule test <file>`**: test a custom rule file against the bundled showcase corpus.
+- **`benchmark --verbose`**: show per-file verdicts during benchmark runs.
+- **`scan --baseline <file>`**: compare current scan against a saved baseline; report new/resolved findings.
+- **`scan --no-provenance`**: suppress the provenance meta block in JSON output.
+- **`scan --no-suppress`**: ignore all suppression files for this run.
+- **Provenance meta block**: every `--format json` scan now includes `meta` with scanner version, rules SHA, model version, policy profile, and `scanned_at` timestamp.
+- **Staleness warning**: `skillscan scan` emits a warning if rules or intel DB are older than 7 days.
+- **Removed commands** (8): `diff`, `skill-diff`, `rule sync`, `intel sync`, `intel rebuild`, `intel add <file>`, `model sync`, `suppress add`.
+
+### Policy Profiles (M10.7)
+- **5 built-in profiles**: `strict` (default), `ci`, `balanced`, `permissive`, `enterprise`, `observe`. Stored as inspectable YAML in `src/skillscan/data/policies/`.
+- `observe` profile: all findings downgraded to WARN; exit code always 0. For initial rollout without blocking CI.
+
+### Intel & Vuln DB (M5)
+- **IOC DB**: expanded to **5,500 entries** (3,951 domains, 8 IPs, 1,538 CIDRs, 3 URLs) via Hagezi DoH bypass domains (fourth bundled feed).
+- **Vuln DB**: covers **23 Python packages** and **4 npm packages** with 111 vulnerable versions from OSV.dev.
+- CI gate tests: 5 tests prevent silent regression below 5,000-entry and 20-package thresholds.
+
+### Rule Expansion (M6 / M9 / M10.9)
+- **158 total rules** (was 77 at v0.3.1): +81 rules across MAL, SUP, PINJ, EXF, SE, INJ, CHN, CAP categories.
+- New rules include: PINJ-011/013/014, EXF-018/019, SE-002, SUP-018 (M6 P2); MAL-042 through MAL-049; SUP-015 through SUP-020; PINJ-015 (pattern updates).
+- **SE category**: social engineering rules (SE-001, SE-002, SE-SEM-001) for credential harvest and authority impersonation patterns.
+- **Lint rule expansion** (M10.9): `skillscan-lint` extended with additional QL-* and GR-* lint rules.
+
+### Skill Graph Analysis (M8)
+- **PSV-004**: unknown frontmatter keys detector — flags undocumented keys in SKILL.md frontmatter.
+- **GR-007**: cycle detection in skill invocation graphs — flags circular dependencies.
+- **PSV rule wiring**: all PSV rules now correctly wired to the skill graph analysis layer.
+
+### Missing-Model UX (M10.5)
+- When `--ml-detect` is passed and the model is not installed, SkillScan now emits a guided download prompt with the exact `skillscan model install` command instead of a silent skip or cryptic error.
+
+### Bug Fixes
+- **Chain rule proximity window** (`_CHAIN_WINDOW_LINES = 40`): chain rules now only fire when all required actions appear within 40 lines of each other. Eliminates false positives on large SKILL.md files.
+- **Multilang language filter**: JS/TS/Ruby/Go/Rust rules now only apply to files with matching extensions. Eliminates cross-language false positives.
+- **`AV-ADVISORY`** (LOW): emitted when script files are present but `--clamav` was not requested.
+
+### Documentation
+- `docs/CLI_REFERENCE.md`: complete M10.7 CLI reference.
+- `docs/custom-rules-format.md`, `docs/custom-intel-format.md`, `docs/custom-policy-format.md`: authoring guides.
+- `docs/benchmark-guide.md`: benchmark workflow and interpretation guide.
+- `docs/suppression-format.md`: suppression file format reference.
+- `CONTRIBUTING.md`, `SECURITY.md`: contribution guide and responsible disclosure policy.
+- `.github/ISSUE_TEMPLATE/`: 4 issue templates (false-positive, false-negative, bug-report, feature-request).
+
+### Infrastructure
+- **Docker image**: `kurtpayne/skillscan:latest` and `kurtpayne/skillscan:v2026.03.26` published to Docker Hub. Includes ClamAV.
+- **Skill Fuzzer** (`tools/skill-fuzzer/`): LLM-powered adversarial SKILL.md variant generator. Installable as `pip install skillscan-security[fuzzer]`.
 
 ---
 
