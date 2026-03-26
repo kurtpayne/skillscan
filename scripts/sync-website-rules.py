@@ -45,6 +45,11 @@ CATEGORY_META = OrderedDict([
     ("PINJ", {"label": "Prompt/Pipeline Injection",  "color": "oklch(0.55 0.24 280)", "type": "PINJ"}),
     ("SUP",  {"label": "Supply Chain",               "color": "oklch(0.68 0.16 80)",  "type": "SUP"}),
     ("SE",   {"label": "Social Engineering",         "color": "oklch(0.62 0.20 340)", "type": "SE"}),
+    ("DEF",  {"label": "Defense Evasion",              "color": "oklch(0.60 0.18 240)", "type": "DEF"}),
+    ("EXEC", {"label": "Execution Hijack",             "color": "oklch(0.63 0.20 15)",  "type": "EXEC"}),
+    ("GR",   {"label": "Graph Rules",                  "color": "oklch(0.65 0.15 180)", "type": "GR"}),
+    ("OBF",  {"label": "Obfuscation",                  "color": "oklch(0.58 0.18 270)", "type": "OBF"}),
+    ("PSV",  {"label": "Passive Surveillance",         "color": "oklch(0.67 0.16 60)",  "type": "PSV"}),
 ])
 
 # Severity mapping: YAML severity → website Severity type
@@ -81,19 +86,30 @@ def rule_prefix(rule_id: str) -> str:
     return rule_id.split("-")[0]
 
 
+def _sanitize_str(s: str) -> str:
+    """Escape a string for safe embedding in a TSX double-quoted string literal."""
+    # Escape backslashes first, then double quotes, then collapse newlines/tabs
+    s = s.replace('\\', '\\\\')  # \ → \\
+    s = s.replace('"', '\\"')    # " → \"
+    s = s.replace('\n', ' ')      # newlines → space
+    s = s.replace('\r', '')       # carriage returns → removed
+    s = s.replace('\t', ' ')      # tabs → space
+    return s
+
+
 def rule_to_tsx(rule: dict) -> str:
     """Convert a single rule dict to a TSX object literal string."""
     rid = rule["id"]
     prefix = rule_prefix(rid)
     category = CATEGORY_META.get(prefix, {}).get("type", prefix)
     severity = SEVERITY_MAP.get(str(rule.get("severity", "medium")).lower(), "WARN")
-    title = rule.get("title", rid).replace('"', '\\"')
+    title = _sanitize_str(rule.get("title", rid))
     # Prefer explicit description; fall back to mitigation; fall back to title
-    description = (
+    description = _sanitize_str(
         rule.get("description")
         or rule.get("mitigation")
         or title
-    ).replace('"', '\\"')
+    )
     # Tags: from metadata.tags, strip the category-name tag (redundant)
     raw_tags = rule.get("metadata", {}).get("tags", [])
     tags = [t for t in raw_tags if t not in (prefix.lower(), rule.get("category", ""))]
