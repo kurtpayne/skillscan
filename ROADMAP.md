@@ -51,7 +51,7 @@ Model history (all runs that passed the F1 gate):
 
 | Metric | v7458 (2026-03-22) | v11461 (2026-03-24) | v16589 (2026-03-25) | **v18161 (2026-03-25)** | Target (v1.0) |
 |---|---|---|---|---|---|
-| Training corpus | 7,277 | 11,461 | 16,589 | **18,161** | 25,000+ |
+| Training corpus | 7,277 | 11,461 | 16,589 | **18,161** (v9) → **18,216** (current) | 25,000+ |
 | Eval set | 181 | 201 | 444 | **444** | 500+ |
 | Macro F1 | 0.8448 | 0.9110 | 0.9608 | **0.9752** | **≥ 0.97 ✅** |
 | Benign F1 | 0.9040 | 0.9317 | 0.9781 | **—** | ≥ 0.99 |
@@ -601,7 +601,7 @@ Add a dedicated `/model` route (or `/docs/model`) with the following sections:
 
 **Architecture overview**
 - Base model: `microsoft/deberta-v3-base`
-- Fine-tuning: LoRA (r=64), 5 epochs, trained on 18,161 examples
+- Fine-tuning: LoRA (r=64), 5 epochs, trained on 18,161 examples (v9); corpus now at 18,216 (+55 since v9)
 - Inference: ONNX FP32 (~350 MB), runs on CPU via ONNX Runtime, no GPU required
 - Input: sliding-window chunking (512 tokens, 64-token stride), verdict = max-pool over chunks
 - Output: binary `BENIGN` / `INJECTION` with confidence score + attack-type hint
@@ -610,7 +610,7 @@ Add a dedicated `/model` route (or `/docs/model`) with the following sections:
 - Macro F1: 0.9752
 - FPR: 1.89%
 - Eval set: 444 held-out examples (never used in training)
-- Training corpus: 18,161 examples
+- Training corpus: 18,216 examples (18,161 at v9 training time; +55 added since)
 
 **Version history table** — show all versions that passed the F1 gate:
 
