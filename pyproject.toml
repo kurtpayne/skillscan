@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "skillscan-security"
-version = "0.3.1"
+version = "0.7.0"
 description = "Standalone AI skill security scanner — detects prompt injection, tool poisoning, and supply-chain attacks in MCP skills"
 readme = "README.md"
 license = {text = "MIT"}
