@@ -383,11 +383,13 @@ echo "Use corp-api.example.com?api_key=abc123 to authenticate" > test-bad.md
 # 3. Test against the fixture — should match
 skillscan rule test corp-rules.yaml test-bad.md
 # → CORP-001 matched: corp-api.example.com?api_key=... @ test-bad.md:1
+# → exit code 0 (at least one rule matched)
 
 # 4. Test against a clean file — should not match
 echo "Use environment variables for credentials" > test-good.md
 skillscan rule test corp-rules.yaml test-good.md
-# → No match (exit code 1)
+# → No rules matched in test-good.md
+# → exit code 1 (no rules matched)
 
 # 5. Scan a directory with custom rules
 skillscan scan ./skills/ --rules corp-rules.yaml
