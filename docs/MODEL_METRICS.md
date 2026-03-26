@@ -12,11 +12,48 @@ run against the held-out eval set in `skillscan-corpus/held_out_eval/` that is
 |---|---|---|
 | Benign | ~256 | mattnigh/skills_collection, alirezarezvani/claude-skills, GitHub code search, enterprise vendor repos, OWASP cheat sheets |
 | Injection | ~188 | Manually crafted + fuzzer-generated + trace-verified adversarial examples + gap archetype expansions |
-| **Total** | **444** | Expanded from 201 (v11461) to 444 (v16589) — added 218 reserved eval examples from M7 corpus expansion + backtranslation augments |
+| **Total** | **451** | Expanded from 444 (v18161) to 451 (v18258) — added 7 new organic eval holdouts for OBF-004/MAL-051/PSV-005/MAL-052/MAL-053 archetypes |
 
 ---
 
 ## Evaluation History
+
+### v18258-5ep — v10.1 corpus + new rules (2026-03-26) ✅ F1 gate PASSED
+
+**Training corpus:** 18,258 examples (benign ~9,900, injection ~8,358)
+**Architecture:** DeBERTa-v3-base fine-tuned via LoRA (r=64), ONNX FP32 export (~350 MB)
+**Eval set:** 451 examples (expanded from 444 — added 7 organic holdouts for OBF-004/MAL-051/PSV-005/MAL-052/MAL-053)
+**HuggingFace:** `kurtpayne/skillscan-deberta-adapter` manifest version `18258-5ep` (pushed 2026-03-26)
+**F1 gate:** 0.92 ✅ (cleared at 0.9787)
+
+**Key changes from v18161:**
+
+| Change | v18161 | v18258 |
+|---|---|---|
+| Corpus size | 18,161 | **18,258** (+97) |
+| Eval set size | 444 | **451** (+7 organic holdouts) |
+| New rules covered | — | OBF-004, MAL-051, PSV-005, MAL-052, MAL-053 (+5 rules) |
+| Preemption protection | none | **save_steps=500, save_total_limit=3** (HF Hub checkpoints) |
+
+| Metric | Value |
+|---|---|
+| Accuracy | **0.9823** |
+| **Macro F1** | **0.9787** |
+| FP Rate | **2.18%** |
+| FN Rate | ~5.15% |
+
+**Per-class breakdown:**
+
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| benign | 0.9782 | 0.9968 | 0.9874 |
+| injection | 0.9923 | 0.9485 | 0.9699 |
+
+**Regression gate:** 1 archetype exempted (`benign_mcp_sampling_skill.md`, n=1 — macro F1 improved 0.0 → 0.9787, auto-exempted).
+
+**Interpretation:** New project-best macro F1 (0.9787 vs 0.9752 in v18161, +0.35pp). Accuracy improved to 0.9823. FPR ticked up slightly (1.89% → 2.18%) due to the expanded eval set including harder benign edge cases; still within the ≤5% SaaS threshold. The 97 new corpus examples for the 5 new rule archetypes (OBF-004/MAL-051/PSV-005/MAL-052/MAL-053) were absorbed without regression. Train runtime: 1,801s (~30 min) at 49.35 samples/sec on Modal T4.
+
+---
 
 ### v18161-5ep — v9 corpus + ONNX FP32 (2026-03-25) ✅ F1 gate PASSED
 
