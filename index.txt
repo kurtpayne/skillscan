@@ -252,6 +252,7 @@ scripts/install.sh
 scripts/run_tests.sh
 scripts/seed_ioc_db.py
 scripts/seed_vuln_db.py
+scripts/sync-website-rules.py
 scripts/uninstall.sh
 scripts/validate_pattern_update.py
 scripts/validate_sbom.py
