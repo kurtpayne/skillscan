@@ -1,4 +1,4 @@
-version: 2026.03.25.2
+version: 2026.03.26.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -3847,6 +3847,126 @@ static_rules:
     references:
     - https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now
     - https://attack.mitre.org/techniques/T1557/
+- id: MAL-050
+  category: malware_pattern
+  severity: high
+  confidence: 0.9
+  title: Ghost Campaign malicious npm packages (sudo phishing RAT)
+  pattern: (?i)(?:react-performance-suite|react-state-optimizer-core|react-fast-utilsa|ai-fast-auto-trader|pkgnewfefame1?|carbon-mac-copy(?:s)?-cloner|coinbase-desktop-sdk|react-query-core-utils|react-state-optimizer(?!-core)|react-fast-utils(?!a)|carbon-mac-copys-cloner|darkslash)
+  mitigation: |
+    These npm package names are known-malicious from the Ghost Campaign documented by The Hacker News
+    in March 2026. The packages use fake installation logs to conceal malware activity, phish for sudo
+    passwords, and deploy a remote access trojan (RAT) that steals cryptocurrency wallets and credentials.
+    Remove any reference to these packages immediately and audit systems for compromise.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-26'
+    updated: '2026-03-26'
+    tags:
+    - malware
+    - npm
+    - ghost-campaign
+    - sudo-phishing
+    - rat
+    - cryptocurrency-theft
+    last_modified: '2026-03-26'
+    techniques:
+    - id: MAL-050
+      name: Ghost Campaign malicious npm packages
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-26'
+      last_modified: '2026-03-26'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/03/ghost-campaign-uses-7-npm-packages-to.html
+- id: SUP-021
+  category: supply_chain
+  severity: critical
+  confidence: 0.88
+  title: TeamPCP Checkmarx VS Code extension compromise (Open VSX)
+  pattern: (?i)(?:checkmarx\.ast[_\s-]?results[^\n]{0,80}(?:2\.53|compromis|malicious|backdoor|infostealer)|checkmarx\.cx[_\s-]?dev[_\s-]?assist[^\n]{0,80}(?:1\.7\.0|compromis|malicious|backdoor|infostealer)|(?:ast-results|cx-dev-assist)[^\n]{0,80}(?:open[_\s-]?vsx|openvsx)[^\n]{0,80}(?:compromis|malicious|backdoor)|open[_\s-]?vsx[^\n]{0,120}(?:checkmarx|ast-results|cx-dev-assist)[^\n]{0,80}(?:compromis|malicious|infostealer))
+  mitigation: |
+    The TeamPCP threat actor published malicious versions of Checkmarx VS Code extensions on the Open VSX
+    registry: checkmarx.ast-results version 2.53 and checkmarx.cx-dev-assist version 1.7.0. These extensions
+    contain an infostealer that exfiltrates secrets, tokens, and cryptocurrency wallet information. Uninstall
+    compromised versions immediately and audit for data exfiltration to checkmarx.zone.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-26'
+    updated: '2026-03-26'
+    tags:
+    - supply-chain
+    - vscode-extension
+    - teampcp
+    - open-vsx
+    - infostealer
+    last_modified: '2026-03-26'
+    techniques:
+    - id: SUP-021
+      name: TeamPCP Checkmarx VS Code extension compromise
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-26'
+      last_modified: '2026-03-26'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.reversinglabs.com/blog/malicious-vs-code-extensions-steal-secrets
+    - https://securitylabs.datadoghq.com/articles/litellm-compromised-pypi-teampcp-supply-chain-campaign/
+- id: SUP-022
+  category: supply_chain
+  severity: high
+  confidence: 0.88
+  title: React Native npm account takeover supply chain attack
+  pattern: (?i)(?:react-native-international-phone-number[^\n]{0,80}(?:0\.11\.8|0\.12\.[1-3]|compromis|malicious|account[_\s-]?takeover)|react-native-country-select[^\n]{0,80}(?:0\.3\.91|0\.4\.[1-2]|compromis|malicious|account[_\s-]?takeover)|@usebioerhold8733/s-format|@agnoliaarisian7180/string-argv)
+  mitigation: |
+    The popular React Native packages react-native-international-phone-number (130K monthly downloads) and
+    react-native-country-select were compromised via npm account takeover. Malicious versions (0.11.8, 0.12.1-0.12.3
+    and 0.3.91, 0.4.1-0.4.2 respectively) use multi-layer dependency chains through scoped packages
+    @usebioerhold8733/s-format and @agnoliaarisian7180/string-argv to deliver malware. Remove compromised
+    versions and audit for postinstall hook execution.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-26'
+    updated: '2026-03-26'
+    tags:
+    - supply-chain
+    - npm
+    - account-takeover
+    - react-native
+    - dependency-chain
+    last_modified: '2026-03-26'
+    techniques:
+    - id: SUP-022
+      name: React Native npm account takeover
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-26'
+      last_modified: '2026-03-26'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.stepsecurity.io/blog/malicious-npm-releases-found-in-popular-react-native-packages---130k-monthly-downloads-compromised
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b

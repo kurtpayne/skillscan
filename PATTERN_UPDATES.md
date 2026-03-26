@@ -1,3 +1,44 @@
+## 2026-03-26 — Ghost Campaign npm Packages, TeamPCP VS Code Extension Compromise & React Native Account Takeover
+
+**Sources:**
+- [The Hacker News — Ghost Campaign Uses 7+ npm Packages to Deploy RAT](https://thehackernews.com/2026/03/ghost-campaign-uses-7-npm-packages-to.html)
+- [ReversingLabs — Malicious VS Code Extensions Steal Secrets](https://www.reversinglabs.com/blog/malicious-vs-code-extensions-steal-secrets)
+- [Datadog Security Labs — LiteLLM Compromised PyPI TeamPCP Supply Chain Campaign](https://securitylabs.datadoghq.com/articles/litellm-compromised-pypi-teampcp-supply-chain-campaign/)
+- [StepSecurity — Malicious npm Releases Found in Popular React Native Packages](https://www.stepsecurity.io/blog/malicious-npm-releases-found-in-popular-react-native-packages---130k-monthly-downloads-compromised)
+
+**Event Summary:** Three new detection rules and two new IOC domains were added. The Ghost Campaign planted 13+ malicious npm packages (react-performance-suite, ai-fast-auto-trader, coinbase-desktop-sdk, etc.) that use fake installation logs to hide malware, phish for sudo passwords, and deploy a RAT for cryptocurrency theft. TeamPCP extended their supply chain attack to the Open VSX registry with compromised Checkmarx VS Code extensions (checkmarx.ast-results v2.53 and checkmarx.cx-dev-assist v1.7.0) containing an infostealer. Additionally, popular React Native npm packages (react-native-international-phone-number and react-native-country-select with 130K monthly downloads) were compromised via account takeover using multi-layer scoped dependency chains.
+
+**New Patterns Added:**
+
+### MAL-050: Ghost Campaign malicious npm packages (sudo phishing RAT)
+- **Category:** malware_pattern
+- **Severity:** high
+- **Confidence:** 0.9
+- **Pattern:** Detects known-malicious npm package names from the Ghost Campaign including react-performance-suite, react-state-optimizer-core, react-fast-utilsa, ai-fast-auto-trader, pkgnewfefame, carbon-mac-copy-cloner, coinbase-desktop-sdk, react-query-core-utils, and darkslash.
+- **Justification:** Direct detection of the Ghost Campaign's malicious npm package names documented by The Hacker News. These packages use fake installation logs to conceal malware activity, phish for sudo passwords, and deploy a RAT that steals cryptocurrency wallets and credentials.
+
+### SUP-021: TeamPCP Checkmarx VS Code extension compromise (Open VSX)
+- **Category:** supply_chain
+- **Severity:** critical
+- **Confidence:** 0.88
+- **Pattern:** Detects compromised Checkmarx VS Code extensions on the Open VSX registry: checkmarx.ast-results version 2.53 and checkmarx.cx-dev-assist version 1.7.0, which contain an infostealer exfiltrating secrets, tokens, and cryptocurrency wallet information.
+- **Justification:** Extends TeamPCP coverage (SUP-017 covers GitHub Actions) to the VS Code extension vector. Documented by ReversingLabs and Datadog Security Labs.
+
+### SUP-022: React Native npm account takeover supply chain attack
+- **Category:** supply_chain
+- **Severity:** high
+- **Confidence:** 0.88
+- **Pattern:** Detects compromised versions of react-native-international-phone-number (0.11.8, 0.12.1-0.12.3) and react-native-country-select (0.3.91, 0.4.1-0.4.2), plus their malicious scoped relay packages @usebioerhold8733/s-format and @agnoliaarisian7180/string-argv.
+- **Justification:** Account takeover of popular React Native packages (130K monthly downloads) with multi-wave attack using scoped package relay chains. Documented by StepSecurity.
+
+**IOC Updates:**
+- Added 2 TeamPCP campaign domains: checkmarx.zone, scan.aquasecurtiy.org
+
+**Corpus Updates:**
+- Added 3 organic eval holdouts to `held_out_eval/organic/` in the corpus repo
+
+---
+
 ## 2026-03-25 — ClawHavoc Typosquat Skills & Prompt Poaching Extension Detection
 **Sources:**
 - [The Hacker News — Researchers Find 341+ Malicious ClawHub Skills](https://thehackernews.com/2026/02/researchers-find-341-malicious-clawhub.html)
