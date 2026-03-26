@@ -7,6 +7,7 @@ name: SkillScan Security Scan (Reusable)
 #       with:
 #         fail-on: warn
 #         paths: "skills/"
+#         rules-path: ".github/skillscan/corp-rules.yaml"  # optional custom rules
 #         extra-args: "--ml-detect"
 
 on:
@@ -21,6 +22,11 @@ on:
         description: "Path(s) to scan"
         type: string
         default: "."
+        required: false
+      rules-path:
+        description: "Path to a custom rules YAML file (relative to repo root). See docs/custom-rules-format.md."
+        type: string
+        default: ""
         required: false
       extra-args:
         description: "Additional arguments to pass to skillscan scan"
@@ -77,9 +83,14 @@ jobs:
         id: scan
         run: |
           set +e
+          RULES_ARG=""
+          if [ -n "${{ inputs.rules-path }}" ]; then
+            RULES_ARG="--rules ${{ inputs.rules-path }}"
+          fi
           skillscan scan ${{ inputs.paths }} \
             --format json \
             --output skillscan-report.json \
+            $RULES_ARG \
             ${{ inputs.extra-args }}
 
           VERDICT=$(python3 -c "

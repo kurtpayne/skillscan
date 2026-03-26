@@ -44,7 +44,7 @@ If SkillScan blocks it, you don't need to spend tokens on it. If it passes, you 
 1. **Offline-first.** No network calls required. Runs entirely on your machine.
 2. Archive-safe extraction and static analysis.
 3. Binary artifact classification and flagging (executables, libraries, bytecode, blobs).
-4. Malware and instruction-abuse pattern detection (70+ static rules, 15 chain rules).
+4. Malware and instruction-abuse pattern detection (121 static rules + 17 multilang rules, 15 chain rules).
 5. Instruction hardening pipeline (Unicode normalization, zero-width stripping, bounded base64 decode, action-chain checks).
 6. IOC extraction with local intel matching (163 domains, 1,310 IPs, 2 CIDRs — updated twice daily).
 7. Dependency vulnerability checks (23 Python + 4 npm packages via OSV.dev).
