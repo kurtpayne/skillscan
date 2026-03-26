@@ -79,3 +79,58 @@ jobs:
             exit 1
           fi
           echo "Website rule files are in sync."
+
+  cross-tool-recall:
+    name: Cross-tool recall vs Cisco skill-scanner fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install SkillScan
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[dev]'
+      - name: Clone Cisco skill-scanner test fixtures
+        run: |
+          git clone --depth=1 https://github.com/cisco-ai-defense/skill-scanner /tmp/cisco-skill-scanner
+      - name: Verify malicious fixtures are caught
+        run: |
+          FAIL=0
+          for skill_dir in exfiltrator prompt-injection; do
+            FIXTURE="/tmp/cisco-skill-scanner/evals/test_skills/malicious/${skill_dir}"
+            echo "=== Scanning ${skill_dir} ==="
+            OUTPUT=$(skillscan scan "$FIXTURE" --policy strict 2>&1)
+            echo "$OUTPUT"
+            if echo "$OUTPUT" | grep -q "Verdict: BLOCK"; then
+              echo "PASS: ${skill_dir} correctly blocked"
+            else
+              echo "::error::FAIL: ${skill_dir} was not blocked by SkillScan (expected BLOCK)"
+              FAIL=1
+            fi
+          done
+          # EICAR fixture: expect at least a finding (ALLOW with score > 0)
+          FIXTURE="/tmp/cisco-skill-scanner/evals/test_skills/malicious/eicar-test"
+          echo "=== Scanning eicar-test ==="
+          OUTPUT=$(skillscan scan "$FIXTURE" --policy strict 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -qE "Score: [1-9]"; then
+            echo "PASS: eicar-test produced findings"
+          else
+            echo "::error::FAIL: eicar-test produced no findings"
+            FAIL=1
+          fi
+          # Safe fixture: must not be blocked
+          FIXTURE="/tmp/cisco-skill-scanner/evals/test_skills/safe/simple-formatter"
+          echo "=== Scanning simple-formatter (safe) ==="
+          OUTPUT=$(skillscan scan "$FIXTURE" --policy strict 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -q "Verdict: ALLOW"; then
+            echo "PASS: simple-formatter correctly allowed"
+          else
+            echo "::error::FAIL: simple-formatter was blocked (false positive)"
+            FAIL=1
+          fi
+          exit $FAIL

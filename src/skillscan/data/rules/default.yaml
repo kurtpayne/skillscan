@@ -3707,6 +3707,40 @@ static_rules:
     references:
     - https://owasp.org/www-project-top-10-for-large-language-model-applications/
     - https://embracethered.com/blog/posts/2024/llm-resource-exhaustion/
+- id: MAL-053
+  category: malware_pattern
+  severity: critical
+  confidence: 0.99
+  title: EICAR test string detected in skill file
+  pattern: X5O!P%@AP\[4\\PZX54\(P\^\)7CC\)7\}\$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!\$H\+H\*
+  mitigation: The EICAR Anti-Virus Test File string was found in this skill. This string is used by security
+    researchers to test AV/scanner pipelines. Its presence in a production skill file indicates either a
+    misconfigured test artifact or a deliberate attempt to probe scanner bypass. Reject unconditionally.
+  metadata:
+    version: 1.0.0
+    status: active
+    techniques:
+    - id: MAL-053
+      name: EICAR test string in skill artifact
+    tags:
+    - malware
+    - eicar
+    - test-artifact
+    - scanner-probe
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - binary
+    lifecycle:
+      introduced: '2026-03-26'
+      last_modified: '2026-03-26'
+    quality:
+      precision_estimate: 0.99
+      benchmark_set: core-static-v1
+    references:
+    - https://www.eicar.org/download-anti-malware-testfile/
+    - https://en.wikipedia.org/wiki/EICAR_test_file
 - id: GR-007
   category: malware_pattern
   severity: high
