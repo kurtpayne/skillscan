@@ -1,5 +1,6 @@
 .dockerignore
 .github/ISSUE_TEMPLATE/bug-report.md
+.github/ISSUE_TEMPLATE/corpus-submission.md
 .github/ISSUE_TEMPLATE/false-negative.md
 .github/ISSUE_TEMPLATE/false-positive.md
 .github/ISSUE_TEMPLATE/feature-request.md
@@ -51,6 +52,7 @@ docs/TESTING.md
 docs/THREAT_MODEL.md
 docs/TRACE_RESEARCH.md
 docs/benchmark-guide.md
+docs/corpus-contribution-format.md
 docs/custom-intel-format.md
 docs/custom-policy-format.md
 docs/custom-rules-format.md
