@@ -485,7 +485,7 @@ skillscan scan ./skills/ --policy paranoid
 
 ### Contribute a rule
 
-Community-submitted patterns are reviewed and, if accepted, added to the static rule layer — not the model. Submit via the [corpus-submission issue template](https://github.com/kurtpayne/skillscan-security/issues/new?template=corpus-submission.yml).
+Community-submitted patterns are reviewed and, if accepted, added to the static rule layer — not the model. Submit via the [corpus-submission issue template](https://github.com/kurtpayne/skillscan-security/issues/new?template=corpus-submission.md).
 
 For the full customization reference, see [skillscan.sh/docs#customization](https://skillscan.sh/docs#customization).
 
