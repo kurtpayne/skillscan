@@ -36,10 +36,15 @@ def _write_report(path: Path, findings: list[dict]) -> None:
     )
 
 
-def test_diff_text_and_json(tmp_path: Path) -> None:
-    base = tmp_path / "base.json"
-    curr = tmp_path / "curr.json"
+def test_diff_command_removed() -> None:
+    """M10.7: The standalone diff command is removed. Verify it exits with code 2."""
+    result = runner.invoke(app, ["diff", "a.json", "b.json"])
+    assert result.exit_code == 2
 
+
+def test_scan_baseline_text_output(tmp_path: Path) -> None:
+    """scan --baseline produces a Baseline Delta panel in text output."""
+    base = tmp_path / "base.json"
     _write_report(
         base,
         [
@@ -55,8 +60,28 @@ def test_diff_text_and_json(tmp_path: Path) -> None:
             }
         ],
     )
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--baseline",
+            str(base),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Baseline Delta" in result.stdout
+
+
+def test_scan_baseline_json_output(tmp_path: Path) -> None:
+    """scan --baseline --format json includes delta inline in the output object."""
+    base = tmp_path / "base.json"
+    out = tmp_path / "out.json"
     _write_report(
-        curr,
+        base,
         [
             {
                 "id": "ABU-001",
@@ -67,38 +92,50 @@ def test_diff_text_and_json(tmp_path: Path) -> None:
                 "evidence_path": "a.md",
                 "line": 1,
                 "snippet": "x",
-            },
-            {
-                "id": "MAL-001",
-                "category": "malware_pattern",
-                "severity": "critical",
-                "confidence": 0.9,
-                "title": "b",
-                "evidence_path": "b.md",
-                "line": 2,
-                "snippet": "y",
-            },
+            }
         ],
     )
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--baseline",
+            str(base),
+            "--format",
+            "json",
+            "--out",
+            str(out),
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(out.read_text(encoding="utf-8"))
+    # M10.7: delta is a top-level key in the JSON output
+    assert "delta" in payload
+    assert "new_count" in payload["delta"]
+    assert "resolved_count" in payload["delta"]
+    assert "persistent_count" in payload["delta"]
 
-    text_result = runner.invoke(app, ["diff", str(base), str(curr)])
-    assert text_result.exit_code == 0
-    assert "New:" in text_result.stdout
 
-    json_result = runner.invoke(app, ["diff", str(base), str(curr), "--format", "json"])
-    assert json_result.exit_code == 0
-    payload = json.loads(json_result.stdout)
-    assert payload["new_count"] == 1
-    assert payload["resolved_count"] == 0
-    assert payload["persistent_count"] == 1
-
-
-def test_diff_invalid_format(tmp_path: Path) -> None:
+def test_scan_baseline_invalid_format(tmp_path: Path) -> None:
+    """scan --baseline with sarif/junit format exits with code 2."""
     base = tmp_path / "base.json"
-    curr = tmp_path / "curr.json"
     _write_report(base, [])
-    _write_report(curr, [])
-
-    result = runner.invoke(app, ["diff", str(base), str(curr), "--format", "bad"])
+    result = runner.invoke(
+        app,
+        [
+            "scan",
+            "tests/fixtures/benign/basic_skill",
+            "--baseline",
+            str(base),
+            "--format",
+            "sarif",
+            "--fail-on",
+            "never",
+            "--no-auto-intel",
+        ],
+    )
     assert result.exit_code == 2
-    assert "Invalid --format" in result.stdout

@@ -7,7 +7,7 @@ import yaml  # type: ignore[import-untyped]
 
 from skillscan.models import Policy
 
-BUILTIN_PROFILES = ("strict", "balanced", "permissive")
+BUILTIN_PROFILES = ("strict", "balanced", "permissive", "ci", "enterprise", "observe")
 
 
 def load_builtin_policy(profile: str = "strict") -> Policy:

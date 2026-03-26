@@ -1,7 +1,37 @@
+"""SkillScan CLI — M10.7 consolidated command surface.
+
+Commands removed in M10.7 (no deprecation cycle — small user base, move fast):
+  - diff              (replaced by scan --baseline)
+  - skill-diff        (replaced by scan --baseline)
+  - rule sync         (replaced by skillscan update)
+  - intel sync        (replaced by skillscan update)
+  - intel rebuild     (merge happens at scan load time)
+  - model sync        (renamed to model install)
+  - corpus *          (internal training plumbing, hidden from help)
+
+Commands added / changed in M10.7:
+  - update [--no-model]                  single "keep current" entry point
+  - model install [--repo] [--force]     renamed from model sync
+  - intel add --url --name [--type]      URL-based feeds, re-fetched on update
+  - intel lookup <indicator>             look up an indicator in the merged DB
+  - policy list                          list all built-in profiles
+  - policy show <profile>                renamed from policy show-default
+  - rule test <rule_file> <skill_file>   test a custom rule against a skill
+  - benchmark --verbose                  per-case output
+  - scan --no-suppress                   opt out of auto-discovery
+  - scan --no-provenance                 omit provenance meta block
+  - scan --baseline <report.json>        renamed from --baseline-report
+  - scan: staleness warning at 7 days (stderr, not structured output)
+  - observe policy: prints adoption banner on scan
+"""
 from __future__ import annotations
 
 import json
 import shutil
+import sys
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import cast
 
@@ -20,6 +50,7 @@ from skillscan.intel import (
     load_store,
     remove_source,
     set_enabled,
+    upsert_source,
 )
 from skillscan.intel_update import sync_managed
 from skillscan.junit import report_to_junit_xml
@@ -27,7 +58,6 @@ from skillscan.policies import BUILTIN_PROFILES, load_builtin_policy, load_polic
 from skillscan.render import render_report
 from skillscan.rules import load_builtin_rulepack
 from skillscan.sarif import report_to_sarif
-from skillscan.skill_diff import SkillDiffResult, diff_skills
 from skillscan.suppressions import (
     ExpiryEntry,  # noqa: F401 – used as type annotation target by mypy
     SuppressionEntry,  # noqa: F401 – used as type annotation target by mypy
@@ -35,8 +65,84 @@ from skillscan.suppressions import (
     check_suppressions_expiry,
 )
 
+# ---------------------------------------------------------------------------
+# App / sub-app declarations
+# ---------------------------------------------------------------------------
 
-# load_dotenv: reads KEY=VALUE pairs from a .env file into os.environ (no-op if absent)
+app = typer.Typer(help="SkillScan: standalone AI skill security analyzer")
+policy_app = typer.Typer(help="Policy profile operations")
+intel_app = typer.Typer(help="Intel source management")
+rule_app = typer.Typer(help="Rule metadata and query operations")
+# corpus_app is intentionally NOT registered with app — internal use only
+corpus_app = typer.Typer(help="Training corpus management (internal)")
+model_app = typer.Typer(help="ML model management")
+suppress_app = typer.Typer(help="Suppression file management")
+
+app.add_typer(policy_app, name="policy")
+app.add_typer(intel_app, name="intel")
+app.add_typer(rule_app, name="rule")
+app.add_typer(model_app, name="model")
+app.add_typer(suppress_app, name="suppress")
+
+console = Console()
+err_console = Console(stderr=True)
+
+# ---------------------------------------------------------------------------
+# Staleness threshold (configurable via .skillscan.toml stale_warn_days)
+# ---------------------------------------------------------------------------
+
+DEFAULT_STALE_WARN_DAYS = 7
+
+
+def _stale_warn_days() -> int:
+    """Read stale_warn_days from .skillscan.toml if present, else use default."""
+    toml_path = Path(".skillscan.toml")
+    if toml_path.exists():
+        try:
+            import tomllib  # type: ignore[import]
+        except ImportError:
+            try:
+                import tomli as tomllib  # type: ignore[import,no-redef]
+            except ImportError:
+                return DEFAULT_STALE_WARN_DAYS
+        try:
+            data = tomllib.loads(toml_path.read_text(encoding="utf-8"))
+            v = data.get("stale_warn_days")
+            if isinstance(v, int) and v > 0:
+                return v
+        except Exception:
+            pass
+    return DEFAULT_STALE_WARN_DAYS
+
+
+def _rules_age_days() -> float | None:
+    """Return age of user-local rules in days, or None if not synced."""
+    from skillscan.rules_sync import SYNC_STATE_FILE
+    if not SYNC_STATE_FILE.exists():
+        return None
+    try:
+        state = json.loads(SYNC_STATE_FILE.read_text())
+        if not isinstance(state, dict):
+            return None
+        # Use the oldest file's last_sync as the "rules age"
+        timestamps: list[float] = []
+        for entry in state.values():
+            if isinstance(entry, dict):
+                raw = entry.get("last_sync", 0)
+                if isinstance(raw, (int, float)):
+                    timestamps.append(float(raw))
+        if not timestamps:
+            return None
+        oldest = min(timestamps)
+        return (time.time() - oldest) / 86400
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
 def _load_dotenv(path: Path = Path(".env")) -> None:
     import os as _os
     if not path.exists():
@@ -50,21 +156,6 @@ def _load_dotenv(path: Path = Path(".env")) -> None:
         value = value.strip().strip('"').strip("'")
         if key and key not in _os.environ:
             _os.environ[key] = value
-
-app = typer.Typer(help="SkillScan: standalone AI skill security analyzer")
-policy_app = typer.Typer(help="Policy operations")
-intel_app = typer.Typer(help="Local intel operations")
-rule_app = typer.Typer(help="Rule metadata/query operations")
-corpus_app = typer.Typer(help="Training corpus management")
-model_app = typer.Typer(help="ML model management (download, update, status)")
-suppress_app = typer.Typer(help="Suppression file management")
-app.add_typer(policy_app, name="policy")
-app.add_typer(intel_app, name="intel")
-app.add_typer(rule_app, name="rule")
-app.add_typer(corpus_app, name="corpus")
-app.add_typer(model_app, name="model")
-app.add_typer(suppress_app, name="suppress")
-console = Console()
 
 
 def _finding_key(finding: dict) -> tuple[str, str, int | None]:
@@ -102,103 +193,187 @@ def _build_delta_payload(baseline_data: dict, current_data: dict, baseline_label
     }
 
 
+def _build_provenance(
+    policy_source: str,
+    policy_profile: str,
+    ml_detect: bool,
+    include_policy_blob: bool = False,
+    policy_obj: object = None,
+) -> dict:
+    """Build the provenance meta block for scan JSON output."""
+    from skillscan.model_sync import get_model_status
+    from skillscan.rules_sync import user_rules_version
+
+    model_status = get_model_status()
+
+    meta: dict = {
+        "skillscan_version": __version__,
+        "rules_version": user_rules_version() or "bundled",
+        "policy_profile": policy_profile,
+        "policy_source": policy_source,
+        "scanned_at": __import__("datetime").datetime.now(
+            __import__("datetime").timezone.utc
+        ).isoformat(),
+    }
+    if ml_detect and model_status.installed:
+        meta["model_version"] = model_status.version
+    if include_policy_blob and policy_obj is not None:
+        try:
+            meta["policy"] = json.loads(
+                cast(object, policy_obj).model_dump_json()  # type: ignore[attr-defined]
+            )
+        except Exception:
+            pass
+    return meta
+
+
+# ---------------------------------------------------------------------------
+# version
+# ---------------------------------------------------------------------------
+
 @app.command("version")
-def version() -> None:
-    console.print(f"skillscan-security {__version__}")
-
-
-@rule_app.command("list")
-def rule_list(
-    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
-    format: str = typer.Option("text", "--format", help="Output format: text|json"),
-    technique: str | None = typer.Option(None, "--technique", help="Filter by technique id"),
-    tag: str | None = typer.Option(None, "--tag", help="Filter by rule metadata tag"),
+def version_cmd(
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
 ) -> None:
-    if channel not in {"stable", "preview", "labs"}:
-        console.print("[bold red]Invalid --channel:[/] expected stable, preview, or labs")
-        raise typer.Exit(2)
-    if format not in {"text", "json"}:
-        console.print("[bold red]Invalid --format:[/] expected text or json")
-        raise typer.Exit(2)
-
-    rp = load_builtin_rulepack(channel=channel)
-    rows: list[dict[str, object]] = []
-    for r in rp.static_rules:
-        md = getattr(r, "metadata", None)
-        techniques = [t.id for t in (md.techniques if md else [])]
-        tags = list(md.tags) if md else []
-
-        if technique and technique not in techniques:
-            continue
-        if tag and tag not in tags:
-            continue
-
-        rows.append(
-            {
-                "id": r.id,
-                "title": r.title,
-                "severity": r.severity.value,
-                "category": r.category,
-                "techniques": techniques,
-                "tags": tags,
-                "status": (md.status if md else None),
-                "version": (md.version if md else None),
-            }
-        )
-
-    if format == "json":
-        console.print_json(json.dumps(rows, indent=2))
-        return
-
-    if not rows:
-        console.print("No rules matched filter.")
-        return
-
-    for row in rows:
-        techniques_row = cast(list[str], row["techniques"])
-        tags_row = cast(list[str], row["tags"])
-        t = ",".join(techniques_row) if techniques_row else "-"
-        g = ",".join(tags_row) if tags_row else "-"
-        console.print(f"{row['id']} [{row['severity']}] {row['title']}")
-        console.print(f"  category={row['category']} techniques={t} tags={g}")
-
-
-@rule_app.command("sync")
-def rule_sync(
-    force: bool = typer.Option(False, "--force", help="Force download even if rules are fresh"),
-    ttl: int = typer.Option(3600, "--ttl", help="Cache TTL in seconds"),
-) -> None:
-    """Pull the latest rule signatures from GitHub without reinstalling the package."""
-    from skillscan.rules_sync import sync_rules
-
-    result = sync_rules(force=force, ttl=ttl)
-    if result.updated:
-        console.print(f"[green]Updated:[/] {', '.join(result.updated)}")
-    if result.skipped:
-        console.print(f"[dim]Skipped (fresh):[/] {', '.join(result.skipped)}")
-    if result.errors:
-        console.print(f"[red]Errors:[/] {', '.join(result.errors)}")
-        raise typer.Exit(1)
-    if not result.updated and not result.errors:
-        console.print("[dim]Rules are up to date.[/]")
-
-
-@rule_app.command("status")
-def rule_status() -> None:
-    """Show the current rule signature versions (bundled vs. user-local)."""
+    """Show installed version and component status."""
+    from skillscan.model_sync import get_model_status
     from skillscan.rules_sync import USER_RULES_DIR, user_rules_version
 
     rp = load_builtin_rulepack(channel="stable")
     bundled_version = rp.version.split("+")[0]
     user_version = user_rules_version()
-    console.print(f"Bundled rules version : {bundled_version}")
-    if user_version:
-        console.print(f"User-local version    : {user_version} ({USER_RULES_DIR})")
-    else:
-        console.print("User-local rules      : not synced (run 'skillscan rule sync')")
-    total = len(rp.static_rules)
-    console.print(f"Total static rules    : {total}")
+    rules_version = user_version or bundled_version
 
+    store = load_store()
+    ioc_count = sum(1 for s in store.sources if s.kind == "ioc" and s.enabled)
+
+    model_status = get_model_status()
+
+    if json_output:
+        data = {
+            "version": __version__,
+            "rules": {
+                "version": rules_version,
+                "count": len(rp.static_rules),
+                "user_local": user_version is not None,
+            },
+            "intel": {
+                "sources": len(store.sources),
+                "ioc_sources": ioc_count,
+            },
+            "model": {
+                "installed": model_status.installed,
+                "version": model_status.version,
+                "age_days": round(model_status.age_days, 1) if model_status.age_days is not None else None,
+                "stale": model_status.stale,
+            },
+        }
+        typer.echo(json.dumps(data, indent=2))
+        return
+
+    console.print(f"[bold]SkillScan[/bold] (skillscan-security) {__version__}")
+    console.print()
+    console.print(f"  Rules      {rules_version}  ({len(rp.static_rules)} rules)")
+    console.print(f"  Intel      {ioc_count} IOC source(s)  ({len(store.sources)} total)")
+    if model_status.installed:
+        age_str = f"{model_status.age_days:.0f}d" if model_status.age_days is not None else "?"
+        console.print(f"  ML model   {model_status.version}   {age_str} old   [green]✓[/green]")
+        if model_status.stale:
+            console.print("             [yellow]⚠ stale — run: skillscan update[/yellow]")
+    else:
+        console.print("  ML model   [dim]not installed — run: skillscan model install[/dim]")
+
+
+# ---------------------------------------------------------------------------
+# update  (the single "keep current" entry point)
+# ---------------------------------------------------------------------------
+
+@app.command("update")
+def update_cmd(
+    no_model: bool = typer.Option(
+        False,
+        "--no-model",
+        help="Skip ML model update (useful in CI where the ~350 MB download is excluded)",
+    ),
+) -> None:
+    """Update rules, IOC/vuln intel, and ML model to latest versions.
+
+    Always pulls fresh — no TTL, no cache check. Use --no-model to skip
+    the model download (recommended for lightweight CI pipelines).
+    """
+    from skillscan.model_sync import sync_model
+    from skillscan.rules_sync import sync_rules
+
+    # 1. Rules
+    console.print("[bold]Updating rules...[/bold]", end="  ")
+    rules_result = sync_rules(force=True)
+    if rules_result.errors:
+        console.print(f"[red]✗ errors: {', '.join(rules_result.errors)}[/red]")
+    elif rules_result.updated:
+        console.print(f"[green]✓[/green] {len(rules_result.updated)} file(s) updated")
+    else:
+        console.print("[dim]✓ no changes[/dim]")
+
+    # 2. Intel
+    console.print("[bold]Updating intel...[/bold]  ", end="")
+    stats = sync_managed(max_age_seconds=0, force=True)
+    if stats["errors"] > 0:
+        console.print(f"[red]✗ {stats['errors']} error(s)[/red]")
+    elif stats["updated"] > 0:
+        console.print(f"[green]✓[/green] {stats['updated']} source(s) updated")
+    else:
+        console.print("[dim]✓ no changes[/dim]")
+
+    # 3. Custom intel feeds (URL-based, re-fetch)
+    _refetch_custom_feeds()
+
+    # 4. Model
+    if no_model:
+        console.print("[dim]Model update skipped (--no-model).[/dim]")
+    else:
+        console.print("[bold]Updating model...[/bold]  ", end="")
+        result = sync_model(force=False, progress=False)
+        if result.success:
+            if result.downloaded:
+                console.print(
+                    f"[green]✓[/green] {result.version}  "
+                    f"({result.bytes_downloaded // 1024 // 1024} MB)"
+                )
+            else:
+                console.print(f"[dim]✓ {result.message}[/dim]")
+        else:
+            console.print(f"[red]✗ {result.message}[/red]")
+
+    console.print()
+    console.print("[green]All components up to date.[/green]")
+
+
+def _refetch_custom_feeds() -> None:
+    """Re-fetch all URL-based custom intel feeds registered in intel_sources.json."""
+    store = load_store()
+    custom = [s for s in store.sources if getattr(s, "url", None)]
+    if not custom:
+        return
+    for source in custom:
+        url = getattr(source, "url", None)
+        if not url:
+            continue
+        console.print(f"[bold]Updating custom feed:[/bold] {source.name}  ", end="")
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "skillscan/update"})
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                data = resp.read()
+            dst = intel_dir() / f"custom_{source.name}.json"
+            dst.write_bytes(data)
+            upsert_source(name=source.name, kind=source.kind, path=dst, enabled=True)
+            console.print("[green]✓[/green]")
+        except (urllib.error.URLError, OSError, TimeoutError) as exc:
+            console.print(f"[red]✗ {exc}[/red]")
+
+
+# ---------------------------------------------------------------------------
+# scan
+# ---------------------------------------------------------------------------
 
 @app.command("scan")
 def scan_cmd(
@@ -225,34 +400,53 @@ def scan_cmd(
         "--rulepack-channel",
         help="Rulepack channel: stable|preview|labs",
     ),
+    # Suppression options
+    no_suppress: bool = typer.Option(
+        False,
+        "--no-suppress",
+        help="Disable auto-discovery of .skillscan-suppressions.yaml from the scan target",
+    ),
     suppressions: Path | None = typer.Option(
         None,
+        "--suppress",
         "--suppressions",
-        help="Suppression file (YAML) with id/reason/expires and optional evidence_path/line",
+        help="Explicit suppression file (stacks with auto-discovered file unless --no-suppress)",
     ),
     strict_suppressions: bool = typer.Option(
         False,
         "--strict-suppressions/--no-strict-suppressions",
         help="Fail scan when suppression file contains expired entries",
     ),
+    # Provenance
+    no_provenance: bool = typer.Option(
+        False,
+        "--no-provenance",
+        help="Omit the provenance meta block from JSON output",
+    ),
+    include_policy: bool = typer.Option(
+        False,
+        "--include-policy",
+        help="Embed the full policy blob in the provenance meta block",
+    ),
+    # ClamAV
     clamav: bool = typer.Option(
         False,
         "--clamav/--no-clamav",
         envvar="SKILLSCAN_CLAMAV",
-        help="Enable optional ClamAV artifact scanning stage (also configurable via SKILLSCAN_CLAMAV)",
+        help="Enable optional ClamAV artifact scanning stage",
     ),
     clamav_timeout_seconds: int = typer.Option(
         30,
         "--clamav-timeout-seconds",
         help="ClamAV scan timeout in seconds",
     ),
+    # ML
     ml_detect: bool = typer.Option(
         False,
         "--ml-detect/--no-ml-detect",
         envvar="SKILLSCAN_ML_DETECT",
         help=(
-            "Enable offline ML prompt-injection detection using "
-            "protectai/deberta-v3-base-prompt-injection-v2 (Apache 2.0). "
+            "Enable offline ML prompt-injection detection. "
             "Requires: pip install 'skillscan-security[ml-onnx]' (ONNX, recommended) "
             "or 'skillscan-security[ml]' (PyTorch). "
             "Also configurable via SKILLSCAN_ML_DETECT env var."
@@ -265,7 +459,7 @@ def scan_cmd(
         help=(
             "Explicitly opt out of the ML detection layer and suppress the "
             "'ML layer inactive' notice. Useful in CI where the model is "
-            "intentionally excluded to save disk space."
+            "intentionally excluded."
         ),
     ),
     require_model: bool = typer.Option(
@@ -274,7 +468,7 @@ def scan_cmd(
         envvar="SKILLSCAN_REQUIRE_MODEL",
         help=(
             "Exit with code 3 if --ml-detect is requested but the ML model "
-            "is not installed. Useful for gating CI jobs on full-fidelity scans."
+            "is not installed."
         ),
     ),
     graph_scan: bool | None = typer.Option(
@@ -283,44 +477,43 @@ def scan_cmd(
         envvar="SKILLSCAN_GRAPH",
         help=(
             "Enable skill graph analysis (default: on for directory targets, off for single files). "
-            "Detects remote Markdown loading (PINJ-GRAPH-001), undocumented high-risk tool grants "
-            "(PINJ-GRAPH-002), memory/config file poisoning (PINJ-GRAPH-003), and cross-skill "
-            "tool escalation (PINJ-GRAPH-004). Use --no-graph to disable explicitly. "
             "Also configurable via SKILLSCAN_GRAPH env var."
         ),
     ),
-    baseline_report: Path | None = typer.Option(
+    # Baseline comparison (replaces --baseline-report, skill-diff, and diff)
+    baseline: Path | None = typer.Option(
         None,
+        "--baseline",
         "--baseline-report",
-        help="Baseline report JSON to compare against this scan (new/resolved findings)",
+        help="Only report findings not present in this prior scan report JSON",
     ),
     delta_format: str = typer.Option(
         "text",
         "--delta-format",
         help="Baseline delta output format: text|json",
     ),
+    no_progress: bool = typer.Option(
+        False,
+        "--no-progress",
+        help="Suppress progress bar (useful in CI)",
+    ),
 ) -> None:
-    import sys as _sys
-
+    """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
 
-    # M10.5 — Model UX: missing-model detection and guided download
-    # -----------------------------------------------------------------
-    # 1. If --require-model is set, --ml-detect must also be set.
+    # --- Model UX: missing-model detection and guided download ---
     if require_model and not ml_detect:
         console.print(
             "[bold red]--require-model requires --ml-detect to be set as well.[/bold red]"
         )
         raise typer.Exit(2)
 
-    # 2. If --ml-detect is requested, check whether the model is installed.
     if ml_detect and not no_model:
         from skillscan.model_sync import get_model_status, sync_model
 
         _model_status = get_model_status()
         if not _model_status.installed:
-            # Interactive TTY: offer to download inline
-            if _sys.stdin.isatty() and _sys.stderr.isatty():
+            if sys.stdin.isatty() and sys.stderr.isatty():
                 console.print(
                     "[yellow]ML model not found.[/yellow] "
                     "Download now (~350 MB)? [Y/n] ",
@@ -332,13 +525,13 @@ def scan_cmd(
                     _sync_result = sync_model(progress=True)
                     if _sync_result.success and _sync_result.downloaded:
                         console.print(
-                            f"[green]\u2713 Downloaded adapter v{_sync_result.version}[/green] "
+                            f"[green]✓ Downloaded adapter v{_sync_result.version}[/green] "
                             f"({_sync_result.bytes_downloaded // 1024} KB). "
                             "ML detection enabled."
                         )
                     elif not _sync_result.success:
                         console.print(
-                            f"[red]\u2717 Download failed:[/red] {_sync_result.message}"
+                            f"[red]✗ Download failed:[/red] {_sync_result.message}"
                         )
                         if require_model:
                             raise typer.Exit(3)
@@ -348,21 +541,19 @@ def scan_cmd(
                         raise typer.Exit(3)
                     ml_detect = False
             else:
-                # Non-TTY (CI): just warn or hard-fail
                 if require_model:
                     console.print(
                         "[bold red]ML model not installed and --require-model is set.[/bold red] "
-                        "Run: skillscan model sync"
+                        "Run: skillscan model install"
                     )
                     raise typer.Exit(3)
                 console.print(
                     "[yellow]ML model not installed.[/yellow] "
-                    "Run: skillscan model sync",
+                    "Run: skillscan model install",
                     highlight=False,
                 )
 
-    # 3. Passive notice when ML layer is inactive (not --no-model, not --ml-detect,
-    #    not a machine-readable format — we don't pollute JSON/SARIF/JUnit/compact)
+    # Passive notice when ML layer is inactive
     if not ml_detect and not no_model and format not in {"json", "sarif", "junit", "compact"}:
         from skillscan.model_sync import get_model_status as _gms
 
@@ -375,11 +566,20 @@ def scan_cmd(
         else:
             console.print(
                 "[dim]ML layer inactive — model not installed. "
-                "Run: skillscan model sync, then add --ml-detect[/dim]",
+                "Run: skillscan model install, then add --ml-detect[/dim]",
                 highlight=False,
             )
-    # -----------------------------------------------------------------
 
+    # --- Staleness warning (stderr only, never in structured output) ---
+    if format not in {"json", "sarif", "junit", "compact"}:
+        age = _rules_age_days()
+        threshold = _stale_warn_days()
+        if age is not None and age > threshold:
+            err_console.print(
+                f"[yellow]⚠  Rules are {age:.0f} days old. Run: skillscan update[/yellow]"
+            )
+
+    # --- Validation ---
     if policy_profile not in BUILTIN_PROFILES:
         console.print(
             f"[bold red]Invalid --policy-profile:[/] {policy_profile}. "
@@ -407,16 +607,14 @@ def scan_cmd(
     if delta_format not in {"text", "json"}:
         console.print("[bold red]Invalid --delta-format:[/] expected text or json")
         raise typer.Exit(2)
-    if baseline_report is not None and not baseline_report.exists():
-        console.print(f"[bold red]Baseline report not found:[/] {baseline_report}")
+    if baseline is not None and not baseline.exists():
+        console.print(f"[bold red]Baseline report not found:[/] {baseline}")
         raise typer.Exit(2)
-    if baseline_report is not None and format in {"sarif", "junit", "compact"}:
-        console.print("[bold red]--baseline-report is supported only with --format text or json[/]")
-        raise typer.Exit(2)
-    if baseline_report is not None and format == "json" and delta_format != "json":
-        console.print("[bold red]When using --format json with --baseline-report, set --delta-format json[/]")
+    if baseline is not None and format in {"sarif", "junit", "compact"}:
+        console.print("[bold red]--baseline is supported only with --format text or json[/]")
         raise typer.Exit(2)
 
+    # --- Policy ---
     if policy_file:
         policy = load_policy_file(policy_file)
         policy_source = str(policy_file)
@@ -424,6 +622,20 @@ def scan_cmd(
         policy = load_builtin_policy(policy_profile)
         policy_source = f"builtin:{policy_profile}"
 
+    # --- Observe policy banner ---
+    if policy_profile == "observe" and format not in {"json", "sarif", "junit", "compact"}:
+        console.print(
+            Panel(
+                "[bold yellow]SkillScan is running in OBSERVE mode.[/bold yellow]\n"
+                "All scans exit 0. Findings are reported but do not block.\n"
+                "Switch to [bold]--profile strict[/bold] or [bold]--profile ci[/bold] "
+                "to enforce security gates.",
+                title="Adoption Mode",
+                border_style="yellow",
+            )
+        )
+
+    # --- Intel auto-refresh ---
     if auto_intel:
         stats = sync_managed(max_age_seconds=intel_max_age_minutes * 60)
         if stats["updated"] > 0 or stats["errors"] > 0:
@@ -431,14 +643,15 @@ def scan_cmd(
                 f"[dim]intel refresh updated={stats['updated']} "
                 f"skipped={stats['skipped']} errors={stats['errors']}[/dim]"
             )
-    # Auto-sync rule signatures (signature-as-data layer, same TTL as intel)
+
+    # Auto-sync rule signatures
     from skillscan.rules_sync import maybe_sync_rules
 
     rules_result = maybe_sync_rules(max_age_seconds=intel_max_age_minutes * 60)
     if rules_result.updated:
         console.print(f"[dim]rules refresh updated={len(rules_result.updated)}[/dim]")
-    # Issue J4: auto-enable graph scan for directory targets unless explicitly overridden.
-    # graph_scan is None when the user has not passed --graph or --no-graph.
+
+    # --- Graph scan auto-enable ---
     _resolved_target = Path(target) if not target.startswith(("http://", "https://")) else None
     effective_graph_scan: bool
     if graph_scan is None:
@@ -446,6 +659,7 @@ def scan_cmd(
     else:
         effective_graph_scan = graph_scan
 
+    # --- Run scan ---
     try:
         report = scan(
             target,
@@ -463,13 +677,26 @@ def scan_cmd(
         console.print(f"[bold red]Scan failed:[/] {exc}")
         raise typer.Exit(2)
 
+    # --- Suppression auto-discovery ---
+    effective_suppressions: Path | None = suppressions
+    if not no_suppress and effective_suppressions is None:
+        # Auto-discover from scan target directory
+        if _resolved_target is not None:
+            candidate_dir = _resolved_target if _resolved_target.is_dir() else _resolved_target.parent
+            auto_file = candidate_dir / ".skillscan-suppressions.yaml"
+            if not auto_file.exists():
+                # Also check cwd
+                auto_file = Path(".skillscan-suppressions.yaml")
+            if auto_file.exists():
+                effective_suppressions = auto_file
+
     expired_suppressions = 0
-    if suppressions is not None:
-        if not suppressions.exists():
-            console.print(f"[bold red]Suppressions file not found:[/] {suppressions}")
+    if effective_suppressions is not None:
+        if not effective_suppressions.exists():
+            console.print(f"[bold red]Suppressions file not found:[/] {effective_suppressions}")
             raise typer.Exit(2)
         try:
-            result = apply_suppressions(report.findings, suppressions)
+            result = apply_suppressions(report.findings, effective_suppressions)
         except ValueError as exc:
             console.print(f"[bold red]Invalid suppressions file:[/] {exc}")
             raise typer.Exit(2)
@@ -487,21 +714,36 @@ def scan_cmd(
             expired_ids = ", ".join(sorted({entry.id for entry in result.expired_entries}))
             console.print(f"[dim]expired suppression ids: {expired_ids}[/dim]")
 
+    # --- Baseline delta ---
     report_dict = report.model_dump(mode="json")
     delta_payload: dict | None = None
-    if baseline_report is not None:
-        baseline_data = json.loads(baseline_report.read_text(encoding="utf-8"))
+    if baseline is not None:
+        baseline_data = json.loads(baseline.read_text(encoding="utf-8"))
         delta_payload = _build_delta_payload(
             baseline_data=baseline_data,
             current_data=report_dict,
-            baseline_label=str(baseline_report),
+            baseline_label=str(baseline),
         )
 
+    # --- Provenance meta block ---
+    provenance: dict | None = None
+    if not no_provenance:
+        provenance = _build_provenance(
+            policy_source=policy_source,
+            policy_profile=policy_profile,
+            ml_detect=ml_detect,
+            include_policy_blob=include_policy,
+            policy_obj=policy,
+        )
+
+    # --- Output ---
     if format == "json":
+        payload_obj: dict = report_dict
+        if provenance is not None:
+            payload_obj = {"meta": provenance, **report_dict}
         if delta_payload is not None:
-            payload = json.dumps({"report": report_dict, "delta": delta_payload}, indent=2)
-        else:
-            payload = report.to_json()
+            payload_obj = {**payload_obj, "delta": delta_payload}
+        payload = json.dumps(payload_obj, indent=2)
         if out:
             out.write_text(payload, encoding="utf-8")
             console.print(f"Wrote report to {out}")
@@ -557,6 +799,10 @@ def scan_cmd(
                 out.write_text(report.to_json(), encoding="utf-8")
                 console.print(f"[cyan]Saved JSON report:[/] {out}")
 
+    # --- Observe policy: always exit 0 ---
+    if policy_profile == "observe":
+        return
+
     if strict_suppressions and expired_suppressions > 0:
         console.print("[bold red]Expired suppressions found in strict mode[/]")
         raise typer.Exit(1)
@@ -567,13 +813,25 @@ def scan_cmd(
         raise typer.Exit(1)
 
 
+# ---------------------------------------------------------------------------
+# explain
+# ---------------------------------------------------------------------------
+
 @app.command("explain")
 def explain_cmd(report: Path = typer.Argument(..., exists=True, readable=True)) -> None:
+    """Show detailed explanation for findings in a scan report JSON."""
     data = json.loads(report.read_text(encoding="utf-8"))
+    # Strip provenance meta block if present (M10.7 format)
+    if "findings" not in data and "report" in data:
+        data = data["report"]
     from skillscan.models import ScanReport
 
     render_report(ScanReport.model_validate(data), console=console)
 
+
+# ---------------------------------------------------------------------------
+# benchmark
+# ---------------------------------------------------------------------------
 
 @app.command("benchmark")
 def benchmark_cmd(
@@ -584,7 +842,19 @@ def benchmark_cmd(
     format: str = typer.Option("text", "--format", help="Output format: text|json"),
     min_precision: float = typer.Option(0.0, "--min-precision", help="Fail if precision falls below value"),
     min_recall: float = typer.Option(0.0, "--min-recall", help="Fail if recall falls below value"),
+    verbose: bool = typer.Option(False, "--verbose", help="Print per-case results"),
 ) -> None:
+    """Run a benchmark against a labeled manifest and report precision/recall.
+
+    The manifest is a JSON array of labeled test cases:
+
+      [
+        { "path": "test-fixtures/malicious/jailbreak-01/SKILL.md", "expected": "block" },
+        { "path": "test-fixtures/benign/github-actions/SKILL.md",  "expected": "allow" }
+      ]
+
+    See docs/benchmark-guide.md for the full manifest schema.
+    """
     if policy_profile not in BUILTIN_PROFILES:
         console.print(
             f"[bold red]Invalid --policy-profile:[/] {policy_profile}. "
@@ -604,8 +874,17 @@ def benchmark_cmd(
     policy = load_builtin_policy(policy_profile)
     policy_source = f"builtin:{policy_profile}"
 
-    data = json.loads(manifest.read_text(encoding="utf-8"))
-    cases = data.get("cases", [])
+    raw_manifest = json.loads(manifest.read_text(encoding="utf-8"))
+
+    # Support both array-of-objects (new simple format) and {"cases": [...]} (old format)
+    if isinstance(raw_manifest, list):
+        cases = raw_manifest
+    elif isinstance(raw_manifest, dict):
+        cases = raw_manifest.get("cases", [])
+    else:
+        console.print("[bold red]Invalid manifest:[/] expected a JSON array or object with 'cases' key")
+        raise typer.Exit(2)
+
     if not isinstance(cases, list):
         console.print("[bold red]Invalid manifest:[/] 'cases' must be a list")
         raise typer.Exit(2)
@@ -613,51 +892,89 @@ def benchmark_cmd(
     tp = 0
     fp = 0
     fn = 0
+    tn = 0
     case_results: list[dict] = []
 
     for idx, case in enumerate(cases, 1):
-        target = case.get("target")
-        if not isinstance(target, str):
-            console.print(f"[bold red]Invalid case #{idx}:[/] missing string 'target'")
-            raise typer.Exit(2)
-        expected_ids = set(case.get("expected_ids", []))
-        forbidden_ids = set(case.get("forbidden_ids", []))
+        # Support both simple {"path": ..., "expected": "block"|"allow"} format
+        # and legacy {"target": ..., "expected_ids": [...], "forbidden_ids": [...]} format
+        if "path" in case:
+            target_path = case.get("path")
+            expected_verdict = case.get("expected", "allow")
+            if not isinstance(target_path, str):
+                console.print(f"[bold red]Invalid case #{idx}:[/] missing string 'path'")
+                raise typer.Exit(2)
+            try:
+                report = scan(target_path, policy, policy_source)
+            except (ScanError, ValueError) as exc:
+                console.print(f"[bold red]Benchmark scan failed for {target_path}:[/] {exc}")
+                raise typer.Exit(2)
 
-        try:
-            report = scan(
-                target,
-                policy,
-                policy_source,
-            )
-        except (ScanError, ValueError) as exc:
-            console.print(f"[bold red]Benchmark scan failed for {target}:[/] {exc}")
-            raise typer.Exit(2)
+            actual_verdict = report.verdict.value  # "allow", "warn", "block"
+            # Treat "warn" as "allow" for simple pass/fail benchmark
+            actual_pass = actual_verdict in {"allow", "warn"}
+            expected_pass = expected_verdict == "allow"
 
-        found_ids = {f.id for f in report.findings}
-        matched = expected_ids & found_ids
-        missing = expected_ids - found_ids
-        unexpected = forbidden_ids & found_ids
+            if expected_pass and actual_pass:
+                tn += 1
+                outcome = "tn"
+            elif not expected_pass and not actual_pass:
+                tp += 1
+                outcome = "tp"
+            elif not expected_pass and actual_pass:
+                fn += 1
+                outcome = "fn"
+            else:
+                fp += 1
+                outcome = "fp"
 
-        tp += len(matched)
-        fn += len(missing)
-        fp += len(unexpected)
+            case_results.append({
+                "path": target_path,
+                "expected": expected_verdict,
+                "actual": actual_verdict,
+                "outcome": outcome,
+                "rules_fired": sorted({f.id for f in report.findings}),
+            })
+        else:
+            # Legacy format
+            target_str = case.get("target")
+            if not isinstance(target_str, str):
+                console.print(f"[bold red]Invalid case #{idx}:[/] missing string 'target'")
+                raise typer.Exit(2)
+            expected_ids = set(case.get("expected_ids", []))
+            forbidden_ids = set(case.get("forbidden_ids", []))
+            try:
+                report = scan(target_str, policy, policy_source)
+            except (ScanError, ValueError) as exc:
+                console.print(f"[bold red]Benchmark scan failed for {target_str}:[/] {exc}")
+                raise typer.Exit(2)
 
-        case_results.append(
-            {
-                "target": target,
+            found_ids = {f.id for f in report.findings}
+            matched = expected_ids & found_ids
+            missing = expected_ids - found_ids
+            unexpected = forbidden_ids & found_ids
+
+            tp += len(matched)
+            fn += len(missing)
+            fp += len(unexpected)
+
+            case_results.append({
+                "target": target_str,
                 "matched": sorted(matched),
                 "missing": sorted(missing),
                 "unexpected": sorted(unexpected),
-            }
-        )
+            })
 
     precision = _safe_ratio(tp, tp + fp)
     recall = _safe_ratio(tp, tp + fn)
+    total = len(cases)
+
     payload = {
-        "cases": len(cases),
+        "cases": total,
         "tp": tp,
         "fp": fp,
         "fn": fn,
+        "tn": tn,
         "precision": round(precision, 4),
         "recall": round(recall, 4),
         "results": case_results,
@@ -667,156 +984,50 @@ def benchmark_cmd(
         typer.echo(json.dumps(payload, indent=2))
     else:
         console.print(
-            f"benchmark cases={payload['cases']} precision={payload['precision']:.4f} "
-            f"recall={payload['recall']:.4f} tp={tp} fp={fp} fn={fn}"
+            f"benchmark cases={total} precision={precision:.4f} "
+            f"recall={recall:.4f} tp={tp} fp={fp} fn={fn} tn={tn}"
         )
+        if verbose:
+            console.print()
+            for cr in case_results:
+                path_key = cr.get("path") or cr.get("target", "?")
+                outcome = cr.get("outcome", "")
+                expected = cr.get("expected", "?")
+                actual = cr.get("actual", "?")
+                rules = ", ".join(cr.get("rules_fired", [])) or "—"
+                if outcome in {"tp", "tn"}:
+                    color = "green"
+                    label = "PASS"
+                else:
+                    color = "red"
+                    label = "FAIL"
+                console.print(
+                    f"  [{color}]{label}[/{color}] {path_key}  "
+                    f"expected={expected} actual={actual}  rules={rules}"
+                )
+
+        gate_pass = precision >= min_precision and recall >= min_recall
+        if min_precision > 0.0 or min_recall > 0.0:
+            if gate_pass:
+                console.print("[green]Gate: PASSED[/green]")
+            else:
+                console.print("[red]Gate: FAILED[/red]")
 
     if precision < min_precision or recall < min_recall:
         raise typer.Exit(1)
 
 
-@app.command("diff")
-def diff_cmd(
-    baseline: Path = typer.Argument(..., exists=True, readable=True, help="Baseline report JSON"),
-    current: Path = typer.Argument(..., exists=True, readable=True, help="Current report JSON"),
-    format: str = typer.Option("text", "--format", help="Output format: text|json"),
-) -> None:
-    if format not in {"text", "json"}:
-        console.print("[bold red]Invalid --format:[/] expected text or json")
-        raise typer.Exit(2)
-
-    baseline_data = json.loads(baseline.read_text(encoding="utf-8"))
-    current_data = json.loads(current.read_text(encoding="utf-8"))
-
-    baseline_findings = baseline_data.get("findings", [])
-    current_findings = current_data.get("findings", [])
-
-    baseline_map = {_finding_key(f): f for f in baseline_findings}
-    current_map = {_finding_key(f): f for f in current_findings}
-
-    new_keys = sorted(set(current_map) - set(baseline_map))
-    resolved_keys = sorted(set(baseline_map) - set(current_map))
-    persistent_keys = sorted(set(baseline_map) & set(current_map))
-
-    payload = {
-        "baseline": str(baseline),
-        "current": str(current),
-        "new_count": len(new_keys),
-        "resolved_count": len(resolved_keys),
-        "persistent_count": len(persistent_keys),
-        "new": [current_map[k] for k in new_keys],
-        "resolved": [baseline_map[k] for k in resolved_keys],
-    }
-
-    if format == "json":
-        typer.echo(json.dumps(payload, indent=2))
-        return
-    console.print(
-        Panel(
-            (
-                f"[bold]Baseline:[/bold] {baseline}\n"
-                f"[bold]Current:[/bold] {current}\n"
-                f"[bold green]New:[/bold green] {len(new_keys)}\n"
-                f"[bold yellow]Resolved:[/bold yellow] {len(resolved_keys)}\n"
-                f"[bold cyan]Persistent:[/bold cyan] {len(persistent_keys)}"
-            ),
-            title="SkillScan Diff",
-        )
-    )
-
-
-@policy_app.command("show-default")
-def show_default(profile: str = typer.Option("strict", "--profile")) -> None:
-    policy = load_builtin_policy(profile)
-    console.print(Panel(policy.model_dump_json(indent=2), title=policy.name))
-
-
-@policy_app.command("validate")
-def validate(path: Path = typer.Argument(..., exists=True, readable=True)) -> None:
-    policy = load_policy_file(path)
-    console.print(f"[green]Valid policy:[/] {policy_summary(policy)}")
-
-
-@intel_app.command("status")
-def intel_status() -> None:
-    store = load_store()
-    console.print(f"Intel root: {intel_dir()}")
-    console.print(f"Sources: {len(store.sources)}")
-    for source in store.sources:
-        p = Path(source.path)
-        mtime = p.stat().st_mtime if p.exists() else 0
-        console.print(
-            f"- {source.name} ({source.kind}) "
-            f"enabled={source.enabled} path={source.path} mtime={mtime}"
-        )
-
-
-@intel_app.command("list")
-def intel_list() -> None:
-    store = load_store()
-    for source in store.sources:
-        console.print(f"{source.name}\t{source.kind}\tenabled={source.enabled}\t{source.path}")
-
-
-@intel_app.command("add")
-def intel_add(
-    path: Path = typer.Argument(..., exists=True, readable=True),
-    type: str = typer.Option(..., "--type", help="ioc|vuln|rules"),
-    name: str = typer.Option(..., "--name", help="Source name"),
-) -> None:
-    source = add_source(name=name, kind=type, source_path=path)
-    console.print(f"Added intel source: {source.name} ({source.kind})")
-
-
-@intel_app.command("remove")
-def intel_remove(name: str = typer.Argument(...)) -> None:
-    ok = remove_source(name)
-    if not ok:
-        raise typer.Exit(1)
-    console.print(f"Removed intel source: {name}")
-
-
-@intel_app.command("enable")
-def intel_enable(name: str = typer.Argument(...)) -> None:
-    if not set_enabled(name, True):
-        raise typer.Exit(1)
-    console.print(f"Enabled: {name}")
-
-
-@intel_app.command("disable")
-def intel_disable(name: str = typer.Argument(...)) -> None:
-    if not set_enabled(name, False):
-        raise typer.Exit(1)
-    console.print(f"Disabled: {name}")
-
-
-@intel_app.command("rebuild")
-def intel_rebuild() -> None:
-    store = load_store()
-    console.print(f"Rebuilt intel index ({len(store.sources)} sources)")
-
-
-@intel_app.command("sync")
-def intel_sync(
-    force: bool = typer.Option(False, "--force", help="Force refresh even if data is fresh"),
-    max_age_minutes: int = typer.Option(60, "--max-age-minutes", help="Refresh age threshold in minutes"),
-) -> None:
-    if max_age_minutes < 1:
-        raise typer.Exit(2)
-    stats = sync_managed(max_age_seconds=max_age_minutes * 60, force=force)
-    console.print(
-        f"Managed intel sync complete: updated={stats['updated']} "
-        f"skipped={stats['skipped']} errors={stats['errors']}"
-    )
-
+# ---------------------------------------------------------------------------
+# uninstall
+# ---------------------------------------------------------------------------
 
 @app.command("uninstall")
 def uninstall(
     keep_data: bool = typer.Option(False, "--keep-data", help="Keep .skillscan data on disk"),
 ) -> None:
+    """Remove all locally cached data."""
     clear_runtime(keep_data=keep_data)
 
-    # Best effort removal for local installer layout.
     runtime = Path.home() / ".skillscan" / "runtime"
     if runtime.exists() and not keep_data:
         shutil.rmtree(runtime, ignore_errors=True)
@@ -832,92 +1043,446 @@ def uninstall(
 
 
 # ---------------------------------------------------------------------------
-# Corpus commands
+# rule commands
 # ---------------------------------------------------------------------------
 
-
-@corpus_app.command("sync")
-def corpus_sync(
-    corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
-    min_new: int = typer.Option(50, "--min-new", help="Absolute delta threshold"),
-    min_pct: float = typer.Option(0.10, "--min-pct", help="Relative delta threshold (0–1)"),
-    check: bool = typer.Option(
-        False, "--check", help="Exit 2 if retrain not needed (for CI use)"
-    ),
+@rule_app.command("list")
+def rule_list(
+    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
+    format: str = typer.Option("text", "--format", help="Output format: text|json"),
+    technique: str | None = typer.Option(None, "--technique", help="Filter by technique id"),
+    tag: str | None = typer.Option(None, "--tag", help="Filter by rule metadata tag"),
 ) -> None:
-    """Sync corpus manifest and evaluate whether a fine-tune should be triggered."""
-    from skillscan.corpus import CorpusManager
+    """List all loaded rules with ID, severity, and description."""
+    if channel not in {"stable", "preview", "labs"}:
+        console.print("[bold red]Invalid --channel:[/] expected stable, preview, or labs")
+        raise typer.Exit(2)
+    if format not in {"text", "json"}:
+        console.print("[bold red]Invalid --format:[/] expected text or json")
+        raise typer.Exit(2)
 
-    mgr = CorpusManager(
-        corpus_dir=corpus_dir,
-        min_new_examples=min_new,
-        min_delta_pct=min_pct,
-    )
-    decision = mgr.sync()
-    console.print(decision.summary())
-    if check and not decision.should_retrain:
-        raise typer.Exit(code=2)
-    if decision.should_retrain:
-        console.print("[bold green]\u2713 Fine-tune triggered[/bold green]")
+    rp = load_builtin_rulepack(channel=channel)
+    rows: list[dict[str, object]] = []
+    for r in rp.static_rules:
+        md = getattr(r, "metadata", None)
+        techniques = [t.id for t in (md.techniques if md else [])]
+        tags = list(md.tags) if md else []
+
+        if technique and technique not in techniques:
+            continue
+        if tag and tag not in tags:
+            continue
+
+        rows.append(
+            {
+                "id": r.id,
+                "title": r.title,
+                "severity": r.severity.value,
+                "category": r.category,
+                "techniques": techniques,
+                "tags": tags,
+                "status": (md.status if md else None),
+                "version": (md.version if md else None),
+            }
+        )
+
+    if format == "json":
+        console.print_json(json.dumps(rows, indent=2))
+        return
+
+    if not rows:
+        console.print("No rules matched filter.")
+        return
+
+    for row in rows:
+        techniques_row = cast(list[str], row["techniques"])
+        tags_row = cast(list[str], row["tags"])
+        t = ",".join(techniques_row) if techniques_row else "-"
+        g = ",".join(tags_row) if tags_row else "-"
+        console.print(f"{row['id']} [{row['severity']}] {row['title']}")
+        console.print(f"  category={row['category']} techniques={t} tags={g}")
+
+
+@rule_app.command("status")
+def rule_status() -> None:
+    """Show the current rule signature versions (bundled vs. user-local)."""
+    from skillscan.rules_sync import USER_RULES_DIR, user_rules_version
+
+    rp = load_builtin_rulepack(channel="stable")
+    bundled_version = rp.version.split("+")[0]
+    user_version = user_rules_version()
+    console.print(f"Bundled rules version : {bundled_version}")
+    if user_version:
+        console.print(f"User-local version    : {user_version} ({USER_RULES_DIR})")
     else:
-        console.print("[dim]Fine-tune not needed[/dim]")
+        console.print("User-local rules      : not synced (run 'skillscan update')")
+    total = len(rp.static_rules)
+    console.print(f"Total static rules    : {total}")
 
 
-@corpus_app.command("status")
-def corpus_status(
-    corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
-    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+@rule_app.command("show")
+def rule_show(
+    rule_id: str = typer.Argument(..., help="Rule ID to show (e.g. PINJ-009)"),
+    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
+    format: str = typer.Option("text", "--format", help="Output format: text|json"),
 ) -> None:
-    """Show corpus status and last fine-tune record."""
-    import json as _json
+    """Show full metadata for a specific rule."""
+    if channel not in {"stable", "preview", "labs"}:
+        console.print("[bold red]Invalid --channel:[/] expected stable, preview, or labs")
+        raise typer.Exit(2)
 
-    from skillscan.corpus import CorpusManager
+    rp = load_builtin_rulepack(channel=channel)
+    rule = next((r for r in rp.static_rules if r.id == rule_id), None)
+    if rule is None:
+        console.print(f"[bold red]Rule not found:[/] {rule_id}")
+        raise typer.Exit(2)
 
-    mgr = CorpusManager(corpus_dir=corpus_dir)
-    status = mgr.status()
-    if json_output:
-        console.print(_json.dumps(status, indent=2))
-    else:
-        console.print(f"[bold]Corpus directory:[/bold] {status['corpus_dir']}")
-        console.print(f"[bold]Current examples:[/bold] {status['current_examples']}")
-        console.print(f"[bold]Label counts:[/bold] {status['label_counts']}")
-        console.print(f"[bold]Last updated:[/bold] {status['last_updated'] or 'never'}")
-        ft = status["last_finetune"]
-        if ft.get("timestamp"):
-            console.print(
-                f"[bold]Last fine-tune:[/bold] {ft['timestamp']} "
-                f"(corpus size: {ft['corpus_size_at_finetune']}, "
-                f"checkpoint: {ft['model_checkpoint']})"
-            )
+    md = getattr(rule, "metadata", None)
+    data = {
+        "id": rule.id,
+        "title": rule.title,
+        "severity": rule.severity.value,
+        "category": rule.category,
+        "techniques": [t.id for t in (md.techniques if md else [])],
+        "tags": list(md.tags) if md else [],
+        "status": md.status if md else None,
+        "version": md.version if md else None,
+    }
+
+    if format == "json":
+        console.print_json(json.dumps(data, indent=2))
+        return
+
+    console.print(f"[bold]{rule.id}[/bold] [{rule.severity.value}] {rule.title}")
+    console.print(f"  Category   : {rule.category}")
+    if data["techniques"]:
+        console.print(f"  Techniques : {', '.join(cast(list[str], data['techniques']))}")
+    if data["tags"]:
+        console.print(f"  Tags       : {', '.join(cast(list[str], data['tags']))}")
+    if data["version"]:
+        console.print(f"  Version    : {data['version']}")
+
+
+@rule_app.command("test")
+def rule_test(
+    rule_file: Path = typer.Argument(..., exists=True, readable=True, help="Custom rule YAML file"),
+    skill_file: Path = typer.Argument(..., exists=True, readable=True, help="SKILL.md to test against"),
+) -> None:
+    """Test a custom rule file against a skill file.
+
+    Use this to validate a custom rule before deploying it to your rules directory.
+    See docs/custom-rules-format.md for the rule YAML schema.
+    """
+    import yaml  # type: ignore[import-untyped]
+
+    rule_data = yaml.safe_load(rule_file.read_text(encoding="utf-8"))
+    if not isinstance(rule_data, dict):
+        console.print("[bold red]Invalid rule file:[/] expected a YAML mapping")
+        raise typer.Exit(2)
+
+    rules_list = rule_data.get("rules", [rule_data])
+    if not isinstance(rules_list, list):
+        rules_list = [rule_data]
+
+    skill_text = skill_file.read_text(encoding="utf-8")
+    lines = skill_text.splitlines()
+
+    matched_any = False
+    for rule in rules_list:
+        rule_id = rule.get("id", "CUSTOM-???")
+        pattern = rule.get("pattern")
+        if not pattern:
+            console.print(f"[yellow]Rule {rule_id} has no 'pattern' field — skipping[/yellow]")
+            continue
+
+        import re
+        try:
+            rx = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
+        except re.error as exc:
+            console.print(f"[bold red]Invalid pattern in {rule_id}:[/] {exc}")
+            raise typer.Exit(2)
+
+        matches = list(rx.finditer(skill_text))
+        if matches:
+            matched_any = True
+            console.print(f"[green]✓ Rule {rule_id} matched {len(matches)} time(s):[/green]")
+            for m in matches:
+                line_no = skill_text[: m.start()].count("\n") + 1
+                snippet = lines[line_no - 1].strip()[:120]
+                console.print(f"  Line {line_no}: {snippet}")
         else:
-            console.print("[bold]Last fine-tune:[/bold] [dim]never[/dim]")
+            console.print(f"[dim]Rule {rule_id}: no match found in {skill_file.name}[/dim]")
+
+    if not matched_any:
+        console.print(f"[dim]No rules matched in {skill_file.name}[/dim]")
+        raise typer.Exit(1)
+
+
+# ---------------------------------------------------------------------------
+# policy commands
+# ---------------------------------------------------------------------------
+
+@policy_app.command("list")
+def policy_list() -> None:
+    """List all built-in policy profiles."""
+    descriptions = {
+        "strict": "Maximum coverage. Blocks on score ≥ 70, all categories. ML optional. (default)",
+        "ci": "PR gates. Blocks on CRITICAL + HIGH only. ML optional.",
+        "permissive": "Trusted internal registries. Blocks on score ≥ 90, CRITICAL only. ML optional.",
+        "enterprise": "Formal security gate. Blocks on score ≥ 70, all categories. ML required.",
+        "observe": "Day-one adoption. Exit 0 always. Prints adoption banner.",
+        "balanced": "Balanced coverage. Blocks on score ≥ 50, HIGH+ severity.",
+    }
+    console.print("[bold]Built-in policy profiles:[/bold]")
+    console.print()
+    for profile in BUILTIN_PROFILES:
+        desc = descriptions.get(profile, "")
+        console.print(f"  [bold cyan]{profile}[/bold cyan]")
+        if desc:
+            console.print(f"    {desc}")
+    console.print()
+    console.print("Usage: skillscan scan --profile <name> <path>")
+    console.print("Custom policy: skillscan scan --policy <file.yaml> <path>")
+
+
+@policy_app.command("show")
+def policy_show(
+    profile: str = typer.Argument("strict", help="Profile name to show"),
+) -> None:
+    """Show the full YAML of a built-in policy profile."""
+    if profile not in BUILTIN_PROFILES:
         console.print(
-            f"[bold]Thresholds:[/bold] "
-            f"\u2265{status['thresholds']['min_new_examples']} new examples OR "
-            f"\u2265{status['thresholds']['min_delta_pct']:.0%} growth"
+            f"[bold red]Unknown profile:[/] {profile}. "
+            f"Expected one of: {', '.join(BUILTIN_PROFILES)}"
+        )
+        raise typer.Exit(2)
+    policy = load_builtin_policy(profile)
+    console.print(Panel(policy.model_dump_json(indent=2), title=f"Policy: {profile}"))
+
+
+@policy_app.command("show-default")
+def show_default(profile: str = typer.Option("strict", "--profile")) -> None:
+    """Show the default policy (alias for 'policy show strict')."""
+    policy = load_builtin_policy(profile)
+    console.print(Panel(policy.model_dump_json(indent=2), title=policy.name))
+
+
+@policy_app.command("validate")
+def validate(path: Path = typer.Argument(..., exists=True, readable=True)) -> None:
+    """Validate a custom policy file."""
+    policy = load_policy_file(path)
+    console.print(f"[green]Valid policy:[/] {policy_summary(policy)}")
+
+
+# ---------------------------------------------------------------------------
+# intel commands
+# ---------------------------------------------------------------------------
+
+@intel_app.command("status")
+def intel_status() -> None:
+    """Show status of all intel sources (bundled + custom)."""
+    store = load_store()
+    console.print(f"Intel root: {intel_dir()}")
+    console.print(f"Sources: {len(store.sources)}")
+    for source in store.sources:
+        p = Path(source.path)
+        mtime = p.stat().st_mtime if p.exists() else 0
+        url_info = f" url={getattr(source, 'url', None)}" if getattr(source, "url", None) else ""
+        console.print(
+            f"- {source.name} ({source.kind}) "
+            f"enabled={source.enabled} path={source.path} mtime={mtime:.0f}{url_info}"
         )
 
 
-@corpus_app.command("record-finetune")
-def corpus_record_finetune(
-    checkpoint: str = typer.Argument(..., help="Path or name of the model checkpoint"),
-    corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
+@intel_app.command("list")
+def intel_list() -> None:
+    """List all intel sources."""
+    store = load_store()
+    for source in store.sources:
+        console.print(f"{source.name}\t{source.kind}\tenabled={source.enabled}\t{source.path}")
+
+
+@intel_app.command("add")
+def intel_add(
+    url: str = typer.Option(..., "--url", help="URL of the intel feed (re-fetched on every 'skillscan update')"),
+    name: str = typer.Option(..., "--name", help="Human-readable name for this feed"),
+    type: str = typer.Option("ioc", "--type", help="Feed type: ioc|vuln"),
 ) -> None:
-    """Record a completed fine-tune run in the corpus manifest."""
-    from skillscan.corpus import CorpusManager
+    """Add a custom intel feed by URL.
 
-    mgr = CorpusManager(corpus_dir=corpus_dir)
-    mgr.record_finetune(checkpoint)
-    console.print(f"[green]Recorded fine-tune checkpoint:[/green] {checkpoint}")
+    The feed is fetched immediately and stored locally. It will be re-fetched
+    automatically on every 'skillscan update'.
+
+    See docs/custom-intel-format.md for supported feed formats.
+    """
+    if type not in {"ioc", "vuln"}:
+        console.print("[bold red]Invalid --type:[/] expected ioc or vuln")
+        raise typer.Exit(2)
+
+    console.print(f"Fetching {url}...")
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "skillscan/intel-add"})
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = resp.read()
+    except (urllib.error.URLError, OSError, TimeoutError) as exc:
+        console.print(f"[bold red]Failed to fetch feed:[/] {exc}")
+        raise typer.Exit(1)
+
+    dst = intel_dir() / f"custom_{name}.json"
+    dst.write_bytes(data)
+
+    # Store the URL on the source so update can re-fetch it
+    store = load_store()
+    store.sources = [s for s in store.sources if s.name != name]
+    from skillscan.intel import IntelSource
+    source = IntelSource(name=name, kind=type, path=str(dst), enabled=True)
+    # Attach URL as extra attribute via model_extra if supported, else store in a sidecar
+    _save_feed_url(name, url)
+    store.sources.append(source)
+    from skillscan.intel import save_store
+    save_store(store)
+
+    try:
+        parsed = json.loads(data)
+        entry_count = _count_feed_entries(parsed)
+        console.print(f"[green]✓[/green] Fetched {entry_count} entries from {url}")
+    except Exception:
+        console.print(f"[green]✓[/green] Feed saved to {dst}")
+
+    console.print(f"[green]✓[/green] Added feed \"{name}\" — will be re-fetched on 'skillscan update'")
+
+
+def _save_feed_url(name: str, url: str) -> None:
+    """Persist the URL for a custom feed so update can re-fetch it."""
+    sidecar = intel_dir() / "custom_feed_urls.json"
+    try:
+        urls: dict = json.loads(sidecar.read_text()) if sidecar.exists() else {}
+    except Exception:
+        urls = {}
+    urls[name] = url
+    sidecar.write_text(json.dumps(urls, indent=2), encoding="utf-8")
+
+
+def _load_feed_urls() -> dict[str, str]:
+    sidecar = intel_dir() / "custom_feed_urls.json"
+    if not sidecar.exists():
+        return {}
+    try:
+        data = json.loads(sidecar.read_text())
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _count_feed_entries(parsed: object) -> int:
+    """Best-effort count of entries in a parsed feed."""
+    if isinstance(parsed, list):
+        return len(parsed)
+    if isinstance(parsed, dict):
+        total = 0
+        for v in parsed.values():
+            if isinstance(v, list):
+                total += len(v)
+        return total or 1
+    return 1
+
+
+@intel_app.command("remove")
+def intel_remove(name: str = typer.Argument(...)) -> None:
+    """Remove a custom intel feed."""
+    ok = remove_source(name)
+    if not ok:
+        console.print(f"[bold red]Source not found:[/] {name}")
+        raise typer.Exit(1)
+    # Also remove from URL sidecar
+    urls = _load_feed_urls()
+    if name in urls:
+        del urls[name]
+        sidecar = intel_dir() / "custom_feed_urls.json"
+        sidecar.write_text(json.dumps(urls, indent=2), encoding="utf-8")
+    console.print(f"Removed intel source: {name}")
+
+
+@intel_app.command("enable")
+def intel_enable(name: str = typer.Argument(...)) -> None:
+    """Enable a disabled intel source."""
+    if not set_enabled(name, True):
+        raise typer.Exit(1)
+    console.print(f"Enabled: {name}")
+
+
+@intel_app.command("disable")
+def intel_disable(name: str = typer.Argument(...)) -> None:
+    """Disable an intel source without removing it."""
+    if not set_enabled(name, False):
+        raise typer.Exit(1)
+    console.print(f"Disabled: {name}")
+
+
+@intel_app.command("lookup")
+def intel_lookup(
+    indicator: str = typer.Argument(..., help="IP address, domain, URL, or package name to look up"),
+) -> None:
+    """Look up an indicator against the merged intel DB.
+
+    Searches IOC and vulnerability databases for a match.
+    """
+    from skillscan.intel import load_store
+
+    store = load_store()
+    found = False
+
+    for source in store.sources:
+        if not source.enabled:
+            continue
+        p = Path(source.path)
+        if not p.exists():
+            continue
+        try:
+            data = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            continue
+
+        # Search all list values in the data
+        if isinstance(data, dict):
+            for category, entries in data.items():
+                if not isinstance(entries, list):
+                    continue
+                for entry in entries:
+                    entry_str = str(entry).lower()
+                    if indicator.lower() in entry_str or entry_str in indicator.lower():
+                        console.print(
+                            f"[green]Match found[/green] in [bold]{source.name}[/bold] "
+                            f"({source.kind}) — category: {category}"
+                        )
+                        console.print(f"  Indicator : {indicator}")
+                        console.print(f"  Matched   : {entry}")
+                        console.print(f"  Source    : {source.path}")
+                        found = True
+        elif isinstance(data, list):
+            for entry in data:
+                entry_str = str(entry).lower()
+                if indicator.lower() in entry_str or entry_str in indicator.lower():
+                    console.print(
+                        f"[green]Match found[/green] in [bold]{source.name}[/bold] ({source.kind})"
+                    )
+                    console.print(f"  Indicator : {indicator}")
+                    console.print(f"  Matched   : {entry}")
+                    console.print(f"  Source    : {source.path}")
+                    found = True
+
+    if not found:
+        console.print(f"[dim]No match found for \"{indicator}\"[/dim]")
+        console.print(f"  (checked {len(store.sources)} source(s))")
+        raise typer.Exit(1)
 
 
 # ---------------------------------------------------------------------------
-# Model commands
+# model commands
 # ---------------------------------------------------------------------------
 
-
-@model_app.command("sync")
-def model_sync_cmd(
+@model_app.command("install")
+def model_install_cmd(
     repo_id: str = typer.Option(
         "kurtpayne/skillscan-deberta-adapter",
         "--repo",
@@ -925,40 +1490,39 @@ def model_sync_cmd(
     ),
     force: bool = typer.Option(False, "--force", help="Re-download even if already up to date"),
 ) -> None:
-    """Download or update the ML prompt-injection adapter from HuggingFace Hub.
+    """Download or reinstall the ML prompt-injection adapter from HuggingFace Hub.
 
-    This is the only way to download the model — it is never auto-downloaded.
     The adapter is stored in ~/.skillscan/models/adapter/ (~350 MB).
+    Use --repo to point at a private fine-tuned model.
     """
     from skillscan.model_sync import sync_model
 
-    console.print(f"[bold]Syncing ML adapter from[/bold] {repo_id}...")
+    console.print(f"[bold]Downloading ML adapter from[/bold] {repo_id}...")
     result = sync_model(repo_id=repo_id, force=force, progress=True)
     if result.success:
         if result.downloaded:
             console.print(
-                f"[green]\u2713 Downloaded adapter v{result.version}[/green] "
+                f"[green]✓ Downloaded adapter v{result.version}[/green] "
                 f"({result.bytes_downloaded // 1024} KB)"
             )
             console.print()
             console.print("[bold]What this enables:[/bold]")
             console.print(
-                "  DeBERTa-v3-base LoRA adapter fine-tuned on 16,589 examples of "
+                "  DeBERTa-v3-base LoRA adapter fine-tuned on 18,161 examples of "
                 "prompt injection, jailbreaks, social engineering, and supply chain attacks."
             )
             console.print(
-                "  Macro F1: [green]0.9608[/green] | "
-                "Injection F1: [green]0.9435[/green] | "
-                "FPR: [green]3.69%[/green]"
+                "  Macro F1: [green]0.9752[/green] | "
+                "FPR: [green]1.89%[/green]"
             )
             console.print()
             console.print("[bold]To use:[/bold]")
             console.print("  skillscan scan <path> [bold cyan]--ml-detect[/bold cyan]")
             console.print("  SKILLSCAN_ML_DETECT=1 skillscan scan <path>")
         else:
-            console.print(f"[green]\u2713 {result.message}[/green]")
+            console.print(f"[green]✓ {result.message}[/green]")
     else:
-        console.print(f"[red]\u2717 Sync failed:[/red] {result.message}")
+        console.print(f"[red]✗ Install failed:[/red] {result.message}")
         raise typer.Exit(1)
 
 
@@ -994,10 +1558,14 @@ def model_status_cmd(
     else:
         console.print(status.summary())
         if status.stale:
-            console.print("[yellow]Run: skillscan model sync[/yellow]")
+            console.print("[yellow]Run: skillscan update[/yellow]")
         elif status.warn:
-            console.print("[dim]Run: skillscan model sync (optional)[/dim]")
+            console.print("[dim]Run: skillscan update (optional)[/dim]")
 
+
+# ---------------------------------------------------------------------------
+# suppress commands
+# ---------------------------------------------------------------------------
 
 @suppress_app.command("check")
 def suppress_check(
@@ -1013,6 +1581,7 @@ def suppress_check(
 
     Exits non-zero when any active suppression expires within --warn-days.
     Useful as a CI gate to prevent forgotten suppressions from silently accumulating.
+    See docs/suppression-format.md for the suppression file schema.
     """
     if not suppressions.exists():
         console.print(f"[bold red]Suppressions file not found:[/] {suppressions}")
@@ -1080,100 +1649,88 @@ def suppress_check(
         raise typer.Exit(1)
 
 
-@app.command("skill-diff")
-def skill_diff_cmd(
-    baseline: Path = typer.Argument(
-        ..., exists=True, readable=True,
-        help="Baseline SKILL.md (trusted/older version)",
-    ),
-    current: Path = typer.Argument(
-        ..., exists=True, readable=True,
-        help="Current SKILL.md (updated version to evaluate)",
-    ),
-    format: str = typer.Option("text", "--format", help="Output format: text|json"),
-    min_severity: str = typer.Option(
-        "low", "--min-severity",
-        help="Minimum severity to report: critical|high|medium|low|info",
-    ),
-    exit_on_changes: bool = typer.Option(
-        False, "--exit-on-changes",
-        help="Exit with code 1 if security changes are found",
+# ---------------------------------------------------------------------------
+# corpus commands (internal — NOT registered with app, hidden from --help)
+# ---------------------------------------------------------------------------
+
+@corpus_app.command("sync")
+def corpus_sync(
+    corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
+    min_new: int = typer.Option(50, "--min-new", help="Absolute delta threshold"),
+    min_pct: float = typer.Option(0.10, "--min-pct", help="Relative delta threshold (0–1)"),
+    check: bool = typer.Option(
+        False, "--check", help="Exit 2 if retrain not needed (for CI use)"
     ),
 ) -> None:
-    """Compare two SKILL.md files at the instruction level and flag security-relevant changes.
+    """Sync corpus manifest and evaluate whether a fine-tune should be triggered."""
+    from skillscan.corpus import CorpusManager
 
-    Unlike 'skillscan diff' (which compares scan report JSON files), this command
-    compares the raw skill content and detects: new tool grants, network calls,
-    shell execution, exfiltration patterns, override phrases, and other
-    security-relevant instruction changes.
-    """
-    _SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
-    if format not in {"text", "json"}:
-        console.print("[bold red]Invalid --format:[/] expected text or json")
-        raise typer.Exit(2)
-    if min_severity not in _SEV_ORDER:
-        console.print("[bold red]Invalid --min-severity:[/] expected critical|high|medium|low|info")
-        raise typer.Exit(2)
-
-    result: SkillDiffResult = diff_skills(baseline, current)
-    min_sev_rank = _SEV_ORDER[min_severity]
-    visible = [c for c in result.changes if _SEV_ORDER.get(c.severity, 99) <= min_sev_rank]
-
-    if format == "json":
-        import dataclasses
-        typer.echo(json.dumps({
-            "baseline": result.baseline_path,
-            "current": result.current_path,
-            "baseline_name": result.baseline_name,
-            "current_name": result.current_name,
-            "summary": {
-                "critical": result.critical_count,
-                "high": result.high_count,
-                "medium": result.medium_count,
-                "low": result.low_count,
-                "info": result.info_count,
-                "has_security_changes": result.has_security_changes,
-            },
-            "changes": [dataclasses.asdict(c) for c in visible],
-        }, indent=2))
-        if exit_on_changes and result.has_security_changes:
-            raise typer.Exit(1)
-        return
-
-    # --- Text output ---
-    sev_color = {"critical": "bold red", "high": "red", "medium": "yellow", "low": "cyan", "info": "dim"}
-    console.print(Panel(
-        (
-            f"[bold]Baseline:[/bold] {result.baseline_path}\n"
-            f"[bold]Current:[/bold]  {result.current_path}\n"
-            f"[bold red]Critical:[/bold red] {result.critical_count}  "
-            f"[red]High:[/red] {result.high_count}  "
-            f"[yellow]Medium:[/yellow] {result.medium_count}  "
-            f"[cyan]Low:[/cyan] {result.low_count}  "
-            f"[dim]Info:[/dim] {result.info_count}"
-        ),
-        title="SkillScan Skill Diff",
-    ))
-
-    if not visible:
-        console.print(
-            "[green]No security-relevant changes detected "
-            "at or above the specified severity threshold.[/green]"
-        )
+    mgr = CorpusManager(
+        corpus_dir=corpus_dir,
+        min_new_examples=min_new,
+        min_delta_pct=min_pct,
+    )
+    decision = mgr.sync()
+    console.print(decision.summary())
+    if check and not decision.should_retrain:
+        raise typer.Exit(code=2)
+    if decision.should_retrain:
+        console.print("[bold green]✓ Fine-tune triggered[/bold green]")
     else:
-        for change in visible:
-            color = sev_color.get(change.severity, "white")
-            line_info = f" (line {change.line_number})" if change.line_number else ""
+        console.print("[dim]Fine-tune not needed[/dim]")
+
+
+@corpus_app.command("status")
+def corpus_status(
+    corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
+) -> None:
+    """Show corpus status and last fine-tune record."""
+    import json as _json
+
+    from skillscan.corpus import CorpusManager
+
+    mgr = CorpusManager(corpus_dir=corpus_dir)
+    status = mgr.status()
+    if json_output:
+        console.print(_json.dumps(status, indent=2))
+    else:
+        console.print(f"[bold]Corpus directory:[/bold] {status['corpus_dir']}")
+        console.print(f"[bold]Current examples:[/bold] {status['current_examples']}")
+        console.print(f"[bold]Label counts:[/bold] {status['label_counts']}")
+        console.print(f"[bold]Last updated:[/bold] {status['last_updated'] or 'never'}")
+        ft = status["last_finetune"]
+        if ft.get("timestamp"):
             console.print(
-                f"  [{color}][{change.severity.upper()}][/{color}] "
-                f"[bold]{change.change_type}[/bold] \u2014 {change.description}{line_info}"
+                f"[bold]Last fine-tune:[/bold] {ft['timestamp']} "
+                f"(corpus size: {ft['corpus_size_at_finetune']}, "
+                f"checkpoint: {ft['model_checkpoint']})"
             )
-            if change.snippet:
-                console.print(f"    [dim]{change.snippet[:100]}[/dim]")
+        else:
+            console.print("[bold]Last fine-tune:[/bold] [dim]never[/dim]")
+        console.print(
+            f"[bold]Thresholds:[/bold] "
+            f"≥{status['thresholds']['min_new_examples']} new examples OR "
+            f"≥{status['thresholds']['min_delta_pct']:.0%} growth"
+        )
 
-    if exit_on_changes and result.has_security_changes:
-        raise typer.Exit(1)
 
+@corpus_app.command("record-finetune")
+def corpus_record_finetune(
+    checkpoint: str = typer.Argument(..., help="Path or name of the model checkpoint"),
+    corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
+) -> None:
+    """Record a completed fine-tune run in the corpus manifest."""
+    from skillscan.corpus import CorpusManager
+
+    mgr = CorpusManager(corpus_dir=corpus_dir)
+    mgr.record_finetune(checkpoint)
+    console.print(f"[green]Recorded fine-tune checkpoint:[/green] {checkpoint}")
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     app()

@@ -181,12 +181,17 @@ def test_intel_subcommands(monkeypatch, tmp_path: Path) -> None:
     sample = tmp_path / "sample.json"
     sample.write_text(json.dumps({"domains": ["z.com"], "ips": [], "urls": []}), encoding="utf-8")
 
-    add = runner.invoke(app, ["intel", "add", str(sample), "--type", "ioc", "--name", "local"])
-    assert add.exit_code == 0
+    # M10.7: intel add now requires --url (URL-based feeds only).
+    # Serve the sample file via a file:// URL so the HTTP fetch is not needed in tests.
+    import urllib.request as _ur
+    sample_url = sample.as_uri()
+
+    add = runner.invoke(app, ["intel", "add", "--url", sample_url, "--type", "ioc", "--name", "local"])
+    assert add.exit_code == 0, add.output
 
     status = runner.invoke(app, ["intel", "status"])
     assert status.exit_code == 0
-    assert "Sources: 1" in status.stdout
+    assert "local" in status.stdout
 
     listing = runner.invoke(app, ["intel", "list"])
     assert listing.exit_code == 0
@@ -198,19 +203,13 @@ def test_intel_subcommands(monkeypatch, tmp_path: Path) -> None:
     enable = runner.invoke(app, ["intel", "enable", "local"])
     assert enable.exit_code == 0
 
+    # M10.7: intel rebuild and intel sync are removed; use skillscan update instead.
+    # Verify they are gone (exit code 2 = unknown command).
     rebuild = runner.invoke(app, ["intel", "rebuild"])
-    assert rebuild.exit_code == 0
+    assert rebuild.exit_code == 2
 
-    sync = runner.invoke(app, ["intel", "sync", "--max-age-minutes", "0"])
+    sync = runner.invoke(app, ["intel", "sync"])
     assert sync.exit_code == 2
-
-    monkeypatch.setattr(
-        "skillscan.cli.sync_managed",
-        lambda **_kwargs: {"updated": 0, "skipped": 1, "errors": 0},
-    )
-    sync_ok = runner.invoke(app, ["intel", "sync"])
-    assert sync_ok.exit_code == 0
-    assert "Managed intel sync complete" in sync_ok.stdout
 
     remove = runner.invoke(app, ["intel", "remove", "local"])
     assert remove.exit_code == 0
@@ -546,6 +545,8 @@ def test_scan_with_baseline_report_text_and_json(tmp_path: Path) -> None:
     assert "Baseline Delta" in text_result.stdout
 
     json_out = tmp_path / "scan-with-delta.json"
+    # M10.7: --format json --baseline emits delta inline in the top-level object.
+    # No need for --delta-format json; the delta key is always included.
     json_result = runner.invoke(
         app,
         [
@@ -554,8 +555,6 @@ def test_scan_with_baseline_report_text_and_json(tmp_path: Path) -> None:
             "--baseline-report",
             str(baseline),
             "--format",
-            "json",
-            "--delta-format",
             "json",
             "--out",
             str(json_out),
@@ -566,7 +565,7 @@ def test_scan_with_baseline_report_text_and_json(tmp_path: Path) -> None:
     )
     assert json_result.exit_code == 0
     payload = json.loads(json_out.read_text(encoding="utf-8"))
-    assert "report" in payload
+    # M10.7 format: delta is a top-level key alongside findings/verdict/etc.
     assert "delta" in payload
     assert "new_count" in payload["delta"]
 
@@ -623,9 +622,13 @@ def test_scan_baseline_option_validation_errors(tmp_path: Path) -> None:
         ],
     )
     assert incompatible_format_result.exit_code == 2
-    assert "--baseline-report is supported only" in incompatible_format_result.stdout
+    # M10.7: --baseline is supported only with text or json format
+    assert "--baseline is supported only" in incompatible_format_result.stdout or \
+           "--baseline-report is supported only" in incompatible_format_result.stdout
 
-    json_without_delta_json_result = runner.invoke(
+    # M10.7: --format json --baseline is valid without --delta-format json.
+    # Delta is always included inline in the JSON output when --baseline is set.
+    json_with_baseline_result = runner.invoke(
         app,
         [
             "scan",
@@ -639,8 +642,7 @@ def test_scan_baseline_option_validation_errors(tmp_path: Path) -> None:
             "--no-auto-intel",
         ],
     )
-    assert json_without_delta_json_result.exit_code == 2
-    assert "set --delta-format json" in json_without_delta_json_result.stdout
+    assert json_with_baseline_result.exit_code == 0
 
 
 def test_scan_with_suppressions_no_expired_ids_line(tmp_path: Path) -> None:

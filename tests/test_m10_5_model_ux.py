@@ -229,15 +229,16 @@ class TestModelSyncOutput:
             bytes_downloaded=1_264_000,
         )
         with patch("skillscan.model_sync.sync_model", return_value=mock_result):
-            result = runner.invoke(app, ["model", "sync"])
+            # M10.7: model sync renamed to model install
+            result = runner.invoke(app, ["model", "install"])
         assert result.exit_code == 0
         assert "v16589-5ep" in result.output
         assert "What this enables" in result.output
         assert "--ml-detect" in result.output
-        assert "Macro F1" in result.output or "0.9608" in result.output
+        assert "Macro F1" in result.output or "0.9752" in result.output
 
     def test_sync_output_already_up_to_date(self) -> None:
-        """When already up to date, sync output is concise (no 'What this enables')."""
+        """When already up to date, install output is concise (no 'What this enables')."""
         from skillscan.model_sync import SyncResult
 
         mock_result = SyncResult(
@@ -249,6 +250,7 @@ class TestModelSyncOutput:
             bytes_downloaded=0,
         )
         with patch("skillscan.model_sync.sync_model", return_value=mock_result):
-            result = runner.invoke(app, ["model", "sync"])
+            # M10.7: model sync renamed to model install
+            result = runner.invoke(app, ["model", "install"])
         assert result.exit_code == 0
         assert "up to date" in result.output.lower()
