@@ -302,42 +302,106 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ## Milestone 10.7 — CLI UX Audit & Command Consolidation
 
-**Goal:** Reduce user friction by consolidating fragmented sub-commands into a coherent, discoverable CLI surface.
+**Goal:** Reduce user friction by rationalising the CLI surface into a coherent, discoverable set of commands. No backward-compat ceremony — the user base is small, move fast.
 
-**Problem statement:** The CLI has grown organically and now has multiple overlapping entry points for related operations:
+**Decisions locked 2026-03-25 (see `docs/CLI_REFERENCE.md` proposal for full detail):**
 
-- **Update fragmentation**: `skillscan update-rules`, `skillscan update-ioc`, `skillscan update-model`, and `skillscan-intel-daily-update` are four separate commands that users must know about and run independently. A user who runs `skillscan update` expects everything to be current.
-- **Diff sub-command sprawl**: `skillscan diff` and `skillscan-lint diff` overlap in scope. The distinction between a security diff and a quality diff is not obvious to new users.
-- **Model management opacity**: There is no single command that shows the user what version of the model is installed, whether it is current, and how to update it. `skillscan model` does not exist yet.
-- **Inconsistent naming**: Some commands use hyphens (`update-rules`), others use underscores in the underlying Python, and the lint tool uses a separate binary name.
+### Commands removed
 
-**Proposed consolidated surface:**
+| Removed | Reason |
+|---|---|
+| `diff` (report comparison) | Teams do their own JSON diffing; no clear job-to-be-done |
+| `skill-diff` | Replaced by `scan --baseline <prev-report.json>` |
+| `rule sync` | Replaced by `skillscan update` |
+| `intel sync` | Replaced by `skillscan update` |
+| `model sync` | Renamed to `model install` |
+| `intel rebuild` | Merge happens at scan load time; no pre-build needed |
+| `suppress add` | Format is simple YAML; document it instead |
+| `corpus` (all subcommands) | Internal training plumbing; not user-facing |
 
-| New command | Replaces | Notes |
-|---|---|---|
-| `skillscan update` | `update-rules`, `update-ioc`, `update-model`, `skillscan-intel-daily-update` | Updates all components; `--rules`, `--ioc`, `--model` flags for selective updates |
-| `skillscan model status` | *(missing)* | Shows installed version, HF Hub latest, and whether an update is available |
-| `skillscan model sync` | *(missing)* | Downloads/updates the ML model with progress bar |
-| `skillscan diff` | `skillscan diff` + `skillscan-lint diff` | Unified diff with `--security` / `--quality` / `--all` flags |
-| `skillscan lint` | `skillscan-lint` | Alias; `skillscan-lint` binary remains for backward compat |
+### Commands added / changed
+
+| Command | Notes |
+|---|---|
+| `skillscan update [--no-model]` | Always pulls fresh (no TTL). Runs rule + intel + model install in order. Auto-rebuilds merged intel DB. |
+| `skillscan scan --baseline <report.json>` | Shows only findings new since the baseline report |
+| `skillscan scan --no-provenance` | Provenance block (`meta:`) is included by default; this flag suppresses it |
+| `skillscan scan --no-suppress` | Disables auto-discovery of `.skillscan-suppressions.yaml` in the scan target |
+| `skillscan model install [--repo R] [--force]` | Replaces `model sync`; `--repo` for custom/private model forks |
+| `skillscan model status` | Shows installed version, HF Hub latest, whether update is available |
+| `skillscan intel add --url <feed-url>` | URL-based IOC/vuln feed sources; re-fetched on every `update` |
+| `skillscan intel lookup <indicator>` | Point lookup against merged DB; shows which source it came from |
+| `skillscan policy list` | Lists all built-in profiles with one-line descriptions |
+| `skillscan rule test <rule-file> <skill-file>` | Test a custom rule before adding it; shows matched lines |
+| `skillscan benchmark --verbose` | Per-case results (pass/fail, expected/actual, rules fired) |
+| `suppress check` | Only remaining `suppress` subcommand; CI gate for expired entries |
+
+### Built-in policy profiles (shipped as inspectable YAML in `data/policies/`)
+
+| Profile | Blocks on | ML required | Use case |
+|---|---|---|---|
+| `strict` | score ≥ 70, all categories | No | Default. Maximum coverage. |
+| `ci` | CRITICAL + HIGH only | No | PR gates. Low noise. |
+| `permissive` | score ≥ 90, CRITICAL only | No | Trusted internal registries. |
+| `enterprise` | score ≥ 70, all categories | Yes (required) | Formal security gate with ML. |
+| `observe` | nothing (exit 0 always) | No | Day-one adoption, third-party audits. Prints banner reminding users to switch to enforcement mode. |
+
+### Suppression model
+
+Suppression files (`.skillscan-suppressions.yaml`) live in the skill repo, co-located with skills, owned by skill authors, reviewed in PRs. Auto-discovered from the scan target directory. Inline suppression comments (`# skillscan: suppress PINJ-009 reason="..." expires="2026-06-01"`) also supported. `suppress add` removed — format is documented in `docs/suppression-format.md`.
+
+### Provenance in scan reports
+
+Every scan report JSON includes a `meta` block by default:
+```json
+"meta": {
+  "skillscan_version": "0.9.2",
+  "rules_version": "2026-03-25",
+  "rules_sha": "b7d2e44",
+  "ioc_db_version": "2026-03-25",
+  "vuln_db_version": "2026-03-25",
+  "model_version": "v18161-5ep",
+  "policy_profile": "ci",
+  "policy_sha": "a3f9c12",
+  "scanned_at": "2026-03-25T10:31:00Z"
+}
+```
+Opt out with `--no-provenance`. Full policy blob embedded with `--include-policy`.
+
+### Docs to write (part of this milestone)
+
+- `docs/CLI_REFERENCE.md` — full command reference with sample output
+- `docs/custom-rules-format.md` — rule schema, pattern syntax, chain rule semantics, worked example
+- `docs/custom-intel-format.md` — IOC and vuln DB schema, version constraint syntax, examples
+- `docs/custom-policy-format.md` — policy schema, all configurable fields, worked examples for each profile
+- `docs/benchmark-guide.md` — manifest format, building a good benchmark, CI gate pattern, worked example manifest
+- `docs/suppression-format.md` — file-level and inline suppression syntax, expiry semantics
 
 **Remaining actions:**
-- [ ] Audit all CLI entry points and document current surface in `docs/CLI_REFERENCE.md`
-- [ ] Design the consolidated command hierarchy (use Click groups)
-- [ ] Implement `skillscan update` as a meta-command that runs all update sub-steps in order with a single progress display
-- [ ] Implement `skillscan model status` and `skillscan model sync` (prerequisite: Milestone 10.5)
-- [ ] Unify `skillscan diff` to accept `--security` and `--quality` flags
-- [ ] Implement `PSV-005` — detect tool set expansion between skill versions (surface from `skillscan diff --security`); severity HIGH
-- [ ] Add `skillscan-lint` as an alias under the main `skillscan` group
-- [ ] Update `--help` text, man page, and README to reflect the new surface
-- [ ] Add deprecation warnings on old command names with migration hints
-- [ ] Update GitHub Actions integration templates to use new commands
+- [ ] Remove `diff`, `skill-diff`, `rule sync`, `intel sync`, `model sync`, `intel rebuild`, `suppress add`, `corpus` from CLI
+- [ ] Implement `skillscan update [--no-model]` (always-fresh, auto-rebuilds merged intel)
+- [ ] Implement `scan --baseline`, `scan --no-provenance`, `scan --no-suppress`
+- [ ] Rename `model sync` → `model install`; add `--repo` flag
+- [ ] Add `intel add --url` support
+- [ ] Add `intel lookup <indicator>` command
+- [ ] Add `policy list` command
+- [ ] Add `rule test <rule-file> <skill-file>` command
+- [ ] Add `benchmark --verbose` flag
+- [ ] Implement provenance `meta` block in scan report JSON
+- [ ] Ship five built-in policy profiles as YAML files in `data/policies/`
+- [ ] Implement `observe` profile banner
+- [ ] Implement `PSV-005` — detect tool set expansion between skill versions (surface from `scan --baseline`); severity HIGH
+- [ ] Write all six docs files listed above
+- [ ] Update `--help` text and README to reflect the new surface
+- [ ] Update GitHub Actions integration templates
 
 **Acceptance criteria:**
-- A new user can run `skillscan update` and have rules, IOC DB, and model all current
+- `skillscan update` brings rules, IOC DB, and model all current in one command
 - `skillscan --help` shows a coherent, scannable command list with no redundancy
-- All old command names still work but print a deprecation hint pointing to the new name
-- CI workflow uses only the new command surface
+- All removed commands return a clear error with migration hint
+- Five built-in profiles ship and are selectable via `--profile`
+- Provenance block present in all scan reports by default
+- All six docs files written and accurate
 
 ---
 
@@ -618,23 +682,22 @@ A malicious skill that is 95% identical to a popular trusted skill but with one 
 
 ### Milestone Priority Order (updated 2026-03-25)
 
-M5, M6, M7, M7.5, M8 are complete. Priority order for remaining work:
+M5, M6, M7, M7.5, M8, M10.5, M10.8, M10.9 are complete. Priority order for remaining work:
 
 | Priority | Milestone | Rationale |
 |---|---|---|
-| 1 | **M10.5 — Model UX** | Low-effort, high-impact: users don't know model is missing; blocks M10.7 |
-| 2 | **M10.7 — CLI UX Audit** | Consolidates fragmented commands; includes PSV-005; unblocks M14.5 |
-| 3 | **M14.5 — Model Details on Website** | Now unblocked (M7 ≥0.95 met); primary trust signal for enterprise evaluators |
-| 4 | **M10.10 — HuggingFace Model Card** | Credibility for security teams evaluating the model |
-| 5 | **M10.12 — Feedback Mechanism** | FP/FN reports are highest-value corpus signal; GitHub issue templates |
-| 6 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
-| 7 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
-| 8 | **M11 — Hardening & PyPI** | Required for enterprise CI/CD |
-| 9 | **M10.6 — Organic Eval Pipeline** | Closes feedback loop between pattern-updater and model |
-| 10 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
-| 11 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
-| 12 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
-| — | **SaaS** | Post-v1.0; FPR now 1.89% ✅ and F1 0.9752 ✅ — both quality thresholds met; remaining prerequisite is product completeness (M10.x, M14.5, model card) |
+| 1 | **M10.7 — CLI UX Audit** | Consolidates fragmented commands; includes PSV-005; unblocks M14.5; decisions locked 2026-03-25 |
+| 2 | **M14.5 — Model Details on Website** | Now unblocked (M7 ≥0.95 met, M10.5 done); primary trust signal for enterprise evaluators |
+| 3 | **M10.10 — HuggingFace Model Card** | Credibility for security teams evaluating the model |
+| 4 | **M10.12 — Feedback Mechanism** | FP/FN reports are highest-value corpus signal; GitHub issue templates |
+| 5 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
+| 6 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
+| 7 | **M11 — Hardening & PyPI** | Required for enterprise CI/CD |
+| 8 | **M10.6 — Organic Eval Pipeline** | Closes feedback loop between pattern-updater and model |
+| 9 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
+| 10 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
+| 11 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
+| — | **SaaS** | Post-v1.0; FPR now 1.89% ✅ and F1 0.9752 ✅ — both quality thresholds met; remaining prerequisite is product completeness (M10.7, M14.5, model card) |
 
 ---
 
