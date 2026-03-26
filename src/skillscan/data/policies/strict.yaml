@@ -19,6 +19,8 @@ hard_block_rules:
   - MAL-029   # Solana RPC C2 channel (critical)
   - CHN-011   # MCP tool poisoning + credential exfil chain (critical)
   - CHN-013   # container escape + host path mount chain (critical)
+  - PSV-005   # capability inflation — wildcard permission scope (high)
+  - MAL-051   # embedded binary / shellcode blob (critical)
 block_min_confidence: 0.75
 allow_domains: []
 block_domains: []
