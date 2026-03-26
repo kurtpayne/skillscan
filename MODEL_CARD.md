@@ -254,8 +254,7 @@ If you use this model in research, please cite:
   author = {Payne, Kurt},
   title = {SkillScan: Offline Security Scanner for AI Agent Skill Files},
   year = {2026},
-  url = {https://github.com/kurtpayne/skillscan-security},
-  note = {Built with Manus}
+  url = {https://github.com/kurtpayne/skillscan-security}
 }
 ```
 
