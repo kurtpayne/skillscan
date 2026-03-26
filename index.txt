@@ -135,6 +135,9 @@ examples/showcase/11_claude_style/CLAUDE.md
 examples/showcase/11_claude_style/claude_skill.yaml
 examples/showcase/120_clawhavoc_typosquat_skills/SKILL.md
 examples/showcase/121_prompt_poaching_extension/SKILL.md
+examples/showcase/122_ghost_campaign_npm_packages/SKILL.md
+examples/showcase/123_teampcp_checkmarx_vscode_extension/SKILL.md
+examples/showcase/124_react_native_account_takeover/SKILL.md
 examples/showcase/12_benign_minimal/SKILL.md
 examples/showcase/13_zero_width_evasion/SKILL.md
 examples/showcase/14_base64_hidden_chain/setup.sh
