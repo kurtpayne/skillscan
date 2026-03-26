@@ -438,10 +438,10 @@ Custom rules are evaluated alongside built-in rules according to the active poli
 
 ## Schema validation
 
-Validate your rule file before deploying:
+Verify your rule loaded correctly after deploying:
 
 ```bash
-skillscan rule validate corp-rules.yaml
+skillscan rule list | grep CORP-001
 ```
 
-This checks required fields, severity values, category strings, and regex syntax without running a full scan.
+This confirms the rule is loaded and visible in the active rule set. To test the rule against a skill file before deploying, use `skillscan rule test` (see [Testing workflow](#testing-workflow) above).
