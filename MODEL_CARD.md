@@ -196,22 +196,24 @@ Note: The `skillscan` CLI uses a sliding-window chunking strategy that is more a
 
 ---
 
-## Two-Layer Detection Architecture
+## Detection Architecture
 
-The ML model is one of eight detection layers in `skillscan`. Understanding the full architecture helps set expectations for what the model contributes:
+The ML model is one layer in `skillscan`'s multi-layer detection pipeline. Understanding the full architecture helps set expectations for what the model contributes vs. what other layers handle:
 
 | Layer | Mechanism | What it catches |
 |---|---|---|
-| 1. Static rules | YARA-style pattern matching (137 rules) | Known attack patterns, IOC matches, structural violations |
-| 2. Chain rules | Multi-pattern proximity matching (15 rules) | Attack sequences requiring co-occurrence within a window |
-| 3. Multilang rules | Language-specific patterns (17 rules) | JS/TS/Ruby/Go/Rust attack patterns |
-| 4. AST data-flow | Source-to-sink flow analysis | Secret → decode → exec/network flows |
-| 5. Skill graph | Graph-based PSV rules | Tool drift, circular dependencies, permission scope violations |
-| **6. ML classifier** | **DeBERTa-v3 + LoRA (this model)** | **Novel phrasing, semantic attacks, jailbreaks not covered by rules** |
-| 7. IOC/Vuln DB | Indicator matching (5,507 IOCs, 63 packages) | Known malicious domains, IPs, vulnerable dependencies |
-| 8. Semantic classifier | Offline stem-and-score | Keyword-level semantic patterns without network dependency |
+| 1. IOC matching | Intel DB scan (5,500 entries: domains, IPs, CIDRs) | Known malicious domains and IPs embedded in skill content |
+| 2. Static rules | Regex pattern matching (158 rules across 9 categories) | Known attack patterns, structural violations, dangerous constructs |
+| 3. Chain rules | Multi-pattern proximity matching within a 40-line window | Attack sequences requiring co-occurrence (download + execute, etc.) |
+| 4. Multilang rules | Language-gated regex (.js/.ts/.rb/.go/.rs files only) | Language-specific attack patterns in embedded scripts |
+| 5. Python AST data-flow | Source-to-sink taint analysis (.py files only, stdlib `ast`) | Secret → decode → exec/network flows in embedded Python scripts |
+| 6. Skill graph analysis | Graph-based PSV rules | Tool drift, circular dependencies, permission scope violations |
+| **7. ML classifier** | **DeBERTa-v3 + LoRA (this model) · F1 0.9752 · FPR 1.89%** | **Novel phrasing, obfuscated attacks, semantic patterns no rule can express** |
+| 8. Stemmed feature scorer | Porter-stemmed axis scoring via NLTK (`semantic_local.py`) | Multi-sentence intent distributed across text — jailbreaks and credential-harvest instructions not caught by single-line rules. No sentence structure or negation awareness. |
+| 9. Vuln DB matching | Dependency scan (23 Python pkgs, 4 npm pkgs, 111 versions) | Known-vulnerable package versions in requirements.txt / package.json |
+| 10. ClamAV (optional) | Signature-based AV scan (`--clamav` flag) | Known malware signatures in embedded script files (.py, .sh, .js…) |
 
-The ML layer is specifically valuable for attacks that use natural language variation to evade static rules — jailbreaks, social engineering, and indirect injection patterns where the attack is expressed in prose rather than code.
+The ML layer (Layer 7) is specifically valuable for attacks that use natural language variation to evade static rules — jailbreaks, social engineering, and indirect injection patterns where the attack is expressed in prose rather than code. The stemmed feature scorer (Layer 8) is complementary but distinct: it uses hand-crafted axis scoring on Porter-stemmed tokens and has no understanding of sentence structure or negation. The ML model is the only layer with true semantic understanding.
 
 ---
 
@@ -219,7 +221,7 @@ The ML layer is specifically valuable for attacks that use natural language vari
 
 **Static analysis ceiling.** The model analyzes the skill file as a static document. It cannot observe runtime behavior, network calls made during execution, or the content of external resources fetched by the skill. Attacks that are entirely benign-looking in the skill file but activate malicious behavior through external content are outside the detection scope.
 
-**English-language bias.** The training corpus is predominantly English. Non-English attack content may have lower recall. The multilang rule layer (Layer 3) provides partial coverage for code-level patterns in other languages, but the ML model's semantic understanding is English-centric.
+**English-language bias.** The training corpus is predominantly English. Non-English attack content may have lower recall. The multilang rule layer (Layer 4) provides partial coverage for code-level patterns in other languages, but the ML model's semantic understanding is English-centric.
 
 **Corpus distribution.** The training corpus is weighted toward SKILL.md format files from the Claude skills ecosystem. Skills in other formats (OpenAI function calling JSON, LangChain tool definitions, AutoGen agent configs) may have lower detection accuracy.
 

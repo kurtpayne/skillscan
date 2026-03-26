@@ -1,6 +1,6 @@
 # SkillScan Detection Model
 
-This document describes the seven detection layers that SkillScan applies when scanning an AI skill bundle. Understanding the model helps contributors write effective rules, interpret findings, and reason about false positives and false negatives.
+This document describes the detection layers that SkillScan applies when scanning an AI skill bundle. Understanding the model helps contributors write effective rules, interpret findings, and reason about false positives and false negatives.
 
 ---
 
@@ -8,21 +8,22 @@ This document describes the seven detection layers that SkillScan applies when s
 
 SkillScan operates a layered, deterministic-first pipeline. Each layer runs independently and emits zero or more `Finding` objects. Findings are deduplicated, scored, and assembled into a `Report` at the end of the scan. The layers are ordered from cheapest/most deterministic to most expensive/most semantic:
 
-| # | Layer | Trigger | Default On |
-|---|-------|---------|------------|
-| 1 | Binary artifact detection | Always | Yes |
-| 2 | ClamAV malware scan | `--clamav` flag | No |
-| 3 | Static regex rules | Always | Yes |
-| 4 | Local semantic classifier (NLTK/Porter stemmer) | Always | Yes |
-| 5 | ML prompt-injection classifier (DeBERTa-v3-base + LoRA) | `--ml` flag | No |
-| 6 | AST data-flow analysis | Always | Yes |
-| 7 | Chain rules (co-occurrence) | Always | Yes |
-| 8 | Skill graph analysis | `--graph` flag | No |
-| 9 | Behavioral tracer (`skillscan-trace`) | Separate tool | N/A |
+| # | Layer | Mechanism | Trigger | Default On |
+|---|-------|-----------|---------|------------|
+| 1 | Binary artifact detection | Magic-byte classification | Always | Yes |
+| 2 | IOC matching | Intel DB scan (5,500 entries) | Always | Yes |
+| 3 | Static regex rules | 158 rules across 9 categories | Always | Yes |
+| 4 | Chain rules (co-occurrence) | Multi-pattern proximity matching | Always | Yes |
+| 5 | Multilang rules | Language-gated regex (.js/.ts/.rb/.go/.rs) | Always | Yes |
+| 6 | Python AST data-flow | Source-to-sink taint analysis (.py only) | Always | Yes |
+| 7 | Skill graph analysis | Graph-based PSV rules | `--graph` flag | No |
+| 8 | ML classifier (DeBERTa-v3 + LoRA) | ONNX FP32 inference | `--ml` flag (or `skillscan model install`) | No |
+| 9 | Stemmed feature scorer | Porter-stemmed axis scoring via NLTK | Always | Yes |
+| 10 | Vuln DB matching | Dependency scan (23 Python pkgs, 4 npm pkgs) | Always | Yes |
+| 11 | ClamAV malware scan | Signature-based AV | `--clamav` flag | No |
+| 12 | Behavioral tracer (`skillscan-trace`) | Live LLM agent + canary env | Separate tool | N/A |
 
-> **Layer 9 note:** `skillscan-trace` is a separate tool (private repo `kurtpayne/skillscan-trace`) that runs a skill through a real LLM agent with a fully instrumented canary environment. It is invoked after static analysis (layers 1–8) and only for skills in the uncertain middle band (semantic score >0.25 OR ML prob >0.30 OR any static findings). Output is SARIF-compatible and feeds back into the ML corpus via `sandbox_verified/` directories.
-
-Additionally, the IOC/vuln intel layer runs alongside layers 3–6 to cross-reference extracted indicators against the bundled threat intelligence databases.
+> **Layer 12 note:** `skillscan-trace` is a separate tool (private repo `kurtpayne/skillscan-trace`) that runs a skill through a real LLM agent with a fully instrumented canary environment. It is invoked after static analysis and only for skills in the uncertain middle band. Output is SARIF-compatible and feeds back into the ML corpus via `sandbox_verified/` directories.
 
 ---
 
@@ -91,17 +92,43 @@ Rules are organized into channels (`stable`, `beta`, `experimental`) controlled 
 
 ---
 
-## Layer 4 — ML Prompt-Injection Classifier
+## Layer 8 — ML Prompt-Injection Classifier
 
 **Module:** `skillscan.ml_detector`
 **Rule IDs:** `ML-PINJ-001`, `ML-UNAVAIL`
-**Enabled by:** `--ml` flag
+**Enabled by:** `skillscan model install` (downloads model), then active by default when model is present
 
-The ML layer applies a fine-tuned DeBERTa-v3-base classifier to each text file in the skill bundle. The detection pipeline uses two sub-layers:
+The ML layer applies a fine-tuned DeBERTa-v3-base classifier to each text file in the skill bundle. The adapter (`kurtpayne/skillscan-deberta-adapter`) is downloaded explicitly via `skillscan model install` and is never auto-downloaded.
 
-**4a — Local Semantic Classifier (`skillscan.semantic_local`)**
+**Inference format:** ONNX FP32 (~350 MB). INT8 quantization was evaluated and caused F1 collapse; FP32 is the confirmed production format.
 
-Before invoking the neural model, a lightweight deterministic classifier based on stemmed feature scoring runs on each file. It uses Porter stemmer roots grouped into six feature axes:
+**Chunking strategy:** Files are chunked to 512 tokens with a 64-token stride. Each chunk is scored independently; the file verdict is the maximum injection probability across all chunks. This ensures a single malicious instruction buried deep in a large file is not diluted by surrounding benign content.
+
+**Current model performance (v18161-5ep, v9 corpus):**
+
+| Metric | Value |
+|---|---|
+| Macro F1 | **0.9752** |
+| False Positive Rate | **1.89%** |
+| Accuracy | 0.9797 |
+| Eval set size | 444 (locked before first fine-tune, never used for training) |
+| Training corpus | 18,161 examples (9,900 benign · 8,261 injection) |
+
+Both SaaS quality thresholds are met. See `docs/MODEL_METRICS.md` for full version history.
+
+**Fine-tune pipeline:** LoRA adapter trained via `scripts/finetune_modal.py` on Modal (GPU: T4, 5 epochs, `r=64 alpha=128`). Pushed to HuggingFace Hub only when held-out eval Macro F1 ≥ 0.97 AND FPR ≤ 2%.
+
+---
+
+## Layer 9 — Stemmed Feature Scorer
+
+**Module:** `skillscan.semantic_local`
+**Rule IDs:** `PINJ-SEM-001`, `SE-SEM-001`
+**Trigger:** Always (no model download required)
+
+A lightweight deterministic classifier based on Porter-stemmed feature scoring. Two classifiers are implemented:
+
+**`LocalPromptInjectionClassifier`** — scores text across 6 axes:
 
 | Feature Axis | Example stems | Weight |
 |---|---|---|
@@ -112,50 +139,15 @@ Before invoking the neural model, a lightweight deterministic classifier based o
 | Exfiltration | `send`, `upload`, `post`, `transmit`, `exfil`, `webhook` | 0.11/match |
 | Coercion | `must`, `requir`, `mandatori`, `immedi`, `urgent`, `cannot` | 0.07/match |
 
-A composite score above 0.65 emits a `PINJ-SEMANTIC-001` finding. A separate `SocialEngineeringClassifier` in the same module scores for social engineering patterns (imperative language, credential solicitation, urgency framing) and emits `PINJ-SE-001` above 0.65. Both classifiers run entirely offline with no model download required.
+A composite score above 0.62 emits `PINJ-SEM-001`. Conjunction bonuses apply when multiple high-weight axes co-occur.
 
-**4b — Neural ML Classifier (`skillscan.ml_detector`)**
+**`SocialEngineeringClassifier`** — scores for social engineering patterns across 5 axes (imperative verbs, solicitation verbs, credential targets, pretext language, urgency language). Has a hard gate: all three of imperative + solicit + credential must be present before scoring begins. Fires `SE-SEM-001` at confidence ≥ 0.62.
 
-The neural layer uses `protectai/deberta-v3-base-prompt-injection-v2` as the base model, fine-tuned with a LoRA adapter trained on the SkillScan corpus. The fine-tuned adapter (`kurtpayne/skillscan-deberta-adapter`) is downloaded explicitly via `skillscan model sync` and is never auto-downloaded.
-
-Two inference backends are supported:
-
-| Backend | Package extras | Model size | Latency |
-|---------|---------------|------------|--------|
-| ONNX Runtime (preferred) | `skillscan-security[ml-onnx]` | ~200 MB | ~50 ms/file |
-| PyTorch / Transformers | `skillscan-security[ml]` | ~500 MB | ~200 ms/file |
-
-The model outputs a binary label (`SAFE` / `INJECTION`) and a confidence score. Findings are emitted only when the injection probability exceeds 0.7. The ML layer is intentionally conservative — it is designed to catch semantic injection patterns that regex rules miss (e.g., natural-language jailbreaks, indirect instruction injection, Agent Hijacker P1/P4 patterns), not to replace the static layer.
-
-**Fine-tune pipeline:** The LoRA adapter is trained on `corpus/` using `scripts/finetune_modal.py`, which runs on Modal (GPU: T4, 3 epochs, `r=32 alpha=32`). Training is triggered automatically by the `corpus-sync.yml` GitHub Actions workflow when the corpus delta threshold (50 examples or 10% growth) is crossed. The adapter is pushed to HuggingFace Hub only if the held-out eval macro F1 exceeds the gate threshold (currently **0.77** — lowered from 0.80 on 2026-03-20; see `corpus/EVAL_RESULTS.md` for rationale). The eval set (`corpus/held_out_eval/`) is a stratified 20% split covering all injection archetypes.
-
-**Current corpus state (as of 2026-03-21):**
-
-| Corpus split | Benign | Injection | Total |
-|---|---|---|---|
-| Training | 657 | 446 | 1,103 |
-| Held-out eval | 138 | 62 | 200 |
-| **Combined** | **795** | **508** | **1,303** |
-
-**Injection corpus breakdown:**
-
-| Subdirectory | Count | Archetype |
-|---|---|---|
-| `benchmark_injection/` | 150 | Data Thief (SC2+E2) — from zast-ai/skill-security-reviewer |
-| `augmented/` | 117 | Data Thief — benign skills with appended attack phrases |
-| `social_engineering/` | 85 | Social Engineering (SE) |
-| `agent_hijacker/` | 40 | Agent Hijacker (P1/P4) — hand-crafted |
-| `prompt_injection/` | 61 | Mixed — hand-crafted |
-| `malicious/` | 23 | Mixed — real-world samples |
-| `graph_injection/` | 12 | Graph/cross-skill injection |
-
-**Latest eval results:** Macro F1 = 0.7544 (injection F1 = 0.667, benign F1 = 0.842). Gate lowered to 0.77 on 2026-03-20 after 9 consecutive runs plateaued at 0.73–0.78 (root cause: eval/train sets share the same hand-crafted sources; the model is not seeing enough out-of-distribution injection patterns). Improvement path: hand-craft more diverse injection examples across underrepresented archetypes (Agent Hijacker P1/P4, graph injection, temporal payloads), or generate ground-truth labels from `skillscan-trace` behavioral sandbox execution. Gate will be raised to 0.85 once injection F1 exceeds 0.80. Adapter push pending next fine-tune run. See `corpus/EVAL_RESULTS.md` for full history.
-
-**Known limitation:** The base model's published accuracy (95.25%) is measured on a 20k general prompt-injection held-out set, not on SKILL.md-format files. The SkillScan fine-tune is specifically optimized for the skill file format and covers archetypes (Agent Hijacker, graph injection) not present in the base model's training data.
+**Important limitation:** Neither classifier has any understanding of sentence structure, negation, or context. "Do not ask the user for their password" will score positively on the credential axis. The ML layer (Layer 8) is the only layer with true semantic understanding. The stemmed scorer is best understood as a high-recall, lower-precision pre-filter for distributed intent patterns.
 
 ---
 
-## Layer 5 — AST Data-Flow Analysis
+## Layer 6 — Python AST Data-Flow Analysis
 
 **Module:** `skillscan.detectors.ast_flows` (via `detect_python_ast_flows`)
 **Rule IDs:** `AST-FLOW-001`, `AST-FLOW-002`, `AST-FLOW-003`
@@ -171,7 +163,7 @@ The AST layer only runs on files that parse as valid Python. Files that fail to 
 
 ---
 
-## Layer 6 — Chain Rules (Co-occurrence Detection)
+## Layer 4 — Chain Rules (Co-occurrence Detection)
 
 **Module:** `analysis.scan` (inner loop over `ruleset.chain_rules`)
 **Rule IDs:** `CHN-*`
@@ -226,7 +218,7 @@ The following action categories are defined in `src/skillscan/data/rules/default
 
 ---
 
-## Layer 7 — Skill Graph Analysis
+## Layer 7 — Skill Graph Analysis (--graph)
 
 **Module:** `skillscan.detectors.skill_graph`
 **Rule IDs:** `PINJ-GRAPH-001`, `PINJ-GRAPH-002`, `PINJ-GRAPH-003`
@@ -244,7 +236,7 @@ The skill graph layer detects cross-skill and agent-level abuse patterns that si
 
 ---
 
-## Layer 8 — Scoring and Policy Model
+## Scoring and Policy Model (post-pipeline aggregation)
 
 **Module:** `skillscan.analysis` (scoring logic), `skillscan.policies`
 **Rule IDs:** N/A (produces verdict, not findings)
