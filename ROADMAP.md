@@ -633,27 +633,160 @@ Runtime-conditional payloads, indirect injection from external content fetched a
 
 ---
 
-### 3. Docs page expansion
+### 3. Multi-layer detection framework display
 
-Add or expand the following docs sections on the website:
+This is a prominent visual element, not buried in docs. It should appear on the homepage and/or a dedicated section, not just on the Model page.
 
-**CLI reference** — surface the new `docs/CLI_REFERENCE.md` content as a readable web page. Key commands to highlight:
-- `skillscan update` — the one-command freshness guarantee
-- `skillscan scan --profile ci` — the CI/CD gate pattern
-- `skillscan scan --baseline <report.json>` — the PR diff pattern
-- `skillscan model install` / `skillscan model status`
+**Design intent:** A scannable table or diagram that shows all 8 detection layers, what each catches, and why the combination matters. The goal is to make the depth of the scanner immediately legible to a security engineer skimming the site.
 
-**Policy profiles** — add a "Policy Profiles" section explaining the 5 built-in profiles:
-- `strict` (default), `ci`, `balanced`, `permissive`, `enterprise`, `observe`
-- Include a "which profile should I use?" decision table
+**Content** (the 8 layers, in order):
 
-**Suppression** — add a "Managing False Positives" section explaining `.skillscan-suppressions.yaml` with a worked example.
+| Layer | Name | Mechanism | What it catches |
+|---|---|---|---|
+| 1 | Static rules | YARA-style pattern matching (137 rules) | Known attack patterns, structural violations, IOC matches |
+| 2 | Chain rules | Multi-pattern proximity matching (15 rules) | Attack sequences requiring co-occurrence within a window |
+| 3 | Multilang rules | Language-specific patterns (17 rules) | JS/TS/Ruby/Go/Rust attack patterns |
+| 4 | AST data-flow | Source-to-sink flow analysis | Secret → decode → exec/network flows |
+| 5 | Skill graph | Graph-based PSV rules | Tool drift, circular dependencies, permission scope violations |
+| 6 | ML classifier | DeBERTa-v3 + LoRA (F1 0.9752) | Novel phrasing, jailbreaks, semantic attacks that rules can’t catch |
+| 7 | IOC / Vuln DB | Indicator matching (5,507 IOCs, 63 packages) | Known malicious domains, IPs, vulnerable dependencies |
+| 8 | Semantic classifier | Offline stem-and-score | Keyword-level semantic patterns without network dependency |
 
-**Custom rules** — add a "Writing Custom Rules" section with a minimal worked example from `docs/custom-rules-format.md`.
+**Placement options** (pick one during implementation):
+- Horizontal scrolling card strip on the homepage below the hero
+- Numbered list with expand-on-click detail in a "How it works" section
+- Full-width table on a dedicated `/how-it-works` or `/detection` page linked from the nav
+
+**Key message to reinforce:** Every layer runs offline. No layer makes a network call. The ML layer uses a locally-installed ONNX model, not an API.
 
 ---
 
-### 4. Examples page expansion
+### 4. Docs page expansion — treat as the man page
+
+The docs on the website should be the canonical human-readable reference, sourced from the repo docs. The goal is: if someone wants to understand how to use SkillScan, the website docs should be complete enough that they never need to read the raw README.
+
+Source files in the repo (already written as part of M10.7) to surface on the website:
+- `docs/CLI_REFERENCE.md` — full command reference
+- `docs/custom-rules-format.md` — rule schema and examples
+- `docs/custom-intel-format.md` — IOC/vuln feed formats
+- `docs/custom-policy-format.md` — policy YAML schema
+- `docs/benchmark-guide.md` — benchmark manifest format
+- `docs/suppression-format.md` — suppression YAML schema
+
+**Sections to add or expand on the website docs page:**
+
+**Installation** — three install paths with copy-pasteable commands:
+```bash
+# pip
+pip install skillscan-security
+skillscan model install
+
+# Docker
+docker pull kurtpayne/skillscan:latest
+docker run --rm -v $(pwd):/scan kurtpayne/skillscan scan /scan
+
+# GitHub Actions
+# (see CI/CD section below)
+```
+
+**User journey / getting started** — a linear walkthrough of the full first-use experience:
+1. Install (`pip install` or `docker pull`)
+2. Install the ML model (`skillscan model install` — one-time, ~350 MB)
+3. Run first scan (`skillscan scan path/to/skills/`)
+4. Read the output (verdict, score, findings by severity)
+5. Choose a policy profile (`--profile ci` for PR gates, `--profile strict` for security reviews)
+6. Set up a suppression file for known FPs
+7. Add to CI/CD (GitHub Actions snippet)
+8. Keep fresh (`skillscan update` — rules + intel + model in one command)
+
+**Docker usage** — dedicated section with full examples:
+```bash
+# Scan a local directory
+docker run --rm -v $(pwd):/scan kurtpayne/skillscan scan /scan
+
+# Scan with a specific policy profile
+docker run --rm -v $(pwd):/scan kurtpayne/skillscan scan /scan --profile ci
+
+# JSON output for CI integration
+docker run --rm -v $(pwd):/scan kurtpayne/skillscan scan /scan --format json > report.json
+
+# SARIF output for GitHub Code Scanning
+docker run --rm -v $(pwd):/scan kurtpayne/skillscan scan /scan --format sarif > results.sarif
+
+# With a suppression file
+docker run --rm -v $(pwd):/scan kurtpayne/skillscan scan /scan \
+  --suppress-file /scan/.skillscan-suppressions.yaml
+
+# Update rules and intel (model not included in Docker image by default)
+docker run --rm kurtpayne/skillscan update --no-model
+```
+
+**CI/CD integration** — full GitHub Actions workflow:
+```yaml
+name: SkillScan Security Gate
+on: [pull_request]
+jobs:
+  skillscan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SkillScan
+        uses: kurtpayne/skillscan-action@v1
+        with:
+          path: .
+          profile: ci
+          format: sarif
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: skillscan-results.sarif
+```
+
+**Policy profiles** — "which profile should I use?" decision table:
+
+| Situation | Profile | Why |
+|---|---|---|
+| First day, just exploring | `observe` | Exit 0 always; shows findings without blocking |
+| PR gate, low noise | `ci` | CRITICAL + HIGH only; fast |
+| Full security review | `strict` | All categories, default threshold |
+| Trusted internal registry | `permissive` | CRITICAL only, high threshold |
+| Formal security gate with ML required | `enterprise` | All categories, ML layer required |
+
+**Suppression** — "Managing False Positives" with a worked example:
+```yaml
+# .skillscan-suppressions.yaml
+suppressions:
+  - rule_id: EXF-007
+    path: skills/deployment/deploy-to-prod.md
+    reason: "Legitimate internal endpoint, reviewed by security team"
+    expires: "2026-09-01"
+    approved_by: "kurt@example.com"
+```
+
+**Custom rules** — minimal worked example:
+```yaml
+# my-rules.yaml
+rules:
+  - id: CUSTOM-001
+    name: Internal credential pattern
+    severity: HIGH
+    pattern: 'vault\.read\(["\']secret/'
+    description: "Detects vault secret reads that may indicate credential harvesting"
+```
+
+**Output formats** — table of all supported formats:
+
+| Format | Flag | Use case |
+|---|---|---|
+| Text (default) | `--format text` | Human review |
+| JSON | `--format json` | Programmatic processing, CI artifacts |
+| SARIF | `--format sarif` | GitHub Code Scanning, SAST tooling |
+| JUnit | `--format junit` | Jenkins, test result dashboards |
+| CycloneDX | `--format cyclonedx` | SBOM pipelines |
+
+---
+
+### 5. Examples page expansion
 
 The current examples page shows showcase examples. Expand it with:
 
@@ -665,20 +798,20 @@ The current examples page shows showcase examples. Expand it with:
 - Malware patterns (MAL-*): N examples
 - ML-detected (PINJ-ML-001): N examples
 
-**CI/CD integration example** — a copy-pasteable GitHub Actions workflow snippet using `skillscan scan --profile ci`.
+**CI/CD integration example** — copy-pasteable GitHub Actions workflow (same as docs section above, surfaced here too for discoverability).
 
-**Suppression example** — a copy-pasteable `.skillscan-suppressions.yaml` snippet for the most common FP scenario.
+**Suppression example** — copy-pasteable `.skillscan-suppressions.yaml` snippet for the most common FP scenario.
 
 ---
 
-### 5. Positioning copy updates
+### 6. Positioning copy updates
 
 Update the website copy to reflect the offline-only niche and enterprise positioning:
 
 **Tagline / hero:** Emphasize *offline*, *no API keys*, *deterministic*, *CI/CD ready*.
 
 **Positioning statement** (for the About or landing section):
-> SkillScan is the only AI agent skill scanner that runs entirely on your machine. No model API, no cloud dependency, no telemetry. The same scan run twice on the same file produces the same result — always. That's the property enterprise security teams need for audit trails and reproducible CI gates.
+> SkillScan is the only AI agent skill scanner that runs entirely on your machine. No model API, no cloud dependency, no telemetry. The same scan run twice on the same file produces the same result — always. That’s the property enterprise security teams need for audit trails and reproducible CI gates.
 
 **Enterprise trust signals** to surface prominently:
 - FPR 1.89% on enterprise benign skill corpus
@@ -689,10 +822,27 @@ Update the website copy to reflect the offline-only niche and enterprise positio
 
 ---
 
-### 6. Navigation / structure changes
+### 7. Feedback integration
+
+Feedback is solved by GitHub Issues. Surface it everywhere a user might be stuck or frustrated:
+
+- **Website footer:** "Report a false positive →" and "Report a missed attack →" links, both pointing to the respective GitHub Issue templates
+- **Website nav:** "Feedback" link (or icon) in the top nav pointing to `https://github.com/kurtpayne/skillscan-security/issues/new/choose`
+- **Docs page:** "Found a false positive? [Report it on GitHub →]" callout box at the top of the docs
+- **Model page:** "Model missed an attack? [Open a false negative report →]" callout near the known limitations section
+- **CLI output:** When a scan returns BLOCK, print: `False positive? https://github.com/kurtpayne/skillscan-security/issues/new/choose`
+- **`skillscan feedback` command:** Opens the GitHub Issues new-issue page in the default browser, or prints the URL if no browser is available
+
+The GitHub Issue templates (part of M10.12) are the backend for all of these links. M14.5 adds the website surface; M10.12 adds the templates and CLI command.
+
+---
+
+### 8. Navigation / structure changes
 
 - Add `/model` to the top nav (between Docs and Rules, or as a Docs sub-page)
-- Add a "Report an issue" link in the footer pointing to GitHub Issues
+- Add `/docs` as a top-level nav item if not already present, with sub-sections: Getting Started, CLI Reference, Docker, CI/CD, Policy Profiles, Suppression, Custom Rules, Output Formats
+- Add "Feedback" link in top nav pointing to GitHub Issues
+- Add FP/FN report links in footer
 - Ensure the HuggingFace model card link is visible on the Model page
 
 ---
@@ -700,10 +850,12 @@ Update the website copy to reflect the offline-only niche and enterprise positio
 ### Acceptance criteria
 
 - Homepage stats include F1 score and FPR
+- Multi-layer detection framework is prominently displayed (homepage or dedicated section)
 - Model page is live with architecture, performance table, version history, and limitations
-- Docs page includes CLI reference, policy profiles, suppression, and custom rules sections
+- Docs page is complete enough to serve as the man page: installation (pip + Docker), full user journey, Docker examples, CI/CD workflow, policy profiles, suppression, custom rules, output formats
 - Examples page groups examples by attack category
 - Positioning copy calls out offline-only niche and enterprise trust signals
+- Feedback links (GitHub Issues) are visible in nav, footer, docs page, and model page
 - All metrics match `docs/MODEL_METRICS.md` (no hardcoded numbers that will go stale)
 - All pages load in < 2s
 - No broken links
@@ -1105,3 +1257,24 @@ Badges are the primary distribution mechanism for Tier 0 and Tier 1. A few desig
 **The badge links to the report, not just a status page.** The full report (or at minimum the public summary for Tier 0) must be accessible from the badge URL. This is what makes the badge credible — anyone can verify the claim by reading the evidence.
 
 **Tier 0 badges are issued for free but are rate-limited.** A publisher can get one free badge per skill per day (re-scan on push). Abuse prevention: rate limit by GitHub repo, not by IP.
+
+---
+
+## Backlog — Tooling
+
+### `scripts/sync-website-rules.py` — Deterministic website sync script
+
+**Problem:** The pattern update skill currently uses an LLM to edit `Rules.tsx`, `Home.tsx`, and `TerminalScan.tsx` when new rules are added. This is fragile — the LLM can drop categories, miscalculate counts, or produce diffs that conflict with in-flight Manus work on the website repo.
+
+**Solution:** A deterministic Python script that reads `src/skillscan/data/rules/default.yaml` and generates the correct TypeScript objects for the website. The pattern update skill calls this script instead of asking the LLM to edit TSX files directly.
+
+**Script responsibilities:**
+- Read all rules from `default.yaml`
+- Generate the `rules[]` array for `client/src/pages/Rules.tsx` (sorted by category, then ID)
+- Generate the `ruleCategories[]` counts for `client/src/pages/Home.tsx`
+- Update the rulepack version and rule count in `client/src/components/TerminalScan.tsx`
+- Update `client/public/llms.txt` rule count line
+
+**Skill change:** The website sync step in `skillscan-pattern-update/SKILL.md` becomes: `python3 scripts/sync-website-rules.py --website-path ~/skillscan-website`, commit, open PR. LLM judgment is only needed for threat research and rule writing.
+
+**Priority:** Medium. Implement before the next time a category is added or a major website refactor happens.
