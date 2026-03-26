@@ -1,5 +1,6 @@
 .dockerignore
 .github/ISSUE_TEMPLATE/bug-report.md
+.github/ISSUE_TEMPLATE/config.yml
 .github/ISSUE_TEMPLATE/corpus-submission.md
 .github/ISSUE_TEMPLATE/false-negative.md
 .github/ISSUE_TEMPLATE/false-positive.md
