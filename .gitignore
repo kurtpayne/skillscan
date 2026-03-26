@@ -56,3 +56,7 @@ scripts/scrape_benign_corpus.py
 scripts/scrape_curated_repos.py
 scripts/scrape_alirezarezvani.py
 scripts/scrape_hard_negatives.py
+
+# Node.js dependencies
+node_modules/
+**/node_modules/
