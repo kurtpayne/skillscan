@@ -1,6 +1,6 @@
 ---
 name: Corpus Submission
-about: Submit a training example (malicious or benign) to improve the detection model
+about: Submit a new detection pattern or training example. Accepted patterns are added to the static rule layer — not the ML model. The ML model is retrained periodically from the private corpus; this template is for rule contributions, not model training data.
 title: "[CORPUS] <brief description of example>"
 labels: corpus
 assignees: ''
@@ -9,8 +9,14 @@ assignees: ''
 ## Submission type
 
 <!-- Check one -->
-- [ ] **Malicious** — a skill containing hidden malicious instructions (false negative or novel attack)
-- [ ] **Benign** — a legitimate skill that triggers a false positive
+- [ ] **New detection pattern** — a regex or structural rule that catches a class of malicious behaviour
+- [ ] **Malicious example** — a skill containing hidden malicious instructions (false negative or novel attack)
+- [ ] **Benign example** — a legitimate skill that triggers a false positive
+
+> **Note:** Accepted patterns are added to the **static rule layer** (YAML rules), not the ML model.
+> The ML model is a frozen ONNX artifact retrained periodically from the private corpus.
+> If you are reporting a false negative that requires semantic understanding, consider opening a
+> [false-negative report](false-negative.md) instead.
 
 ---
 

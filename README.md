@@ -413,6 +413,84 @@ See `docs/GITHUB_ACTIONS.md` for full documentation and examples.
 
 ---
 
+## Extend SkillScan
+
+Every detection layer except the ML classifier is configurable. The ML model is a frozen ONNX artifact — a tamper-resistant trust anchor that cannot be overridden by local configuration.
+
+### Add custom rules
+
+Write a YAML file using the same schema as the built-in rules and pass it with `--rules`. Custom rules are additive — they run alongside the built-in set.
+
+```yaml
+# my-rules.yaml
+static_rules:
+  - id: CUSTOM-001
+    name: Internal API Key Exposure
+    description: Detects hardcoded internal API key patterns
+    severity: critical
+    pattern: "sk-internal-[a-zA-Z0-9]{32}"
+    tags: [secrets, custom]
+
+  - id: CUSTOM-002
+    name: Internal Domain Reference
+    description: Flags references to internal infrastructure domains
+    severity: high
+    pattern: "\\.internal\\.example\\.com"
+    tags: [infra, custom]
+```
+
+```bash
+# Test a rule against a fixture file
+skillscan rule test --rules my-rules.yaml --fixture test.md
+
+# Scan with custom rules alongside built-ins
+skillscan scan ./skills/ --rules my-rules.yaml
+```
+
+See [`docs/custom-rules-format.md`](docs/custom-rules-format.md) for the full schema including chain rules, multilang rules, and AST flow rules.
+
+### Suppress false positives
+
+Inline — suppress a specific rule on a specific line:
+
+```yaml
+# skillscan-suppress: MAL-001
+export ADMIN_TOKEN="placeholder-replaced-at-runtime"
+```
+
+Project-level — suppress rules across a whole project via `.skillscan-suppress` at the repo root:
+
+```
+# .skillscan-suppress
+# Format: RULE-ID  path/to/file.md  optional reason
+MAL-001  skills/legacy-tool.md  Known false positive — token is a placeholder
+EXF-003  skills/analytics.md    Intentional telemetry, reviewed 2026-03-01
+```
+
+### Policy profiles
+
+Five built-in profiles cover the most common deployment contexts:
+
+| Profile | Fails on | Use case |
+|---|---|---|
+| `strict` | warn+ | Local dev, high-assurance pipelines |
+| `ci` | block only | Default for CI/CD |
+| `paranoid` | info+, stricter ML threshold | Security-critical environments |
+| `audit` | never | Full reporting without blocking |
+| `minimal` | block only, no ML | Fast pre-screen, air-gapped envs |
+
+```bash
+skillscan scan ./skills/ --policy paranoid
+```
+
+### Contribute a rule
+
+Community-submitted patterns are reviewed and, if accepted, added to the static rule layer — not the model. Submit via the [corpus-submission issue template](https://github.com/kurtpayne/skillscan-security/issues/new?template=corpus-submission.yml).
+
+For the full customization reference, see [skillscan.sh/docs#customization](https://skillscan.sh/docs#customization).
+
+---
+
 ## Uninstall
 
 ```bash

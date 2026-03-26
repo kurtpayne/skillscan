@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Customization guide
+    url: https://skillscan.sh/docs#customization
+    about: How to add custom rules, policy profiles, and suppression files
+  - name: Detection model card
+    url: https://huggingface.co/kurtpayne/skillscan-deberta-adapter
+    about: ML model architecture, training data, and performance metrics
