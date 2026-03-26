@@ -43,3 +43,39 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           fail_ci_if_error: false
+
+  website-drift:
+    name: Detect website rule drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: skillscan-security
+      - uses: actions/checkout@v4
+        with:
+          repository: kurtpayne/skillscan-website
+          path: skillscan-website
+          token: ${{ secrets.INDEX_PAT }}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Check website rule sync
+        run: |
+          python3 skillscan-security/scripts/sync-website-rules.py \
+            --website-dir skillscan-website \
+            --dry-run
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then
+            echo ""
+            echo "::error::Website TSX files are out of sync with default.yaml."
+            echo "::error::Run: python3 scripts/sync-website-rules.py"
+            echo "::error::Then commit the updated TSX files."
+            exit 1
+          elif [ $EXIT -eq 1 ]; then
+            echo "::error::sync-website-rules.py encountered an error."
+            exit 1
+          fi
+          echo "Website rule files are in sync."
