@@ -3,6 +3,7 @@ name: False Negative (FN)
 about: A malicious skill file was not detected
 labels: false-negative, triage
 assignees: ''
+title: ''
 ---
 
 ## Summary

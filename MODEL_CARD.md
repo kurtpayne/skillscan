@@ -261,7 +261,18 @@ If you use this model in research, please cite:
 ```
 
 ---
+## Contributing Training Examples
 
+The model improves with more diverse training examples, particularly for attack patterns that are currently underrepresented (see [Known Limitations](#known-limitations-and-false-negative-archetypes) above). Contributions are accepted via GitHub Issues.
+
+To submit an example:
+
+1. Read [docs/corpus-contribution-format.md](https://github.com/kurtpayne/skillscan-security/blob/main/docs/corpus-contribution-format.md) for the file format spec, quality guidelines, and metadata requirements.
+2. Open a [Corpus Submission issue](https://github.com/kurtpayne/skillscan-security/issues/new?template=corpus-submission.md) and paste or attach your example.
+
+Accepted examples are incorporated into the next training run when the corpus delta threshold is reached. Contributors are credited in the release notes unless they prefer to remain anonymous.
+
+---
 ## Related Resources
 
 - [skillscan CLI](https://github.com/kurtpayne/skillscan-security) — the scanner that uses this model

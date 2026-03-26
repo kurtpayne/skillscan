@@ -3,6 +3,7 @@ name: False Positive (FP)
 about: A benign skill file was flagged incorrectly
 labels: false-positive, triage
 assignees: ''
+title: ''
 ---
 
 ## Summary

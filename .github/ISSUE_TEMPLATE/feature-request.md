@@ -3,6 +3,7 @@ name: Feature Request
 about: Suggest a new detection rule, command, integration, or improvement
 labels: enhancement, triage
 assignees: ''
+title: ''
 ---
 
 ## Summary

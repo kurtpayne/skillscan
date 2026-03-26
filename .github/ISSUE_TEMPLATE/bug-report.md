@@ -3,6 +3,7 @@ name: Bug Report
 about: Something is broken or behaving unexpectedly
 labels: bug, triage
 assignees: ''
+title: ''
 ---
 
 ## Summary
