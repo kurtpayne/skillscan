@@ -17,6 +17,7 @@
 .github/workflows/signature-lint.yml
 .github/workflows/skillscan-reusable.yml
 .github/workflows/update-index.yml
+.github/workflows/update-intel.yml
 .gitignore
 .pre-commit-hooks.yaml
 CHANGELOG.md
