@@ -278,6 +278,7 @@ src/skillscan/data/policies/balanced.yaml
 src/skillscan/data/policies/ci.yaml
 src/skillscan/data/policies/enterprise.yaml
 src/skillscan/data/policies/observe.yaml
+src/skillscan/data/policies/paranoid.yaml
 src/skillscan/data/policies/permissive.yaml
 src/skillscan/data/policies/strict.yaml
 src/skillscan/data/rules/__init__.py
