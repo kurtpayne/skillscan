@@ -1947,3 +1947,54 @@ def test_new_patterns_2026_03_25_v2() -> None:
     # Negative: normal browser extension usage
     assert pinj015.pattern.search("install a browser extension for dark mode") is None
     assert pinj015.pattern.search("chrome extension for password manager") is None
+
+
+def test_new_patterns_2026_03_26() -> None:
+    """MAL-050, SUP-021, and SUP-022 rules added 2026-03-26."""
+    compiled = load_compiled_builtin_rulepack()
+
+    # MAL-050: Ghost Campaign malicious npm packages (sudo phishing RAT)
+    mal050_rules = [r for r in compiled.static_rules if r.id == "MAL-050"]
+    assert len(mal050_rules) >= 1
+    mal050 = mal050_rules[0]
+    assert mal050.pattern.search("react-performance-suite") is not None
+    assert mal050.pattern.search("react-state-optimizer-core") is not None
+    assert mal050.pattern.search("react-fast-utilsa") is not None
+    assert mal050.pattern.search("ai-fast-auto-trader") is not None
+    assert mal050.pattern.search("pkgnewfefame1") is not None
+    assert mal050.pattern.search("pkgnewfefame") is not None
+    assert mal050.pattern.search("carbon-mac-copy-cloner") is not None
+    assert mal050.pattern.search("coinbase-desktop-sdk") is not None
+    assert mal050.pattern.search("react-query-core-utils") is not None
+    assert mal050.pattern.search("darkslash") is not None
+    # Negative: legitimate npm packages
+    assert mal050.pattern.search("react-query") is None
+    assert mal050.pattern.search("react-performance") is None
+    assert mal050.pattern.search("coinbase-sdk") is None
+
+    # SUP-021: TeamPCP Checkmarx VS Code extension compromise (Open VSX)
+    sup021_rules = [r for r in compiled.static_rules if r.id == "SUP-021"]
+    assert len(sup021_rules) >= 1
+    sup021 = sup021_rules[0]
+    assert sup021.pattern.search("checkmarx.ast-results version 2.53 compromised") is not None
+    assert sup021.pattern.search("checkmarx.cx-dev-assist version 1.7.0 malicious") is not None
+    assert sup021.pattern.search("ast-results open vsx compromised extension") is not None
+    assert sup021.pattern.search("cx-dev-assist openvsx malicious backdoor") is not None
+    # Negative: normal Checkmarx extension usage
+    assert sup021.pattern.search("checkmarx.ast-results extension") is None
+    assert sup021.pattern.search("install cx-dev-assist") is None
+
+    # SUP-022: React Native npm account takeover supply chain attack
+    sup022_rules = [r for r in compiled.static_rules if r.id == "SUP-022"]
+    assert len(sup022_rules) >= 1
+    sup022 = sup022_rules[0]
+    _rn_phone = "react-native-international-phone-number version 0.11.8 compromised"
+    assert sup022.pattern.search(_rn_phone) is not None
+    assert sup022.pattern.search("react-native-international-phone-number 0.12.1 malicious") is not None
+    assert sup022.pattern.search("react-native-country-select 0.3.91 account takeover") is not None
+    assert sup022.pattern.search("react-native-country-select 0.4.1 compromised") is not None
+    assert sup022.pattern.search("@usebioerhold8733/s-format") is not None
+    assert sup022.pattern.search("@agnoliaarisian7180/string-argv") is not None
+    # Negative: normal React Native usage
+    assert sup022.pattern.search("react-native-international-phone-number") is None
+    assert sup022.pattern.search("react-native-country-select") is None

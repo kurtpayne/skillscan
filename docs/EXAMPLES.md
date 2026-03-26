@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**4 static rules · 15 chain rules**
+**2 static rules · 15 chain rules**
 
 ## Static Rules
 
@@ -12,10 +12,6 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `AST-001` | critical | Constructed input reaches execution sink |  |
-| `MAL-042` | critical | OpenClaw wallet-draining phishing campaign (CLAW token scam) | malware_pattern, phishing, wallet-drainer |
-| `PINJ-005` | high | RoguePilot-style hidden HTML comment prompt injection | instruction_abuse, prompt-injection |
-| `PINJ-015` | high | Prompt poaching via malicious browser extension installation | prompt-injection, browser-extension, prompt-poaching, data-theft |
-| `SUP-020` | high | ClawHavoc malicious ClawHub skill typosquat names | supply-chain, clawhavoc, typosquat, openclaw, clawhub |
 
 ### Exfiltration
 
