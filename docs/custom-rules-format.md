@@ -424,6 +424,18 @@ To disable a rule entirely, use inline suppression or a `.skillscan-suppress` fi
 
 ---
 
+## Suppression
+
+If you need to suppress findings from custom rules, you can use the standard suppression mechanisms. For details on how to write suppression files, see [suppression-format.md](suppression-format.md).
+
+---
+
+## Policy profiles
+
+Custom rules are evaluated alongside built-in rules according to the active policy profile. For details on how to create custom policy profiles to adjust scoring or thresholds, see [custom-policy-format.md](custom-policy-format.md).
+
+---
+
 ## Schema validation
 
 Validate your rule file before deploying:
