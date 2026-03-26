@@ -809,7 +809,7 @@ M5, M6, M7, M7.5, M8, M10.5, M10.8, M10.9 are complete. Priority order for remai
 |---|---|---|
 | ✅ | **M10.7 — CLI UX Audit** ✅ | Completed 2026-03-25. 8 commands removed, 12 added/changed, 5 policy profiles, 6 docs. 351 tests passing. |
 | 1 | **M14.5 — Website Update (v1.0 docs + ML model + positioning)** | Now unblocked by M10.7; primary trust signal for enterprise evaluators; prerequisite for SaaS |
-| 2 | **M10.10 — HuggingFace Model Card** | Credibility for security teams evaluating the model |
+| ✅ | **M10.10 — HuggingFace Model Card** ✅ | Completed 2026-03-25. MODEL_CARD.md live on HF Hub. commit dba729f. |
 | 3 | **M10.12 — Feedback Mechanism** | FP/FN reports are highest-value corpus signal; GitHub issue templates |
 | 4 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
 | 5 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
