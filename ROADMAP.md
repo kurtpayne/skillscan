@@ -686,18 +686,18 @@ M5, M6, M7, M7.5, M8, M10.5, M10.8, M10.9 are complete. Priority order for remai
 
 | Priority | Milestone | Rationale |
 |---|---|---|
-| 1 | **M10.7 — CLI UX Audit** | Consolidates fragmented commands; includes PSV-005; unblocks M14.5; decisions locked 2026-03-25 |
-| 2 | **M14.5 — Model Details on Website** | Now unblocked (M7 ≥0.95 met, M10.5 done); primary trust signal for enterprise evaluators |
-| 3 | **M10.10 — HuggingFace Model Card** | Credibility for security teams evaluating the model |
-| 4 | **M10.12 — Feedback Mechanism** | FP/FN reports are highest-value corpus signal; GitHub issue templates |
-| 5 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
-| 6 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
-| 7 | **M11 — Hardening & PyPI** | Required for enterprise CI/CD |
-| 8 | **M10.6 — Organic Eval Pipeline** | Closes feedback loop between pattern-updater and model |
-| 9 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
-| 10 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
-| 11 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
-| — | **SaaS** | Post-v1.0; FPR now 1.89% ✅ and F1 0.9752 ✅ — both quality thresholds met; remaining prerequisite is product completeness (M10.7, M14.5, model card) |
+| ✅ | **M10.7 — CLI UX Audit** ✅ | Completed 2026-03-25. 8 commands removed, 12 added/changed, 5 policy profiles, 6 docs. 351 tests passing. |
+| 1 | **M14.5 — Website Update (v1.0 docs + ML model + positioning)** | Now unblocked by M10.7; primary trust signal for enterprise evaluators; prerequisite for SaaS |
+| 2 | **M10.10 — HuggingFace Model Card** | Credibility for security teams evaluating the model |
+| 3 | **M10.12 — Feedback Mechanism** | FP/FN reports are highest-value corpus signal; GitHub issue templates |
+| 4 | **M14 — Public Scan Feed** | Primary distribution mechanism; builds known-good registry |
+| 5 | **M10 — Documentation Accuracy** | Required for enterprise evaluators |
+| 6 | **M11 — Hardening & PyPI** | Required for enterprise CI/CD |
+| 7 | **M10.6 — Organic Eval Pipeline** | Closes feedback loop between pattern-updater and model |
+| 8 | **M9 — Editor Extensions** | Distribution; lower priority than product quality |
+| 9 | **M15 — skillscan-core** | Architectural; not blocking any user feature |
+| 10 | **M17 — Similarity Hashing** | Requires M14 (known-good registry) as prerequisite |
+| — | **SaaS** | Post-v1.0; FPR now 1.89% ✅ and F1 0.9752 ✅ — both quality thresholds met; remaining prerequisite is product completeness (M14.5, model card) |
 
 ---
 
