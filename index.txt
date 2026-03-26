@@ -346,6 +346,7 @@ tests/test_cli.py
 tests/test_cli_more.py
 tests/test_compact.py
 tests/test_corpus.py
+tests/test_custom_rules.py
 tests/test_diff.py
 tests/test_ecosystems.py
 tests/test_instruction_hardening.py
