@@ -183,7 +183,6 @@ def test_intel_subcommands(monkeypatch, tmp_path: Path) -> None:
 
     # M10.7: intel add now requires --url (URL-based feeds only).
     # Serve the sample file via a file:// URL so the HTTP fetch is not needed in tests.
-    import urllib.request as _ur
     sample_url = sample.as_uri()
 
     add = runner.invoke(app, ["intel", "add", "--url", sample_url, "--type", "ioc", "--name", "local"])

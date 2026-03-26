@@ -43,7 +43,6 @@ from skillscan import __version__
 from skillscan.analysis import ScanError, scan
 from skillscan.compact import report_to_compact_text
 from skillscan.intel import (
-    add_source,
     clear_runtime,
     data_dir,
     intel_dir,
@@ -237,7 +236,7 @@ def version_cmd(
 ) -> None:
     """Show installed version and component status."""
     from skillscan.model_sync import get_model_status
-    from skillscan.rules_sync import USER_RULES_DIR, user_rules_version
+    from skillscan.rules_sync import user_rules_version
 
     rp = load_builtin_rulepack(channel="stable")
     bundled_version = rp.version.split("+")[0]
@@ -1304,7 +1303,10 @@ def intel_list() -> None:
 
 @intel_app.command("add")
 def intel_add(
-    url: str = typer.Option(..., "--url", help="URL of the intel feed (re-fetched on every 'skillscan update')"),
+    url: str = typer.Option(
+        ..., "--url",
+        help="URL of the intel feed (re-fetched on every 'skillscan update')",
+    ),
     name: str = typer.Option(..., "--name", help="Human-readable name for this feed"),
     type: str = typer.Option("ioc", "--type", help="Feed type: ioc|vuln"),
 ) -> None:
