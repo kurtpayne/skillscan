@@ -41,7 +41,6 @@ CATEGORY_META = OrderedDict([
     ("ABU",  {"label": "Abuse Patterns",             "color": "oklch(0.70 0.15 160)", "type": "ABU"}),
     ("INJ",  {"label": "Injection",                  "color": "oklch(0.58 0.22 290)", "type": "INJ"}),
     ("CHN",  {"label": "Chain Rules",                "color": "oklch(0.65 0.18 200)", "type": "CHN"}),
-    ("CAP",  {"label": "Capability Abuse",           "color": "oklch(0.70 0.15 160)", "type": "CAP"}),
     ("PINJ", {"label": "Prompt/Pipeline Injection",  "color": "oklch(0.55 0.24 280)", "type": "PINJ"}),
     ("SUP",  {"label": "Supply Chain",               "color": "oklch(0.68 0.16 80)",  "type": "SUP"}),
     ("SE",   {"label": "Social Engineering",         "color": "oklch(0.62 0.20 340)", "type": "SE"}),
@@ -72,13 +71,14 @@ TERMINAL_BEGIN  = "// AUTO_SYNC_BEGIN: rulepack"
 TERMINAL_END    = "// AUTO_SYNC_END: rulepack"
 
 
-def load_rules(yaml_path: Path) -> tuple[str, list[dict]]:
-    """Load and return (version, rules_list) from the rules YAML."""
+def load_rules(yaml_path: Path) -> tuple[str, list[dict], list[dict]]:
+    """Load and return (version, static_rules, chain_rules) from the rules YAML."""
     with open(yaml_path) as f:
         data = yaml.safe_load(f)
     version = str(data.get("version", "unknown"))
-    rules = data.get("static_rules", [])
-    return version, rules
+    static = data.get("static_rules", [])
+    chain = data.get("chain_rules", [])
+    return version, static, chain
 
 
 def rule_prefix(rule_id: str) -> str:
@@ -236,13 +236,15 @@ def main() -> int:
         return 1
 
     # Load rules
-    version, rules = load_rules(yaml_path)
-    total = len(rules)
-    print(f"Loaded {total} rules from {yaml_path.name} (version {version})")
+    version, static_rules, chain_rules = load_rules(yaml_path)
+    # Combine static + chain rules for the website rules array
+    all_rules = static_rules + chain_rules
+    total = len(all_rules)
+    print(f"Loaded {len(static_rules)} static + {len(chain_rules)} chain rules from {yaml_path.name} (version {version})")
 
     # Build replacement blocks
-    rules_block    = build_rules_block(rules)
-    cats_block     = build_categories_block(rules)
+    rules_block    = build_rules_block(all_rules)
+    cats_block     = build_categories_block(all_rules)
     terminal_block = build_terminal_block(version, total)
 
     # Patch files
