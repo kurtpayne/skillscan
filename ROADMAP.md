@@ -1279,3 +1279,47 @@ Badges are the primary distribution mechanism for Tier 0 and Tier 1. A few desig
 **Skill change:** The website sync step in `skillscan-pattern-update/SKILL.md` becomes: `python3 scripts/sync-website-rules.py --website-path ~/skillscan-website`, commit, open PR. LLM judgment is only needed for threat research and rule writing.
 
 **Priority:** Medium. Implement before the next time a category is added or a major website refactor happens.
+
+---
+
+## Milestone 20 — Trace-as-a-Service: BYOK, Dedicated Instances & Queue Architecture
+
+**Goal:** When SkillScan Trace becomes a hosted service, operators (and users) can bring their own LLM API keys so SkillScan bears zero inference cost. The service runs on a small fleet of always-on instances behind a queue, not serverless, to keep per-scan cost predictable and manageable without a browser.
+
+**Background:** Running Trace scans on behalf of users requires calling an LLM (Claude, GPT-4o, etc.). If SkillScan pays for every call, the unit economics break at any meaningful volume. The solution is BYOK: the user supplies their API key at scan time (or stores it in their account), and SkillScan routes the call through their key. SkillScan provides the infrastructure (queue, workers, result storage, report URL) but not the tokens.
+
+The serverless model (Lambda, Modal per-call) is too expensive at low volume because of cold-start overhead and per-invocation pricing. A small fleet of dedicated workers (2–4 small VMs, e.g., Hetzner CX21 or Fly.io shared-cpu-2x at ~$6–12/mo each) with a durable queue (Redis or SQS) is cheaper, simpler to reason about, and fully manageable via CLI/API without a browser.
+
+**Architecture:**
+
+```
+User submits scan (skill zip + BYOK API key, encrypted in transit)
+  → API gateway (lightweight, stateless)
+  → Queue (Redis LPUSH / SQS SendMessage)
+  → Worker pool (2–4 small VMs, each running a loop: BRPOP → run trace → store result)
+  → Result store (S3-compatible object storage, e.g., Hetzner Object Storage or Backblaze B2)
+  → Report URL returned to user (permanent, public or token-gated)
+```
+
+**Key design decisions to lock in before implementation:**
+
+- **BYOK key handling:** Keys are never stored at rest. They are passed in the job payload, held in worker memory only for the duration of the scan, and discarded. The job payload is encrypted at rest in the queue (AES-256, key derived from the user's session token).
+- **Worker management:** Workers are long-running processes managed by `systemd` or `supervisord`. Scale up = `ssh worker-N "systemctl start skillscan-worker"`. Scale down = drain queue, then stop. No Kubernetes, no container orchestration. Manus can manage this via SSH commands without a browser.
+- **Cost model:** SkillScan charges for the report URL / storage / queue slot, not for tokens. A flat per-scan fee (e.g., $0.10–0.25) covers infrastructure. Users who bring their own key get the full trace; users without a key get the static-only scan (free tier).
+- **Free tier:** Static scan (no LLM) is always free. Trace scan requires BYOK or a paid credit balance. This preserves the offline-first niche while enabling the hosted service.
+- **Hosting candidates:** Hetzner (cheapest, EU, no egress fees), Fly.io (easy multi-region, CLI-managed), or a single Linode/DigitalOcean droplet to start. Avoid AWS Lambda (cold starts + per-invocation cost), avoid GCP Cloud Run (same issue). Evaluate Hetzner CX21 (2 vCPU, 4GB RAM, €4.15/mo) as the baseline worker size.
+
+**Actions (when this milestone becomes active):**
+- Design and document the BYOK key lifecycle (receipt → encryption → use → discard).
+- Prototype the queue worker loop in ~200 lines of Python (`redis-py` + `boto3` for result storage).
+- Define the scan job schema (skill zip URL or inline content, BYOK key, webhook URL for completion notification, requested model).
+- Spec the API surface: `POST /scan`, `GET /scan/{id}`, `GET /report/{id}`.
+- Evaluate Hetzner vs Fly.io vs DigitalOcean for worker hosting; document cost model at 100, 1000, and 10,000 scans/month.
+- Implement worker autoscaling: a cron job checks queue depth every 5 minutes and starts/stops workers via SSH if depth exceeds a threshold.
+- Add BYOK key UI to the website account settings page.
+
+**Acceptance criteria:** A scan submitted with a BYOK key completes end-to-end. The API key never appears in logs or storage. Workers can be started and stopped via CLI without a browser. Cost per scan at 1,000 scans/month is under $0.05 infrastructure (excluding user's own token cost).
+
+**Dependencies:** M14 (public scan feed — validates the worker pipeline at low volume before opening to users), M15 (skillscan-core extraction — the worker imports `skillscan-core`, not the full security package).
+
+---
