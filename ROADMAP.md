@@ -1288,6 +1288,8 @@ Badges are the primary distribution mechanism for Tier 0 and Tier 1. A few desig
 
 ## Milestone 20 — Trace-as-a-Service: BYOK, Dedicated Instances & Queue Architecture
 
+> **Full specification:** `TAAS_SPEC.md` in `kurtpayne/skillscan-trace` (commit e17aba6). Covers infrastructure, auth, token model, Stripe payments, queue, SSE live results, admin panel, `online-trace` CLI subcommand, HA, backups, audit logging, BYOK key encryption, data model, and test environment. The notes below are a high-level summary; the spec is the authoritative document.
+
 **Goal:** When SkillScan Trace becomes a hosted service, operators (and users) can bring their own LLM API keys so SkillScan bears zero inference cost. The service runs on a small fleet of always-on instances behind a queue, not serverless, to keep per-scan cost predictable and manageable without a browser.
 
 **Background:** Running Trace scans on behalf of users requires calling an LLM (Claude, GPT-4o, etc.). If SkillScan pays for every call, the unit economics break at any meaningful volume. The solution is BYOK: the user supplies their API key at scan time (or stores it in their account), and SkillScan routes the call through their key. SkillScan provides the infrastructure (queue, workers, result storage, report URL) but not the tokens.
