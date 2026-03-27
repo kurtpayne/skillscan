@@ -1,5 +1,29 @@
 # Rule Updates
 
+## 2026-03-27
+
+- Added `MAL-054` (critical): **GlassWorm multi-stage Chrome extension RAT**.
+- Rationale: March 2026 reporting on the GlassWorm campaign evolution showed a multi-stage RAT that force-installs a malicious Chrome extension to log keystrokes, steal cookies, and exfiltrate data via Solana-based dead-drops. It also kills Ledger Live processes to show phishing windows.
+- Rule scope intentionally targets the force-install of Chrome extensions, Ledger Live process killing, and Solana memo dead-drop patterns.
+
+Sources:
+- Aikido Security (2026-03), *GlassWorm Chrome Extension RAT*: https://www.aikido.dev/blog/glassworm-chrome-extension-rat
+- The Hacker News (2026-03), *GlassWorm Malware Uses Solana Dead-Drops*: https://thehackernews.com/2026/03/glassworm-malware-uses-solana-dead.html
+
+- Added `PINJ-016` (high): **AI documentation context poisoning (ContextHub)**.
+- Rationale: March 2026 reporting on the Context Hub supply chain attack showed attackers poisoning community documentation portals with hidden instructions that trick AI agents into installing malicious packages.
+- Rule scope intentionally targets references to contexthub.ai combined with package installation commands.
+
+Sources:
+- The Register (2026-03-25), *AI Agents Supply Chain Attack via Context Hub*: https://www.theregister.com/2026/03/25/ai_agents_supply_chain_attack_context_hub/
+
+- Added `EXF-020` (critical): **TeamPCP sysmon backdoor Kubernetes lateral movement**.
+- Rationale: March 2026 reporting on the TeamPCP campaign (via LiteLLM) showed a persistent C2 backdoor capable of laterally compromising every node in a Kubernetes cluster by enumerating secrets.
+- Rule scope intentionally targets the combination of models.litellm.cloud and Kubernetes secret enumeration or lateral movement patterns.
+
+Sources:
+- StepSecurity (2026-03-24), *LiteLLM Credential Stealer Hidden in PyPI Wheel*: https://www.stepsecurity.io/blog/litellm-credential-stealer-hidden-in-pypi-wheel
+
 ## 2026-03-16
 
 - Added `EXF-016` (high): **Azure MCP resource-identifier URL substitution token-leak marker**.

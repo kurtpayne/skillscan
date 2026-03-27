@@ -1,4 +1,4 @@
-version: 2026.03.26.1
+version: 2026.03.27.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -4087,6 +4087,61 @@ static_rules:
       benchmark_set: core-static-v1
     references:
     - https://www.stepsecurity.io/blog/malicious-npm-releases-found-in-popular-react-native-packages---130k-monthly-downloads-compromised
+- id: MAL-054
+  category: malware_pattern
+  severity: critical
+  confidence: 0.9
+  title: GlassWorm multi-stage Chrome extension RAT
+  pattern: (?i)(?:force-install[^\n]{0,80}chrome extension|kill[^\n]{0,80}ledger live|solana[^\n]{0,80}memo[^\n]{0,80}dead-drop)
+  mitigation: 'The GlassWorm campaign uses a multi-stage RAT that force-installs a malicious Chrome extension to log keystrokes, steal cookies, and exfiltrate data via Solana-based dead-drops. It also kills Ledger Live processes to show phishing windows. Remove the compromised packages and audit for malicious extensions.'
+  metadata:
+    author: skillscan
+    created: '2026-03-27'
+    updated: '2026-03-27'
+    tags:
+    - malware_pattern
+    - glassworm
+    - chrome-extension
+    - solana
+    - rat
+    references:
+    - https://www.aikido.dev/blog/glassworm-chrome-extension-rat
+    - https://thehackernews.com/2026/03/glassworm-malware-uses-solana-dead.html
+- id: PINJ-016
+  category: prompt_injection
+  severity: high
+  confidence: 0.85
+  title: AI documentation context poisoning (ContextHub)
+  pattern: (?i)(?:contexthub\.ai|context-hub)[^\n]{0,200}(?:install|pip|npm|yarn|run)
+  mitigation: 'Attackers can poison community documentation portals like Context Hub with hidden instructions that trick AI agents into installing malicious packages. Do not blindly trust instructions from community documentation sources.'
+  metadata:
+    author: skillscan
+    created: '2026-03-27'
+    updated: '2026-03-27'
+    tags:
+    - prompt_injection
+    - documentation-poisoning
+    - contexthub
+    references:
+    - https://www.theregister.com/2026/03/25/ai_agents_supply_chain_attack_context_hub/
+- id: EXF-020
+  category: exfiltration
+  severity: critical
+  confidence: 0.9
+  title: TeamPCP sysmon backdoor Kubernetes lateral movement
+  pattern: (?i)(?:models\.litellm\.cloud|/var/run/secrets/kubernetes\.io/serviceaccount/token)[^\n]{0,200}(?:enumerate|lateral|secret)
+  mitigation: 'The TeamPCP campaign (via LiteLLM) deploys a persistent C2 backdoor capable of laterally compromising every node in a Kubernetes cluster by enumerating secrets. Rotate all Kubernetes secrets and audit for models.litellm.cloud connections.'
+  metadata:
+    author: skillscan
+    created: '2026-03-27'
+    updated: '2026-03-27'
+    tags:
+    - exfiltration
+    - teampcp
+    - kubernetes
+    - lateral-movement
+    references:
+    - https://www.stepsecurity.io/blog/litellm-credential-stealer-hidden-in-pypi-wheel
 action_patterns:
   download: \b(curl|wget|invoke-webrequest|invoke-restmethod|iwr|irm|download|git\s+clone|pip\s+install|npm\s+install|certutil\s+-urlcache|bitsadmin)\b|https?://
   execute: \b(bash|sh|powershell|pwsh|cmd\.exe|os\.system|subprocess|python\s+-c|python3?\s+[^\s-]\S*|node\s+-e|perl\s+-e|ruby\s+-e)\b

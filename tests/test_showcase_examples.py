@@ -218,6 +218,12 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "SUP-021" for f in findings_119)
     findings_120 = _scan("examples/showcase/124_react_native_account_takeover").findings
     assert any(f.id == "SUP-022" for f in findings_120)
+    findings_121 = _scan("examples/showcase/125_glassworm_chrome_extension_rat").findings
+    assert any(f.id == "MAL-054" for f in findings_121)
+    findings_122 = _scan("examples/showcase/126_contexthub_doc_poisoning").findings
+    assert any(f.id == "PINJ-016" for f in findings_122)
+    findings_123 = _scan("examples/showcase/127_teampcp_kubernetes_lateral").findings
+    assert any(f.id == "EXF-020" for f in findings_123)
 
 
 def test_showcase_policy_block_domain() -> None:

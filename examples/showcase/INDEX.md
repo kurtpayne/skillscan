@@ -140,3 +140,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 122. `122_ghost_campaign_npm_packages`: Ghost Campaign malicious npm packages including react-performance-suite, ai-fast-auto-trader, and coinbase-desktop-sdk that use fake installation logs to hide malware, phish sudo passwords, and deploy a RAT for cryptocurrency theft (`MAL-050`)
 123. `123_teampcp_checkmarx_vscode_extension`: TeamPCP Checkmarx VS Code extension compromise on Open VSX registry with malicious versions of checkmarx.ast-results (v2.53) and checkmarx.cx-dev-assist (v1.7.0) containing an infostealer (`SUP-021`)
 124. `124_react_native_account_takeover`: React Native npm account takeover supply chain attack compromising react-native-international-phone-number and react-native-country-select via scoped dependency chain packages @usebioerhold8733/s-format and @agnoliaarisian7180/string-argv (`SUP-022`)
+125. `125_glassworm_chrome_extension_rat`: GlassWorm multi-stage Chrome extension RAT (`MAL-054`)
+126. `126_contexthub_doc_poisoning`: AI documentation context poisoning via ContextHub (`PINJ-016`)
+127. `127_teampcp_kubernetes_lateral`: TeamPCP sysmon backdoor Kubernetes lateral movement (`EXF-020`)
