@@ -896,14 +896,37 @@ def scan(
                     )
                 )
 
-        for path in files:
-            # Per-file size guard: skip oversized files with a warning finding.
+        def _scan_one_file(
+            path: Path,
+        ) -> tuple[
+            list[Finding],
+            list[IOC],
+            list[Capability],
+            list[DependencyFinding],
+            float,   # sem_inj triage score
+            float,   # se triage score
+            float | None,  # ml prob
+        ]:
+            """Scan a single file and return all findings/IOCs/capabilities.
+
+            Designed to run inside a ThreadPoolExecutor so the caller can
+            enforce a per-file wall-clock timeout via Future.result(timeout=...).
+            """
+            _f: list[Finding] = []
+            _iocs: list[IOC] = []
+            _caps: list[Capability] = []
+            _deps: list[DependencyFinding] = []
+            _sem: float = 0.0
+            _se: float = 0.0
+            _ml: float | None = None
+
+            # Per-file size guard
             try:
                 file_bytes = path.stat().st_size
             except OSError:
                 file_bytes = 0
             if file_bytes > max_file_size_bytes:
-                findings.append(
+                _f.append(
                     Finding(
                         id="SCAN-SIZE-SKIP",
                         category="scanner_advisory",
@@ -919,25 +942,24 @@ def scan(
                         mitigation="Inspect the file manually or raise --max-file-size.",
                     )
                 )
-                continue
+                return _f, _iocs, _caps, _deps, _sem, _se, _ml
+
             text = _safe_read_text(path)
             if not text:
-                continue
+                return _f, _iocs, _caps, _deps, _sem, _se, _ml
             analysis_text = _prepare_analysis_text(text)
 
             file_ext = path.suffix.lower()
             for rule in ruleset.static_rules:
-                # Graph-rule stubs are detected by skill_graph.py, not by pattern matching.
                 if rule.graph_rule:
                     continue
-                # Language-scoped rules only apply to matching file extensions.
                 if rule.language is not None:
                     allowed_exts = _LANG_EXTENSIONS.get(rule.language)
                     if allowed_exts is not None and file_ext not in allowed_exts:
                         continue
                 for line_no, line in enumerate(analysis_text.splitlines(), 1):
                     if rule.pattern.search(line):
-                        findings.append(
+                        _f.append(
                             Finding(
                                 id=rule.id,
                                 category=rule.category,
@@ -952,28 +974,27 @@ def scan(
                         )
                         break
 
-            findings.extend(local_prompt_injection_findings(path, analysis_text))
-            findings.extend(local_social_engineering_findings(path, analysis_text))
-            # Capture raw triage scores (always, regardless of threshold)
-            _triage_sem_inj = max(_triage_sem_inj, classify_prompt_injection_raw(analysis_text))
-            _triage_se = max(_triage_se, classify_social_engineering_raw(analysis_text))
+            _f.extend(local_prompt_injection_findings(path, analysis_text))
+            _f.extend(local_social_engineering_findings(path, analysis_text))
+            _sem = classify_prompt_injection_raw(analysis_text)
+            _se = classify_social_engineering_raw(analysis_text)
+
             if ml_detect:
                 ml_findings = ml_prompt_injection_findings(path, analysis_text)
-                findings.extend(ml_findings)
-                # Extract raw ML probability from finding confidence if available
-                for f in ml_findings:
-                    if f.id.startswith("ML-"):
-                        _triage_ml_prob = max(_triage_ml_prob or 0.0, f.confidence)
+                _f.extend(ml_findings)
+                for mf in ml_findings:
+                    if mf.id.startswith("ML-"):
+                        _ml = max(_ml or 0.0, mf.confidence)
 
             for capability_name, pattern in ruleset.capability_patterns:
                 if pattern.search(analysis_text):
-                    capabilities.append(
+                    _caps.append(
                         Capability(name=capability_name, evidence_path=str(path), detail="Pattern match")
                     )
 
-            if path.suffix.lower() == ".py":
+            if file_ext == ".py":
                 for ast_finding in detect_python_ast_flows(analysis_text):
-                    findings.append(
+                    _f.append(
                         Finding(
                             id=ast_finding.id,
                             category=ast_finding.category,
@@ -987,16 +1008,9 @@ def scan(
                         )
                     )
 
-            iocs.extend(_extract_iocs(path, analysis_text))
+            _iocs.extend(_extract_iocs(path, analysis_text))
 
-            # Chain rules: use windowed extraction to enforce proximity constraint.
-            # A chain rule fires only if all required actions appear within the
-            # same window, reducing false positives on large files where benign
-            # patterns appear far apart. Each rule can override the window size
-            # via its window_lines field; None means use the global default.
-            #
-            # We pre-compute windows for each unique window size to avoid
-            # redundant passes over the text.
+            # Chain rules with windowed proximity constraint
             _window_cache: dict[int, list[set[str]]] = {}
 
             def _get_windows(wl: int) -> list[set[str]]:
@@ -1018,7 +1032,7 @@ def scan(
                 for window_actions in _get_windows(effective_window):
                     if chain_rule.all_of.issubset(window_actions):
                         fired_chain_ids.add(chain_rule.id)
-                        findings.append(
+                        _f.append(
                             Finding(
                                 id=chain_rule.id,
                                 category=chain_rule.category,
@@ -1038,7 +1052,7 @@ def scan(
                 for name, version in _parse_requirements(text):
                     if name in vuln_db.get("python", {}) and version in vuln_db["python"][name]:
                         entry = vuln_db["python"][name][version]
-                        dependency_findings.append(
+                        _deps.append(
                             DependencyFinding(
                                 ecosystem="python",
                                 name=name,
@@ -1049,7 +1063,7 @@ def scan(
                             )
                         )
                 for name, spec in _find_unpinned_requirements(text):
-                    findings.append(
+                    _f.append(
                         Finding(
                             id="DEP-UNPIN",
                             category="dependency_vulnerability",
@@ -1069,7 +1083,7 @@ def scan(
                     version_norm = version.lstrip("^~>=< ")
                     if name in vuln_db.get("npm", {}) and version_norm in vuln_db["npm"][name]:
                         entry = vuln_db["npm"][name][version_norm]
-                        dependency_findings.append(
+                        _deps.append(
                             DependencyFinding(
                                 ecosystem="npm",
                                 name=name,
@@ -1080,7 +1094,7 @@ def scan(
                             )
                         )
                     if _is_unpinned_npm(version):
-                        findings.append(
+                        _f.append(
                             Finding(
                                 id="DEP-UNPIN",
                                 category="dependency_vulnerability",
@@ -1095,7 +1109,6 @@ def scan(
                                 ),
                             )
                         )
-
                 scripts = _parse_package_scripts(text)
                 lifecycle_hooks = ("preinstall", "install", "postinstall", "prepare")
                 for hook in lifecycle_hooks:
@@ -1103,7 +1116,7 @@ def scan(
                     if not cmd:
                         continue
                     if RISKY_NPM_SCRIPT_RE.search(cmd):
-                        findings.append(
+                        _f.append(
                             Finding(
                                 id="SUP-001",
                                 category="malware_pattern",
@@ -1118,6 +1131,43 @@ def scan(
                                 ),
                             )
                         )
+
+            return _f, _iocs, _caps, _deps, _sem, _se, _ml
+
+        # Dispatch per-file scan with individual timeout using a thread pool.
+        # Each file gets file_timeout_seconds; if it exceeds the limit a
+        # SCAN-TIMEOUT-SKIP advisory finding is emitted and the file is skipped.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _executor:
+            _futures = {_executor.submit(_scan_one_file, p): p for p in files}
+            for _fut, _path in _futures.items():
+                try:
+                    _ff, _fi, _fc, _fd, _sem, _se, _ml = _fut.result(
+                        timeout=file_timeout_seconds
+                    )
+                    findings.extend(_ff)
+                    iocs.extend(_fi)
+                    capabilities.extend(_fc)
+                    dependency_findings.extend(_fd)
+                    _triage_sem_inj = max(_triage_sem_inj, _sem)
+                    _triage_se = max(_triage_se, _se)
+                    if _ml is not None:
+                        _triage_ml_prob = max(_triage_ml_prob or 0.0, _ml)
+                except concurrent.futures.TimeoutError:
+                    findings.append(
+                        Finding(
+                            id="SCAN-TIMEOUT-SKIP",
+                            category="scanner_advisory",
+                            severity=Severity.LOW,
+                            confidence=1.0,
+                            title="File skipped — per-file scan timeout exceeded",
+                            evidence_path=str(_path),
+                            snippet=(
+                                f"Scan exceeded {file_timeout_seconds}s limit. "
+                                "Re-run with --timeout to raise the limit."
+                            ),
+                            mitigation="Inspect the file manually or raise --timeout.",
+                        )
+                    )
 
         dedup_iocs: dict[tuple[str, str, str], IOC] = {}
         allow_domains = {d.lower() for d in policy.allow_domains}
