@@ -97,10 +97,14 @@ jobs:
               except json.JSONDecodeError as e:
                   print(f'INVALID JSON: {path}: {e}', file=sys.stderr)
                   sys.exit(1)
-          # Extra: verify vuln_db uses nested dict format (not OSV list format)
+          # Extra: verify vuln_db uses nested dict format (not OSV list format).
+          # Skip the '_meta' top-level key — its values are lists of package names,
+          # not ecosystem dicts, and are intentionally not vuln entries.
           db = json.load(open('src/skillscan/data/intel/vuln_db.json'))
           bad = []
           for ecosystem, pkgs in db.items():
+              if ecosystem == '_meta':
+                  continue  # _meta holds lists of checked package names, not vuln data
               if not isinstance(pkgs, dict):
                   continue
               for pkg, versions in pkgs.items():

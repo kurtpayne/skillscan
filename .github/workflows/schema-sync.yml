@@ -26,6 +26,16 @@ jobs:
       contents: read   # read the schema from this repo
 
     steps:
+      - name: Check SCHEMA_SYNC_PAT is set
+        env:
+          SCHEMA_SYNC_PAT: ${{ secrets.SCHEMA_SYNC_PAT }}
+        run: |
+          if [ -z "${SCHEMA_SYNC_PAT}" ]; then
+            echo "::error::SCHEMA_SYNC_PAT secret is not set. Add a PAT with 'contents:write' and 'pull-requests:write' on kurtpayne/skillscan-lint as a repository secret named SCHEMA_SYNC_PAT. A classic PAT with 'repo' scope or a fine-grained PAT scoped to skillscan-lint works."
+            exit 1
+          fi
+          echo "SCHEMA_SYNC_PAT is set (${#SCHEMA_SYNC_PAT} chars)."
+
       - name: Checkout skillscan-security
         uses: actions/checkout@v4
         with:
