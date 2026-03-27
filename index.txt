@@ -31,6 +31,7 @@ Dockerfile
 LICENSE
 MODEL_CARD.md
 Makefile
+PATTERN_UPDATES.md
 README.md
 SECURITY.md
 docs/ARCHITECTURE.md
