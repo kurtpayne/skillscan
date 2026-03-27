@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-26",
+    "generated": "2026-03-27",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -643,11 +643,7 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
-    },
-    "litellm": [
-      "1.82.7",
-      "1.82.8"
-    ]
+    }
   },
   "npm": {
     "lodash": {
