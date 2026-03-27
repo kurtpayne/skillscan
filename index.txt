@@ -130,6 +130,8 @@ examples/showcase/124_react_native_account_takeover/SKILL.md
 examples/showcase/125_glassworm_chrome_extension_rat/SKILL.md
 examples/showcase/126_contexthub_doc_poisoning/SKILL.md
 examples/showcase/127_teampcp_kubernetes_lateral/SKILL.md
+examples/showcase/128_obf005_covert_channel_dns_exfil/SKILL.md
+examples/showcase/129_cap001_capability_laundering/SKILL.md
 examples/showcase/12_benign_minimal/SKILL.md
 examples/showcase/13_zero_width_evasion/SKILL.md
 examples/showcase/14_base64_hidden_chain/setup.sh
