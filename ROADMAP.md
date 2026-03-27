@@ -531,7 +531,7 @@ The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 
 - `schema-sync.yml` CI workflow auto-opens a PR to `skillscan-lint` whenever `skill-schema.yaml` changes (requires `SCHEMA_SYNC_PAT` secret)
 - Version bumped to **0.8.0**
 
-**Remaining (M11.1):** Per-file timeout (requires refactoring the per-file scan loop into `_scan_one_file()`). Deferred — current scan-level timeout satisfies the enterprise CI use case.
+**M11.1 ✅ COMPLETE (2026-03-26):** Per-file timeout — `_scan_one_file()` extracted from the 222-line per-file loop body; dispatched via `ThreadPoolExecutor(max_workers=1)` with `Future.result(timeout=file_timeout_seconds)`. `TimeoutError` emits `SCAN-TIMEOUT-SKIP` advisory finding and continues to next file. `--timeout` CLI flag now enforces per-file (not scan-level) wall-clock limit.
 
 **Acceptance criteria:** ✅ `--max-file-size` and `--timeout` flags work. ✅ License consistent. ✅ Schema drift prevention in place.
 
