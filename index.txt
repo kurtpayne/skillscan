@@ -14,6 +14,7 @@
 .github/workflows/release-docker.yml
 .github/workflows/release-pypi.yml
 .github/workflows/release-smoke-test.yml
+.github/workflows/schema-sync.yml
 .github/workflows/signature-lint.yml
 .github/workflows/skillscan-reusable.yml
 .github/workflows/update-index.yml
@@ -286,6 +287,7 @@ src/skillscan/data/rules/__init__.py
 src/skillscan/data/rules/ast_flows.yaml
 src/skillscan/data/rules/default.yaml
 src/skillscan/data/rules/multilang.yaml
+src/skillscan/data/skill-schema.yaml
 src/skillscan/detectors/__init__.py
 src/skillscan/detectors/ast_flows.py
 src/skillscan/detectors/skill_graph.py
@@ -304,6 +306,7 @@ src/skillscan/rules_sync.py
 src/skillscan/sarif.py
 src/skillscan/semantic_local.py
 src/skillscan/skill_diff.py
+src/skillscan/skill_schema.py
 src/skillscan/suppressions.py
 tests/adversarial/cases/a01_curl_bash/SKILL.md
 tests/adversarial/cases/a02_wget_sh/SKILL.md
