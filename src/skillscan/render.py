@@ -135,3 +135,8 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
         )
     if report.dependency_findings:
         console.print(dep)
+    if report.verdict == Verdict.BLOCK:
+        console.print(
+            "[dim]False positive? Report it: "
+            "https://github.com/kurtpayne/skillscan-security/issues/new?template=false-positive.md[/dim]"
+        )

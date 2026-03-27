@@ -7,7 +7,7 @@ name = "skillscan-security"
 version = "0.7.0"
 description = "Standalone AI skill security scanner — detects prompt injection, tool poisoning, and supply-chain attacks in MCP skills"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 authors = [{name = "SkillScan", email = "security@skillscan.sh"}]
 requires-python = ">=3.12"
 keywords = [
@@ -19,7 +19,7 @@ classifiers = [
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Intended Audience :: Information Technology",
-  "License :: OSI Approved :: MIT License",
+  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",

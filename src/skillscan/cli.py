@@ -1731,6 +1731,69 @@ def corpus_record_finetune(
 
 
 # ---------------------------------------------------------------------------
+# feedback
+# ---------------------------------------------------------------------------
+
+@app.command("feedback")
+def feedback_cmd(
+    kind: str = typer.Argument(
+        "fp",
+        help="Type of feedback: fp (false positive), fn (false negative), bug, or feature",
+    ),
+) -> None:
+    """Open the GitHub Issues page to report a false positive, false negative, bug, or feature request."""
+    import webbrowser
+
+    _FEEDBACK_URLS: dict[str, str] = {
+        "fp": "https://github.com/kurtpayne/skillscan-security/issues/new?template=false-positive.md",
+        "fn": "https://github.com/kurtpayne/skillscan-security/issues/new?template=false-negative.md",
+        "bug": "https://github.com/kurtpayne/skillscan-security/issues/new?template=bug-report.md",
+        "feature": "https://github.com/kurtpayne/skillscan-security/issues/new?template=feature-request.md",
+    }
+    url = _FEEDBACK_URLS.get(kind)
+    if url is None:
+        console.print(
+            f"[red]Unknown feedback type:[/red] {kind!r}. "
+            "Use: [bold]fp[/bold], [bold]fn[/bold], [bold]bug[/bold], or [bold]feature[/bold]"
+        )
+        raise typer.Exit(1)
+    opened = webbrowser.open(url)
+    if opened:
+        console.print(f"[green]Opened browser:[/green] {url}")
+    else:
+        console.print(f"[cyan]Report it here:[/cyan] {url}")
+
+
+# ---------------------------------------------------------------------------
+# lint  (delegates to skillscan-lint if installed)
+# ---------------------------------------------------------------------------
+
+@app.command(
+    "lint",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)
+def lint_cmd(ctx: typer.Context) -> None:
+    """Quality linter for AI agent skill files (requires skillscan-lint).
+
+    All arguments and flags are forwarded directly to skillscan-lint.
+    Run 'skillscan lint --help' to see available options.
+
+    Install: pip install skillscan-lint
+    """
+    import subprocess
+
+    lint_bin = shutil.which("skillscan-lint")
+    if lint_bin is None:
+        console.print(
+            "[yellow]skillscan-lint is not installed.[/yellow]\n"
+            "Install it with: [bold]pip install skillscan-lint[/bold]"
+        )
+        raise typer.Exit(1)
+    result = subprocess.run([lint_bin] + ctx.args)
+    raise typer.Exit(result.returncode)
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
