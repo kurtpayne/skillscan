@@ -480,7 +480,7 @@ The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 
 **Acceptance criteria:** Model card is live on HuggingFace with all sections filled. `MODEL_CARD.md` exists in the repo and matches. No placeholder sections remain.
 
 ---
-## Milestone 10.11 — License Files Across All Repos
+## ~~Milestone 10.11 — License Files Across All Repos~~ ✅ COMPLETE (2026-03-26)
 
 **Goal:** Ensure every public SkillScan repo and the HuggingFace model have an explicit, consistent license so users and enterprise security teams know their rights.
 
@@ -497,7 +497,7 @@ The 389-file vendor skill harvest (Azure, AWS, Composio, ServiceNow) revealed 9 
 **Acceptance criteria:** All repos have a `LICENSE` file. HuggingFace model card declares `apache-2.0`. `pyproject.toml` files include `license = "Apache-2.0"`. README files reference the license.
 
 ---
-## Milestone 10.12 — Formalized Feedback Mechanism
+## ~~Milestone 10.12 — Formalized Feedback Mechanism~~ ✅ COMPLETE (2026-03-26)
 
 **Goal:** Give users a clear, low-friction way to report false positives, false negatives, and general feedback — and make that channel visible in every place a user might look.
 
