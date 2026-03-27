@@ -274,7 +274,7 @@ Currently, if a user runs `skillscan` without having run `skillscan model sync`,
 
 ---
 
-## Milestone 10.6 — Organic Eval Pipeline & Corpus Commit Policy
+## ~~Milestone 10.6 — Organic Eval Pipeline & Corpus Commit Policy~~ ✅ COMPLETE (2026-03-26)
 
 **Goal:** Establish a closed feedback loop between the pattern update agent and the ML model, ensuring every new attack pattern discovered in the wild is immediately tested against the model and tracked as a known gap if missed.
 
