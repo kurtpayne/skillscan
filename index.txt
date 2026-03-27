@@ -6,9 +6,11 @@
 .github/ISSUE_TEMPLATE/false-positive.md
 .github/ISSUE_TEMPLATE/feature-request.md
 .github/pull_request_template.md
+.github/scripts/build_demo_feed.py
 .github/workflows/ci.yml
 .github/workflows/codeql.yml
 .github/workflows/corpus-sync.yml
+.github/workflows/demo-feed.yml
 .github/workflows/domain-allowlist-monitor.yml
 .github/workflows/pattern-update-guard.yml
 .github/workflows/release-docker.yml
