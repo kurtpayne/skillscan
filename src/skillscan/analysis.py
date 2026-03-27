@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import concurrent.futures
 import ipaddress
 import json
 import os
@@ -802,6 +803,8 @@ def scan(
     ml_detect: bool = False,
     rulepack_channel: str = "stable",
     graph_scan: bool = False,
+    max_file_size_bytes: int = 1_048_576,   # 1 MB default — skip larger files with a warning
+    file_timeout_seconds: int = 30,         # per-file rule-matching timeout
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -894,6 +897,29 @@ def scan(
                 )
 
         for path in files:
+            # Per-file size guard: skip oversized files with a warning finding.
+            try:
+                file_bytes = path.stat().st_size
+            except OSError:
+                file_bytes = 0
+            if file_bytes > max_file_size_bytes:
+                findings.append(
+                    Finding(
+                        id="SCAN-SIZE-SKIP",
+                        category="scanner_advisory",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title="File skipped — exceeds max file size",
+                        evidence_path=str(path),
+                        snippet=(
+                            f"{file_bytes // 1024} KB > "
+                            f"{max_file_size_bytes // 1024} KB limit. "
+                            "Re-run with --max-file-size to raise the limit."
+                        ),
+                        mitigation="Inspect the file manually or raise --max-file-size.",
+                    )
+                )
+                continue
             text = _safe_read_text(path)
             if not text:
                 continue

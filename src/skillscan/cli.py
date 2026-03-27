@@ -26,6 +26,7 @@ Commands added / changed in M10.7:
 """
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import shutil
 import sys
@@ -496,6 +497,17 @@ def scan_cmd(
         "--no-progress",
         help="Suppress progress bar (useful in CI)",
     ),
+    max_file_size: int = typer.Option(
+        1024,
+        "--max-file-size",
+        help="Skip files larger than this size in KB (default: 1024 KB = 1 MB). Use 0 to disable.",
+    ),
+    timeout: int = typer.Option(
+        0,
+        "--timeout",
+        envvar="SKILLSCAN_TIMEOUT",
+        help="Abort the entire scan after this many seconds (0 = no timeout).",
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
@@ -659,19 +671,48 @@ def scan_cmd(
         effective_graph_scan = graph_scan
 
     # --- Run scan ---
+    _max_file_size_bytes = max_file_size * 1024 if max_file_size > 0 else 2**63
     try:
-        report = scan(
-            target,
-            policy,
-            policy_source,
-            url_max_links=url_max_links,
-            url_same_origin_only=url_same_origin_only,
-            clamav=clamav,
-            clamav_timeout_seconds=clamav_timeout_seconds,
-            ml_detect=ml_detect,
-            rulepack_channel=rulepack_channel,
-            graph_scan=effective_graph_scan,
-        )
+        if timeout > 0:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as _executor:
+                _future = _executor.submit(
+                    scan,
+                    target,
+                    policy,
+                    policy_source,
+                    url_max_links=url_max_links,
+                    url_same_origin_only=url_same_origin_only,
+                    clamav=clamav,
+                    clamav_timeout_seconds=clamav_timeout_seconds,
+                    ml_detect=ml_detect,
+                    rulepack_channel=rulepack_channel,
+                    graph_scan=effective_graph_scan,
+                    max_file_size_bytes=_max_file_size_bytes,
+                    file_timeout_seconds=timeout,
+                )
+                try:
+                    report = _future.result(timeout=timeout)
+                except concurrent.futures.TimeoutError:
+                    console.print(
+                        f"[bold red]Scan timed out after {timeout}s.[/bold red] "
+                        "Use --timeout to raise the limit."
+                    )
+                    raise typer.Exit(4)
+        else:
+            report = scan(
+                target,
+                policy,
+                policy_source,
+                url_max_links=url_max_links,
+                url_same_origin_only=url_same_origin_only,
+                clamav=clamav,
+                clamav_timeout_seconds=clamav_timeout_seconds,
+                ml_detect=ml_detect,
+                rulepack_channel=rulepack_channel,
+                graph_scan=effective_graph_scan,
+                max_file_size_bytes=_max_file_size_bytes,
+                file_timeout_seconds=timeout,
+            )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
         raise typer.Exit(2)
