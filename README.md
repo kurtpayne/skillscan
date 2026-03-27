@@ -65,7 +65,7 @@ If SkillScan blocks it, you don't need to spend tokens on it. If it passes, you 
 - Docker: `docker pull kurtpayne/skillscan-security`
 - Pre-commit hook: `skillscan-security>=0.3.1`
 
-Release process: `docs/RELEASE_CHECKLIST.md` and `docs/RELEASE_ONBOARDING.md`.
+Release process: `docs/RELEASE_CHECKLIST.md`.
 
 SBOMs: Python CycloneDX (`sbom-python.cdx.json`) and Docker SPDX (`sbom-docker.spdx.json`) are included in release artifacts.
 
@@ -516,7 +516,6 @@ Shell script uninstall: `scripts/uninstall.sh`.
 - Comprehensive examples: `docs/EXAMPLES.md`
 - GitHub Actions integration: `docs/GITHUB_ACTIONS.md`
 - Distribution: `docs/DISTRIBUTION.md`
-- Release onboarding: `docs/RELEASE_ONBOARDING.md`
 - Release checklist: `docs/RELEASE_CHECKLIST.md`
 - PRD: `docs/PRD.md`
 

@@ -82,8 +82,8 @@ Updated 2026-03-25 after v9 fine-tune (macro F1=0.9752, FPR=1.89%). Full analysi
 | ~~IOC DB bundled only 2,051 entries~~ | ~~Low~~ | ✅ M5 |
 | VS Code extension unpublished | **Low** | M9 |
 | ~~`exfil_channels.yaml` not merged into `default.yaml`~~ | ~~Low~~ | ✅ M6 |
-| `docs/RELEASE_ONBOARDING.md` stale | **Low** | M10 |
-| `docs/PROMPT_INJECTION_CORPUS.md` references non-existent script | **Low** | M10 |
+| ~~`docs/RELEASE_ONBOARDING.md` stale~~ | ~~Low~~ | ✅ M10 |
+| ~~`docs/PROMPT_INJECTION_CORPUS.md` references non-existent script~~ | ~~Low~~ | ✅ M10 |
 | No warning when ML model is not installed | **Low** | M10.5 |
 
 ---
@@ -241,7 +241,7 @@ The VS Code extension is scaffolded but blocked by Microsoft's account registrat
 
 ---
 
-## Milestone 10 — Documentation Accuracy
+## ~~Milestone 10 — Documentation Accuracy~~ ✅ COMPLETE (2026-03-26)
 
 **Goal:** Ensure all docs reflect current state. No stale metrics, no references to non-existent files.
 

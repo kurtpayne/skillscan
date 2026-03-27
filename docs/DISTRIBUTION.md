@@ -137,7 +137,7 @@ Suggested rollout: start with read-only scan flows (`--fail-on never`, JSON outp
 
 ---
 
-See also: `docs/RELEASE_ONBOARDING.md` for first-time account and publisher setup.
+See also: `docs/RELEASE_CHECKLIST.md` for first-time account and publisher setup.
 
 ## Release Automation Notes
 

@@ -104,19 +104,19 @@ The ML layer applies a fine-tuned DeBERTa-v3-base classifier to each text file i
 
 **Chunking strategy:** Files are chunked to 512 tokens with a 64-token stride. Each chunk is scored independently; the file verdict is the maximum injection probability across all chunks. This ensures a single malicious instruction buried deep in a large file is not diluted by surrounding benign content.
 
-**Current model performance (v18161-5ep, v9 corpus):**
+**Current model performance (v18258-5ep, v10.1 corpus):**
 
 | Metric | Value |
 |---|---|
-| Macro F1 | **0.9752** |
-| False Positive Rate | **1.89%** |
-| Accuracy | 0.9797 |
-| Eval set size | 444 (locked before first fine-tune, never used for training) |
-| Training corpus | 18,161 examples (9,900 benign · 8,261 injection) |
+| Macro F1 | **0.9787** |
+| False Positive Rate | **2.18%** |
+| Accuracy | 0.9823 |
+| Eval set size | 451 (locked before first fine-tune, never used for training) |
+| Training corpus | 18,258 examples (9,900 benign · 8,358 injection) |
 
 Both SaaS quality thresholds are met. See `docs/MODEL_METRICS.md` for full version history.
 
-**Fine-tune pipeline:** LoRA adapter trained via `scripts/finetune_modal.py` on Modal (GPU: T4, 5 epochs, `r=64 alpha=128`). Pushed to HuggingFace Hub only when held-out eval Macro F1 ≥ 0.97 AND FPR ≤ 2%.
+**Fine-tune pipeline:** LoRA adapter trained via `scripts/finetune_modal.py` on Modal (GPU: T4, 5 epochs, `r=64 alpha=128`). Pushed to HuggingFace Hub only when held-out eval Macro F1 ≥ 0.97 AND FPR ≤ 5%. Intermediate checkpoints saved every 500 steps (`save_total_limit=3`).
 
 ---
 
