@@ -643,7 +643,11 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
-    }
+    },
+    "litellm": [
+      "1.82.7",
+      "1.82.8"
+    ]
   },
   "npm": {
     "lodash": {
