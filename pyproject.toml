@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "skillscan-security"
-version = "0.7.0"
+version = "0.8.0"
 description = "Standalone AI skill security scanner — detects prompt injection, tool poisoning, and supply-chain attacks in MCP skills"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -54,6 +54,10 @@ ml = [
   "transformers>=4.40.0",
   "torch>=2.2.0",
 ]
+# Quality linter — delegates to skillscan-lint when installed
+lint = [
+  "skillscan-lint>=0.1.0",
+]
 # LLM-powered adversarial skill fuzzer (M19)
 fuzzer = [
   "openai>=1.30.0",
@@ -71,7 +75,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-skillscan = ["data/policies/*.yaml", "data/intel/*.json", "data/rules/*.yaml"]
+skillscan = ["data/policies/*.yaml", "data/intel/*.json", "data/rules/*.yaml", "data/skill-schema.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

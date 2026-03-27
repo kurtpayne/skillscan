@@ -1,0 +1,119 @@
+name: Sync skill-schema.yaml to skillscan-lint
+
+# Fires whenever skill-schema.yaml changes on main.
+# Opens (or force-updates) a PR in kurtpayne/skillscan-lint with the new copy.
+# Requires a PAT with `contents:write` and `pull-requests:write` on the lint repo.
+# Store it as the repository secret SCHEMA_SYNC_PAT in skillscan-security.
+# A classic PAT with `repo` scope works; a fine-grained PAT scoped to
+# kurtpayne/skillscan-lint with Contents + Pull Requests (read/write) also works.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/skillscan/data/skill-schema.yaml"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force sync even if schema is unchanged"
+        type: boolean
+        default: false
+
+jobs:
+  sync-schema:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read   # read the schema from this repo
+
+    steps:
+      - name: Checkout skillscan-security
+        uses: actions/checkout@v4
+        with:
+          path: skillscan-security
+
+      - name: Clone skillscan-lint
+        env:
+          GH_TOKEN: ${{ secrets.SCHEMA_SYNC_PAT }}
+        run: |
+          git clone https://x-access-token:${GH_TOKEN}@github.com/kurtpayne/skillscan-lint.git skillscan-lint
+
+      - name: Compare schemas
+        id: diff
+        run: |
+          SRC=skillscan-security/src/skillscan/data/skill-schema.yaml
+          DST=skillscan-lint/src/skillscan_lint/data/skill-schema.yaml
+
+          # Ensure destination data dir exists
+          mkdir -p skillscan-lint/src/skillscan_lint/data
+
+          if diff -q "$SRC" "$DST" > /dev/null 2>&1; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Schemas are identical — no PR needed."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Schemas differ — will open PR."
+          fi
+
+      - name: Open PR in skillscan-lint
+        if: steps.diff.outputs.changed == 'true' || inputs.force == true
+        env:
+          GH_TOKEN: ${{ secrets.SCHEMA_SYNC_PAT }}
+        run: |
+          SRC=skillscan-security/src/skillscan/data/skill-schema.yaml
+          DST_REPO=skillscan-lint
+          DST_FILE=src/skillscan_lint/data/skill-schema.yaml
+          BRANCH=chore/sync-skill-schema
+
+          cd "$DST_REPO"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Reset or create the sync branch from latest main
+          git fetch origin
+          git checkout -B "$BRANCH" origin/main
+
+          # Copy the updated schema
+          mkdir -p "$(dirname "$DST_FILE")"
+          cp "../$SRC" "$DST_FILE"
+
+          # Get the schema_version from the new file for the PR title
+          SCHEMA_VER=$(grep '^schema_version:' "$DST_FILE" | awk '{print $2}' | tr -d '"')
+
+          git add "$DST_FILE"
+
+          if git diff --cached --quiet; then
+            echo "No changes after copy — branch already up to date."
+            exit 0
+          fi
+
+          # Compute a short diff summary for the PR body
+          DIFF_SUMMARY=$(git diff --cached --stat)
+
+          git commit -m "chore: sync skill-schema.yaml from skillscan-security (v${SCHEMA_VER})"
+
+          git push --force origin "$BRANCH"
+
+          # Check if a PR already exists for this branch
+          EXISTING_PR=$(gh pr list \
+            --repo kurtpayne/skillscan-lint \
+            --head "$BRANCH" \
+            --state open \
+            --json number \
+            --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "Updating existing PR #${EXISTING_PR}"
+            gh pr edit "$EXISTING_PR" \
+              --repo kurtpayne/skillscan-lint \
+              --title "chore: sync skill-schema.yaml from skillscan-security (v${SCHEMA_VER})" \
+              --body "$(printf 'Automated sync of \`skill-schema.yaml\` from [skillscan-security](https://github.com/kurtpayne/skillscan-security).\n\nThis PR was opened automatically by the \`schema-sync\` workflow.\n\n**Changes:**\n\`\`\`\n%s\n\`\`\`\n\n> Merge this PR to keep the standalone \`skillscan-lint\` fallback schema in sync.' "$DIFF_SUMMARY")"
+          else
+            echo "Opening new PR"
+            gh pr create \
+              --repo kurtpayne/skillscan-lint \
+              --head "$BRANCH" \
+              --base main \
+              --title "chore: sync skill-schema.yaml from skillscan-security (v${SCHEMA_VER})" \
+              --body "$(printf 'Automated sync of \`skill-schema.yaml\` from [skillscan-security](https://github.com/kurtpayne/skillscan-security).\n\nThis PR was opened automatically by the \`schema-sync\` workflow.\n\n**Changes:**\n\`\`\`\n%s\n\`\`\`\n\n> Merge this PR to keep the standalone \`skillscan-lint\` fallback schema in sync.' "$DIFF_SUMMARY")"
+          fi

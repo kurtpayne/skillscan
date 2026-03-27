@@ -28,6 +28,14 @@ from pathlib import Path
 import yaml  # type: ignore[import-untyped]
 
 from skillscan.models import Finding, Severity
+from skillscan.skill_schema import (
+    GRAPH_EDGE_KEYS as _GRAPH_EDGE_KEYS,
+    HIGH_RISK_TOOLS as _HIGH_RISK_TOOLS,
+    HIGH_RISK_UNKNOWN_KEYS as _HIGH_RISK_UNKNOWN_KEYS,
+    MEDIUM_RISK_TOOLS as _MEDIUM_RISK_TOOLS,
+    STANDARD_FM_KEYS as _STANDARD_FM_KEYS,
+    TOOL_RISK as _TOOL_RISK,
+)
 
 # ---------------------------------------------------------------------------
 # Patterns
@@ -45,43 +53,8 @@ _FETCH_TOOL_RE = re.compile(
     re.IGNORECASE,
 )
 
-# High-risk tools that grant code execution or full computer control
-_HIGH_RISK_TOOLS = frozenset(
-    {
-        "bash",
-        "computer",
-        "computer_use",
-        "shell",
-        "terminal",
-        "execute_code",
-        "run_code",
-        "code_execution",
-        "exec",
-    }
-)
-
-# Medium-risk tools: network access or arbitrary file write
-_MEDIUM_RISK_TOOLS = frozenset(
-    {
-        "webfetch",
-        "web_fetch",
-        "url_fetch",
-        "http_get",
-        "fetch",
-        "curl",
-        "wget",
-        "write",
-        "write_file",
-        "file_write",
-        "create_file",
-    }
-)
-
-# Risk tiers: higher number = higher risk
-_TOOL_RISK: dict[str, int] = {
-    **{t: 2 for t in _MEDIUM_RISK_TOOLS},
-    **{t: 3 for t in _HIGH_RISK_TOOLS},
-}
+# Tool risk constants are loaded from skill-schema.yaml via skill_schema.py
+# _HIGH_RISK_TOOLS, _MEDIUM_RISK_TOOLS, _TOOL_RISK are imported above.
 
 
 def _max_tool_risk(tools: Iterable[str]) -> int:
@@ -732,31 +705,8 @@ def skill_graph_findings(root: Path) -> list[Finding]:
 # PSV-004 — Unknown frontmatter keys
 # ---------------------------------------------------------------------------
 
-# Standard frontmatter keys recognised by the SkillScan / Manus skill schema.
-# Keys outside this set are flagged as potential injection vectors.
-_STANDARD_FM_KEYS: frozenset[str] = frozenset({
-    # Identity
-    "name", "version", "description", "author", "license",
-    # Capability declarations
-    "allowed-tools", "allowed_tools", "tools", "capabilities",
-    # Classification
-    "tags", "category", "categories",
-    # Documentation
-    "examples", "usage", "notes", "changelog", "updated",
-    # Compatibility
-    "compatibility", "prerequisites", "requires",
-    # Sub-skill references
-    "skills", "sub-skills", "sub_skills",
-    # Context / memory
-    "context",
-})
-
-# High-risk unknown keys that are common injection vectors
-_HIGH_RISK_UNKNOWN_KEYS: frozenset[str] = frozenset({
-    "system_override", "system_prompt", "behavior", "activation",
-    "override", "inject", "hidden", "secret", "confidential",
-    "instructions", "prompt", "jailbreak", "bypass",
-})
+# _STANDARD_FM_KEYS and _HIGH_RISK_UNKNOWN_KEYS are loaded from skill-schema.yaml via skill_schema.py
+# and imported at the top of this module.
 
 
 def _check_unknown_frontmatter_keys(node: SkillNode) -> list[Finding]:
