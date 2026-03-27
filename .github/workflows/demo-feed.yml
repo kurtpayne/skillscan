@@ -1,0 +1,95 @@
+name: Demo Feed Update
+
+on:
+  schedule:
+    # Run every Sunday at 04:00 UTC (after the Saturday intel update at 18:00 UTC)
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run — print results without pushing to website"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  scan-demo-feed:
+    name: Scan demo feed entries and publish results
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout skillscan-security
+        uses: actions/checkout@v4
+        with:
+          path: skillscan-security
+
+      - name: Checkout skillscan-corpus (for skill-index.yaml)
+        uses: actions/checkout@v4
+        with:
+          repository: kurtpayne/skillscan-corpus
+          token: ${{ secrets.SCHEMA_SYNC_PAT }}
+          path: skillscan-corpus
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install skillscan
+        run: |
+          pip install --quiet ./skillscan-security
+
+      - name: Run demo feed scan
+        id: scan
+        run: |
+          python3 skillscan-security/.github/scripts/build_demo_feed.py \
+            --index skillscan-corpus/index/skill-index.yaml \
+            --output demo-feed.json \
+            ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
+
+      - name: Show summary
+        run: |
+          if [ -f demo-feed.json ]; then
+            python3 -c "
+          import json, sys
+          data = json.load(open('demo-feed.json'))
+          entries = data.get('entries', [])
+          blocks = sum(1 for e in entries if e.get('verdict') == 'BLOCK')
+          allows = sum(1 for e in entries if e.get('verdict') == 'ALLOW')
+          errors = sum(1 for e in entries if e.get('verdict') == 'ERROR')
+          print(f'Demo feed: {len(entries)} entries — BLOCK={blocks}, ALLOW={allows}, ERROR={errors}')
+          unexpected = [e for e in entries if e.get('verdict') != e.get('expected_verdict')]
+          if unexpected:
+              print(f'WARNING: {len(unexpected)} unexpected verdicts:')
+              for e in unexpected:
+                  print(f'  {e[\"id\"]}: expected {e[\"expected_verdict\"]}, got {e[\"verdict\"]}')
+          else:
+              print('All verdicts match expected.')
+          " | tee -a \$GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Push demo-feed.json to skillscan-website
+        if: ${{ inputs.dry_run != 'true' && success() }}
+        run: |
+          git clone --depth=1 \
+            https://x-access-token:${{ secrets.SCHEMA_SYNC_PAT }}@github.com/kurtpayne/skillscan-website.git \
+            skillscan-website
+
+          cp demo-feed.json skillscan-website/client/public/demo-feed.json
+
+          cd skillscan-website
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet HEAD -- client/public/demo-feed.json; then
+            echo "demo-feed.json unchanged — skipping commit"
+          else
+            git add client/public/demo-feed.json
+            SCAN_DATE=$(date -u +%Y-%m-%d)
+            git commit -m "chore: update demo feed [${SCAN_DATE}] [skip ci]"
+            git push origin main
+            echo "demo-feed.json updated and pushed"
+          fi
