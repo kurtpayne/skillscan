@@ -224,6 +224,10 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "PINJ-016" for f in findings_122)
     findings_123 = _scan("examples/showcase/127_teampcp_kubernetes_lateral").findings
     assert any(f.id == "EXF-020" for f in findings_123)
+    findings_124 = _scan("examples/showcase/128_obf005_covert_channel_dns_exfil").findings
+    assert any(f.id == "OBF-005" for f in findings_124)
+    findings_125 = _scan("examples/showcase/129_cap001_capability_laundering").findings
+    assert any(f.id == "CAP-001" for f in findings_125)
 
 
 def test_showcase_policy_block_domain() -> None:

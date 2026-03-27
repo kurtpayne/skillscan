@@ -143,3 +143,5 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 125. `125_glassworm_chrome_extension_rat`: GlassWorm multi-stage Chrome extension RAT (`MAL-054`)
 126. `126_contexthub_doc_poisoning`: AI documentation context poisoning via ContextHub (`PINJ-016`)
 127. `127_teampcp_kubernetes_lateral`: TeamPCP sysmon backdoor Kubernetes lateral movement (`EXF-020`)
+128. `128_obf005_covert_channel_dns_exfil`: Covert-channel exfiltration via DNS TXT subdomain encoding (`OBF-005`)
+129. `129_cap001_capability_laundering`: Capability laundering — date formatter reading AWS credentials and SSH keys (`CAP-001`)
