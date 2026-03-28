@@ -29,11 +29,15 @@ import yaml  # type: ignore[import-untyped]
 
 from skillscan.models import Finding, Severity
 from skillscan.skill_schema import (
-    GRAPH_EDGE_KEYS as _GRAPH_EDGE_KEYS,
     HIGH_RISK_TOOLS as _HIGH_RISK_TOOLS,
+)
+from skillscan.skill_schema import (
     HIGH_RISK_UNKNOWN_KEYS as _HIGH_RISK_UNKNOWN_KEYS,
-    MEDIUM_RISK_TOOLS as _MEDIUM_RISK_TOOLS,
+)
+from skillscan.skill_schema import (
     STANDARD_FM_KEYS as _STANDARD_FM_KEYS,
+)
+from skillscan.skill_schema import (
     TOOL_RISK as _TOOL_RISK,
 )
 

@@ -20,7 +20,6 @@ Exit codes:
     2  Files were updated (useful for CI: detect drift).
 """
 import argparse
-import json
 import re
 import sys
 from collections import Counter, OrderedDict
@@ -206,7 +205,10 @@ def sync_file(path: Path, begin: str, end: str, replacement: str, dry_run: bool)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--website-dir", default=None,
                         help="Path to skillscan-website repo root (default: ../skillscan-website)")
     parser.add_argument("--dry-run", action="store_true",
@@ -240,7 +242,10 @@ def main() -> int:
     # Combine static + chain rules for the website rules array
     all_rules = static_rules + chain_rules
     total = len(all_rules)
-    print(f"Loaded {len(static_rules)} static + {len(chain_rules)} chain rules from {yaml_path.name} (version {version})")
+    print(
+        f"Loaded {len(static_rules)} static + {len(chain_rules)} chain rules "
+        f"from {yaml_path.name} (version {version})"
+    )
 
     # Build replacement blocks
     rules_block    = build_rules_block(all_rules)

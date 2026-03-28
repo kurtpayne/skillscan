@@ -21,11 +21,8 @@ import logging
 import os
 import pathlib
 import subprocess
-import sys
-import textwrap
 import time
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 logger = logging.getLogger("skill_fuzzer")
 
@@ -57,11 +54,11 @@ class FuzzResult:
     variant_index: int
     variant_text: str
     diff: str
-    scan_result: Optional[dict] = None
-    error: Optional[str] = None
+    scan_result: dict | None = None
+    error: str | None = None
 
     @property
-    def evaded(self) -> Optional[bool]:
+    def evaded(self) -> bool | None:
         """True if the variant was NOT detected by skillscan (evasion succeeded)."""
         if self.scan_result is None:
             return None
@@ -93,8 +90,8 @@ class LLMClient:
     def __init__(
         self,
         model: str = "gpt-4.1-mini",
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         temperature: float = 0.9,
         max_tokens: int = 4096,
         timeout: int = 60,
@@ -183,9 +180,9 @@ class LLMClient:
 # ---------------------------------------------------------------------------
 
 def load_seeds(
-    seed_dir: Optional[pathlib.Path] = None,
-    seed_files: Optional[list[pathlib.Path]] = None,
-    strategy: Optional[str] = None,
+    seed_dir: pathlib.Path | None = None,
+    seed_files: list[pathlib.Path] | None = None,
+    strategy: str | None = None,
 ) -> list[pathlib.Path]:
     """
     Return a list of seed SKILL.md paths.
@@ -256,7 +253,7 @@ def unified_diff(original: str, variant: str, seed_name: str, variant_index: int
 # Scan integration
 # ---------------------------------------------------------------------------
 
-def run_skillscan(skill_path: pathlib.Path, sarif: bool = True) -> Optional[dict]:
+def run_skillscan(skill_path: pathlib.Path, sarif: bool = True) -> dict | None:
     """
     Run `skillscan scan` on the given file and return the parsed SARIF dict,
     or None if skillscan is not installed.
@@ -437,8 +434,8 @@ class SkillFuzzer:
         evaded = [r for r in scanned if r.evaded is True]
         detected = [r for r in scanned if r.evaded is False]
 
-        evasion_rate: Optional[float] = None
-        fp_rate: Optional[float] = None
+        evasion_rate: float | None = None
+        fp_rate: float | None = None
 
         if self.strategy in ("evasion", "obfuscation", "authority"):
             evasion_rate = len(evaded) / len(scanned) if scanned else None

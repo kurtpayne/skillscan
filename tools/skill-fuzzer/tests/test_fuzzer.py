@@ -19,15 +19,14 @@ import pytest
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from fuzzer import (
+    STRATEGIES,
     FuzzResult,
     LLMClient,
     SkillFuzzer,
-    STRATEGIES,
     _strip_code_fences,
     load_seeds,
     unified_diff,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -184,7 +183,7 @@ class TestSkillFuzzerDryRun:
     ):
         fuzzer = _make_fuzzer("evasion", tmp_output_dir, variants=2)
         seeds = load_seeds(seed_dir=tmp_seed_dir)
-        summary = fuzzer.run(seeds)
+        fuzzer.run(seeds)
         summary_path = tmp_output_dir / "summary.json"
         assert summary_path.exists()
         loaded = json.loads(summary_path.read_text())

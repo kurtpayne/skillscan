@@ -1842,19 +1842,19 @@ def lint_cmd(ctx: typer.Context) -> None:
     context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
 )
 def trace_cmd(ctx: typer.Context) -> None:
-    """Behavioral tracer for AI agent skill files (requires skillscan-trace).
+    """Behavioral tracer for AI agent skill files.
 
     All arguments and flags are forwarded directly to skillscan-trace.
     Run 'skillscan trace --help' to see available options.
 
-    Install: pip install 'skillscan-security[trace]'
+    Bundled with skillscan-security — no separate install needed.
     """
     import subprocess
     trace_bin = shutil.which("skillscan-trace")
     if trace_bin is None:
         console.print(
-            "[yellow]skillscan-trace is not installed.[/yellow]\n"
-            "Install it with: [bold]pip install 'skillscan-security[trace]'[/bold]"
+            "[yellow]skillscan-trace binary not found.[/yellow]\n"
+            "Try: [bold]pip install --upgrade skillscan-security[/bold]"
         )
         raise typer.Exit(1)
     result = subprocess.run([trace_bin] + ctx.args)

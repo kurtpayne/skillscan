@@ -18,18 +18,16 @@ Usage:
   python3 update_domains.py --ci          # CI mode: exit 1 if changes found (triggers PR)
 """
 
-import json
-import re
-import sys
-import hashlib
 import argparse
-from datetime import datetime, timezone
+import hashlib
+import json
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 try:
     import requests
-    import yaml
 except ImportError:
     print("Missing dependencies. Run: pip install requests pyyaml", file=sys.stderr)
     sys.exit(1)
@@ -146,14 +144,14 @@ def check_sources() -> list[dict[str, Any]]:
 
         if prev_signal is None:
             print(f"  [NEW]  {name}: first check, signal={signal[:20]}")
-            state[name] = {"signal": signal, "last_checked": datetime.now(timezone.utc).isoformat()}
+            state[name] = {"signal": signal, "last_checked": datetime.now(UTC).isoformat()}
         elif signal != prev_signal:
             print(f"  [CHANGED] {name}: {prev_signal[:20]} → {signal[:20]} (last checked: {prev_checked})")
             changed.append({**source, "old_signal": prev_signal, "new_signal": signal})
-            state[name] = {"signal": signal, "last_checked": datetime.now(timezone.utc).isoformat()}
+            state[name] = {"signal": signal, "last_checked": datetime.now(UTC).isoformat()}
         else:
             print(f"  [OK]   {name}: no change (signal={signal[:20]}, last checked: {prev_checked})")
-            state[name]["last_checked"] = datetime.now(timezone.utc).isoformat()
+            state[name]["last_checked"] = datetime.now(UTC).isoformat()
 
     save_state(state)
     return changed
@@ -181,7 +179,8 @@ def format_review_notice(changed: list[dict[str, Any]]) -> str:
         "### What to check",
         "1. Open each review URL above.",
         "2. Look for new domain patterns not already covered by the relevant profile in `verified.yml`.",
-        "3. Add new wildcard patterns where appropriate (prefer `*.service.provider.com` over specific subdomains).",
+        "3. Add new wildcard patterns where appropriate "
+        "(prefer `*.service.provider.com` over specific subdomains).",
         "4. Update `_meta.updated` and `_meta.version` in `verified.yml`.",
         "5. Commit with message: `chore(trace): update domain allowlist — <provider> <date>`",
         "",

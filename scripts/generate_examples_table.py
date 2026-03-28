@@ -1,11 +1,16 @@
-import sys, yaml
+from __future__ import annotations
+
+import sys
+from collections import defaultdict
 from pathlib import Path
+
+import yaml
 
 sys.path.insert(0, '/home/ubuntu/skillscan-security/src')
 
 rules_dir = Path('/home/ubuntu/skillscan-security/src/skillscan/data/rules')
-all_rules = []
-all_chain = []
+all_rules: list[dict] = []
+all_chain: list[dict] = []
 
 for yf in sorted(rules_dir.glob('*.yaml')):
     with open(yf) as f:
@@ -17,13 +22,11 @@ for yf in sorted(rules_dir.glob('*.yaml')):
         r['_source'] = yf.name
         all_chain.append(r)
 
-# Build category groups
-from collections import defaultdict
-by_cat = defaultdict(list)
+by_cat: dict[str, list[dict]] = defaultdict(list)
 for r in all_rules:
     by_cat[r.get('category', 'uncategorized')].append(r)
 
-chain_by_cat = defaultdict(list)
+chain_by_cat: dict[str, list[dict]] = defaultdict(list)
 for r in all_chain:
     chain_by_cat[r.get('category', 'uncategorized')].append(r)
 
@@ -58,14 +61,22 @@ for cat, label in cat_labels.items():
     lines.append('|---|---|---|---|')
     for r in sorted(rules, key=lambda x: x['id']):
         tags = ', '.join(r.get('metadata', {}).get('tags', []))
-        lines.append(f"| `{r['id']}` | {r.get('severity','?')} | {r.get('title','').replace('|','/')} | {tags} |")
+        title = r.get('title', '').replace('|', '/')
+        lines.append(f"| `{r['id']}` | {r.get('severity','?')} | {title} | {tags} |")
     lines.append('')
 
-lines += ['## Chain Rules', '', '| ID | Severity | Title | Requires | Tags |', '|---|---|---|---|---|']
+lines += [
+    '## Chain Rules', '',
+    '| ID | Severity | Title | Requires | Tags |',
+    '|---|---|---|---|---|',
+]
 for r in sorted(all_chain, key=lambda x: x['id']):
     req = ' + '.join(r.get('all_of', []))
     tags = ', '.join(r.get('metadata', {}).get('tags', []))
-    lines.append(f"| `{r['id']}` | {r.get('severity','?')} | {r.get('title','').replace('|','/')} | `{req}` | {tags} |")
+    title = r.get('title', '').replace('|', '/')
+    lines.append(
+        f"| `{r['id']}` | {r.get('severity','?')} | {title} | `{req}` | {tags} |"
+    )
 lines.append('')
 
 out = Path('/home/ubuntu/skillscan-security/docs/EXAMPLES.md')

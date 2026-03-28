@@ -22,15 +22,12 @@ Examples:
 from __future__ import annotations
 
 import logging
-import os
 import pathlib
 import sys
-import textwrap
-from typing import Optional
 
 import click
 
-from fuzzer import LLMClient, SkillFuzzer, STRATEGIES, load_seeds
+from fuzzer import STRATEGIES, LLMClient, SkillFuzzer, load_seeds
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -140,17 +137,17 @@ def _setup_logging(verbose: bool) -> None:
 def main(
     strategy: str,
     variants: int,
-    seed_dir: Optional[pathlib.Path],
+    seed_dir: pathlib.Path | None,
     seed_files: tuple[pathlib.Path, ...],
     output_dir: pathlib.Path,
     model: str,
-    base_url: Optional[str],
-    api_key: Optional[str],
+    base_url: str | None,
+    api_key: str | None,
     temperature: float,
     max_tokens: int,
     scan: bool,
     dry_run: bool,
-    max_seeds: Optional[int],
+    max_seeds: int | None,
     verbose: bool,
 ) -> None:
     """Generate adversarial SKILL.md variants using LLM-powered mutations."""
@@ -246,7 +243,7 @@ def _print_summary(summary: dict) -> None:
     click.echo("=" * 60 + "\n")
 
 
-def _read_secret(key: str) -> Optional[str]:
+def _read_secret(key: str) -> str | None:
     """Read a key from ~/.skillscan-secrets (KEY=value format)."""
     secrets_path = pathlib.Path.home() / ".skillscan-secrets"
     if not secrets_path.exists():
