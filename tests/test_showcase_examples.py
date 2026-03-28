@@ -73,8 +73,11 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXF-011" for f in findings_52)
     findings_53 = _scan("examples/showcase/53_claude_base_url_override").findings
     assert any(f.id == "EXF-012" for f in findings_53)
+    import os
+    _files_54 = list(os.walk("examples/showcase/54_claude_hooks_rce"))
+    print(f"\n[DIAG] showcase 54 files: {_files_54}", flush=True)
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
-    print(f"\n[DIAG] findings_54 ids: {[f.id for f in findings_54]}", flush=True)
+    print(f"[DIAG] findings_54 ids: {[f.id for f in findings_54]}", flush=True)
     assert any(f.id == "MAL-015" for f in findings_54), f"MAL-015 not in {[f.id for f in findings_54]}"
     findings_55 = _scan("examples/showcase/55_pastebin_stegobin_resolver").findings
     assert any(f.id == "MAL-016" for f in findings_55)
