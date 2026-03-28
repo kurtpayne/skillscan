@@ -69,6 +69,9 @@ def custom_rules_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     import skillscan.rules_sync as rules_sync_mod
 
     monkeypatch.setattr(rules_sync_mod, "USER_RULES_DIR", rules_dir)
+    # Ensure SKILLSCAN_NO_USER_RULES is not set so the user-local rules dir is
+    # consulted even when running under CI (which sets this env var globally).
+    monkeypatch.delenv("SKILLSCAN_NO_USER_RULES", raising=False)
 
     # Clear the LRU cache so the patched directory is used on the next call
     load_compiled_builtin_rulepack.cache_clear()

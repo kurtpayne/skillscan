@@ -10,6 +10,10 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.12', '3.13']
+    env:
+      # P5: Prevent user-local ~/.skillscan/rules/ from influencing test results.
+      # Tests must pass against the bundled rulepack only (post-mortem action item).
+      SKILLSCAN_NO_USER_RULES: "1"
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python

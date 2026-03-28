@@ -169,7 +169,14 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
     for f in files:
         log.debug("  bundled: %s", f)
 
-    rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in files]
+    # Build a name -> version map for bundled files so we can version-gate user-local files.
+    bundled_versions: dict[str, str] = {}
+    bundled_rulepacks: list[RulePack] = []
+    for p in files:
+        rp = _load_yaml_rule_file(p.read_text(encoding="utf-8"))
+        bundled_versions[p.name] = rp.version
+        bundled_rulepacks.append(rp)
+    rulepacks = bundled_rulepacks
 
     # Merge user-local rules on top of bundled rules (signature-as-data layer).
     # User-local rules are downloaded by `skillscan rules sync` and live in
@@ -194,10 +201,24 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
                         len(user_files),
                         user_dir,
                     )
+                    accepted: list[RulePack] = []
                     for f in user_files:
-                        log.debug("  user-local: %s", f)
-                    user_rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in user_files]
-                    rulepacks = rulepacks + user_rulepacks
+                        user_rp = _load_yaml_rule_file(f.read_text(encoding="utf-8"))
+                        bundled_ver = bundled_versions.get(f.name)
+                        # P6: Skip user-local files that are older than their bundled counterpart.
+                        # Version strings use YYYY.MM.DD.N format and sort lexicographically.
+                        if bundled_ver is not None and user_rp.version < bundled_ver:
+                            log.warning(
+                                "[rules] skipping stale user-local rule file %s "
+                                "(user=%s < bundled=%s); run 'skillscan rules sync' to update",
+                                f.name,
+                                user_rp.version,
+                                bundled_ver,
+                            )
+                        else:
+                            log.debug("  user-local: %s (version=%s)", f, user_rp.version)
+                            accepted.append(user_rp)
+                    rulepacks = rulepacks + accepted
                 else:
                     log.debug(
                         "[rules] user-local rules dir exists (%s) but no matching YAML for channel=%s",
@@ -210,12 +231,16 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
             pass
 
     merged = _merge_rulepacks(rulepacks)
-    log.debug(
-        "[rules] merged rulepack ready: version=%s  static=%d  chain=%d  action_patterns=%d",
+    # P4: Log rulepack provenance at INFO on every cold load so developers see it
+    # without needing --debug.  The lru_cache on load_compiled_builtin_rulepack means
+    # this fires once per process (or once per test when the cache is cleared by conftest).
+    log.info(
+        "[rules] rulepack loaded: version=%s  static=%d  chain=%d  action_patterns=%d  channel=%s",
         merged.version,
         len(merged.static_rules),
         len(merged.chain_rules),
         len(merged.action_patterns),
+        channel,
     )
     return merged
 
