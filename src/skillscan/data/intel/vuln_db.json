@@ -643,6 +643,25 @@
         "severity": "low",
         "fixed": "2.7.1-rc1"
       }
+    },
+    "litellm": {
+      "1.82.7": {
+        "id": "PYPI-LITELLM-2026-03",
+        "severity": "critical",
+        "fixed": "1.82.9"
+      },
+      "1.82.8": {
+        "id": "PYPI-LITELLM-2026-03",
+        "severity": "critical",
+        "fixed": "1.82.9"
+      }
+    },
+    "telnyx": {
+      "2.0.0": {
+        "id": "PYPI-TELNYX-2026-03",
+        "severity": "critical",
+        "fixed": "2.0.1"
+      }
     }
   },
   "npm": {
@@ -786,6 +805,13 @@
         "id": "GHSA-29xp-372q-xqph",
         "severity": "medium",
         "fixed": "7.5.2"
+      }
+    },
+    "cline": {
+      "2.3.0": {
+        "id": "NPM-CLINE-2026-03",
+        "severity": "critical",
+        "fixed": "2.3.1"
       }
     }
   }
