@@ -5,7 +5,6 @@ on:
   pull_request:
 
 env:
-  SKILLSCAN_NO_USER_RULES: "1"
 
 jobs:
   test:
