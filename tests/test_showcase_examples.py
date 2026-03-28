@@ -74,8 +74,15 @@ def test_showcase_detection_rules() -> None:
     findings_53 = _scan("examples/showcase/53_claude_base_url_override").findings
     assert any(f.id == "EXF-012" for f in findings_53)
     import os
+    from importlib import resources
+    from skillscan.rules import load_builtin_rulepack
+    _rp = load_builtin_rulepack()
+    _mal015 = next((r for r in _rp.static_rules if r.id == 'MAL-015'), None)
+    _rules_path = str(resources.files('skillscan.data.rules'))
+    print(f"\n[DIAG] rules path: {_rules_path}", flush=True)
+    print(f"[DIAG] MAL-015 pattern: {_mal015.pattern[:80] if _mal015 else 'NOT FOUND'}", flush=True)
     _files_54 = list(os.walk("examples/showcase/54_claude_hooks_rce"))
-    print(f"\n[DIAG] showcase 54 files: {_files_54}", flush=True)
+    print(f"[DIAG] showcase 54 files: {_files_54}", flush=True)
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
     print(f"[DIAG] findings_54 ids: {[f.id for f in findings_54]}", flush=True)
     assert any(f.id == "MAL-015" for f in findings_54), f"MAL-015 not in {[f.id for f in findings_54]}"
