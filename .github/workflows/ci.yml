@@ -106,7 +106,7 @@ jobs:
           for skill_dir in exfiltrator prompt-injection; do
             FIXTURE="/tmp/cisco-skill-scanner/evals/test_skills/malicious/${skill_dir}"
             echo "=== Scanning ${skill_dir} ==="
-            OUTPUT=$(skillscan scan "$FIXTURE" --policy-profile strict 2>&1)
+            OUTPUT=$(skillscan scan "$FIXTURE" --policy-profile strict 2>&1) || true
             echo "$OUTPUT"
             if echo "$OUTPUT" | grep -q "Verdict: BLOCK"; then
               echo "PASS: ${skill_dir} correctly blocked"
@@ -118,7 +118,7 @@ jobs:
           # EICAR fixture: expect at least a finding (ALLOW with score > 0)
           FIXTURE="/tmp/cisco-skill-scanner/evals/test_skills/malicious/eicar-test"
           echo "=== Scanning eicar-test ==="
-          OUTPUT=$(skillscan scan "$FIXTURE" --policy-profile strict 2>&1)
+          OUTPUT=$(skillscan scan "$FIXTURE" --policy-profile strict 2>&1) || true
           echo "$OUTPUT"
           if echo "$OUTPUT" | grep -qE "Score: [1-9]"; then
             echo "PASS: eicar-test produced findings"
@@ -129,7 +129,7 @@ jobs:
           # Safe fixture: must not be blocked
           FIXTURE="/tmp/cisco-skill-scanner/evals/test_skills/safe/simple-formatter"
           echo "=== Scanning simple-formatter (safe) ==="
-          OUTPUT=$(skillscan scan "$FIXTURE" --policy-profile strict 2>&1)
+          OUTPUT=$(skillscan scan "$FIXTURE" --policy-profile strict 2>&1) || true
           echo "$OUTPUT"
           if echo "$OUTPUT" | grep -q "Verdict: ALLOW"; then
             echo "PASS: simple-formatter correctly allowed"
