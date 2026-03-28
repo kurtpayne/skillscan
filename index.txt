@@ -134,6 +134,9 @@ examples/showcase/127_teampcp_kubernetes_lateral/SKILL.md
 examples/showcase/128_obf005_covert_channel_dns_exfil/SKILL.md
 examples/showcase/129_cap001_capability_laundering/SKILL.md
 examples/showcase/12_benign_minimal/SKILL.md
+examples/showcase/130_pinj017_prowler_ec2_tag/SKILL.md
+examples/showcase/131_evasion005_idpi_payload/SKILL.md
+examples/showcase/132_exf021_vscode_live_preview/SKILL.md
 examples/showcase/13_zero_width_evasion/SKILL.md
 examples/showcase/14_base64_hidden_chain/setup.sh
 examples/showcase/15_secret_network_chain/SKILL.md
