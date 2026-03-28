@@ -73,8 +73,19 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXF-011" for f in findings_52)
     findings_53 = _scan("examples/showcase/53_claude_base_url_override").findings
     assert any(f.id == "EXF-012" for f in findings_53)
+    from pathlib import Path
+
+    from skillscan.analysis import iter_text_files
+    from skillscan.policies import load_builtin_policy as _lbp
+
+    _p54 = Path("examples/showcase/54_claude_hooks_rce")
+    _rg = list(_p54.rglob("*"))
+    _strict = _lbp("strict")
+    _inv = iter_text_files(_p54, _strict.limits["max_files"], _strict.limits["max_bytes"], 500, 100_000_000)
+    print(f"DBG54 rglob={[str(x) for x in _rg]}")  # debug
+    print(f"DBG54 text_files={[str(x) for x in _inv.text_files]}")  # debug
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
-    print(f"DBG54 findings={[f.id for f in findings_54]}")  # debug: remove after CI fix
+    print(f"DBG54 findings={[f.id for f in findings_54]}")  # debug
     assert any(f.id == "MAL-015" for f in findings_54), f"MAL-015 missing; got={[f.id for f in findings_54]}"
     findings_55 = _scan("examples/showcase/55_pastebin_stegobin_resolver").findings
     assert any(f.id == "MAL-016" for f in findings_55)
