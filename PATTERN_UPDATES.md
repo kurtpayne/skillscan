@@ -1,5 +1,23 @@
 # Pattern Updates
 
+## 2026-03-27 (patch 2)
+
+rulepack: 2026.03.27.2
+
+CI fix: three new chain rules, three new action patterns, metadata completion, test isolation fixes.
+
+- Added `CHN-012` (critical): **Stealth concealment with network exfiltration chain** — co-occurrence of `stealth_concealment` + `network` action patterns. Detects skills that instruct the agent to hide its actions while also making outbound network calls.
+- Added `CHN-013` (critical): **Container escape with host path mount chain** — co-occurrence of `docker_socket` + `privileged_container` action patterns. Detects privileged containers that also mount the Docker socket, enabling full host compromise.
+- Added `CHN-014` (critical): **Container escape with secret access chain** — co-occurrence of `privileged_container` + `secret_access` action patterns. Detects privileged containers that also access credential files or environment variables.
+- Added action patterns: `stealth_concealment`, `docker_socket`, `privileged_container`.
+- Fixed incomplete metadata blocks on MAL-054, PINJ-016, EXF-020, ABU-002, SUP-001.
+- Fixed showcase 78 to include SCP exfil trigger for CHN-011.
+- Added `tests/conftest.py` lru_cache autouse fixture to prevent cross-test cache poisoning.
+- Added `--debug` flag to `skillscan scan` CLI to surface which rule files are loaded at startup.
+
+Sources:
+- Internal CI failure analysis — see `docs/postmortem-2026-03-27-ci-failures.md`
+
 ## 2026-03-27
 
 rulepack: 2026.03.27.1
