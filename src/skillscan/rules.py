@@ -223,27 +223,31 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
 @lru_cache(maxsize=3)
 def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
     rp = load_builtin_rulepack(channel=channel)
-    static_rules = [
-        CompiledStaticRule(
-            id=r.id,
-            category=r.category,
-            severity=r.severity,
-            confidence=r.confidence,
-            title=r.title,
-            pattern=re.compile(
-                # Strip leading (?is)/(?si) inline flags — we set them explicitly
-                # via re.IGNORECASE | re.DOTALL so the pattern works identically
-                # on all Python versions (3.11–3.13+).
-                re.sub(r"^\(\?[is]{1,2}\)", "", r.pattern),
-                re.IGNORECASE | (re.DOTALL if r.multiline else 0),
-            ),
-            mitigation=r.mitigation,
-            language=(r.metadata.language if r.metadata else None),
-            graph_rule=r.graph_rule,
-            multiline=r.multiline,
+    static_rules = []
+    for r in rp.static_rules:
+        # Detect multiline intent from either the model field OR the legacy (?is) inline flag
+        # prefix in the pattern string.  This dual-check guards against any environment where
+        # Pydantic silently drops the bool field (observed on Python 3.13 in CI).
+        _has_inline_flags = bool(re.match(r"^\(\?[is]{1,2}\)", r.pattern))
+        _is_multiline = r.multiline or _has_inline_flags
+        _stripped_pattern = re.sub(r"^\(\?[is]{1,2}\)", "", r.pattern)
+        static_rules.append(
+            CompiledStaticRule(
+                id=r.id,
+                category=r.category,
+                severity=r.severity,
+                confidence=r.confidence,
+                title=r.title,
+                pattern=re.compile(
+                    _stripped_pattern,
+                    re.IGNORECASE | (re.DOTALL if _is_multiline else 0),
+                ),
+                mitigation=r.mitigation,
+                language=(r.metadata.language if r.metadata else None),
+                graph_rule=r.graph_rule,
+                multiline=_is_multiline,
+            )
         )
-        for r in rp.static_rules
-    ]
     action_patterns = {
         name: re.compile(pattern, re.IGNORECASE) for name, pattern in rp.action_patterns.items()
     }
