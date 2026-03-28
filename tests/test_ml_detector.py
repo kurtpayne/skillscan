@@ -7,6 +7,7 @@ are not in the dev extras).  They verify:
   - The --ml-detect flag is wired through the scan() function
   - The PINJ-ML-UNAVAIL finding has the expected shape
 """
+
 from __future__ import annotations
 
 import tempfile

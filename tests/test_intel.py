@@ -108,10 +108,12 @@ def test_merge_user_intel_ignores_unreadable_source(monkeypatch, tmp_path: Path)
 # CI gate: bundled DB depth (Milestone 5)
 # ---------------------------------------------------------------------------
 
+
 def _bundled_ioc_db_path():
     from pathlib import Path
 
     import skillscan
+
     return Path(skillscan.__file__).parent / "data" / "intel" / "ioc_db.json"
 
 
@@ -119,6 +121,7 @@ def _bundled_vuln_db_path():
     from pathlib import Path
 
     import skillscan
+
     return Path(skillscan.__file__).parent / "data" / "intel" / "vuln_db.json"
 
 

@@ -193,9 +193,7 @@ def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
             title=r.title,
             pattern=re.compile(r.pattern, re.IGNORECASE),
             mitigation=r.mitigation,
-            language=(
-                r.metadata.language if r.metadata else None
-            ),
+            language=(r.metadata.language if r.metadata else None),
             graph_rule=r.graph_rule,
         )
         for r in rp.static_rules

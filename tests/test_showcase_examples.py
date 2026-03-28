@@ -43,9 +43,7 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXF-005" for f in findings_34)
     assert any(f.id == "CHN-005" for f in findings_34)
     assert any(f.id == "MAL-008" for f in _scan("examples/showcase/35_discord_debugger_token_theft").findings)
-    assert any(
-        f.id == "EXF-006" for f in _scan("examples/showcase/36_ipv4_mapped_ipv6_ssrf_bypass").findings
-    )
+    assert any(f.id == "EXF-006" for f in _scan("examples/showcase/36_ipv4_mapped_ipv6_ssrf_bypass").findings)
     assert any(f.id == "SUP-005" for f in _scan("examples/showcase/37_npm_lifecycle_node_eval").findings)
     assert any(f.id == "EXF-007" for f in _scan("examples/showcase/38_openclaw_config_token_access").findings)
     findings_39 = _scan("examples/showcase/39_pr_target_metadata_injection").findings

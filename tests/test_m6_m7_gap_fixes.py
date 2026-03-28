@@ -1,8 +1,8 @@
 """Tests for M6/M7 gap fixes: chain rule proximity window, multilang language filter, ClamAV advisory."""
 
 
-
 # ─── M6 / M7 gap-fix tests ────────────────────────────────────────────────────
+
 
 class TestChainRuleProximityWindow:
     """Chain rules must only fire when required actions appear within
@@ -15,12 +15,14 @@ class TestChainRuleProximityWindow:
 
         rp = load_compiled_builtin_rulepack()
         lines = (
-            ["# My Skill", "## Prerequisites",
-             "Copy your AWS credentials to ~/.aws/credentials before running."]
+            [
+                "# My Skill",
+                "## Prerequisites",
+                "Copy your AWS credentials to ~/.aws/credentials before running.",
+            ]
             + [f"## Step {i}" for i in range(1, 100)]
             + ["benign step line"] * 100
-            + ["## Notifications",
-               "Posts a summary to https://hooks.example.com/webhook when done."]
+            + ["## Notifications", "Posts a summary to https://hooks.example.com/webhook when done."]
         )
         text = "\n".join(lines)
         windows = _extract_actions_windowed(text, rp.action_patterns)
@@ -55,9 +57,7 @@ class TestMultilangLanguageFilter:
 
         rp = load_compiled_builtin_rulepack()
         lang_rules = [r for r in rp.static_rules if r.language is not None]
-        assert len(lang_rules) == 17, (
-            f"Expected 17 language-scoped rules, got {len(lang_rules)}"
-        )
+        assert len(lang_rules) == 17, f"Expected 17 language-scoped rules, got {len(lang_rules)}"
 
     def test_js_rule_not_applied_to_python_file(self, tmp_path):
         """JS-001 (eval) must not fire on a .py file that contains eval()."""
@@ -70,9 +70,7 @@ class TestMultilangLanguageFilter:
         (tmp_path / "helper.py").write_text("result = eval('1 + 1')\n")
         result = scan(tmp_path, policy, "builtin:balanced")
         js_findings = [f for f in result.findings if f.id == "JS-001"]
-        assert len(js_findings) == 0, (
-            f"JS-001 fired on a .py file: {js_findings}"
-        )
+        assert len(js_findings) == 0, f"JS-001 fired on a .py file: {js_findings}"
 
     def test_js_rule_fires_on_js_file(self, tmp_path):
         """JS-001 must fire on a .js file containing eval()."""
@@ -100,9 +98,7 @@ class TestClamAVAdvisory:
         (tmp_path / "setup.sh").write_text("#!/bin/bash\necho hello")
         result = scan(tmp_path, policy, "builtin:balanced", clamav=False)
         advisory = [f for f in result.findings if f.id == "AV-ADVISORY"]
-        assert len(advisory) == 1, (
-            f"Expected 1 AV-ADVISORY finding, got {len(advisory)}"
-        )
+        assert len(advisory) == 1, f"Expected 1 AV-ADVISORY finding, got {len(advisory)}"
         assert "setup.sh" in advisory[0].snippet
 
     def test_advisory_suppressed_without_scripts(self, tmp_path):
@@ -115,9 +111,7 @@ class TestClamAVAdvisory:
         (tmp_path / "README.md").write_text("# Readme")
         result = scan(tmp_path, policy, "builtin:balanced", clamav=False)
         advisory = [f for f in result.findings if f.id == "AV-ADVISORY"]
-        assert len(advisory) == 0, (
-            f"AV-ADVISORY fired unexpectedly: {advisory}"
-        )
+        assert len(advisory) == 0, f"AV-ADVISORY fired unexpectedly: {advisory}"
 
     def test_advisory_suppressed_when_clamav_enabled(self, tmp_path, monkeypatch):
         """AV-ADVISORY must NOT fire when clamav=True (ClamAV handles the scan)."""
@@ -128,14 +122,11 @@ class TestClamAVAdvisory:
 
         # Monkeypatch ClamAV to return available=True with no detections
         monkeypatch.setattr(
-            clamav_mod, "scan_paths",
-            lambda *a, **kw: ClamAVResult(available=True, detections=[])
+            clamav_mod, "scan_paths", lambda *a, **kw: ClamAVResult(available=True, detections=[])
         )
         policy = load_builtin_policy("balanced")
         (tmp_path / "SKILL.md").write_text("# Test skill\nDo something benign.")
         (tmp_path / "setup.sh").write_text("#!/bin/bash\necho hello")
         result = scan(tmp_path, policy, "builtin:balanced", clamav=True)
         advisory = [f for f in result.findings if f.id == "AV-ADVISORY"]
-        assert len(advisory) == 0, (
-            f"AV-ADVISORY fired even though clamav=True: {advisory}"
-        )
+        assert len(advisory) == 0, f"AV-ADVISORY fired even though clamav=True: {advisory}"

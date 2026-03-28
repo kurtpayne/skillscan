@@ -17,6 +17,7 @@ Supported skill formats:
   CLAUDE.md        Claude Projects format (same Markdown schema as SKILL.md)
   gpt_actions.json OpenAI Actions manifest (JSON; tool names extracted from functions[].name)
 """
+
 from __future__ import annotations
 
 import json
@@ -77,11 +78,26 @@ _PSV_NETWORK_RE = re.compile(
     r"|download.*from|upload.*to|connect.*to.*(?:server|endpoint|url|api))",
 )
 # Tools that satisfy the network access requirement (declared in allowed-tools)
-_PSV_NETWORK_TOOLS = frozenset({
-    "webfetch", "web_fetch", "url_fetch", "http_get", "fetch", "curl", "wget",
-    "browser", "web_search", "search", "mcp__fetch__fetch",
-    "bash", "shell", "computer", "computer_use", "execute_code",
-})
+_PSV_NETWORK_TOOLS = frozenset(
+    {
+        "webfetch",
+        "web_fetch",
+        "url_fetch",
+        "http_get",
+        "fetch",
+        "curl",
+        "wget",
+        "browser",
+        "web_search",
+        "search",
+        "mcp__fetch__fetch",
+        "bash",
+        "shell",
+        "computer",
+        "computer_use",
+        "execute_code",
+    }
+)
 
 # Filesystem write implied by instruction body
 _PSV_FSWRITE_RE = re.compile(
@@ -90,11 +106,22 @@ _PSV_FSWRITE_RE = re.compile(
     r"|open\([^)]*['\"][wa]['\"]|write_text\(|Path\([^)]*\)\.write)",
 )
 # Tools that satisfy the filesystem write requirement
-_PSV_FSWRITE_TOOLS = frozenset({
-    "write", "write_file", "file_write", "create_file", "fs_write",
-    "mcp__filesystem__write_file", "mcp__filesystem__create_directory",
-    "bash", "shell", "computer", "computer_use", "execute_code",
-})
+_PSV_FSWRITE_TOOLS = frozenset(
+    {
+        "write",
+        "write_file",
+        "file_write",
+        "create_file",
+        "fs_write",
+        "mcp__filesystem__write_file",
+        "mcp__filesystem__create_directory",
+        "bash",
+        "shell",
+        "computer",
+        "computer_use",
+        "execute_code",
+    }
+)
 
 # Shell execution implied by instruction body.
 # Uses the `regex` library (not stdlib `re`) for variable-width lookbehind,
@@ -115,11 +142,20 @@ _PSV_SHELL_RE = _regex_lib.compile(
 
 
 # Tools that satisfy the shell execution requirement
-_PSV_SHELL_TOOLS = frozenset({
-    "bash", "shell", "terminal", "computer", "computer_use",
-    "execute_code", "run_code", "code_execution", "exec",
-    "mcp__bash__bash",
-})
+_PSV_SHELL_TOOLS = frozenset(
+    {
+        "bash",
+        "shell",
+        "terminal",
+        "computer",
+        "computer_use",
+        "execute_code",
+        "run_code",
+        "code_execution",
+        "exec",
+        "mcp__bash__bash",
+    }
+)
 
 # Memory / config files that, if written, affect all future agent sessions
 _MEMORY_FILES = frozenset(
@@ -511,8 +547,7 @@ def _check_memory_write(node: SkillNode) -> list[Finding]:
             # Only flag if there's also an action verb nearby
             pattern = re.compile(
                 r"\b(?:update|modify|append|overwrite|save|edit|create|patch|write)\b"
-                r"[^.]{0,120}"
-                + re.escape(mem_file),
+                r"[^.]{0,120}" + re.escape(mem_file),
                 re.IGNORECASE,
             )
             m2 = pattern.search(full_text.lower())
@@ -576,8 +611,7 @@ def _check_tool_escalation(graph: SkillGraph) -> list[Finding]:
         if target_risk > source_risk:
             # Determine which tools are the escalation vector
             escalation_tools = [
-                t for t in target_node.allowed_tools
-                if _TOOL_RISK.get(t.lower(), 0) > source_risk
+                t for t in target_node.allowed_tools if _TOOL_RISK.get(t.lower(), 0) > source_risk
             ]
             severity = Severity.CRITICAL if target_risk >= 3 else Severity.HIGH
             confidence = 0.88 if target_risk >= 3 else 0.75
@@ -630,59 +664,65 @@ def _check_permission_scope(node: SkillNode) -> list[Finding]:
     if _PSV_NETWORK_RE.search(node.body) and not (declared & _PSV_NETWORK_TOOLS):
         m = _PSV_NETWORK_RE.search(node.body)
         snippet = (m.group(0) if m else "")[:100]
-        findings.append(Finding(
-            id="PSV-001",
-            category="permission_scope",
-            severity=Severity.MEDIUM,
-            confidence=0.75,
-            title="Skill instructions imply network access not declared in allowed-tools",
-            evidence_path=str(node.path),
-            snippet=snippet,
-            mitigation=(
-                "Add a network-capable tool (e.g., 'WebFetch', 'curl', 'web_search') to "
-                "'allowed-tools' in the skill frontmatter, or remove the network instruction. "
-                "Undeclared network access prevents operators from making informed trust decisions."
-            ),
-        ))
+        findings.append(
+            Finding(
+                id="PSV-001",
+                category="permission_scope",
+                severity=Severity.MEDIUM,
+                confidence=0.75,
+                title="Skill instructions imply network access not declared in allowed-tools",
+                evidence_path=str(node.path),
+                snippet=snippet,
+                mitigation=(
+                    "Add a network-capable tool (e.g., 'WebFetch', 'curl', 'web_search') to "
+                    "'allowed-tools' in the skill frontmatter, or remove the network instruction. "
+                    "Undeclared network access prevents operators from making informed trust decisions."
+                ),
+            )
+        )
 
     # PSV-002: undeclared filesystem write
     if _PSV_FSWRITE_RE.search(node.body) and not (declared & _PSV_FSWRITE_TOOLS):
         m = _PSV_FSWRITE_RE.search(node.body)
         snippet = (m.group(0) if m else "")[:100]
-        findings.append(Finding(
-            id="PSV-002",
-            category="permission_scope",
-            severity=Severity.MEDIUM,
-            confidence=0.72,
-            title="Skill instructions imply filesystem write not declared in allowed-tools",
-            evidence_path=str(node.path),
-            snippet=snippet,
-            mitigation=(
-                "Add a write-capable tool (e.g., 'Write', 'file_write', 'mcp__filesystem__write_file') "
-                "to 'allowed-tools', or remove the write instruction. "
-                "Undeclared filesystem writes can silently modify files outside the operator's awareness."
-            ),
-        ))
+        findings.append(
+            Finding(
+                id="PSV-002",
+                category="permission_scope",
+                severity=Severity.MEDIUM,
+                confidence=0.72,
+                title="Skill instructions imply filesystem write not declared in allowed-tools",
+                evidence_path=str(node.path),
+                snippet=snippet,
+                mitigation=(
+                    "Add a write-capable tool (e.g., 'Write', 'file_write', 'mcp__filesystem__write_file') "
+                    "to 'allowed-tools', or remove the write instruction. "
+                    "Undeclared filesystem writes can silently modify files outside the operator's awareness."
+                ),
+            )
+        )
 
     # PSV-003: undeclared shell execution
     if _PSV_SHELL_RE.search(node.body) and not (declared & _PSV_SHELL_TOOLS):
         m = _PSV_SHELL_RE.search(node.body)
         snippet = (m.group(0) if m else "")[:100]
-        findings.append(Finding(
-            id="PSV-003",
-            category="permission_scope",
-            severity=Severity.HIGH,
-            confidence=0.80,
-            title="Skill instructions imply shell execution not declared in allowed-tools",
-            evidence_path=str(node.path),
-            snippet=snippet,
-            mitigation=(
-                "Add 'Bash' or 'computer' to 'allowed-tools' if shell execution is intentional, "
-                "or remove the shell execution instruction. "
-                "Undeclared shell execution is a high-risk indicator: it suggests the skill "
-                "may attempt to run commands without the operator's knowledge."
-            ),
-        ))
+        findings.append(
+            Finding(
+                id="PSV-003",
+                category="permission_scope",
+                severity=Severity.HIGH,
+                confidence=0.80,
+                title="Skill instructions imply shell execution not declared in allowed-tools",
+                evidence_path=str(node.path),
+                snippet=snippet,
+                mitigation=(
+                    "Add 'Bash' or 'computer' to 'allowed-tools' if shell execution is intentional, "
+                    "or remove the shell execution instruction. "
+                    "Undeclared shell execution is a high-risk indicator: it suggests the skill "
+                    "may attempt to run commands without the operator's knowledge."
+                ),
+            )
+        )
 
     return findings
 
@@ -704,6 +744,7 @@ def skill_graph_findings(root: Path) -> list[Finding]:
     findings.extend(_check_circular_deps(graph))
 
     return findings
+
 
 # ---------------------------------------------------------------------------
 # PSV-004 — Unknown frontmatter keys
@@ -727,27 +768,30 @@ def _check_unknown_frontmatter_keys(node: SkillNode) -> list[Finding]:
         if key in _STANDARD_FM_KEYS:
             continue
         severity = Severity.HIGH if key.lower() in _HIGH_RISK_UNKNOWN_KEYS else Severity.MEDIUM
-        findings.append(Finding(
-            id="PSV-004",
-            category="permission_scope",
-            severity=severity,
-            confidence=0.70,
-            title=f"Unknown frontmatter key '{key}' may be an injection vector",
-            evidence_path=str(node.path),
-            snippet=f"{key}: {str(node.raw_front_matter[key])[:80]}",
-            mitigation=(
-                f"Remove the non-standard frontmatter key '{key}' or add it to your "
-                "organisation's approved schema. Keys like 'system_override', 'behavior', "
-                "and 'activation' are known injection vectors that some runtimes interpret "
-                "as privileged configuration."
-            ),
-        ))
+        findings.append(
+            Finding(
+                id="PSV-004",
+                category="permission_scope",
+                severity=severity,
+                confidence=0.70,
+                title=f"Unknown frontmatter key '{key}' may be an injection vector",
+                evidence_path=str(node.path),
+                snippet=f"{key}: {str(node.raw_front_matter[key])[:80]}",
+                mitigation=(
+                    f"Remove the non-standard frontmatter key '{key}' or add it to your "
+                    "organisation's approved schema. Keys like 'system_override', 'behavior', "
+                    "and 'activation' are known injection vectors that some runtimes interpret "
+                    "as privileged configuration."
+                ),
+            )
+        )
     return findings
 
 
 # ---------------------------------------------------------------------------
 # GR-007 — Circular dependency detection
 # ---------------------------------------------------------------------------
+
 
 def _find_cycles(graph: SkillGraph) -> list[list[str]]:
     """Return a list of cycles in the skill invocation graph (DFS-based).
@@ -813,18 +857,20 @@ def _check_circular_deps(graph: SkillGraph) -> list[Finding]:
         first_node = cycle[0]
         evidence_node = graph.nodes.get(first_node)
         evidence_path = str(evidence_node.path) if evidence_node else ""
-        findings.append(Finding(
-            id="GR-007",
-            category="malware_pattern",
-            severity=Severity.HIGH,
-            confidence=0.90,
-            title=f"Circular skill dependency detected: {cycle_str}",
-            evidence_path=evidence_path,
-            snippet=cycle_str[:240],
-            mitigation=(
-                "Break the cycle by removing one of the skill invocation references. "
-                "Circular dependencies can cause infinite loops and may be used to "
-                "bypass per-skill rate limits or tool restrictions."
-            ),
-        ))
+        findings.append(
+            Finding(
+                id="GR-007",
+                category="malware_pattern",
+                severity=Severity.HIGH,
+                confidence=0.90,
+                title=f"Circular skill dependency detected: {cycle_str}",
+                evidence_path=evidence_path,
+                snippet=cycle_str[:240],
+                mitigation=(
+                    "Break the cycle by removing one of the skill invocation references. "
+                    "Circular dependencies can cause infinite loops and may be used to "
+                    "bypass per-skill rate limits or tool restrictions."
+                ),
+            )
+        )
     return findings

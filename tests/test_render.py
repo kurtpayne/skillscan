@@ -62,7 +62,6 @@ def test_finding_narrative() -> None:
     assert next_action == "explicit fix"
 
 
-
 def test_recommended_actions_and_categories() -> None:
     findings = [
         Finding(

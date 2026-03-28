@@ -23,8 +23,6 @@ def _finding_narrative(finding: Finding) -> tuple[str, str, str]:
     return why, impact, next_action
 
 
-
-
 def _recommended_actions(report: ScanReport, limit: int = 3) -> list[str]:
     actions: list[str] = []
     for finding in report.findings:
@@ -40,6 +38,7 @@ def _recommended_actions(report: ScanReport, limit: int = 3) -> list[str]:
 def _category_counts(report: ScanReport) -> list[tuple[str, int]]:
     counts = Counter(f.category for f in report.findings)
     return sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+
 
 def render_report(report: ScanReport, console: Console | None = None) -> None:
     console = console or Console()
@@ -96,7 +95,7 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
 
     actions = _recommended_actions(report)
     if actions:
-        action_lines = "\n".join(f"{idx+1}. {line}" for idx, line in enumerate(actions))
+        action_lines = "\n".join(f"{idx + 1}. {line}" for idx, line in enumerate(actions))
         console.print(Panel(action_lines, title="Recommended Actions"))
 
     caps = Table(title="Capabilities")

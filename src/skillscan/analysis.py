@@ -92,8 +92,19 @@ VulnDB = dict[str, VulnPackageMap]
 
 BYTECODE_SUFFIXES = {".pyc", ".pyo"}
 SCRIPT_SUFFIXES = {
-    ".py", ".sh", ".bash", ".rb", ".js", ".ts", ".mjs",
-    ".cjs", ".go", ".rs", ".pl", ".ps1", ".psm1",
+    ".py",
+    ".sh",
+    ".bash",
+    ".rb",
+    ".js",
+    ".ts",
+    ".mjs",
+    ".cjs",
+    ".go",
+    ".rs",
+    ".pl",
+    ".ps1",
+    ".psm1",
 }
 
 # Language tag → file extensions (for multilang rule filtering)
@@ -197,7 +208,7 @@ def _safe_extract_tar(src: Path, dst: Path, max_files: int, max_bytes: int) -> N
             if total > max_bytes:
                 raise ScanError("Archive exceeds max bytes limit")
         # filter='data' was added in Python 3.12; use keyword argument only when available
-        if hasattr(tf, 'extraction_filter'):
+        if hasattr(tf, "extraction_filter"):
             tf.extractall(dst, filter="data")
         else:
             for member in members:
@@ -253,6 +264,7 @@ def _safe_extract_rar(src: Path, dst: Path, max_files: int, max_bytes: int) -> N
 def _safe_extract_xz(src: Path, dst: Path, max_files: int, max_bytes: int) -> None:
     """Extract .xz (plain xz-compressed file, not tar.xz — that's handled by tarfile)."""
     import lzma
+
     out_name = src.stem  # strip .xz
     out_path = dst / out_name
     total = 0
@@ -271,6 +283,7 @@ def _safe_extract_xz(src: Path, dst: Path, max_files: int, max_bytes: int) -> No
 def _safe_extract_bz2(src: Path, dst: Path, max_files: int, max_bytes: int) -> None:
     """Extract .bz2 (plain bzip2-compressed file, not tar.bz2 — that's handled by tarfile)."""
     import bz2
+
     out_name = src.stem
     out_path = dst / out_name
     total = 0
@@ -803,8 +816,8 @@ def scan(
     ml_detect: bool = False,
     rulepack_channel: str = "stable",
     graph_scan: bool = False,
-    max_file_size_bytes: int = 1_048_576,   # 1 MB default — skip larger files with a warning
-    file_timeout_seconds: int = 30,         # per-file rule-matching timeout
+    max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
+    file_timeout_seconds: int = 30,  # per-file rule-matching timeout
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -863,8 +876,7 @@ def scan(
                             evidence_path=detection.path,
                             snippet=detection.signature[:220],
                             mitigation=(
-                                "Treat detected artifact as malicious and "
-                                "remove/quarantine before execution."
+                                "Treat detected artifact as malicious and remove/quarantine before execution."
                             ),
                         )
                     )
@@ -872,9 +884,7 @@ def scan(
         # Advisory: if script files are present but ClamAV was not requested,
         # emit a single LOW advisory so the report can recommend a deeper scan.
         if not clamav:
-            script_files = [
-                p for p in files if p.suffix.lower() in SCRIPT_SUFFIXES
-            ]
+            script_files = [p for p in files if p.suffix.lower() in SCRIPT_SUFFIXES]
             if script_files:
                 sample = ", ".join(p.name for p in script_files[:3])
                 if len(script_files) > 3:
@@ -903,8 +913,8 @@ def scan(
             list[IOC],
             list[Capability],
             list[DependencyFinding],
-            float,   # sem_inj triage score
-            float,   # se triage score
+            float,  # sem_inj triage score
+            float,  # se triage score
             float | None,  # ml prob
         ]:
             """Scan a single file and return all findings/IOCs/capabilities.
@@ -1025,9 +1035,7 @@ def scan(
                 if chain_rule.id in fired_chain_ids:
                     continue
                 effective_window = (
-                    chain_rule.window_lines
-                    if chain_rule.window_lines is not None
-                    else _CHAIN_WINDOW_LINES
+                    chain_rule.window_lines if chain_rule.window_lines is not None else _CHAIN_WINDOW_LINES
                 )
                 for window_actions in _get_windows(effective_window):
                     if chain_rule.all_of.issubset(window_actions):
@@ -1141,9 +1149,7 @@ def scan(
             _futures = {_executor.submit(_scan_one_file, p): p for p in files}
             for _fut, _path in _futures.items():
                 try:
-                    _ff, _fi, _fc, _fd, _sem, _se, _ml = _fut.result(
-                        timeout=file_timeout_seconds
-                    )
+                    _ff, _fi, _fc, _fd, _sem, _se, _ml = _fut.result(timeout=file_timeout_seconds)
                     findings.extend(_ff)
                     iocs.extend(_fi)
                     capabilities.extend(_fc)
@@ -1315,6 +1321,7 @@ def scan(
 
         if graph_scan:
             from skillscan.detectors.skill_graph import skill_graph_findings
+
             findings.extend(skill_graph_findings(prepared.root))
 
         score = 0
@@ -1357,9 +1364,7 @@ def scan(
         triage_metadata = TriageMetadata(
             semantic_injection_score=round(_triage_sem_inj, 4),
             social_engineering_score=round(_triage_se, 4),
-            ml_injection_probability=(
-                round(_triage_ml_prob, 4) if _triage_ml_prob is not None else None
-            ),
+            ml_injection_probability=(round(_triage_ml_prob, 4) if _triage_ml_prob is not None else None),
             has_sub_threshold_signal=_has_sub,
         )
 

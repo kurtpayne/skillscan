@@ -41,13 +41,13 @@ logger = logging.getLogger(__name__)
 _MODEL_ID = "ProtectAI/deberta-v3-base-prompt-injection-v2"
 _MAX_LENGTH = 512
 _INJECTION_THRESHOLD = 0.70  # minimum score for INJECTION label to fire
-_HIGH_THRESHOLD = 0.88       # score above this → HIGH severity, else MEDIUM
+_HIGH_THRESHOLD = 0.88  # score above this → HIGH severity, else MEDIUM
 
 # ---------------------------------------------------------------------------
 # Lazy singleton cache
 # ---------------------------------------------------------------------------
 _pipeline_cache: Any = None
-_backend_cache: str | None = None   # "onnx" | "transformers" | "unavailable"
+_backend_cache: str | None = None  # "onnx" | "transformers" | "unavailable"
 
 
 def _try_load_onnx() -> Any | None:
@@ -58,9 +58,7 @@ def _try_load_onnx() -> Any | None:
 
         tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID, subfolder="onnx")
         tokenizer.model_input_names = ["input_ids", "attention_mask"]
-        model = ORTModelForSequenceClassification.from_pretrained(
-            _MODEL_ID, export=False, subfolder="onnx"
-        )
+        model = ORTModelForSequenceClassification.from_pretrained(_MODEL_ID, export=False, subfolder="onnx")
         return pipeline(
             task="text-classification",
             model=model,
@@ -298,6 +296,7 @@ _ATTACK_HINT_MITIGATIONS: dict[str, str] = {
 # Public API
 # ---------------------------------------------------------------------------
 
+
 def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     """Run the ML classifier on *text* and return zero or one Finding.
 
@@ -314,6 +313,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
 
     # --- Model age / staleness check ---
     from skillscan.model_sync import check_model_age_finding, get_model_status
+
     model_status = get_model_status()
     age_findings: list[Finding] = []
     if model_status.installed:
@@ -334,8 +334,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 )
         elif model_status.warn:
             logger.warning(
-                "ML model is %.0f days old (>7 days). "
-                "Run `skillscan model sync` to update.",
+                "ML model is %.0f days old (>7 days). Run `skillscan model sync` to update.",
                 model_status.age_days,
             )
 
@@ -419,10 +418,8 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             "or attempts to exfiltrate secrets."
         )
 
-    mitigation = (
-        f"{base_mitigation} "
-        f"Model: {_MODEL_ID} | Backend: {backend} | Score: {confidence:.3f}"
-        + (f" | Attack type: {attack_hint}" if attack_hint else "")
+    mitigation = f"{base_mitigation} Model: {_MODEL_ID} | Backend: {backend} | Score: {confidence:.3f}" + (
+        f" | Attack type: {attack_hint}" if attack_hint else ""
     )
 
     return [

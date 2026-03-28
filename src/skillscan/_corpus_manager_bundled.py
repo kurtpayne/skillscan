@@ -247,8 +247,7 @@ class CorpusManager:
         # Auto-detect whether private directories are present
         if include_private is None:
             include_private = any(
-                (self.root_dir / d).is_dir() or (self.corpus_dir / d).is_dir()
-                for d in PRIVATE_LABEL_MAP
+                (self.root_dir / d).is_dir() or (self.corpus_dir / d).is_dir() for d in PRIVATE_LABEL_MAP
             )
         self.include_private = include_private
 
@@ -322,10 +321,7 @@ class CorpusManager:
             if not d.is_dir():
                 continue
             name = d.name
-            count = sum(
-                1 for p in d.rglob("*")
-                if p.is_file() and p.suffix in SUPPORTED_EXTENSIONS
-            )
+            count = sum(1 for p in d.rglob("*") if p.is_file() and p.suffix in SUPPORTED_EXTENSIONS)
             if name in EVAL_ONLY_DIRS:
                 breakdown[f"{name} (eval-only)"] = count
             elif name in PUBLIC_LABEL_MAP or name == "graph_injection":
@@ -336,10 +332,7 @@ class CorpusManager:
         for name in list(PRIVATE_LABEL_MAP) + [SANDBOX_VERIFIED_DIR]:
             d = self.root_dir / name
             if d.is_dir() and str(d) != str(self.corpus_dir / name):
-                count = sum(
-                    1 for p in d.rglob("*")
-                    if p.is_file() and p.suffix in SUPPORTED_EXTENSIONS
-                )
+                count = sum(1 for p in d.rglob("*") if p.is_file() and p.suffix in SUPPORTED_EXTENSIONS)
                 breakdown[f"{name} (private, root)"] = count
         result["directory_breakdown"] = breakdown
         return result
@@ -471,9 +464,7 @@ class CorpusManager:
             logger.warning("Failed to load manifest %s: %s — starting fresh", path, exc)
             return CorpusManifest()
 
-    def _build_manifest(
-        self, new_index: dict[str, str], old: CorpusManifest
-    ) -> CorpusManifest:
+    def _build_manifest(self, new_index: dict[str, str], old: CorpusManifest) -> CorpusManifest:
         label_counts: dict[str, int] = {}
         for rel_path in new_index:
             top = rel_path.split("/")[0]
@@ -529,8 +520,7 @@ class CorpusManager:
                 )
             else:
                 reason = (
-                    f"Relative threshold crossed: {delta_pct:.1%} corpus growth "
-                    f"(≥{self.min_delta_pct:.0%})."
+                    f"Relative threshold crossed: {delta_pct:.1%} corpus growth (≥{self.min_delta_pct:.0%})."
                 )
         else:
             reason = (
@@ -591,17 +581,23 @@ def _cli() -> None:
 
     sync_p = sub.add_parser("sync", help="Scan corpus and evaluate retrain delta")
     sync_p.add_argument(
-        "--root", type=Path, default=None,
+        "--root",
+        type=Path,
+        default=None,
         help="Repo root (parent of training_corpus/). Defaults to this script's parent.",
     )
     sync_p.add_argument(
-        "--github-output", type=Path, default=None,
+        "--github-output",
+        type=Path,
+        default=None,
         help="Path to $GITHUB_OUTPUT file for writing step outputs.",
     )
 
     status_p = sub.add_parser("status", help="Show corpus status")
     status_p.add_argument(
-        "--root", type=Path, default=None,
+        "--root",
+        type=Path,
+        default=None,
         help="Repo root. Defaults to this script's parent.",
     )
 
@@ -636,6 +632,7 @@ def _cli() -> None:
 
     elif args.command == "status":
         import pprint
+
         pprint.pprint(mgr.status())
 
 

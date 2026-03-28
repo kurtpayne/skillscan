@@ -14,6 +14,7 @@ directory).  Tests here monkeypatch ``skillscan.rules_sync.USER_RULES_DIR`` and
 clear the ``load_compiled_builtin_rulepack`` LRU cache so each test gets a fresh
 rule set that includes (or excludes) the temporary custom rule file.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -111,29 +112,23 @@ def test_custom_rule_loaded_in_rulepack(custom_rules_dir: Path) -> None:
     )
 
 
-def test_custom_rule_finding_appears_in_scan(
-    custom_rules_dir: Path, matching_skill: Path
-) -> None:
+def test_custom_rule_finding_appears_in_scan(custom_rules_dir: Path, matching_skill: Path) -> None:
     """Scanning a skill that matches the custom rule produces a CORP-TEST-001 finding."""
     policy = load_builtin_policy("strict")
     report = scan(matching_skill, policy, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "CORP-TEST-001" in finding_ids, (
-        f"Expected CORP-TEST-001 finding in scan of {matching_skill}. "
-        f"Findings present: {finding_ids}"
+        f"Expected CORP-TEST-001 finding in scan of {matching_skill}. Findings present: {finding_ids}"
     )
 
 
-def test_custom_rule_no_finding_on_clean_skill(
-    custom_rules_dir: Path, clean_skill: Path
-) -> None:
+def test_custom_rule_no_finding_on_clean_skill(custom_rules_dir: Path, clean_skill: Path) -> None:
     """Scanning a clean skill file does NOT produce a CORP-TEST-001 finding."""
     policy = load_builtin_policy("strict")
     report = scan(clean_skill, policy, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "CORP-TEST-001" not in finding_ids, (
-        f"Did not expect CORP-TEST-001 finding in scan of {clean_skill}. "
-        f"Findings present: {finding_ids}"
+        f"Did not expect CORP-TEST-001 finding in scan of {clean_skill}. Findings present: {finding_ids}"
     )
 
 

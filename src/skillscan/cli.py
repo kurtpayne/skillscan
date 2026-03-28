@@ -24,6 +24,7 @@ Commands added / changed in M10.7:
   - scan: staleness warning at 7 days (stderr, not structured output)
   - observe policy: prints adoption banner on scan
 """
+
 from __future__ import annotations
 
 import concurrent.futures
@@ -118,6 +119,7 @@ def _stale_warn_days() -> int:
 def _rules_age_days() -> float | None:
     """Return age of user-local rules in days, or None if not synced."""
     from skillscan.rules_sync import SYNC_STATE_FILE
+
     if not SYNC_STATE_FILE.exists():
         return None
     try:
@@ -143,8 +145,10 @@ def _rules_age_days() -> float | None:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _load_dotenv(path: Path = Path(".env")) -> None:
     import os as _os
+
     if not path.exists():
         return
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -211,9 +215,7 @@ def _build_provenance(
         "rules_version": user_rules_version() or "bundled",
         "policy_profile": policy_profile,
         "policy_source": policy_source,
-        "scanned_at": __import__("datetime").datetime.now(
-            __import__("datetime").timezone.utc
-        ).isoformat(),
+        "scanned_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
     }
     if ml_detect and model_status.installed:
         meta["model_version"] = model_status.version
@@ -230,6 +232,7 @@ def _build_provenance(
 # ---------------------------------------------------------------------------
 # version
 # ---------------------------------------------------------------------------
+
 
 @app.command("version")
 def version_cmd(
@@ -288,6 +291,7 @@ def version_cmd(
 # update  (the single "keep current" entry point)
 # ---------------------------------------------------------------------------
 
+
 @app.command("update")
 def update_cmd(
     no_model: bool = typer.Option(
@@ -336,8 +340,7 @@ def update_cmd(
         if result.success:
             if result.downloaded:
                 console.print(
-                    f"[green]✓[/green] {result.version}  "
-                    f"({result.bytes_downloaded // 1024 // 1024} MB)"
+                    f"[green]✓[/green] {result.version}  ({result.bytes_downloaded // 1024 // 1024} MB)"
                 )
             else:
                 console.print(f"[dim]✓ {result.message}[/dim]")
@@ -374,6 +377,7 @@ def _refetch_custom_feeds() -> None:
 # ---------------------------------------------------------------------------
 # scan
 # ---------------------------------------------------------------------------
+
 
 @app.command("scan")
 def scan_cmd(
@@ -466,10 +470,7 @@ def scan_cmd(
         False,
         "--require-model",
         envvar="SKILLSCAN_REQUIRE_MODEL",
-        help=(
-            "Exit with code 3 if --ml-detect is requested but the ML model "
-            "is not installed."
-        ),
+        help=("Exit with code 3 if --ml-detect is requested but the ML model is not installed."),
     ),
     graph_scan: bool | None = typer.Option(
         None,
@@ -514,9 +515,7 @@ def scan_cmd(
 
     # --- Model UX: missing-model detection and guided download ---
     if require_model and not ml_detect:
-        console.print(
-            "[bold red]--require-model requires --ml-detect to be set as well.[/bold red]"
-        )
+        console.print("[bold red]--require-model requires --ml-detect to be set as well.[/bold red]")
         raise typer.Exit(2)
 
     if ml_detect and not no_model:
@@ -526,8 +525,7 @@ def scan_cmd(
         if not _model_status.installed:
             if sys.stdin.isatty() and sys.stderr.isatty():
                 console.print(
-                    "[yellow]ML model not found.[/yellow] "
-                    "Download now (~350 MB)? [Y/n] ",
+                    "[yellow]ML model not found.[/yellow] Download now (~350 MB)? [Y/n] ",
                     end="",
                 )
                 _answer = input().strip().lower()
@@ -541,9 +539,7 @@ def scan_cmd(
                             "ML detection enabled."
                         )
                     elif not _sync_result.success:
-                        console.print(
-                            f"[red]✗ Download failed:[/red] {_sync_result.message}"
-                        )
+                        console.print(f"[red]✗ Download failed:[/red] {_sync_result.message}")
                         if require_model:
                             raise typer.Exit(3)
                 else:
@@ -559,8 +555,7 @@ def scan_cmd(
                     )
                     raise typer.Exit(3)
                 console.print(
-                    "[yellow]ML model not installed.[/yellow] "
-                    "Run: skillscan model install",
+                    "[yellow]ML model not installed.[/yellow] Run: skillscan model install",
                     highlight=False,
                 )
 
@@ -586,9 +581,7 @@ def scan_cmd(
         age = _rules_age_days()
         threshold = _stale_warn_days()
         if age is not None and age > threshold:
-            err_console.print(
-                f"[yellow]⚠  Rules are {age:.0f} days old. Run: skillscan update[/yellow]"
-            )
+            err_console.print(f"[yellow]⚠  Rules are {age:.0f} days old. Run: skillscan update[/yellow]")
 
     # --- Validation ---
     if policy_profile not in BUILTIN_PROFILES:
@@ -699,6 +692,11 @@ def scan_cmd(
                     )
                     raise typer.Exit(4)
         else:
+            # timeout=0 means no overall scan limit, but per-file timeout
+            # must still be positive — Future.result(timeout=0) expires
+            # immediately, skipping every file.  Fall back to the analysis
+            # default of 30 s per file.
+            _file_timeout = timeout if timeout > 0 else 30
             report = scan(
                 target,
                 policy,
@@ -711,7 +709,7 @@ def scan_cmd(
                 rulepack_channel=rulepack_channel,
                 graph_scan=effective_graph_scan,
                 max_file_size_bytes=_max_file_size_bytes,
-                file_timeout_seconds=timeout,
+                file_timeout_seconds=_file_timeout,
             )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
@@ -857,6 +855,7 @@ def scan_cmd(
 # explain
 # ---------------------------------------------------------------------------
 
+
 @app.command("explain")
 def explain_cmd(report: Path = typer.Argument(..., exists=True, readable=True)) -> None:
     """Show detailed explanation for findings in a scan report JSON."""
@@ -872,6 +871,7 @@ def explain_cmd(report: Path = typer.Argument(..., exists=True, readable=True)) 
 # ---------------------------------------------------------------------------
 # benchmark
 # ---------------------------------------------------------------------------
+
 
 @app.command("benchmark")
 def benchmark_cmd(
@@ -968,13 +968,15 @@ def benchmark_cmd(
                 fp += 1
                 outcome = "fp"
 
-            case_results.append({
-                "path": target_path,
-                "expected": expected_verdict,
-                "actual": actual_verdict,
-                "outcome": outcome,
-                "rules_fired": sorted({f.id for f in report.findings}),
-            })
+            case_results.append(
+                {
+                    "path": target_path,
+                    "expected": expected_verdict,
+                    "actual": actual_verdict,
+                    "outcome": outcome,
+                    "rules_fired": sorted({f.id for f in report.findings}),
+                }
+            )
         else:
             # Legacy format
             target_str = case.get("target")
@@ -998,12 +1000,14 @@ def benchmark_cmd(
             fn += len(missing)
             fp += len(unexpected)
 
-            case_results.append({
-                "target": target_str,
-                "matched": sorted(matched),
-                "missing": sorted(missing),
-                "unexpected": sorted(unexpected),
-            })
+            case_results.append(
+                {
+                    "target": target_str,
+                    "matched": sorted(matched),
+                    "missing": sorted(missing),
+                    "unexpected": sorted(unexpected),
+                }
+            )
 
     precision = _safe_ratio(tp, tp + fp)
     recall = _safe_ratio(tp, tp + fn)
@@ -1061,6 +1065,7 @@ def benchmark_cmd(
 # uninstall
 # ---------------------------------------------------------------------------
 
+
 @app.command("uninstall")
 def uninstall(
     keep_data: bool = typer.Option(False, "--keep-data", help="Keep .skillscan data on disk"),
@@ -1085,6 +1090,7 @@ def uninstall(
 # ---------------------------------------------------------------------------
 # rule commands
 # ---------------------------------------------------------------------------
+
 
 @rule_app.command("list")
 def rule_list(
@@ -1236,6 +1242,7 @@ def rule_test(
             continue
 
         import re
+
         try:
             rx = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
         except re.error as exc:
@@ -1261,6 +1268,7 @@ def rule_test(
 # ---------------------------------------------------------------------------
 # policy commands
 # ---------------------------------------------------------------------------
+
 
 @policy_app.command("list")
 def policy_list() -> None:
@@ -1292,8 +1300,7 @@ def policy_show(
     """Show the full YAML of a built-in policy profile."""
     if profile not in BUILTIN_PROFILES:
         console.print(
-            f"[bold red]Unknown profile:[/] {profile}. "
-            f"Expected one of: {', '.join(BUILTIN_PROFILES)}"
+            f"[bold red]Unknown profile:[/] {profile}. Expected one of: {', '.join(BUILTIN_PROFILES)}"
         )
         raise typer.Exit(2)
     policy = load_builtin_policy(profile)
@@ -1317,6 +1324,7 @@ def validate(path: Path = typer.Argument(..., exists=True, readable=True)) -> No
 # ---------------------------------------------------------------------------
 # intel commands
 # ---------------------------------------------------------------------------
+
 
 @intel_app.command("status")
 def intel_status() -> None:
@@ -1345,7 +1353,8 @@ def intel_list() -> None:
 @intel_app.command("add")
 def intel_add(
     url: str = typer.Option(
-        ..., "--url",
+        ...,
+        "--url",
         help="URL of the intel feed (re-fetched on every 'skillscan update')",
     ),
     name: str = typer.Option(..., "--name", help="Human-readable name for this feed"),
@@ -1378,11 +1387,13 @@ def intel_add(
     store = load_store()
     store.sources = [s for s in store.sources if s.name != name]
     from skillscan.intel import IntelSource
+
     source = IntelSource(name=name, kind=type, path=str(dst), enabled=True)
     # Attach URL as extra attribute via model_extra if supported, else store in a sidecar
     _save_feed_url(name, url)
     store.sources.append(source)
     from skillscan.intel import save_store
+
     save_store(store)
 
     try:
@@ -1506,16 +1517,14 @@ def intel_lookup(
             for entry in data:
                 entry_str = str(entry).lower()
                 if indicator.lower() in entry_str or entry_str in indicator.lower():
-                    console.print(
-                        f"[green]Match found[/green] in [bold]{source.name}[/bold] ({source.kind})"
-                    )
+                    console.print(f"[green]Match found[/green] in [bold]{source.name}[/bold] ({source.kind})")
                     console.print(f"  Indicator : {indicator}")
                     console.print(f"  Matched   : {entry}")
                     console.print(f"  Source    : {source.path}")
                     found = True
 
     if not found:
-        console.print(f"[dim]No match found for \"{indicator}\"[/dim]")
+        console.print(f'[dim]No match found for "{indicator}"[/dim]')
         console.print(f"  (checked {len(store.sources)} source(s))")
         raise typer.Exit(1)
 
@@ -1523,6 +1532,7 @@ def intel_lookup(
 # ---------------------------------------------------------------------------
 # model commands
 # ---------------------------------------------------------------------------
+
 
 @model_app.command("install")
 def model_install_cmd(
@@ -1554,10 +1564,7 @@ def model_install_cmd(
                 "  DeBERTa-v3-base LoRA adapter fine-tuned on 18,161 examples of "
                 "prompt injection, jailbreaks, social engineering, and supply chain attacks."
             )
-            console.print(
-                "  Macro F1: [green]0.9752[/green] | "
-                "FPR: [green]1.89%[/green]"
-            )
+            console.print("  Macro F1: [green]0.9752[/green] | FPR: [green]1.89%[/green]")
             console.print()
             console.print("[bold]To use:[/bold]")
             console.print("  skillscan scan <path> [bold cyan]--ml-detect[/bold cyan]")
@@ -1610,6 +1617,7 @@ def model_status_cmd(
 # suppress commands
 # ---------------------------------------------------------------------------
 
+
 @suppress_app.command("check")
 def suppress_check(
     suppressions: Path = typer.Argument(..., help="Path to suppression YAML file"),
@@ -1638,6 +1646,7 @@ def suppress_check(
 
     if json_output:
         import json as _json
+
         console.print(
             _json.dumps(
                 {
@@ -1696,14 +1705,13 @@ def suppress_check(
 # corpus commands (internal — NOT registered with app, hidden from --help)
 # ---------------------------------------------------------------------------
 
+
 @corpus_app.command("sync")
 def corpus_sync(
     corpus_dir: Path = typer.Option(None, "--corpus-dir", help="Path to corpus/ directory"),
     min_new: int = typer.Option(50, "--min-new", help="Absolute delta threshold"),
     min_pct: float = typer.Option(0.10, "--min-pct", help="Relative delta threshold (0–1)"),
-    check: bool = typer.Option(
-        False, "--check", help="Exit 2 if retrain not needed (for CI use)"
-    ),
+    check: bool = typer.Option(False, "--check", help="Exit 2 if retrain not needed (for CI use)"),
 ) -> None:
     """Sync corpus manifest and evaluate whether a fine-tune should be triggered."""
     from skillscan.corpus import CorpusManager
@@ -1775,6 +1783,7 @@ def corpus_record_finetune(
 # feedback
 # ---------------------------------------------------------------------------
 
+
 @app.command("feedback")
 def feedback_cmd(
     kind: str = typer.Argument(
@@ -1808,6 +1817,7 @@ def feedback_cmd(
 # ---------------------------------------------------------------------------
 # lint  (delegates to skillscan-lint if installed)
 # ---------------------------------------------------------------------------
+
 
 @app.command(
     "lint",
@@ -1850,6 +1860,7 @@ def trace_cmd(ctx: typer.Context) -> None:
     Bundled with skillscan-security — no separate install needed.
     """
     import subprocess
+
     trace_bin = shutil.which("skillscan-trace")
     if trace_bin is None:
         console.print(

@@ -284,8 +284,9 @@ def test_sandbox_verified_examples_included_when_private(corpus_dir: Path) -> No
     # JSON file should NOT be present
     assert not any(".json" in rp for rp in rel_paths)
     # All sandbox_verified examples are labeled injection
-    sv_examples = [(p, lbl) for p, lbl in examples
-                   if str(p.relative_to(corpus_dir)).startswith("sandbox_verified")]
+    sv_examples = [
+        (p, lbl) for p, lbl in examples if str(p.relative_to(corpus_dir)).startswith("sandbox_verified")
+    ]
     assert len(sv_examples) == 2, f"Expected 2 sandbox_verified examples, got {len(sv_examples)}"
     for p, lbl in sv_examples:
         assert lbl == "injection", f"Expected injection for {p}, got {lbl}"
@@ -301,8 +302,9 @@ def test_sandbox_verified_excluded_when_not_private(corpus_dir: Path) -> None:
     examples = mgr.iter_examples(include_private=False)
     rel_paths = [str(p.relative_to(corpus_dir)) for p, _ in examples]
 
-    assert not any(rp.startswith("sandbox_verified") for rp in rel_paths), \
+    assert not any(rp.startswith("sandbox_verified") for rp in rel_paths), (
         f"sandbox_verified should be excluded when include_private=False, got: {rel_paths}"
+    )
     assert len(examples) == 1, f"Expected 1 example (benign only), got {len(examples)}: {rel_paths}"
 
 
@@ -312,8 +314,7 @@ def test_sandbox_verified_triggers_retrain(corpus_dir: Path) -> None:
     for i in range(100):
         _write(corpus_dir / "benign" / f"skill_{i}.md", f"name: skill_{i}\ndescription: skill {i}")
 
-    mgr = CorpusManager(corpus_dir=corpus_dir, min_new_examples=10, min_delta_pct=0.50,
-                        include_private=True)
+    mgr = CorpusManager(corpus_dir=corpus_dir, min_new_examples=10, min_delta_pct=0.50, include_private=True)
     mgr.sync()
     mgr.record_finetune("checkpoints/ft-base")
 
@@ -335,8 +336,9 @@ def test_sandbox_verified_multiple_runs(corpus_dir: Path) -> None:
 
     mgr = CorpusManager(corpus_dir=corpus_dir, include_private=True)
     examples = mgr.iter_examples(include_private=True)
-    sv_examples = [(p, lbl) for p, lbl in examples
-                   if str(p.relative_to(corpus_dir)).startswith("sandbox_verified")]
+    sv_examples = [
+        (p, lbl) for p, lbl in examples if str(p.relative_to(corpus_dir)).startswith("sandbox_verified")
+    ]
 
     assert len(sv_examples) == 2
     assert all(lbl == "injection" for _, lbl in sv_examples)
