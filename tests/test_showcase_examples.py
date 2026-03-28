@@ -88,7 +88,7 @@ def test_showcase_detection_rules() -> None:
     from skillscan.rules import load_compiled_builtin_rulepack
 
     _rules_src = open(_rules_mod.__file__).read()
-    _dotall_line = next((ln.strip() for ln in _rules_src.split("\n") if "DOTALL" in ln), "NOT FOUND")
+    _dotall_line = next((ln.strip() for ln in _rules_src.split("\n") if "re.DOTALL if" in ln), "NOT FOUND")
     print(f"DBG54 rules_file={_rules_mod.__file__}")  # debug
     print(f"DBG54 dotall_line={_dotall_line}")  # debug
     _rpack = load_compiled_builtin_rulepack()
@@ -97,7 +97,9 @@ def test_showcase_detection_rules() -> None:
     print(f"DBG54 text_files={[str(x) for x in _inv.text_files]}")  # debug
     if _mal015:
         _pat_start = repr(str(_mal015.pattern.pattern)[:40])
-        print(f"DBG54 mal015_flags={_mal015.pattern.flags} pat={_pat_start}")  # debug
+        print(  # debug
+            f"DBG54 mal015_flags={_mal015.pattern.flags} multiline={_mal015.multiline} pat={_pat_start}"
+        )
         for _tf in _inv.text_files:
             _txt = _safe_read_text(_tf)
             _atxt = _prepare_analysis_text(_txt)
