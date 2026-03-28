@@ -11,8 +11,6 @@ concurrency:
   group: pattern-update-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-
 jobs:
   validate-pattern-update:
     runs-on: ubuntu-latest
