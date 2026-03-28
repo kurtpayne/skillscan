@@ -79,7 +79,12 @@ def test_showcase_detection_rules() -> None:
     _rp = load_builtin_rulepack()
     _mal015 = next((r for r in _rp.static_rules if r.id == 'MAL-015'), None)
     _rules_path = str(resources.files('skillscan.data.rules'))
+    from pathlib import Path as _Path
+    _user_rules = _Path.home() / '.skillscan' / 'rules'
+    _user_files = list(_user_rules.glob('*.yaml')) if _user_rules.exists() else []
     print(f"\n[DIAG] rules path: {_rules_path}", flush=True)
+    print(f"[DIAG] user rules dir exists: {_user_rules.exists()}, files: {[f.name for f in _user_files]}", flush=True)
+    print(f"[DIAG] rulepack version: {_rp.version}, static_rules: {len(_rp.static_rules)}", flush=True)
     print(f"[DIAG] MAL-015 pattern: {_mal015.pattern[:80] if _mal015 else 'NOT FOUND'}", flush=True)
     _files_54 = list(os.walk("examples/showcase/54_claude_hooks_rce"))
     print(f"[DIAG] showcase 54 files: {_files_54}", flush=True)
