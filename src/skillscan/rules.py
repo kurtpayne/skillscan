@@ -230,7 +230,13 @@ def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
             severity=r.severity,
             confidence=r.confidence,
             title=r.title,
-            pattern=re.compile(r.pattern, re.IGNORECASE),
+            pattern=re.compile(
+                # Strip leading (?is)/(?si) inline flags — we set them explicitly
+                # via re.IGNORECASE | re.DOTALL so the pattern works identically
+                # on all Python versions (3.11–3.13+).
+                re.sub(r"^\(\?[is]{1,2}\)", "", r.pattern),
+                re.IGNORECASE | (re.DOTALL if r.multiline else 0),
+            ),
             mitigation=r.mitigation,
             language=(r.metadata.language if r.metadata else None),
             graph_rule=r.graph_rule,
