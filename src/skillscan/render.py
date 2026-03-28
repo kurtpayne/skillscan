@@ -139,3 +139,8 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
             "[dim]False positive? Report it: "
             "https://github.com/kurtpayne/skillscan-security/issues/new?template=false-positive.md[/dim]"
         )
+    elif report.verdict == Verdict.ALLOW:
+        console.print(
+            "[dim]Missed something? Report a false negative: "
+            "https://github.com/kurtpayne/skillscan-security/issues/new?template=false-negative.md[/dim]"
+        )
