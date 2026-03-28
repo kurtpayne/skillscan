@@ -83,13 +83,28 @@ def test_showcase_detection_rules() -> None:
     _strict = _lbp("strict")
     _inv = iter_text_files(_p54, _strict.limits["max_files"], _strict.limits["max_bytes"], 500, 100_000_000)
 
+    import yaml as _yaml
+
+    import skillscan.data.rules as _rules_data_mod
     import skillscan.rules as _rules_mod
     from skillscan.analysis import _prepare_analysis_text, _safe_read_text
     from skillscan.rules import load_compiled_builtin_rulepack
 
     _rules_src = open(_rules_mod.__file__).read()
     _dotall_line = next((ln.strip() for ln in _rules_src.split("\n") if "re.DOTALL if" in ln), "NOT FOUND")
+    # Find MAL-015 multiline field in the actual installed YAML
+    _yaml_dir = __import__("pathlib").Path(_rules_data_mod.__file__).parent
+    _yaml_files = list(_yaml_dir.glob("*.yaml"))
+    _mal015_yaml_line = "NOT FOUND"
+    for _yf in _yaml_files:
+        _yd = _yaml.safe_load(_yf.read_text())
+        for _yr in _yd.get("static_rules") or []:
+            if _yr.get("id") == "MAL-015":
+                _mal015_yaml_line = f"multiline={_yr.get('multiline')} in {_yf.name}"
     print(f"DBG54 rules_file={_rules_mod.__file__}")  # debug
+    print(f"DBG54 yaml_dir={_yaml_dir}")  # debug
+    print(f"DBG54 yaml_files={[f.name for f in _yaml_files]}")  # debug
+    print(f"DBG54 mal015_yaml={_mal015_yaml_line}")  # debug
     print(f"DBG54 dotall_line={_dotall_line}")  # debug
     _rpack = load_compiled_builtin_rulepack()
     _mal015 = next((r for r in _rpack.static_rules if r.id == "MAL-015"), None)
