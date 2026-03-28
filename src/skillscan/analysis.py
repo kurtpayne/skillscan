@@ -969,7 +969,21 @@ def scan(
                         continue
                 if rule.multiline:
                     # Full-text match for patterns that span multiple lines
+                    if rule.id == "MAL-015" and "hooks" in analysis_text:
+                        import sys
+
+                        print(
+                            f"DEBUG MAL-015 check: path={path} "
+                            f"text_len={len(analysis_text)} "
+                            f"pattern={rule.pattern.pattern[:60]!r}",
+                            file=sys.stderr,
+                            flush=True,
+                        )
                     m = rule.pattern.search(analysis_text)
+                    if rule.id == "MAL-015" and "hooks" in analysis_text:
+                        import sys
+
+                        print(f"DEBUG MAL-015 match={bool(m)}", file=sys.stderr, flush=True)
                     if m:
                         matched_text = m.group(0)
                         line_no = analysis_text[: m.start()].count("\n") + 1
