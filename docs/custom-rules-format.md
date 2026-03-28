@@ -348,6 +348,8 @@ Rules in `~/.skillscan/rules/` are merged with the bundled rule set on every sca
 
 > **Note:** Files in `~/.skillscan/rules/` are **not** overwritten by `skillscan update`. Use a filename prefix that does not conflict with bundled files (`default.yaml`, `ast_flows.yaml`, `multilang.yaml`).
 
+> **Version gating:** If a user-local file has the **same filename** as a bundled file (e.g. `default.yaml`) but an **older version string**, SkillScan will skip the user-local file and emit a `WARNING`. This prevents a stale `skillscan rules sync` from silently downgrading detection. Run `skillscan rules sync` to update, or rename the file if it contains custom rules you want to keep alongside the bundled set.
+
 ### CI/CD (GitHub Actions)
 
 Pass the `rules-path` input to the reusable workflow:
