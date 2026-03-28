@@ -146,3 +146,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 128. `128_obf005_covert_channel_dns_exfil`: Covert-channel exfiltration via DNS TXT subdomain encoding (`OBF-005`)
 129. `129_cap001_capability_laundering`: Capability laundering — date formatter reading AWS credentials and SSH keys (`CAP-001`)
 
+130. `130_pinj017_prowler_ec2_tag`: Indirect prompt injection via EC2 tags (`PINJ-017`)
+131. `131_evasion005_idpi_payload`: Web-Based Indirect Prompt Injection (IDPI) payload engineering (`EVASION-005`)
+132. `132_exf021_vscode_live_preview`: VSCode Live Preview and SARIF viewer local file exfiltration (`EXF-021`)
