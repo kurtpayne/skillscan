@@ -271,17 +271,20 @@ def test_showcase_social_engineering_detected_without_ai() -> None:
         f"Expected SE-001 or SE-SEM-001, got: {sorted(finding_ids)}"
     )
 
+
 def test_showcase_130_pinj017_prowler_ec2_tag() -> None:
     """PINJ-017 fires on the Prowler EC2 tag indirect prompt injection showcase."""
     report = scan(Path("examples/showcase/130_pinj017_prowler_ec2_tag"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "PINJ-017" in finding_ids, f"Expected PINJ-017, got: {sorted(finding_ids)}"
 
+
 def test_showcase_131_evasion005_idpi_payload() -> None:
     """EVASION-005 fires on the IDPI CSS suppression showcase."""
     report = scan(Path("examples/showcase/131_evasion005_idpi_payload"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "EVASION-005" in finding_ids, f"Expected EVASION-005, got: {sorted(finding_ids)}"
+
 
 def test_showcase_132_exf021_vscode_live_preview() -> None:
     """EXF-021 fires on the VSCode Live Preview local file exfiltration showcase."""
