@@ -11,6 +11,9 @@ concurrency:
   group: pattern-update-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  SKILLSCAN_NO_USER_RULES: "1"
+
 jobs:
   validate-pattern-update:
     runs-on: ubuntu-latest

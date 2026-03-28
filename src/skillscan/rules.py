@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -173,29 +174,38 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
     # ~/.skillscan/rules/. They extend the bundled set; rule IDs in both use
     # the user-local (newer) version because _merge_rulepacks appends them last
     # and analysis picks the last match for duplicate IDs.
-    try:
-        from skillscan.rules_sync import get_user_rules_dir  # avoid circular at module level
+    # Set SKILLSCAN_NO_USER_RULES=1 to skip user-local rules (useful in CI).
+    _skip_user = os.environ.get("SKILLSCAN_NO_USER_RULES", "").strip() not in ("", "0", "false", "no")
+    if _skip_user:
+        log.debug("[rules] SKILLSCAN_NO_USER_RULES set — skipping user-local rules")
+    else:
+        try:
+            from skillscan.rules_sync import get_user_rules_dir  # avoid circular at module level
 
-        user_dir = get_user_rules_dir()
-        if user_dir is not None:
-            user_files = sorted(user_dir.glob("*.yaml"), key=lambda p: p.name)
-            user_files = _filter_rule_files_for_channel(list(user_files), channel)
-            if user_files:
-                log.debug("[rules] loading %d user-local rule file(s) from %s:", len(user_files), user_dir)
-                for f in user_files:
-                    log.debug("  user-local: %s", f)
-                user_rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in user_files]
-                rulepacks = rulepacks + user_rulepacks
+            user_dir = get_user_rules_dir()
+            if user_dir is not None:
+                user_files = sorted(user_dir.glob("*.yaml"), key=lambda p: p.name)
+                user_files = _filter_rule_files_for_channel(list(user_files), channel)
+                if user_files:
+                    log.debug(
+                        "[rules] loading %d user-local rule file(s) from %s:",
+                        len(user_files),
+                        user_dir,
+                    )
+                    for f in user_files:
+                        log.debug("  user-local: %s", f)
+                    user_rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in user_files]
+                    rulepacks = rulepacks + user_rulepacks
+                else:
+                    log.debug(
+                        "[rules] user-local rules dir exists (%s) but no matching YAML for channel=%s",
+                        user_dir,
+                        channel,
+                    )
             else:
-                log.debug(
-                    "[rules] user-local rules dir exists (%s) but no matching YAML for channel=%s",
-                    user_dir,
-                    channel,
-                )
-        else:
-            log.debug("[rules] no user-local rules dir — using bundled rules only")
-    except Exception:  # pragma: no cover — network/fs errors must never block scan
-        pass
+                log.debug("[rules] no user-local rules dir — using bundled rules only")
+        except Exception:  # pragma: no cover — network/fs errors must never block scan
+            pass
 
     merged = _merge_rulepacks(rulepacks)
     log.debug(

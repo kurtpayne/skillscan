@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  SKILLSCAN_NO_USER_RULES: "1"
+
 jobs:
   test:
     runs-on: ubuntu-latest
