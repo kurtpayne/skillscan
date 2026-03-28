@@ -83,9 +83,14 @@ def test_showcase_detection_rules() -> None:
     _strict = _lbp("strict")
     _inv = iter_text_files(_p54, _strict.limits["max_files"], _strict.limits["max_bytes"], 500, 100_000_000)
 
+    import skillscan.rules as _rules_mod
     from skillscan.analysis import _prepare_analysis_text, _safe_read_text
     from skillscan.rules import load_compiled_builtin_rulepack
 
+    _rules_src = open(_rules_mod.__file__).read()
+    _dotall_line = next((ln.strip() for ln in _rules_src.split("\n") if "DOTALL" in ln), "NOT FOUND")
+    print(f"DBG54 rules_file={_rules_mod.__file__}")  # debug
+    print(f"DBG54 dotall_line={_dotall_line}")  # debug
     _rpack = load_compiled_builtin_rulepack()
     _mal015 = next((r for r in _rpack.static_rules if r.id == "MAL-015"), None)
     print(f"DBG54 rglob={[str(x) for x in _rg]}")  # debug
