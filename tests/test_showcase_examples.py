@@ -82,8 +82,24 @@ def test_showcase_detection_rules() -> None:
     _rg = list(_p54.rglob("*"))
     _strict = _lbp("strict")
     _inv = iter_text_files(_p54, _strict.limits["max_files"], _strict.limits["max_bytes"], 500, 100_000_000)
+
+    from skillscan.analysis import _prepare_analysis_text, _safe_read_text
+    from skillscan.rules import load_compiled_builtin_rulepack
+
+    _rpack = load_compiled_builtin_rulepack()
+    _mal015 = next((r for r in _rpack.static_rules if r.id == "MAL-015"), None)
     print(f"DBG54 rglob={[str(x) for x in _rg]}")  # debug
     print(f"DBG54 text_files={[str(x) for x in _inv.text_files]}")  # debug
+    if _mal015:
+        _pat_start = repr(str(_mal015.pattern.pattern)[:40])
+        print(f"DBG54 mal015_flags={_mal015.pattern.flags} pat={_pat_start}")  # debug
+        for _tf in _inv.text_files:
+            _txt = _safe_read_text(_tf)
+            _atxt = _prepare_analysis_text(_txt)
+            _m = _mal015.pattern.search(_atxt)
+            print(f"DBG54 file={_tf.name} text_len={len(_atxt)} match={bool(_m)}")  # debug
+    else:
+        print("DBG54 MAL-015 rule NOT FOUND in rulepack")  # debug
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
     print(f"DBG54 findings={[f.id for f in findings_54]}")  # debug
     assert any(f.id == "MAL-015" for f in findings_54), f"MAL-015 missing; got={[f.id for f in findings_54]}"
