@@ -266,6 +266,10 @@ scripts/validate_sbom.py
 src/skillscan/__init__.py
 src/skillscan/_corpus_manager_bundled.py
 src/skillscan/analysis.py
+src/skillscan/analysis_pkg/__init__.py
+src/skillscan/analysis_pkg/_archive.py
+src/skillscan/analysis_pkg/_scanner.py
+src/skillscan/analysis_pkg/_text.py
 src/skillscan/clamav.py
 src/skillscan/cli.py
 src/skillscan/compact.py
