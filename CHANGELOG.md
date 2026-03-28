@@ -9,6 +9,20 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- `.github/dependabot.yml` — weekly pip + GitHub Actions dependency updates
+- `.github/PULL_REQUEST_TEMPLATE.md` — contributor checklist covering ruff, mypy, pytest, rule tests, showcase, website sync, and no-debug-code requirements
+- `CHANGELOG.md` and `RELEASING.md` — release process documentation
+- `docs/AUDIT_2026-03.md` — comprehensive codebase audit report (correctness, security, quality, CI, docs)
+- `timeout-minutes: 20` on CI test job to prevent hung runners
+
+### Changed
+- `SKILLSCAN_NO_USER_RULES=1` now set in CI env so user-local `~/.skillscan/rules/` never influences test results
+- `load_builtin_rulepack()` emits INFO-level provenance log (version, rule counts, channel) on every cold load
+- User-local rulepack files older than their bundled counterpart are now skipped with a WARNING (version-gate)
+- `tests/test_custom_rules.py` `custom_rules_dir` fixture clears `SKILLSCAN_NO_USER_RULES` so custom-rules tests pass in CI
+- Pattern-update skill step 8 now has a mandatory `pytest -q` gate that must exit 0 before `gh pr create`
+
 ---
 
 ## [0.7.0] — 2026-03-26
