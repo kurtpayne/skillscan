@@ -1,116 +1,105 @@
-# Contributing to SkillScan
+# Contributing to skillscan-security
 
-Thank you for your interest in improving SkillScan. This document describes how to contribute detection rules, corpus examples, bug reports, and code changes.
-
----
-
-## Ways to contribute
-
-### Report a false positive or false negative
-
-The most valuable contributions are real-world scan results that expose gaps in detection accuracy.
-
-- **False positive** (a benign skill flagged as malicious): open an issue using the [False Positive template](https://github.com/kurtpayne/skillscan-security/issues/new?template=false-positive.md)
-- **False negative** (a malicious skill that was not detected): open an issue using the [False Negative template](https://github.com/kurtpayne/skillscan-security/issues/new?template=false-negative.md)
-
-Include the full `skillscan scan --format text` output and, if possible, a minimal reproduction of the skill file (redact any sensitive content).
-
-### Report a bug
-
-Use the [Bug Report template](https://github.com/kurtpayne/skillscan-security/issues/new?template=bug-report.md). Include your OS, Python version, SkillScan version (`skillscan version`), and the exact command that failed.
-
-### Suggest a feature
-
-Use the [Feature Request template](https://github.com/kurtpayne/skillscan-security/issues/new?template=feature-request.md). Describe the use case, not just the implementation.
+Thank you for contributing. This document covers the development workflow, CI requirements, and the branch protection settings that enforce them.
 
 ---
 
-## Contributing detection rules
+## Development workflow
 
-Rules live in `src/skillscan/data/rules/`. Each rule is a YAML file. See `docs/custom-rules-format.md` for the full schema.
+All changes — including those from automated agents — go through a pull request. Direct pushes to `main` are blocked by branch protection rules.
 
-Before opening a PR for a new rule:
+```
+# 1. Create a feature or fix branch
+git checkout -b fix/describe-the-change
 
-1. The rule must have a real-world precedent — a CVE, a published threat report, or a reproducible attack technique. Include a link in the rule's `reference` field.
-2. Run `skillscan rule test <rule-id>` against at least one positive and one negative example.
-3. Run the full test suite: `pytest tests/ -x -q --ignore=tests/test_adversarial.py`
-4. All tests must pass. PRs with broken tests will not be merged.
+# 2. Make changes, then verify locally before pushing
+ruff check .
+ruff format --check .
+mypy src/skillscan/
+pytest tests/ -q
 
-Rule ID assignment:
+# 3. Push and open a PR
+git push origin fix/describe-the-change
+gh pr create --fill
 
-| Prefix | Category |
-|---|---|
-| `MAL-` | Malware / backdoor |
-| `ABU-` | Capability abuse |
-| `EXF-` | Data exfiltration |
-| `INJ-` | Injection |
-| `CHN-` | Multi-step chain |
-| `CAP-` | Capability escalation |
-| `PINJ-` | Prompt / pipeline injection |
-| `SUP-` | Supply chain |
-| `SE-` | Social engineering |
-
-Use the next available number in the relevant prefix series. Check `src/skillscan/data/rules/` for the current highest number.
-
----
-
-## Contributing IOC or vulnerability data
-
-IOC and vulnerability data live in `src/skillscan/data/ioc_db.json` and `src/skillscan/data/vuln_db.json`. See `docs/custom-intel-format.md` for the schema.
-
-For bulk IOC additions, open an issue with the source URL rather than editing the JSON directly. The intel update workflow will ingest it.
-
----
-
-## Code contributions
-
-### Setup
-
-```bash
-git clone https://github.com/kurtpayne/skillscan-security.git
-cd skillscan-security
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+# 4. CI runs automatically on the PR
+# 5. All checks must be green before merging
 ```
 
-### Running tests
+---
+
+## CI checks
+
+Every PR must pass all of the following before it can be merged:
+
+| Check | Command | What it enforces |
+|---|---|---|
+| **Lint** | `ruff check .` | No unused imports, undefined names, or style violations |
+| **Format** | `ruff format --check .` | Consistent code style (equivalent to black) |
+| **Type check** | `mypy src/skillscan/` | No type annotation errors |
+| **Tests** | `pytest tests/ -q` | All unit and integration tests pass |
+
+Run all four locally before pushing:
 
 ```bash
-# Fast unit tests only
-pytest tests/ -x -q --ignore=tests/test_adversarial.py --ignore=tests/test_clamav.py
-
-# Full suite (requires ClamAV installed)
-pytest tests/ -x -q
+ruff check . && ruff format --check . && mypy src/skillscan/ && pytest tests/ -q
 ```
-
-Type checking and linting:
-
-```bash
-ruff check src tests
-mypy src
-```
-
-### Scope expectations
-
-- Keep scanner behavior deterministic.
-- Add regression fixtures for new detection logic.
-- Update docs and example outputs when command behavior changes.
-
-### Code style
-
-- Python 3.10+, type hints on all public functions
-- `ruff` for linting, `black` for formatting (both run in CI)
-- No new external runtime dependencies without discussion in an issue first
-
-### PR checklist
-
-- [ ] Tests pass (`pytest tests/ -x -q`)
-- [ ] New functionality has test coverage
-- [ ] `CHANGELOG.md` entry added under `[Unreleased]`
-- [ ] No secrets, API keys, or corpus file paths committed
 
 ---
 
-## Responsible disclosure
+## Branch protection settings
 
-See [SECURITY.md](SECURITY.md) for the vulnerability disclosure policy.
+The following settings are configured on `main` in **GitHub → Settings → Branches → Branch protection rules**:
+
+| Setting | Value | Why |
+|---|---|---|
+| Require a pull request before merging | ✅ Enabled | Prevents direct pushes to `main` |
+| Required status checks | `test (3.11)`, `test (3.12)`, `Lint & format` | CI must be green before merge |
+| Require branches to be up to date before merging | ✅ Enabled | Prevents stale-branch merges that pass CI but break `main` |
+| Do not allow bypassing the above settings | ✅ Enabled | Applies to admins and bots too |
+| Allow force pushes | ❌ Disabled | Preserves commit history |
+| Allow deletions | ❌ Disabled | Prevents accidental `main` deletion |
+
+**To configure these settings yourself:**
+1. Go to `https://github.com/kurtpayne/skillscan-security/settings/branches`
+2. Click **Add branch protection rule** (or edit the existing `main` rule)
+3. Set **Branch name pattern** to `main`
+4. Enable the settings in the table above
+5. Under **Require status checks to pass before merging**, search for and select: `test (3.11)`, `test (3.12)`, `Lint & format`
+6. Click **Save changes**
+
+---
+
+## Commit message format
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>: <short description>
+
+<optional body>
+```
+
+Common types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
+
+Examples:
+- `feat: add temporal trigger detection rule (MAL-055)`
+- `fix: resolve mypy no-any-return in skill_schema`
+- `docs: update CONTRIBUTING with branch protection steps`
+
+---
+
+## Adding new detection rules
+
+1. Add the rule entry to `src/skillscan/data/rules/default.yaml` inside `static_rules`
+2. Add a showcase example in `examples/showcase/<N>_<rule_id>_<slug>/SKILL.md`
+3. Add a test assertion in `tests/test_showcase_examples.py`
+4. Run `python3 scripts/sync-website-rules.py` to update the website TSX files
+5. Append the showcase to `examples/showcase/INDEX.md`
+6. Open a PR — CI will validate the YAML parses and the showcase fires the rule
+
+---
+
+## Questions
+
+Open an issue or start a discussion on GitHub.

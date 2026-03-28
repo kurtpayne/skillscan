@@ -117,29 +117,78 @@ class SocialEngineeringClassifier:
         self._stemmer = PorterStemmer()
         # Directive verbs: the skill is telling the AI to do something to the user
         self._imperative_roots = {
-            "request", "ask", "tell", "instruct", "direct", "have", "prompt",
-            "convinc", "persuad", "encourag", "requir", "demand",
+            "request",
+            "ask",
+            "tell",
+            "instruct",
+            "direct",
+            "have",
+            "prompt",
+            "convinc",
+            "persuad",
+            "encourag",
+            "requir",
+            "demand",
         }
         # Collection verbs: how the credential is obtained
         self._solicit_roots = {
-            "past", "provid", "share", "send", "enter", "type", "give",
-            "suppli", "submit", "collect", "retriev", "obtain", "input",
+            "past",
+            "provid",
+            "share",
+            "send",
+            "enter",
+            "type",
+            "give",
+            "suppli",
+            "submit",
+            "collect",
+            "retriev",
+            "obtain",
+            "input",
         }
         # Target data types
         self._credential_roots = {
-            "token", "credenti", "password", "passphras", "secret",
-            "apikey", "api", "key", "ssh", "privat", "access",
+            "token",
+            "credenti",
+            "password",
+            "passphras",
+            "secret",
+            "apikey",
+            "api",
+            "key",
+            "ssh",
+            "privat",
+            "access",
         }
         # Social engineering / pretext language
         self._social_eng_roots = {
-            "reassur", "hesit", "temporari", "verifi", "ownership",
-            "convinc", "legitim", "trust", "onboard", "setup", "confirm",
-            "account", "authent", "identifi",
+            "reassur",
+            "hesit",
+            "temporari",
+            "verifi",
+            "ownership",
+            "convinc",
+            "legitim",
+            "trust",
+            "onboard",
+            "setup",
+            "confirm",
+            "account",
+            "authent",
+            "identifi",
         }
         # Urgency / pressure language
         self._urgency_roots = {
-            "urgent", "immedi", "must", "cannot", "requir", "mandatori",
-            "now", "quickli", "asap", "critic",
+            "urgent",
+            "immedi",
+            "must",
+            "cannot",
+            "requir",
+            "mandatori",
+            "now",
+            "quickli",
+            "asap",
+            "critic",
         }
 
     def _tokenize_and_stem(self, text: str) -> list[str]:

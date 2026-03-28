@@ -34,8 +34,7 @@ dependencies = [
   "rich>=13.7.1",
   "pydantic>=2.7.1",
   "pyyaml>=6.0.1",
-  "nltk>=3.9.1",
-  "skillscan-trace>=0.1.0"
+  "nltk>=3.9.1"
 ]
 
 [project.optional-dependencies]
@@ -59,7 +58,10 @@ ml = [
 lint = [
   "skillscan-lint>=0.1.0",
 ]
-# Behavioral trace is a default dep (not optional) — see dependencies above
+# Behavioral trace — optional until skillscan-trace is published to PyPI
+trace = [
+  "skillscan-trace>=0.1.0",
+]
 # LLM-powered adversarial skill fuzzer (M19)
 fuzzer = [
   "openai>=1.30.0",

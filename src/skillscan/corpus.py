@@ -27,6 +27,7 @@ from pathlib import Path
 # Locate corpus_manager.py
 # ---------------------------------------------------------------------------
 
+
 def _find_corpus_manager() -> Path | None:
     """Search for corpus_manager.py in common locations relative to this file."""
     # This file lives at: skillscan-security/src/skillscan/corpus.py
@@ -59,6 +60,7 @@ def _load_corpus_manager() -> types.ModuleType:
     # Fallback: bundled copy (kept in sync manually, used when skillscan-corpus
     # is not available, e.g. in CI jobs that only check out skillscan-security).
     from skillscan import _corpus_manager_bundled as mod  # type: ignore[import]
+
     return mod
 
 

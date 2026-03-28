@@ -32,8 +32,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 GITHUB_RAW_BASE = (
-    "https://raw.githubusercontent.com/kurtpayne/skillscan-security/main"
-    "/src/skillscan/data/rules"
+    "https://raw.githubusercontent.com/kurtpayne/skillscan-security/main/src/skillscan/data/rules"
 )
 
 # Rule files to sync (order matters for merge)

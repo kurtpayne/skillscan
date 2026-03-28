@@ -55,6 +55,7 @@ def test_clamav_timeout(monkeypatch, tmp_path: Path) -> None:
 # break developer laptops.  In CI, ClamAV is expected to be present and the test
 # is a hard gate.
 
+
 def _clamav_installed() -> bool:
     return shutil.which("clamscan") is not None
 
@@ -92,9 +93,7 @@ def test_eicar_detected_by_clamav(tmp_path: Path) -> None:
 
     result = scan_paths(tmp_path)
 
-    assert result.available is True, (
-        "ClamAV reported unavailable even though clamscan is installed"
-    )
+    assert result.available is True, "ClamAV reported unavailable even though clamscan is installed"
     assert len(result.detections) >= 1, (
         "ClamAV did not detect the EICAR test string — "
         "check that the signature database is up to date (`freshclam`)"

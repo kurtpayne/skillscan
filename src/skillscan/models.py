@@ -36,8 +36,6 @@ class Finding(BaseModel):
     attack_hint: str | None = None
 
 
-
-
 class ConfidenceLabel(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
@@ -76,7 +74,6 @@ class Capability(BaseModel):
     name: str
     evidence_path: str
     detail: str
-
 
 
 class ScanMetadata(BaseModel):
@@ -177,24 +174,40 @@ class Policy(BaseModel):
 
 # Magic-byte signatures for archive formats
 _ARCHIVE_MAGIC: list[tuple[bytes, str]] = [
-    (b"PK\x03\x04", "zip"),        # ZIP / JAR / WHL / NUPKG / APK / WAR
-    (b"PK\x05\x06", "zip"),        # empty ZIP
-    (b"PK\x07\x08", "zip"),        # spanned ZIP
-    (b"\x1f\x8b", "gz"),           # gzip / .tar.gz / .tgz
-    (b"BZh", "bz2"),               # bzip2 / .tar.bz2
-    (b"\xfd7zXZ\x00", "xz"),      # XZ / .tar.xz
-    (b"7z\xbc\xaf'\x1c", "7z"),   # 7-Zip
-    (b"Rar!\x1a\x07\x00", "rar"), # RAR v4
+    (b"PK\x03\x04", "zip"),  # ZIP / JAR / WHL / NUPKG / APK / WAR
+    (b"PK\x05\x06", "zip"),  # empty ZIP
+    (b"PK\x07\x08", "zip"),  # spanned ZIP
+    (b"\x1f\x8b", "gz"),  # gzip / .tar.gz / .tgz
+    (b"BZh", "bz2"),  # bzip2 / .tar.bz2
+    (b"\xfd7zXZ\x00", "xz"),  # XZ / .tar.xz
+    (b"7z\xbc\xaf'\x1c", "7z"),  # 7-Zip
+    (b"Rar!\x1a\x07\x00", "rar"),  # RAR v4
     (b"Rar!\x1a\x07\x01\x00", "rar"),  # RAR v5
-    (b"\x28\xb5\x2f\xfd", "zst"), # Zstandard
-    (b"ustar", "tar"),             # POSIX tar (offset 257, checked separately)
+    (b"\x28\xb5\x2f\xfd", "zst"),  # Zstandard
+    (b"ustar", "tar"),  # POSIX tar (offset 257, checked separately)
 ]
 
-_ARCHIVE_EXTENSIONS: frozenset[str] = frozenset({
-    ".zip", ".tar", ".gz", ".tgz", ".bz2", ".tbz2", ".xz", ".txz",
-    ".7z", ".rar", ".zst", ".tzst",
-    ".jar", ".war", ".apk", ".whl", ".nupkg",
-})
+_ARCHIVE_EXTENSIONS: frozenset[str] = frozenset(
+    {
+        ".zip",
+        ".tar",
+        ".gz",
+        ".tgz",
+        ".bz2",
+        ".tbz2",
+        ".xz",
+        ".txz",
+        ".7z",
+        ".rar",
+        ".zst",
+        ".tzst",
+        ".jar",
+        ".war",
+        ".apk",
+        ".whl",
+        ".nupkg",
+    }
+)
 
 
 def _read_magic(path: Path, n: int = 8) -> bytes:

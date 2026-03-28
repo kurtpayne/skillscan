@@ -1,4 +1,5 @@
 """Tests for model_sync.py — explicit opt-in model download and age warnings."""
+
 from __future__ import annotations
 
 import json
@@ -23,6 +24,7 @@ MODEL_STALE_DAYS = STALE_AGE_DAYS
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _write_manifest(cache_dir: Path, age_days: float, version: str = "v0.1.0") -> Path:
     """Write a fake model manifest with the given age; returns manifest path."""
     ts = datetime.fromtimestamp(time.time() - age_days * 86400, tz=UTC)
@@ -43,6 +45,7 @@ def _write_manifest(cache_dir: Path, age_days: float, version: str = "v0.1.0") -
 # ---------------------------------------------------------------------------
 # get_model_status
 # ---------------------------------------------------------------------------
+
 
 def test_get_model_status_not_installed(tmp_path: Path) -> None:
     fake_manifest = tmp_path / "model_manifest.json"
@@ -85,6 +88,7 @@ def test_get_model_status_stale(tmp_path: Path) -> None:
 # check_model_age_finding
 # ---------------------------------------------------------------------------
 
+
 def test_no_finding_when_not_installed(tmp_path: Path) -> None:
     fake_manifest = tmp_path / "model_manifest.json"
     with patch("skillscan.model_sync.MODEL_MANIFEST_FILE", fake_manifest):
@@ -122,6 +126,7 @@ def test_stale_finding_at_stale_threshold(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 # ModelStatus constants sanity check
 # ---------------------------------------------------------------------------
+
 
 def test_warn_threshold_less_than_stale() -> None:
     assert MODEL_WARN_DAYS < MODEL_STALE_DAYS

@@ -16,6 +16,7 @@ Usage::
 ``skillscan-security`` is installed, falling back to its own bundled copy of
 ``skill-schema.yaml`` for standalone installs.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -29,10 +30,12 @@ import yaml  # type: ignore[import-untyped]
 # Internal loader
 # ---------------------------------------------------------------------------
 
+
 def _load_schema() -> dict[str, Any]:
     """Load and return the raw skill-schema.yaml as a dict."""
     schema_bytes = files("skillscan.data").joinpath("skill-schema.yaml").read_bytes()
-    return yaml.safe_load(schema_bytes)
+    result: dict[str, Any] = yaml.safe_load(schema_bytes)
+    return result
 
 
 @lru_cache(maxsize=1)
@@ -43,6 +46,7 @@ def _schema() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Public constants — derived from the YAML at import time
 # ---------------------------------------------------------------------------
+
 
 @lru_cache(maxsize=1)
 def get_standard_fm_keys() -> frozenset[str]:
@@ -70,7 +74,7 @@ def get_tool_risk() -> dict[str, int]:
     tier_map = {"high": 3, "medium": 2, "low": 1}
     for tier_name, tools in tiers.items():
         tier_value = tier_map.get(tier_name, 1)
-        for tool in (tools or []):
+        for tool in tools or []:
             result[tool.lower()] = tier_value
     return result
 
@@ -85,17 +89,14 @@ GRAPH_EDGE_KEYS: tuple[str, ...] = get_graph_edge_keys()
 TOOL_RISK: dict[str, int] = get_tool_risk()
 
 # Convenience: high-risk tool names as a frozenset
-HIGH_RISK_TOOLS: frozenset[str] = frozenset(
-    t for t, v in TOOL_RISK.items() if v >= 3
-)
-MEDIUM_RISK_TOOLS: frozenset[str] = frozenset(
-    t for t, v in TOOL_RISK.items() if v == 2
-)
+HIGH_RISK_TOOLS: frozenset[str] = frozenset(t for t, v in TOOL_RISK.items() if v >= 3)
+MEDIUM_RISK_TOOLS: frozenset[str] = frozenset(t for t, v in TOOL_RISK.items() if v == 2)
 
 
 # ---------------------------------------------------------------------------
 # Schema file path — useful for skillscan-lint to locate the bundled copy
 # ---------------------------------------------------------------------------
+
 
 def schema_file_path() -> Path:
     """Return the absolute path to the bundled skill-schema.yaml."""

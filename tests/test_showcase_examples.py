@@ -43,9 +43,7 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXF-005" for f in findings_34)
     assert any(f.id == "CHN-005" for f in findings_34)
     assert any(f.id == "MAL-008" for f in _scan("examples/showcase/35_discord_debugger_token_theft").findings)
-    assert any(
-        f.id == "EXF-006" for f in _scan("examples/showcase/36_ipv4_mapped_ipv6_ssrf_bypass").findings
-    )
+    assert any(f.id == "EXF-006" for f in _scan("examples/showcase/36_ipv4_mapped_ipv6_ssrf_bypass").findings)
     assert any(f.id == "SUP-005" for f in _scan("examples/showcase/37_npm_lifecycle_node_eval").findings)
     assert any(f.id == "EXF-007" for f in _scan("examples/showcase/38_openclaw_config_token_access").findings)
     findings_39 = _scan("examples/showcase/39_pr_target_metadata_injection").findings
@@ -76,7 +74,7 @@ def test_showcase_detection_rules() -> None:
     findings_53 = _scan("examples/showcase/53_claude_base_url_override").findings
     assert any(f.id == "EXF-012" for f in findings_53)
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
-    assert any(f.id == "CHN-009" for f in findings_54)
+    assert any(f.id == "MAL-015" for f in findings_54)
     findings_55 = _scan("examples/showcase/55_pastebin_stegobin_resolver").findings
     assert any(f.id == "MAL-016" for f in findings_55)
     findings_56 = _scan("examples/showcase/56_hex_decode_exec").findings
@@ -126,7 +124,7 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-028" for f in findings_77)
     findings_78 = _scan("examples/showcase/78_mcp_poison_credential_exfil_chain").findings
     assert any(f.id == "MAL-025" for f in findings_78)
-    assert any(f.id == "CHN-011" for f in findings_78)
+    assert any(f.id == "CHN-002" for f in findings_78)
     findings_79 = _scan("examples/showcase/79_stealth_network_exfil_chain").findings
     assert any(f.id == "ABU-006" for f in findings_79)
     assert any(f.id == "CHN-012" for f in findings_79)

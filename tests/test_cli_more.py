@@ -622,8 +622,10 @@ def test_scan_baseline_option_validation_errors(tmp_path: Path) -> None:
     )
     assert incompatible_format_result.exit_code == 2
     # M10.7: --baseline is supported only with text or json format
-    assert "--baseline is supported only" in incompatible_format_result.stdout or \
-           "--baseline-report is supported only" in incompatible_format_result.stdout
+    assert (
+        "--baseline is supported only" in incompatible_format_result.stdout
+        or "--baseline-report is supported only" in incompatible_format_result.stdout
+    )
 
     # M10.7: --format json --baseline is valid without --delta-format json.
     # Delta is always included inline in the JSON output when --baseline is set.

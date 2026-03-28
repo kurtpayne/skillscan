@@ -27,6 +27,7 @@ runner = CliRunner()
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def benign_skill(tmp_path: Path) -> Path:
     """A minimal benign SKILL.md that produces no findings."""
@@ -51,6 +52,7 @@ def _model_status_not_installed() -> ModelStatus:
 
 def _model_status_installed() -> ModelStatus:
     from datetime import UTC, datetime, timedelta
+
     return ModelStatus(
         installed=True,
         version="v16589-5ep",
@@ -66,6 +68,7 @@ def _model_status_installed() -> ModelStatus:
 # ---------------------------------------------------------------------------
 # Passive notice tests
 # ---------------------------------------------------------------------------
+
 
 class TestPassiveNotice:
     """When --ml-detect is not passed, a dim notice should appear in text output."""
@@ -132,6 +135,7 @@ class TestPassiveNotice:
 # --require-model flag tests
 # ---------------------------------------------------------------------------
 
+
 class TestRequireModel:
     """--require-model gates CI jobs on full-fidelity scans."""
 
@@ -183,6 +187,7 @@ class TestRequireModel:
 # --ml-detect + no model in non-TTY (CI) tests
 # ---------------------------------------------------------------------------
 
+
 class TestMlDetectNoModelNonTTY:
     """In CI (non-TTY), --ml-detect with no model should warn and continue."""
 
@@ -212,6 +217,7 @@ class TestMlDetectNoModelNonTTY:
 # ---------------------------------------------------------------------------
 # model sync output tests
 # ---------------------------------------------------------------------------
+
 
 class TestModelSyncOutput:
     """model sync should print version, what-it-enables, and how-to-use after download."""

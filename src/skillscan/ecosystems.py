@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def detect_ecosystems(root: Path) -> list[str]:
-    names = {p.name.lower() for p in root.rglob('*') if p.is_file()}
+    names = {p.name.lower() for p in root.rglob("*") if p.is_file()}
 
     hits: list[str] = []
 

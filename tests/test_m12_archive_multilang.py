@@ -1,6 +1,7 @@
 """
 Milestone 12 tests: expanded archive detection, extraction, and multilang rules.
 """
+
 from __future__ import annotations
 
 import io
@@ -241,6 +242,7 @@ class TestMultilangRulePatterns:
 
     def _match(self, rulepack, rule_id: str, text: str) -> bool:
         import re
+
         rule = next(r for r in rulepack.static_rules if r.id == rule_id)
         return bool(re.search(rule.pattern, text, re.IGNORECASE))
 

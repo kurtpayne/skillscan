@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -9,6 +11,8 @@ import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel, Field
 
 from skillscan.models import Severity
+
+log = logging.getLogger(__name__)
 
 
 class RuleTechnique(BaseModel):
@@ -42,6 +46,7 @@ class StaticRule(BaseModel):
     mitigation: str | None = None
     metadata: RuleMetadata | None = None
     graph_rule: bool = False  # True = detection is in skill_graph.py; pattern is a sentinel (never matches)
+    multiline: bool = False  # True = match against full file text instead of line-by-line
 
 
 class ChainRule(BaseModel):
@@ -75,6 +80,7 @@ class CompiledStaticRule:
     mitigation: str | None
     language: str | None = None  # e.g. "javascript", "ruby", "go", "rust"
     graph_rule: bool = False  # True = skip pattern matching; detection is in skill_graph.py
+    multiline: bool = False  # True = match against full file text instead of line-by-line
 
 
 @dataclass
@@ -158,6 +164,11 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
     rules_dir = resources.files("skillscan.data.rules")
     files = sorted([p for p in rules_dir.iterdir() if p.name.endswith(".yaml")], key=lambda p: p.name)
     files = _filter_rule_files_for_channel(files, channel)
+
+    log.debug("[rules] loading %d bundled rule file(s) (channel=%s):", len(files), channel)
+    for f in files:
+        log.debug("  bundled: %s", f)
+
     rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in files]
 
     # Merge user-local rules on top of bundled rules (signature-as-data layer).
@@ -165,41 +176,78 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
     # ~/.skillscan/rules/. They extend the bundled set; rule IDs in both use
     # the user-local (newer) version because _merge_rulepacks appends them last
     # and analysis picks the last match for duplicate IDs.
-    try:
-        from skillscan.rules_sync import get_user_rules_dir  # avoid circular at module level
+    # Set SKILLSCAN_NO_USER_RULES=1 to skip user-local rules (useful in CI).
+    _skip_user = os.environ.get("SKILLSCAN_NO_USER_RULES", "").strip() not in ("", "0", "false", "no")
+    if _skip_user:
+        log.debug("[rules] SKILLSCAN_NO_USER_RULES set — skipping user-local rules")
+    else:
+        try:
+            from skillscan.rules_sync import get_user_rules_dir  # avoid circular at module level
 
-        user_dir = get_user_rules_dir()
-        if user_dir is not None:
-            user_files = sorted(user_dir.glob("*.yaml"), key=lambda p: p.name)
-            user_files = _filter_rule_files_for_channel(list(user_files), channel)
-            if user_files:
-                user_rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in user_files]
-                rulepacks = rulepacks + user_rulepacks
-    except Exception:  # pragma: no cover — network/fs errors must never block scan
-        pass
+            user_dir = get_user_rules_dir()
+            if user_dir is not None:
+                user_files = sorted(user_dir.glob("*.yaml"), key=lambda p: p.name)
+                user_files = _filter_rule_files_for_channel(list(user_files), channel)
+                if user_files:
+                    log.debug(
+                        "[rules] loading %d user-local rule file(s) from %s:",
+                        len(user_files),
+                        user_dir,
+                    )
+                    for f in user_files:
+                        log.debug("  user-local: %s", f)
+                    user_rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in user_files]
+                    rulepacks = rulepacks + user_rulepacks
+                else:
+                    log.debug(
+                        "[rules] user-local rules dir exists (%s) but no matching YAML for channel=%s",
+                        user_dir,
+                        channel,
+                    )
+            else:
+                log.debug("[rules] no user-local rules dir — using bundled rules only")
+        except Exception:  # pragma: no cover — network/fs errors must never block scan
+            pass
 
-    return _merge_rulepacks(rulepacks)
+    merged = _merge_rulepacks(rulepacks)
+    log.debug(
+        "[rules] merged rulepack ready: version=%s  static=%d  chain=%d  action_patterns=%d",
+        merged.version,
+        len(merged.static_rules),
+        len(merged.chain_rules),
+        len(merged.action_patterns),
+    )
+    return merged
 
 
 @lru_cache(maxsize=3)
 def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
     rp = load_builtin_rulepack(channel=channel)
-    static_rules = [
-        CompiledStaticRule(
-            id=r.id,
-            category=r.category,
-            severity=r.severity,
-            confidence=r.confidence,
-            title=r.title,
-            pattern=re.compile(r.pattern, re.IGNORECASE),
-            mitigation=r.mitigation,
-            language=(
-                r.metadata.language if r.metadata else None
-            ),
-            graph_rule=r.graph_rule,
+    static_rules = []
+    for r in rp.static_rules:
+        # Detect multiline intent from either the model field OR the legacy (?is) inline flag
+        # prefix in the pattern string.  This dual-check guards against any environment where
+        # Pydantic silently drops the bool field (observed on Python 3.13 in CI).
+        _has_inline_flags = bool(re.match(r"^\(\?[is]{1,2}\)", r.pattern))
+        _is_multiline = r.multiline or _has_inline_flags
+        _stripped_pattern = re.sub(r"^\(\?[is]{1,2}\)", "", r.pattern)
+        static_rules.append(
+            CompiledStaticRule(
+                id=r.id,
+                category=r.category,
+                severity=r.severity,
+                confidence=r.confidence,
+                title=r.title,
+                pattern=re.compile(
+                    _stripped_pattern,
+                    re.IGNORECASE | (re.DOTALL if _is_multiline else 0),
+                ),
+                mitigation=r.mitigation,
+                language=(r.metadata.language if r.metadata else None),
+                graph_rule=r.graph_rule,
+                multiline=_is_multiline,
+            )
         )
-        for r in rp.static_rules
-    ]
     action_patterns = {
         name: re.compile(pattern, re.IGNORECASE) for name, pattern in rp.action_patterns.items()
     }

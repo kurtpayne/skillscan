@@ -27,12 +27,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 DEFAULT_HF_REPO = "kurtpayne/skillscan-deberta-adapter"
-HF_MANIFEST_URL = (
-    "https://huggingface.co/{repo}/resolve/main/adapter_manifest.json"
-)
-HF_ADAPTER_URL = (
-    "https://huggingface.co/{repo}/resolve/main/{filename}"
-)
+HF_MANIFEST_URL = "https://huggingface.co/{repo}/resolve/main/adapter_manifest.json"
+HF_ADAPTER_URL = "https://huggingface.co/{repo}/resolve/main/{filename}"
 
 ADAPTER_FILES = [
     "adapter_config.json",
@@ -55,6 +51,7 @@ REQUEST_TIMEOUT = 30
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ModelStatus:
     installed: bool
@@ -65,15 +62,12 @@ class ModelStatus:
     repo_id: str
     remote_version: str | None = None
     update_available: bool = False
-    stale: bool = False        # age > STALE_AGE_DAYS
-    warn: bool = False         # age > WARN_AGE_DAYS
+    stale: bool = False  # age > STALE_AGE_DAYS
+    warn: bool = False  # age > WARN_AGE_DAYS
 
     def summary(self) -> str:
         if not self.installed:
-            return (
-                "ML model not installed. "
-                "Run `skillscan model sync` to download (~350 MB)."
-            )
+            return "ML model not installed. Run `skillscan model sync` to download (~350 MB)."
         age_str = f"{self.age_days:.0f}" if self.age_days is not None else "?"
         lines = [
             f"Model:   {self.repo_id}",
@@ -92,10 +86,7 @@ class ModelStatus:
                 "Consider running `skillscan model sync`."
             )
         if self.update_available:
-            lines.append(
-                f"Update available: {self.remote_version} "
-                "(run `skillscan model sync` to apply)"
-            )
+            lines.append(f"Update available: {self.remote_version} (run `skillscan model sync` to apply)")
         return "\n".join(lines)
 
 
@@ -112,6 +103,7 @@ class SyncResult:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _sha256_dir(directory: Path) -> str:
     """Compute a combined SHA-256 of all files in a directory (sorted)."""
@@ -145,6 +137,7 @@ def _download_file(url: str, dest: Path) -> int:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def get_model_status(repo_id: str = DEFAULT_HF_REPO, check_remote: bool = False) -> ModelStatus:
     """Return the current status of the cached model."""

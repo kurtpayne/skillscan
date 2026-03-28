@@ -4,6 +4,7 @@ BD1: Detect security-relevant changes between a baseline and updated skill file.
 Flags changes to: allowed-tools, network calls, shell execution, exfiltration
 patterns, override/injection phrases, and structural instruction changes.
 """
+
 from __future__ import annotations
 
 import difflib
@@ -22,36 +23,43 @@ import yaml  # type: ignore[import-untyped]
 _SECURITY_PATTERNS: list[tuple[str, str, str]] = [
     # (category, severity, regex)
     (
-        "network_call", "high",
+        "network_call",
+        "high",
         r"(?i)\b(curl|wget|fetch|http\.get|requests\.get|urllib|socket\.connect)\b",
     ),
     (
-        "shell_exec", "high",
+        "shell_exec",
+        "high",
         r"(?i)\b(subprocess|os\.system|exec\(|eval\(|shell=True|bash -c|sh -c)\b",
     ),
     (
-        "exfiltration", "high",
+        "exfiltration",
+        "high",
         r"(?i)\b(exfil|data=\{|token=\{|key=\{|dump.*secret|send.*credential)\b",
     ),
     (
-        "override_phrase", "high",
+        "override_phrase",
+        "high",
         r"(?i)(ignore (all |previous |above |prior )"
         r"(instructions?|rules?|constraints?)|disregard|"
         r"override (your|all) (instructions?|rules?|constraints?)|"
         r"forget (everything|all)|new (primary |top |master )?instruction)",
     ),
     (
-        "authority_claim", "medium",
+        "authority_claim",
+        "medium",
         r"(?i)(system (administrator|operator|owner)|you are now|act as|"
         r"pretend (you are|to be)|your (true |real |actual )?role is)",
     ),
     (
-        "data_access", "medium",
+        "data_access",
+        "medium",
         r"(?i)\b(read.*file|write.*file|delete.*file|list.*directory"
         r"|glob\(|open\(.*['\"]r['\"])\b",
     ),
     (
-        "credential_ref", "medium",
+        "credential_ref",
+        "medium",
         r"(?i)\b(api[_\s]?key|secret[_\s]?key|password|token|bearer"
         r"|auth[_\s]?header|private[_\s]?key)\b",
     ),
@@ -64,18 +72,38 @@ _COMPILED: list[tuple[str, str, re.Pattern[str]]] = [
 
 # Tools that are considered high-risk when added to allowed-tools
 _HIGH_RISK_TOOLS = {
-    "bash", "sh", "zsh", "fish", "powershell", "cmd",
-    "computer", "computer_use", "computer-use",
-    "execute_code", "run_code", "code_execution",
-    "web_search", "web_fetch", "browser", "curl", "wget",
-    "file_write", "write_file", "fs_write",
-    "mcp__filesystem__write_file", "mcp__bash__bash",
+    "bash",
+    "sh",
+    "zsh",
+    "fish",
+    "powershell",
+    "cmd",
+    "computer",
+    "computer_use",
+    "computer-use",
+    "execute_code",
+    "run_code",
+    "code_execution",
+    "web_search",
+    "web_fetch",
+    "browser",
+    "curl",
+    "wget",
+    "file_write",
+    "write_file",
+    "fs_write",
+    "mcp__filesystem__write_file",
+    "mcp__bash__bash",
 }
 
 _MEDIUM_RISK_TOOLS = {
-    "file_read", "read_file", "fs_read",
-    "mcp__filesystem__read_file", "mcp__filesystem__list_directory",
-    "web_search", "search",
+    "file_read",
+    "read_file",
+    "fs_read",
+    "mcp__filesystem__read_file",
+    "mcp__filesystem__list_directory",
+    "web_search",
+    "search",
 }
 
 
@@ -83,12 +111,16 @@ _MEDIUM_RISK_TOOLS = {
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class SkillDiffChange:
     """A single security-relevant change detected between two skill versions."""
+
     change_type: Literal[
-        "tool_added", "tool_removed",
-        "instruction_added", "instruction_removed",
+        "tool_added",
+        "tool_removed",
+        "instruction_added",
+        "instruction_removed",
         "frontmatter_changed",
         "security_pattern_added",
     ]
@@ -104,6 +136,7 @@ class SkillDiffChange:
 @dataclass
 class SkillDiffResult:
     """Result of comparing two SKILL.md files."""
+
     baseline_path: str
     current_path: str
     baseline_name: str
@@ -132,6 +165,7 @@ class SkillDiffResult:
 # Parsing helpers
 # ---------------------------------------------------------------------------
 
+
 def _parse_skill_md(path: Path) -> tuple[dict, str]:
     """Parse a SKILL.md file into (frontmatter_dict, body_text)."""
     try:
@@ -145,7 +179,7 @@ def _parse_skill_md(path: Path) -> tuple[dict, str]:
         end = raw.find("\n---", 3)
         if end != -1:
             fm_text = raw[3:end].strip()
-            body = raw[end + 4:].strip()
+            body = raw[end + 4 :].strip()
             try:
                 parsed = yaml.safe_load(fm_text)
                 if isinstance(parsed, dict):
@@ -178,6 +212,7 @@ def _tool_severity(tool: str) -> Literal["critical", "high", "medium", "low"]:
 # Core diff logic
 # ---------------------------------------------------------------------------
 
+
 def _diff_frontmatter(
     baseline_fm: dict,
     current_fm: dict,
@@ -193,26 +228,30 @@ def _diff_frontmatter(
 
     for tool in sorted(added_tools):
         sev = _tool_severity(tool)
-        changes.append(SkillDiffChange(
-            change_type="tool_added",
-            severity=sev,
-            category="allowed_tools",
-            description=f"Tool '{tool}' added to allowed-tools",
-            baseline_value="(not present)",
-            current_value=tool,
-            snippet=f"allowed-tools: +{tool}",
-        ))
+        changes.append(
+            SkillDiffChange(
+                change_type="tool_added",
+                severity=sev,
+                category="allowed_tools",
+                description=f"Tool '{tool}' added to allowed-tools",
+                baseline_value="(not present)",
+                current_value=tool,
+                snippet=f"allowed-tools: +{tool}",
+            )
+        )
 
     for tool in sorted(removed_tools):
-        changes.append(SkillDiffChange(
-            change_type="tool_removed",
-            severity="info",
-            category="allowed_tools",
-            description=f"Tool '{tool}' removed from allowed-tools",
-            baseline_value=tool,
-            current_value="(removed)",
-            snippet=f"allowed-tools: -{tool}",
-        ))
+        changes.append(
+            SkillDiffChange(
+                change_type="tool_removed",
+                severity="info",
+                category="allowed_tools",
+                description=f"Tool '{tool}' removed from allowed-tools",
+                baseline_value=tool,
+                current_value="(removed)",
+                snippet=f"allowed-tools: -{tool}",
+            )
+        )
 
     # --- other frontmatter fields ---
     all_keys = set(baseline_fm) | set(current_fm)
@@ -221,15 +260,17 @@ def _diff_frontmatter(
         bv = str(baseline_fm.get(key, "(absent)"))
         cv = str(current_fm.get(key, "(absent)"))
         if bv != cv:
-            changes.append(SkillDiffChange(
-                change_type="frontmatter_changed",
-                severity="low",
-                category="frontmatter",
-                description=f"Frontmatter field '{key}' changed",
-                baseline_value=bv,
-                current_value=cv,
-                snippet=f"{key}: {bv!r} → {cv!r}",
-            ))
+            changes.append(
+                SkillDiffChange(
+                    change_type="frontmatter_changed",
+                    severity="low",
+                    category="frontmatter",
+                    description=f"Frontmatter field '{key}' changed",
+                    baseline_value=bv,
+                    current_value=cv,
+                    snippet=f"{key}: {bv!r} → {cv!r}",
+                )
+            )
 
     return changes
 
@@ -244,14 +285,16 @@ def _diff_instructions(
     baseline_lines = baseline_body.splitlines(keepends=True)
     current_lines = current_body.splitlines(keepends=True)
 
-    diff_lines = list(difflib.unified_diff(
-        baseline_lines,
-        current_lines,
-        fromfile="baseline",
-        tofile="current",
-        lineterm="",
-        n=2,
-    ))
+    diff_lines = list(
+        difflib.unified_diff(
+            baseline_lines,
+            current_lines,
+            fromfile="baseline",
+            tofile="current",
+            lineterm="",
+            n=2,
+        )
+    )
 
     # Scan only added lines for security patterns
     line_num = 0
@@ -267,15 +310,17 @@ def _diff_instructions(
             added_text = raw_line[1:]  # strip leading '+'
             for cat, sev, pattern in _COMPILED:
                 if pattern.search(added_text):
-                    changes.append(SkillDiffChange(
-                        change_type="security_pattern_added",
-                        severity=sev,  # type: ignore[arg-type]
-                        category=cat,
-                        description=f"Security-relevant pattern '{cat}' added in instruction body",
-                        current_value=added_text.strip(),
-                        line_number=line_num,
-                        snippet=added_text.strip()[:120],
-                    ))
+                    changes.append(
+                        SkillDiffChange(
+                            change_type="security_pattern_added",
+                            severity=sev,  # type: ignore[arg-type]
+                            category=cat,
+                            description=f"Security-relevant pattern '{cat}' added in instruction body",
+                            current_value=added_text.strip(),
+                            line_number=line_num,
+                            snippet=added_text.strip()[:120],
+                        )
+                    )
                     break  # one finding per added line (highest priority match)
         elif raw_line.startswith("-") and not raw_line.startswith("---"):
             pass  # removed lines are info-only, not flagged
@@ -296,6 +341,7 @@ def _count_by_severity(changes: list[SkillDiffChange]) -> dict[str, int]:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def diff_skills(baseline: Path, current: Path) -> SkillDiffResult:
     """Compare two SKILL.md files and return a SkillDiffResult.

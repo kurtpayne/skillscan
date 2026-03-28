@@ -26,6 +26,5 @@ def test_adversarial_regression_suite() -> None:
         )
         if must_find:
             assert any(f.id == must_find for f in report.findings), (
-                f"{case_name}: missing {must_find} in "
-                f"{[f.id for f in report.findings]}"
+                f"{case_name}: missing {must_find} in {[f.id for f in report.findings]}"
             )
