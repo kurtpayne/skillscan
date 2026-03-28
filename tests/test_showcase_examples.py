@@ -73,58 +73,8 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXF-011" for f in findings_52)
     findings_53 = _scan("examples/showcase/53_claude_base_url_override").findings
     assert any(f.id == "EXF-012" for f in findings_53)
-    from pathlib import Path
-
-    from skillscan.analysis import iter_text_files
-    from skillscan.policies import load_builtin_policy as _lbp
-
-    _p54 = Path("examples/showcase/54_claude_hooks_rce")
-    _rg = list(_p54.rglob("*"))
-    _strict = _lbp("strict")
-    _inv = iter_text_files(_p54, _strict.limits["max_files"], _strict.limits["max_bytes"], 500, 100_000_000)
-
-    import yaml as _yaml
-
-    import skillscan.data.rules as _rules_data_mod
-    import skillscan.rules as _rules_mod
-    from skillscan.analysis import _prepare_analysis_text, _safe_read_text
-    from skillscan.rules import load_compiled_builtin_rulepack
-
-    _rules_src = open(_rules_mod.__file__).read()
-    _dotall_line = next((ln.strip() for ln in _rules_src.split("\n") if "re.DOTALL if" in ln), "NOT FOUND")
-    # Find MAL-015 multiline field in the actual installed YAML
-    _yaml_dir = __import__("pathlib").Path(_rules_data_mod.__file__).parent
-    _yaml_files = list(_yaml_dir.glob("*.yaml"))
-    _mal015_yaml_line = "NOT FOUND"
-    for _yf in _yaml_files:
-        _yd = _yaml.safe_load(_yf.read_text())
-        for _yr in _yd.get("static_rules") or []:
-            if _yr.get("id") == "MAL-015":
-                _mal015_yaml_line = f"multiline={_yr.get('multiline')} in {_yf.name}"
-    print(f"DBG54 rules_file={_rules_mod.__file__}")  # debug
-    print(f"DBG54 yaml_dir={_yaml_dir}")  # debug
-    print(f"DBG54 yaml_files={[f.name for f in _yaml_files]}")  # debug
-    print(f"DBG54 mal015_yaml={_mal015_yaml_line}")  # debug
-    print(f"DBG54 dotall_line={_dotall_line}")  # debug
-    _rpack = load_compiled_builtin_rulepack()
-    _mal015 = next((r for r in _rpack.static_rules if r.id == "MAL-015"), None)
-    print(f"DBG54 rglob={[str(x) for x in _rg]}")  # debug
-    print(f"DBG54 text_files={[str(x) for x in _inv.text_files]}")  # debug
-    if _mal015:
-        _pat_start = repr(str(_mal015.pattern.pattern)[:40])
-        print(  # debug
-            f"DBG54 mal015_flags={_mal015.pattern.flags} multiline={_mal015.multiline} pat={_pat_start}"
-        )
-        for _tf in _inv.text_files:
-            _txt = _safe_read_text(_tf)
-            _atxt = _prepare_analysis_text(_txt)
-            _m = _mal015.pattern.search(_atxt)
-            print(f"DBG54 file={_tf.name} text_len={len(_atxt)} match={bool(_m)}")  # debug
-    else:
-        print("DBG54 MAL-015 rule NOT FOUND in rulepack")  # debug
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
-    print(f"DBG54 findings={[f.id for f in findings_54]}")  # debug
-    assert any(f.id == "MAL-015" for f in findings_54), f"MAL-015 missing; got={[f.id for f in findings_54]}"
+    assert any(f.id == "MAL-015" for f in findings_54)
     findings_55 = _scan("examples/showcase/55_pastebin_stegobin_resolver").findings
     assert any(f.id == "MAL-016" for f in findings_55)
     findings_56 = _scan("examples/showcase/56_hex_decode_exec").findings
