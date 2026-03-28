@@ -74,7 +74,8 @@ def test_showcase_detection_rules() -> None:
     findings_53 = _scan("examples/showcase/53_claude_base_url_override").findings
     assert any(f.id == "EXF-012" for f in findings_53)
     findings_54 = _scan("examples/showcase/54_claude_hooks_rce").findings
-    assert any(f.id == "MAL-015" for f in findings_54)
+    print(f"DEBUG findings_54: {[f.id for f in findings_54]}", flush=True)
+    assert any(f.id == "MAL-015" for f in findings_54), f"MAL-015 not found; got: {[f.id for f in findings_54]}"
     findings_55 = _scan("examples/showcase/55_pastebin_stegobin_resolver").findings
     assert any(f.id == "MAL-016" for f in findings_55)
     findings_56 = _scan("examples/showcase/56_hex_decode_exec").findings
