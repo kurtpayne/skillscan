@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-03-27",
+    "generated": "2026-03-28",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -164,6 +164,11 @@
         "severity": "critical",
         "fixed": "1.2.5"
       },
+      "1.2.9": {
+        "id": "GHSA-qh6h-p6c9-ff54",
+        "severity": "high",
+        "fixed": "1.2.22"
+      },
       "1.0.6": {
         "id": "GHSA-6qv9-48xg-fc7f",
         "severity": "high",
@@ -178,11 +183,6 @@
         "id": "GHSA-q84m-rmw3-4382",
         "severity": "medium",
         "fixed": "0.1.35"
-      },
-      "1.2.9": {
-        "id": "GHSA-2g6r-c272-w58r",
-        "severity": "low",
-        "fixed": "1.2.11"
       }
     },
     "langchain-community": {
