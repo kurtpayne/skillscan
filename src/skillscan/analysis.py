@@ -967,8 +967,12 @@ def scan(
                     allowed_exts = _LANG_EXTENSIONS.get(rule.language)
                     if allowed_exts is not None and file_ext not in allowed_exts:
                         continue
-                for line_no, line in enumerate(analysis_text.splitlines(), 1):
-                    if rule.pattern.search(line):
+                if rule.multiline:
+                    # Full-text match for patterns that span multiple lines
+                    m = rule.pattern.search(analysis_text)
+                    if m:
+                        matched_text = m.group(0)
+                        line_no = analysis_text[: m.start()].count("\n") + 1
                         _f.append(
                             Finding(
                                 id=rule.id,
@@ -978,11 +982,27 @@ def scan(
                                 title=rule.title,
                                 evidence_path=str(path),
                                 line=line_no,
-                                snippet=line.strip()[:240],
+                                snippet=matched_text.replace("\n", " ").strip()[:240],
                                 mitigation=rule.mitigation,
                             )
                         )
-                        break
+                else:
+                    for line_no, line in enumerate(analysis_text.splitlines(), 1):
+                        if rule.pattern.search(line):
+                            _f.append(
+                                Finding(
+                                    id=rule.id,
+                                    category=rule.category,
+                                    severity=rule.severity,
+                                    confidence=rule.confidence,
+                                    title=rule.title,
+                                    evidence_path=str(path),
+                                    line=line_no,
+                                    snippet=line.strip()[:240],
+                                    mitigation=rule.mitigation,
+                                )
+                            )
+                            break
 
             _f.extend(local_prompt_injection_findings(path, analysis_text))
             _f.extend(local_social_engineering_findings(path, analysis_text))

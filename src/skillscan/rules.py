@@ -46,6 +46,7 @@ class StaticRule(BaseModel):
     mitigation: str | None = None
     metadata: RuleMetadata | None = None
     graph_rule: bool = False  # True = detection is in skill_graph.py; pattern is a sentinel (never matches)
+    multiline: bool = False  # True = match against full file text instead of line-by-line
 
 
 class ChainRule(BaseModel):
@@ -79,6 +80,7 @@ class CompiledStaticRule:
     mitigation: str | None
     language: str | None = None  # e.g. "javascript", "ruby", "go", "rust"
     graph_rule: bool = False  # True = skip pattern matching; detection is in skill_graph.py
+    multiline: bool = False  # True = match against full file text instead of line-by-line
 
 
 @dataclass
@@ -232,6 +234,7 @@ def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
             mitigation=r.mitigation,
             language=(r.metadata.language if r.metadata else None),
             graph_rule=r.graph_rule,
+            multiline=r.multiline,
         )
         for r in rp.static_rules
     ]

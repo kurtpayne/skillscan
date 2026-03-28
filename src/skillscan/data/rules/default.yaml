@@ -743,6 +743,7 @@ static_rules:
   confidence: 0.9
   title: Discord Electron debugger credential interception marker
   pattern: (?is)(?:webContents[\s\S]{0,80}debugger[\s\S]{0,120}(?:attach|on|sendCommand)[\s\S]{0,900}(?:Network\.(?:getResponseBody|getRequestPostData)|/login|/register|/mfa(?:/totp)?|codes-verification)|Network\.(?:getResponseBody|getRequestPostData)[\s\S]{0,240}(?:/login|/register|/mfa(?:/totp)?|codes-verification))
+  multiline: true
   mitigation: Remove Electron debugger network-interception hooks that capture credentials, MFA data, or tokens from Discord endpoints.
   metadata:
     version: 1.0.0
@@ -967,6 +968,7 @@ static_rules:
   confidence: 0.86
   title: Hex-decoded command string execution marker
   pattern: (?is)Buffer\.from\(\s*['\"]?[0-9a-f]{40,}['\"]?\s*,\s*['\"]hex['\"]\s*\)\.toString\([^\n]{0,80}\)[\s\S]{0,220}\b(?:exec|execSync|spawn|spawnSync)\s*\(
+  multiline: true
   mitigation: Treat install/setup scripts that decode long hex strings and immediately execute them as suspicious. Replace with reviewed, plaintext commands in version-controlled scripts.
   metadata:
     version: 1.0.0
@@ -1109,6 +1111,7 @@ static_rules:
   confidence: 0.86
   title: AI assistant global MCP config injection marker
   pattern: (?is)(?:(?:~/(?:\.claude/settings\.json|\.claude\.json|\.cursor/mcp\.json|\.continue/config\.json|\.windsurf/mcp\.json)|claude_desktop_config\.json)[\s\S]{0,1200}\bmcpServers\b[\s\S]{0,900}"command"\s*:\s*"(?:node|python3?|bash|sh|pwsh|powershell|cmd(?:\.exe)?)"|\bmcpServers\b[\s\S]{0,1200}"command"\s*:\s*"(?:node|python3?|bash|sh|pwsh|powershell|cmd(?:\.exe)?)"[\s\S]{0,1200}(?:~/(?:\.claude/settings\.json|\.claude\.json|\.cursor/mcp\.json|\.continue/config\.json|\.windsurf/mcp\.json)|claude_desktop_config\.json)|mcpServers[\s\S]{0,400}command[\s\S]{0,400}node)
+  multiline: true
   mitigation: Treat scripts/instructions that write `mcpServers` entries into user-home assistant config files as high risk. Do not auto-modify global MCP config from repository code; require explicit user
     review and trusted server provenance.
   metadata:
@@ -1279,6 +1282,7 @@ static_rules:
   confidence: 0.85
   title: Claude Code hooks shell command execution marker
   pattern: '(?is)"hooks"\s*:\s*\{[\s\S]{0,2000}"(?:PreToolUse|PostToolUse|UserPromptSubmit|SessionStart)"[\s\S]{0,800}"command"\s*:\s*"(?:bash|sh|zsh|powershell|pwsh|cmd(?:\.exe)?|python3?\s+-c|node\s+-e)[^"\n]{0,240}'
+  multiline: true
   mitigation: Treat repository-scoped Claude Code hooks as untrusted. Remove auto-executed shell commands from `.claude/settings.json` and require explicit, reviewed local scripts.
   metadata:
     version: 1.0.0
@@ -1335,6 +1339,7 @@ static_rules:
   confidence: 0.85
   title: WebSocket C2 shell execution marker
   pattern: (?is)(?:new\s+WebSocket\s*\(|\bWebSocket\s*\(|\bwss?://(?:\d{1,3}\.){3}\d{1,3}:\d{2,5})[\s\S]{0,320}(?:exec|execSync|spawn|spawnSync)\s*\([^ ]{0,180}(?:/bin/sh|cmd(?:\.exe)?|powershell(?:\.exe)?|pwsh)?
+  multiline: true
   mitigation: Treat WebSocket command channels that launch shell/process execution as malicious. Remove package/runtime code that combines outbound WebSocket control paths with command execution primitives.
   metadata:
     version: 1.0.0
@@ -1390,8 +1395,8 @@ static_rules:
   severity: high
   confidence: 0.84
   title: Tool auto-approve allowlist includes package-install command
-  pattern: (?is)(?:auto[- ]?approve|always\s+approve|allowed\s+commands|command\s+allowlist)[\s\S]{0,220}\b(?:npm\s+(?:install|i)|pnpm\s+install|yarn\s+install|bun\s+install)\b|\b(?:npm\s+(?:install|i)|pnpm\s+install|yarn\s+install|bun\s+install)\b[\s\S]{0,220}(?:auto[-
-    ]?approve|always\s+approve|allowed\s+commands|command\s+allowlist)
+  pattern: '(?is)(?:auto[- ]?approve|always\s+approve|allowed\s+commands|command\s+allowlist)[\s\S]{0,220}\b(?:npm\s+(?:install|i)|pnpm\s+install|yarn\s+install|bun\s+install)\b|\b(?:npm\s+(?:install|i)|pnpm\s+install|yarn\s+install|bun\s+install)\b[\s\S]{0,220}(?:auto[- ]?approve|always\s+approve|allowed\s+commands|command\s+allowlist)'
+  multiline: true
   mitigation: Do not auto-approve package-install commands in AI tool/extension settings. Require explicit user confirmation for install actions because lifecycle scripts can execute arbitrary code.
   metadata:
     version: 1.0.0
@@ -1590,6 +1595,7 @@ static_rules:
   confidence: 0.85
   title: Cross-platform password-harvest credential validation marker
   pattern: (?is)(?:spawnSync\(\s*["']dscl["']\s*,\s*\[\s*["']\.["']\s*,\s*["']-authonly["']|spawnSync\(\s*["']powershell["']\s*,\s*\[[^\]]{0,260}ValidateCredentials\(|spawnSync\(\s*["']su["']\s*,\s*\[\s*["']-c["']\s*,\s*["']true["'])
+  multiline: true
   mitigation: Treat scripts that validate user-supplied passwords via `dscl -authonly`, `ValidateCredentials`, or `su -c true` as credential-harvest behavior. Remove password-collection flows and use OS-native
     delegated auth mechanisms.
   metadata:
@@ -1619,6 +1625,7 @@ static_rules:
   confidence: 0.84
   title: CloudFormation admin-role bootstrap marker via CAPABILITY_IAM
   pattern: (?is)(?:CAPABILITY_(?:NAMED_)?IAM[\s\S]{0,1200}arn:aws:iam::aws:policy/AdministratorAccess|arn:aws:iam::aws:policy/AdministratorAccess[\s\S]{0,1200}CAPABILITY_(?:NAMED_)?IAM)
+  multiline: true
   mitigation: Treat CloudFormation deployment snippets that combine IAM-creation capabilities with direct `AdministratorAccess` policy attachment as high risk. Require explicit approval, least-privilege
     templates, and guardrails around CI-issued AWS credentials.
   metadata:
