@@ -56,7 +56,7 @@ jobs:
 
       - name: Open review issue if changes detected
         if: steps.check.outputs.exit_code == '1' || inputs.force_review
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
