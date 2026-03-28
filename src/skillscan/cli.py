@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import json
+import logging
 import shutil
 import sys
 import time
@@ -509,9 +510,18 @@ def scan_cmd(
         envvar="SKILLSCAN_TIMEOUT",
         help="Abort the entire scan after this many seconds (0 = no timeout).",
     ),
+    debug: bool = typer.Option(
+        False,
+        "--debug",
+        envvar="SKILLSCAN_DEBUG",
+        help="Enable debug logging (shows which rule files are loaded, merge stats, etc.).",
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
+    if debug:
+        logging.basicConfig(level=logging.DEBUG, format="%(name)s %(levelname)s %(message)s")
+        logging.getLogger("skillscan").setLevel(logging.DEBUG)
 
     # --- Model UX: missing-model detection and guided download ---
     if require_model and not ml_detect:

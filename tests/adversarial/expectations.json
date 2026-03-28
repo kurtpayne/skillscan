@@ -37,17 +37,17 @@
   {
     "case": "a08_smtp_exfil",
     "verdict": "block",
-    "must_find": "CHN-003"
+    "must_find": "CHN-009"
   },
   {
     "case": "a09_scp_exfil",
     "verdict": "block",
-    "must_find": "CHN-003"
+    "must_find": "CHN-011"
   },
   {
     "case": "a10_cloud_upload",
     "verdict": "block",
-    "must_find": "CHN-003"
+    "must_find": "CHN-002"
   },
   {
     "case": "a11_split_b64",

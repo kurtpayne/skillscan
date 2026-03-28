@@ -18,9 +18,14 @@ hard_block_rules:
   - MAL-025   # MCP tool poisoning via hidden instruction block (critical)
   - MAL-029   # Solana RPC C2 channel (critical)
   - CHN-011   # MCP tool poisoning + credential exfil chain (critical)
+  - CHN-012   # stealth concealment + network exfil chain (high)
   - CHN-013   # container escape + host path mount chain (critical)
+  - CHN-014   # privileged container + secret access chain (critical)
   - PSV-005   # capability inflation — wildcard permission scope (high)
   - MAL-051   # embedded binary / shellcode blob (critical)
+  - ABU-002   # privilege escalation + security disable (critical)
+  - CHN-001   # download + execute chain (critical)
+  - CHN-002   # secret access + network exfiltration chain (critical)
 block_min_confidence: 0.75
 allow_domains: []
 block_domains: []

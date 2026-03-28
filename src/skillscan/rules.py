@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import re
 from dataclasses import dataclass
 from functools import lru_cache
@@ -9,6 +10,8 @@ import yaml  # type: ignore[import-untyped]
 from pydantic import BaseModel, Field
 
 from skillscan.models import Severity
+
+log = logging.getLogger(__name__)
 
 
 class RuleTechnique(BaseModel):
@@ -158,6 +161,11 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
     rules_dir = resources.files("skillscan.data.rules")
     files = sorted([p for p in rules_dir.iterdir() if p.name.endswith(".yaml")], key=lambda p: p.name)
     files = _filter_rule_files_for_channel(files, channel)
+
+    log.debug("[rules] loading %d bundled rule file(s) (channel=%s):", len(files), channel)
+    for f in files:
+        log.debug("  bundled: %s", f)
+
     rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in files]
 
     # Merge user-local rules on top of bundled rules (signature-as-data layer).
@@ -173,12 +181,31 @@ def load_builtin_rulepack(channel: str = "stable") -> RulePack:
             user_files = sorted(user_dir.glob("*.yaml"), key=lambda p: p.name)
             user_files = _filter_rule_files_for_channel(list(user_files), channel)
             if user_files:
+                log.debug("[rules] loading %d user-local rule file(s) from %s:", len(user_files), user_dir)
+                for f in user_files:
+                    log.debug("  user-local: %s", f)
                 user_rulepacks = [_load_yaml_rule_file(p.read_text(encoding="utf-8")) for p in user_files]
                 rulepacks = rulepacks + user_rulepacks
+            else:
+                log.debug(
+                    "[rules] user-local rules dir exists (%s) but no matching YAML for channel=%s",
+                    user_dir,
+                    channel,
+                )
+        else:
+            log.debug("[rules] no user-local rules dir — using bundled rules only")
     except Exception:  # pragma: no cover — network/fs errors must never block scan
         pass
 
-    return _merge_rulepacks(rulepacks)
+    merged = _merge_rulepacks(rulepacks)
+    log.debug(
+        "[rules] merged rulepack ready: version=%s  static=%d  chain=%d  action_patterns=%d",
+        merged.version,
+        len(merged.static_rules),
+        len(merged.chain_rules),
+        len(merged.action_patterns),
+    )
+    return merged
 
 
 @lru_cache(maxsize=3)
