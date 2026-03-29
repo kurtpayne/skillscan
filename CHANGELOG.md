@@ -10,6 +10,13 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **C-2 decontamination** (2026-03-29): removed 204 training files that were duplicated in `held_out_eval/`. Post-audit v11 true Macro F1 on 259 clean examples: **0.555** (injection recall 19.6%). v11 reported F1 of 0.926 was inflated by training/eval leakage introduced during v11 prep (commit `cf855ab8`). Full disclosure in `EVAL_RESULTS.md`.
+- **`eval-integrity.yml`** CI gate: fails any push to `main` if any `held_out_eval/` file hash appears in `training_corpus/`. Prevents future training/eval leakage.
+- **86 targeted injection training examples** across 8 zero-recall archetypes: organic real-world malicious (22 FN), enterprise auth/redirect (10 FN), organic PI (8 FN), MCP poisoning (8 FN), supply chain (6 FN), social engineering (8 FN), jailbreaks (18 FN), evasion (7 FN). Added to `training_corpus/malicious/` with zero eval overlap.
+- **v12 training launched** (2026-03-29): decontaminated corpus (19,407 files, 0 eval overlap), injection class weight cap raised to 12×, warmup ratio 0.08, label smoothing 0.05, LR 1.5e-5, 6 epochs, early stopping patience 3. Training on Modal A10G.
+- **4 new eval archetypes** in `held_out_eval/`: ClawHub ranking exfil supply chain (`sup023`), NemoClaw/AMOS README dropper (`mal055`), calendar event indirect injection (`pi86`), hallucination squatting (`sup024`).
+- **`PINJ-ML-LARGE-FILE`** (13e): LOW advisory finding emitted when `--ml-detect` is used on a file exceeding 200 lines or 8,000 characters. The model was trained on short skill files; very large files are chunked and per-chunk scores may miss distributed intent.
+- **`PINJ-ML-NO-MODEL`** (M10.5 belt-and-suspenders): programmatic API path now emits a structured finding when ML extras are installed but the LoRA adapter weights have not been downloaded, rather than falling through to base-model inference.
 - `holdout-eval.yml` — weekly CI workflow (M10.6) that runs all 451 held-out eval files against the current scanner on every push to `main`, Sundays at 07:00 UTC, and on demand. Computes macro F1 + FPR; fails if F1 < 0.92 (configurable via `workflow_dispatch` input). Posts per-file FN/FP lists and a metrics table to step summary. Closes the organic eval regression gate loop.
 - `.github/dependabot.yml` — weekly pip + GitHub Actions dependency updates
 - `.github/PULL_REQUEST_TEMPLATE.md` — contributor checklist covering ruff, mypy, pytest, rule tests, showcase, website sync, and no-debug-code requirements
