@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   scan-demo-feed:
@@ -71,8 +72,69 @@ jobs:
           " | tee -a \$GITHUB_STEP_SUMMARY
           fi
 
+      - name: Open or update regression issue for unexpected verdicts
+        if: ${{ inputs.dry_run != 'true' && hashFiles('demo-feed.json') != '' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (!fs.existsSync('demo-feed.json')) { console.log('No feed file — skipping.'); return; }
+            const data = JSON.parse(fs.readFileSync('demo-feed.json', 'utf8'));
+            const unexpected = (data.entries || []).filter(e => e.verdict !== e.expected_verdict);
+            if (unexpected.length === 0) { console.log('All verdicts matched — no issue needed.'); return; }
+
+            const scanDate = new Date().toISOString().split('T')[0];
+            const rows = unexpected.map(e => {
+              const ref = e.reference ? ` ([ref](${e.reference}))` : '';
+              return `| \`${e.id}\` | ${e.label} | ${e.archetype || '—'} | ${e.expected_verdict} | **${e.verdict}** |${ref} |`;
+            }).join('\n');
+            const body = [
+              `## Demo Feed Regression — ${scanDate}`,
+              '',
+              `**${unexpected.length} unexpected verdict(s)** detected in the weekly demo feed scan.`,
+              '',
+              '| Entry ID | Label | Archetype | Expected | Got | Ref |',
+              '|---|---|---|---|---|---|',
+              rows,
+              '',
+              `**SkillScan version:** ${data.skillscan_version || 'unknown'}`,
+              `**Total scanned:** ${data.entry_count} (BLOCK=${data.block_count}, ALLOW=${data.allow_count}, ERROR=${data.error_count})`,
+              '',
+              '### Next steps',
+              '- FP (benign → BLOCK): investigate rule triggering, add suppression or update rule confidence',
+              '- FN (malicious → ALLOW): add corpus examples, tighten rule, or add new rule',
+              '',
+              '_This issue was opened automatically by the Demo Feed Update workflow._',
+            ].join('\n');
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'demo-feed-regression',
+              state: 'open',
+            });
+
+            if (issues.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body: `## New scan results (${scanDate})\n\n${body}`,
+              });
+              console.log(`Updated existing issue #${issues[0].number}`);
+            } else {
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `[demo-feed] Unexpected verdicts detected — review required (${scanDate})`,
+                body,
+                labels: ['demo-feed-regression', 'quality'],
+              });
+              console.log(`Opened issue #${issue.data.number}`);
+            }
+
       - name: Push demo-feed.json to skillscan-website
-        if: ${{ inputs.dry_run != 'true' && success() }}
+        if: ${{ inputs.dry_run != 'true' && hashFiles('demo-feed.json') != '' }}
         run: |
           git clone --depth=1 \
             https://x-access-token:${{ secrets.SCHEMA_SYNC_PAT }}@github.com/kurtpayne/skillscan-website.git \
