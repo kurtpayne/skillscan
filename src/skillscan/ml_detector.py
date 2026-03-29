@@ -1,27 +1,27 @@
 """ml_detector.py — Offline HuggingFace-based prompt-injection detector.
 
-Uses protectai/deberta-v3-base-prompt-injection-v2 (Apache 2.0) for high-accuracy
-ML-based detection as an optional complement to the deterministic rule engine.
+Base model: protectai/deberta-v3-base-prompt-injection-v2 (Apache 2.0)
+Fine-tuned adapter: kurtpayne/skillscan-deberta-adapter (LoRA r=64, SEQ_CLS)
 
 The model is loaded lazily on first call and cached in-process.  Two backends
 are supported, selected automatically based on what is installed:
 
-  1. ONNX Runtime (preferred, CPU-only, ~200 MB)
+  1. ONNX Runtime (preferred when no adapter is installed, CPU-only, ~200 MB)
        pip install skillscan-security[ml-onnx]
        requires: optimum[onnxruntime], transformers
+       NOTE: ONNX cannot apply LoRA adapters at runtime.  If a fine-tuned
+       adapter is installed (via `skillscan model sync`), this backend is
+       skipped and the PyTorch backend is used instead.
 
-  2. PyTorch / Transformers (fallback, ~500 MB)
+  2. PyTorch / Transformers (~500 MB, required for fine-tuned adapter)
        pip install skillscan-security[ml]
        requires: transformers, torch
+       If a fine-tuned adapter is installed and peft is available, the LoRA
+       adapter weights are applied on top of the base model automatically.
+       Falls back to the base model if peft is not installed.
 
 If neither backend is available the detector is silently skipped and an
 informational Finding is emitted so the user knows to install the extras.
-
-Model: protectai/deberta-v3-base-prompt-injection-v2
-  - Fine-tuned DeBERTa-v3-base for binary prompt-injection classification
-  - Labels: 0 = SAFE, 1 = INJECTION
-  - Post-training accuracy: 95.25 % (20 k held-out prompts)
-  - License: Apache 2.0
 """
 
 from __future__ import annotations
@@ -48,17 +48,42 @@ _HIGH_THRESHOLD = 0.88  # score above this → HIGH severity, else MEDIUM
 # ---------------------------------------------------------------------------
 _pipeline_cache: Any = None
 _backend_cache: str | None = None  # "onnx" | "transformers" | "unavailable"
+_loaded_model_id: str | None = None  # logged in findings mitigation string
+
+
+def _get_adapter_path() -> Path | None:
+    """Return the local fine-tuned adapter path if installed, else None."""
+    try:
+        from skillscan.model_sync import get_adapter_path  # type: ignore[import]
+        return get_adapter_path()
+    except Exception:
+        return None
 
 
 def _try_load_onnx() -> Any | None:
-    """Attempt to load the ONNX Runtime backend via 🤗 Optimum."""
+    """Attempt to load the ONNX Runtime backend via 🤗 Optimum.
+
+    Returns None if an adapter is installed (ONNX cannot apply LoRA weights)
+    or if the required packages are not available.
+    """
+    # If a fine-tuned adapter is installed, skip ONNX — PyTorch is required
+    # to apply LoRA weights via peft.
+    if _get_adapter_path() is not None:
+        logger.debug(
+            "ML detector: fine-tuned adapter installed — skipping ONNX backend "
+            "(ONNX cannot apply LoRA adapters; using PyTorch backend instead)"
+        )
+        return None
+
     try:
         from optimum.onnxruntime import ORTModelForSequenceClassification  # type: ignore[import]
         from transformers import AutoTokenizer, pipeline  # type: ignore[import]
 
         tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID, subfolder="onnx")
         tokenizer.model_input_names = ["input_ids", "attention_mask"]
-        model = ORTModelForSequenceClassification.from_pretrained(_MODEL_ID, export=False, subfolder="onnx")
+        model = ORTModelForSequenceClassification.from_pretrained(
+            _MODEL_ID, export=False, subfolder="onnx"
+        )
         return pipeline(
             task="text-classification",
             model=model,
@@ -72,7 +97,12 @@ def _try_load_onnx() -> Any | None:
 
 
 def _try_load_transformers() -> Any | None:
-    """Attempt to load the PyTorch / Transformers backend."""
+    """Attempt to load the PyTorch / Transformers backend.
+
+    If a fine-tuned LoRA adapter is installed at ~/.skillscan/models/adapter/
+    and peft is available, the adapter weights are applied on top of the base
+    model.  Falls back to the base model if peft is not installed.
+    """
     try:
         import torch  # type: ignore[import]
         from transformers import (  # type: ignore[import]
@@ -81,8 +111,31 @@ def _try_load_transformers() -> Any | None:
             pipeline,
         )
 
+        adapter_path = _get_adapter_path()
         tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID)
         model = AutoModelForSequenceClassification.from_pretrained(_MODEL_ID)
+
+        if adapter_path is not None:
+            try:
+                from peft import PeftModel  # type: ignore[import]
+                model = PeftModel.from_pretrained(model, str(adapter_path))
+                model = model.merge_and_unload()  # fold LoRA weights for inference speed
+                global _loaded_model_id
+                _loaded_model_id = f"{_MODEL_ID}+adapter@{adapter_path.name}"
+                logger.info(
+                    "ML detector: fine-tuned adapter loaded from %s", adapter_path
+                )
+            except ImportError:
+                logger.warning(
+                    "ML detector: fine-tuned adapter found at %s but peft is not installed. "
+                    "Install skillscan-security[ml] to use the fine-tuned model. "
+                    "Falling back to base model.",
+                    adapter_path,
+                )
+                _loaded_model_id = _MODEL_ID
+        else:
+            _loaded_model_id = _MODEL_ID
+
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         return pipeline(
             "text-classification",
@@ -99,20 +152,23 @@ def _try_load_transformers() -> Any | None:
 
 def _get_pipeline() -> tuple[Any | None, str]:
     """Return (pipeline, backend_name).  Results are cached after first call."""
-    global _pipeline_cache, _backend_cache
+    global _pipeline_cache, _backend_cache, _loaded_model_id
     if _backend_cache is not None:
         return _pipeline_cache, _backend_cache
 
     pipe = _try_load_onnx()
     if pipe is not None:
         _pipeline_cache, _backend_cache = pipe, "onnx"
+        _loaded_model_id = _MODEL_ID
         logger.info("ML detector: loaded ONNX backend (%s)", _MODEL_ID)
         return pipe, "onnx"
 
     pipe = _try_load_transformers()
     if pipe is not None:
         _pipeline_cache, _backend_cache = pipe, "transformers"
-        logger.info("ML detector: loaded Transformers backend (%s)", _MODEL_ID)
+        logger.info(
+            "ML detector: loaded Transformers backend (%s)", _loaded_model_id or _MODEL_ID
+        )
         return pipe, "transformers"
 
     _pipeline_cache, _backend_cache = None, "unavailable"
@@ -276,7 +332,7 @@ _ATTACK_HINT_MITIGATIONS: dict[str, str] = {
     "indirect_injection": (
         "This skill contains indirect-injection patterns: instructions that activate when "
         "the model reads external content (RSS feeds, changelogs, tool results). "
-        "Sanitize all external content before passing it to the model context."
+        "Ensure the skill does not process untrusted external content as instructions."
     ),
     "social_engineering": (
         "This skill contains social-engineering language: urgency cues, credential-verification "
@@ -354,7 +410,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 mitigation=(
                     "Run: pip install 'skillscan-security[ml-onnx]' "
                     "for the lightweight ONNX backend (recommended), or "
-                    "'skillscan-security[ml]' for the PyTorch backend."
+                    "'skillscan-security[ml]' for the PyTorch backend with fine-tuned adapter."
                 ),
             )
         ] + age_findings
@@ -399,6 +455,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     attack_hint = _classify_attack_type(best_snippet + " " + text[:2000])
 
     # Build enriched title and mitigation
+    effective_model = _loaded_model_id or _MODEL_ID
     if attack_hint:
         title = f"ML-detected {attack_hint.replace('_', ' ')} (DeBERTa classifier)"
         base_mitigation = _ATTACK_HINT_MITIGATIONS.get(
@@ -418,8 +475,10 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             "or attempts to exfiltrate secrets."
         )
 
-    mitigation = f"{base_mitigation} Model: {_MODEL_ID} | Backend: {backend} | Score: {confidence:.3f}" + (
-        f" | Attack type: {attack_hint}" if attack_hint else ""
+    mitigation = (
+        f"{base_mitigation} Model: {effective_model} | Backend: {backend}"
+        f" | Score: {confidence:.3f}"
+        + (f" | Attack type: {attack_hint}" if attack_hint else "")
     )
 
     return [
