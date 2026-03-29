@@ -78,7 +78,7 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
         # Run skillscan
         try:
             result = subprocess.run(
-                ["skillscan", "scan", str(tmp_path), "--output", "json", "--no-color"],
+                ["skillscan", "scan", str(tmp_path), "--format", "json"],
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -97,8 +97,10 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
 
     try:
         scan_data = json.loads(output)
-        # skillscan JSON output: {"verdict": "BLOCK"|"ALLOW", "findings": [...], ...}
-        verdict = scan_data.get("verdict", "ERROR")
+        # skillscan JSON output: {"verdict": "block"|"allow"|"warn", "findings": [...], ...}
+        # Normalise to uppercase; treat "warn" as BLOCK (findings detected above threshold)
+        raw_verdict = scan_data.get("verdict", "error").lower()
+        verdict = "BLOCK" if raw_verdict in ("block", "warn") else ("ALLOW" if raw_verdict == "allow" else "ERROR")
         raw_findings = scan_data.get("findings", [])
         findings = [
             {
@@ -113,12 +115,13 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
             top_rule = raw_findings[0].get("rule_id", "")
             severity = raw_findings[0].get("severity", "")
     except (json.JSONDecodeError, KeyError):
-        # Try to parse plain text output for verdict
+        # Fallback: scan stderr/stdout plain text for verdict keywords
         for line in output.splitlines():
-            if "BLOCK" in line:
+            line_up = line.upper()
+            if "BLOCK" in line_up or "WARN" in line_up:
                 verdict = "BLOCK"
                 break
-            elif "ALLOW" in line:
+            elif "ALLOW" in line_up:
                 verdict = "ALLOW"
                 break
 
@@ -227,8 +230,12 @@ def main() -> None:
 def _get_skillscan_version() -> str:
     try:
         result = subprocess.run(
-            ["skillscan", "--version"], capture_output=True, text=True, timeout=5
+            ["skillscan", "version"], capture_output=True, text=True, timeout=5
         )
+        # Output: "SkillScan (skillscan-security) 0.8.0"
+        for line in result.stdout.splitlines():
+            if line.strip():
+                return line.strip().split()[-1]
         return result.stdout.strip().split()[-1]
     except Exception:
         return "unknown"
