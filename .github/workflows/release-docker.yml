@@ -95,7 +95,7 @@ jobs:
           cosign sign-blob --yes sbom-docker.spdx.json --output-signature sbom-docker.spdx.json.sig --output-certificate sbom-docker.spdx.json.pem
 
       - name: Upload Docker SBOM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: docker-sbom
           path: |
