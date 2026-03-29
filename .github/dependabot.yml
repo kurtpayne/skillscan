@@ -8,12 +8,22 @@ updates:
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
-    ignore:
-      # Ignore major version bumps for core ML deps — review manually
-      - dependency-name: "onnxruntime"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "transformers"
-        update-types: ["version-update:semver-major"]
+    groups:
+      ml-stack:
+        patterns:
+          - "transformers"
+          - "torch"
+          - "peft"
+          - "onnx*"
+          - "optimum*"
+          - "accelerate"
+          - "datasets"
+      dev-tools:
+        patterns:
+          - "ruff"
+          - "mypy"
+          - "pytest*"
+          - "coverage"
 
   - package-ecosystem: "github-actions"
     directory: "/"
