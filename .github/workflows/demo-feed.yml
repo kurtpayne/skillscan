@@ -45,11 +45,13 @@ jobs:
 
       - name: Run demo feed scan
         id: scan
+        continue-on-error: true
         run: |
           python3 skillscan-security/.github/scripts/build_demo_feed.py \
             --index skillscan-corpus/index/skill-index.yaml \
             --output demo-feed.json \
             ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
 
       - name: Show summary
         run: |
