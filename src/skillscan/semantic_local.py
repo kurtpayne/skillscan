@@ -81,6 +81,19 @@ class LocalPromptInjectionClassifier:
         if confidence < 0.62:
             return None
 
+        # Negation guard: suppress findings when the text explicitly negates the
+        # override/bypass/credential-access patterns rather than instructing them.
+        # Covers two patterns:
+        #   1. NEVER/DO NOT/cannot ... (credential word) — security best-practice docs
+        #   2. no way to bypass / cannot override — explicit limitation statements
+        _negation_cred_re = re.compile(
+            r"\b(never|do not|don't|must not|should not|avoid|cannot|can't|no way to)\b"
+            r".{0,80}\b(password|credential|secret|token|api.?key|passphrase|bypass|override)\b",
+            re.IGNORECASE | re.DOTALL,
+        )
+        if _negation_cred_re.search(text):
+            return None
+
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
         keyword_re = re.compile(
             (
@@ -130,7 +143,9 @@ class SocialEngineeringClassifier:
             "requir",
             "demand",
         }
-        # Collection verbs: how the credential is obtained
+        # Collection verbs: how the credential is obtained.
+        # Exclude generic data-retrieval verbs (retriev, obtain) that appear in
+        # legitimate "fetch data from API" skill descriptions.
         self._solicit_roots = {
             "past",
             "provid",
@@ -142,23 +157,20 @@ class SocialEngineeringClassifier:
             "suppli",
             "submit",
             "collect",
-            "retriev",
-            "obtain",
             "input",
         }
-        # Target data types
+        # Target data types — keep specific; avoid broad terms like "api", "key", "access"
+        # that appear in every legitimate API-integration skill description.
         self._credential_roots = {
-            "token",
             "credenti",
             "password",
             "passphras",
             "secret",
             "apikey",
-            "api",
-            "key",
             "ssh",
             "privat",
-            "access",
+            "bearer",
+            "oauth",
         }
         # Social engineering / pretext language
         self._social_eng_roots = {
@@ -211,6 +223,18 @@ class SocialEngineeringClassifier:
         if imperative == 0 or solicit == 0 or credential == 0:
             return None
 
+        # Table-row guard: if the majority of credential-bearing lines are Markdown
+        # table rows (pipe-delimited), this is a command-reference table, not a
+        # social-engineering instruction.  Suppress to avoid FPs on auth-docs skills.
+        _cred_word_re = re.compile(
+            r"\b(password|credential|secret|token|api.?key|oauth|ssh|private.?key)\b",
+            re.IGNORECASE,
+        )
+        cred_lines = [ln for ln in text.splitlines() if _cred_word_re.search(ln)]
+        table_lines = [ln for ln in cred_lines if ln.strip().startswith("|")]
+        if cred_lines and len(table_lines) / len(cred_lines) >= 0.6:
+            return None
+
         score = 0.0
         score += min(imperative, 2) * 0.20
         score += min(solicit, 2) * 0.18
@@ -227,7 +251,21 @@ class SocialEngineeringClassifier:
             score += 0.06  # pressure + credential target
 
         confidence = min(round(score, 3), 0.92)
-        if confidence < 0.62:
+        # Raised from 0.62 to 0.72 to reduce FP rate on legitimate API-integration
+        # skills whose descriptions naturally contain imperative + solicit + credential
+        # tokens (e.g. "use when the user asks about the Zendesk API").
+        if confidence < 0.72:
+            return None
+
+        # Negation guard: if the text contains explicit NEVER/DO NOT instructions
+        # around credential handling, it is a security best-practice reminder, not
+        # a social-engineering instruction.  Suppress the finding.
+        _negation_re = re.compile(
+            r"\b(never|do not|don't|must not|should not|avoid)\b.{0,80}\b"
+            r"(password|credential|secret|token|api.?key|passphrase)\b",
+            re.IGNORECASE | re.DOTALL,
+        )
+        if _negation_re.search(text):
             return None
 
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]

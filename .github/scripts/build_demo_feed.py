@@ -76,9 +76,15 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
             return _error_result(entry, "No path or url in index entry")
 
         # Run skillscan
+        # Respect demo_policy from the index entry (e.g. "lenient" for skills
+        # that include auth docs or example curl commands that trigger strict rules).
+        policy = entry.get("demo_policy", "default")
+        scan_cmd = ["skillscan", "scan", str(tmp_path), "--format", "json"]
+        if policy and policy != "default":
+            scan_cmd += ["--policy-profile", policy]
         try:
             result = subprocess.run(
-                ["skillscan", "scan", str(tmp_path), "--format", "json"],
+                scan_cmd,
                 capture_output=True,
                 text=True,
                 timeout=60,
@@ -98,9 +104,18 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
     try:
         scan_data = json.loads(output)
         # skillscan JSON output: {"verdict": "block"|"allow"|"warn", "findings": [...], ...}
-        # Normalise to uppercase; treat "warn" as BLOCK (findings detected above threshold)
+        # Normalise to uppercase. Preserve WARN as its own verdict so index entries
+        # with demo_verdict_expected: WARN (e.g. skills with example curl commands
+        # that trigger permissive-policy findings) match correctly.
         raw_verdict = scan_data.get("verdict", "error").lower()
-        verdict = "BLOCK" if raw_verdict in ("block", "warn") else ("ALLOW" if raw_verdict == "allow" else "ERROR")
+        if raw_verdict == "block":
+            verdict = "BLOCK"
+        elif raw_verdict == "warn":
+            verdict = "WARN"
+        elif raw_verdict == "allow":
+            verdict = "ALLOW"
+        else:
+            verdict = "ERROR"
         raw_findings = scan_data.get("findings", [])
         findings = [
             {
