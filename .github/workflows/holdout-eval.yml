@@ -1,0 +1,178 @@
+name: Held-Out Eval Regression Gate
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Every Sunday at 07:00 UTC
+    - cron: "0 7 * * 0"
+  workflow_dispatch:
+    inputs:
+      f1_gate:
+        description: "Minimum macro F1 to pass (default: 0.92)"
+        required: false
+        default: "0.92"
+        type: string
+
+concurrency:
+  group: holdout-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  holdout-eval:
+    name: Run held-out eval set against current scanner
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install skillscan
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" --quiet
+
+      - name: Clone held-out eval set from skillscan-corpus
+        id: clone
+        run: |
+          if [ -z "$CORPUS_DEPLOY_KEY" ]; then
+            echo "::error::CORPUS_DEPLOY_KEY secret not set — cannot fetch eval set"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          echo "$CORPUS_DEPLOY_KEY" > ~/.ssh/corpus_deploy_key
+          chmod 600 ~/.ssh/corpus_deploy_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          GIT_SSH_COMMAND='ssh -i ~/.ssh/corpus_deploy_key -o StrictHostKeyChecking=yes' \
+            git clone --depth 1 git@github.com:kurtpayne/skillscan-corpus.git /tmp/skillscan-corpus
+          rm -f ~/.ssh/corpus_deploy_key
+          EVAL_COUNT=$(ls /tmp/skillscan-corpus/held_out_eval/*.md 2>/dev/null | wc -l)
+          echo "eval_count=${EVAL_COUNT}" >> "$GITHUB_OUTPUT"
+          echo "Eval set: ${EVAL_COUNT} files"
+        env:
+          CORPUS_DEPLOY_KEY: ${{ secrets.CORPUS_DEPLOY_KEY }}
+
+      - name: Run eval and compute metrics
+        id: eval
+        run: |
+          F1_GATE="${{ github.event.inputs.f1_gate || '0.92' }}"
+
+          python3 - << 'PYEOF'
+          import json, os, subprocess, sys
+          from pathlib import Path
+
+          eval_dir = Path("/tmp/skillscan-corpus/held_out_eval")
+          files = sorted(eval_dir.glob("*.md"))
+          if not files:
+              print("::error::No .md files found in held_out_eval/")
+              sys.exit(1)
+
+          f1_gate = float(os.environ.get("F1_GATE", "0.92"))
+
+          tp = fp = tn = fn = 0
+          fn_files = []
+          fp_files = []
+
+          for f in files:
+              label = "injection" if f.name.startswith("injection") else "benign"
+              result = subprocess.run(
+                  ["skillscan", "scan", str(f), "--format", "json", "--no-progress"],
+                  capture_output=True, text=True
+              )
+              try:
+                  data = json.loads(result.stdout)
+                  verdict = data.get("verdict", "allow")
+              except json.JSONDecodeError:
+                  verdict = "allow"
+
+              predicted = "injection" if verdict == "block" else "benign"
+
+              if label == "injection" and predicted == "injection":
+                  tp += 1
+              elif label == "benign" and predicted == "injection":
+                  fp += 1
+                  fp_files.append(f.name)
+              elif label == "benign" and predicted == "benign":
+                  tn += 1
+              else:
+                  fn += 1
+                  fn_files.append(f.name)
+
+          total = tp + fp + tn + fn
+          precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+          recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+          f1_inj    = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+
+          tn_rate   = tn / (tn + fp) if (tn + fp) > 0 else 0.0
+          fn_rate_b = fp / (tn + fp) if (tn + fp) > 0 else 0.0  # FP rate on benign
+          f1_ben    = 2 * tn_rate * (1 - fn_rate_b) / (tn_rate + (1 - fn_rate_b)) if (tn_rate + (1 - fn_rate_b)) > 0 else 0.0
+
+          macro_f1  = round((f1_inj + f1_ben) / 2, 4)
+          fpr       = round(fp / (fp + tn) * 100, 2) if (fp + tn) > 0 else 0.0
+          accuracy  = round((tp + tn) / total, 4) if total > 0 else 0.0
+
+          gate_passed = macro_f1 >= f1_gate
+
+          # Write GitHub outputs
+          gho = os.environ.get("GITHUB_OUTPUT", "")
+          if gho:
+              with open(gho, "a") as out:
+                  out.write(f"macro_f1={macro_f1}\n")
+                  out.write(f"fpr={fpr}\n")
+                  out.write(f"accuracy={accuracy}\n")
+                  out.write(f"tp={tp}\nfp={fp}\ntn={tn}\nfn={fn}\n")
+                  out.write(f"gate_passed={'true' if gate_passed else 'false'}\n")
+
+          # Step summary
+          summary = os.environ.get("GITHUB_STEP_SUMMARY", "")
+          if summary:
+              with open(summary, "a") as s:
+                  s.write("## Held-Out Eval Results\n\n")
+                  s.write(f"| Metric | Value |\n|---|---|\n")
+                  s.write(f"| Eval set size | {total} |\n")
+                  s.write(f"| **Macro F1** | **{macro_f1}** |\n")
+                  s.write(f"| Accuracy | {accuracy} |\n")
+                  s.write(f"| FPR (benign→BLOCK) | {fpr}% |\n")
+                  s.write(f"| TP / FN | {tp} / {fn} |\n")
+                  s.write(f"| TN / FP | {tn} / {fp} |\n")
+                  s.write(f"| F1 gate ({f1_gate}) | {'✅ PASSED' if gate_passed else '❌ FAILED'} |\n\n")
+                  if fn_files:
+                      s.write(f"### False Negatives ({len(fn_files)})\n")
+                      for name in fn_files[:20]:
+                          s.write(f"- `{name}`\n")
+                      if len(fn_files) > 20:
+                          s.write(f"- … and {len(fn_files) - 20} more\n")
+                      s.write("\n")
+                  if fp_files:
+                      s.write(f"### False Positives ({len(fp_files)})\n")
+                      for name in fp_files[:20]:
+                          s.write(f"- `{name}`\n")
+                      if len(fp_files) > 20:
+                          s.write(f"- … and {len(fp_files) - 20} more\n")
+
+          print(f"Eval complete: {total} files | macro_f1={macro_f1} | fpr={fpr}% | gate={'PASSED' if gate_passed else 'FAILED'}")
+          if fn_files:
+              print(f"FNs ({len(fn_files)}): {', '.join(fn_files[:5])}{'...' if len(fn_files) > 5 else ''}")
+          if fp_files:
+              print(f"FPs ({len(fp_files)}): {', '.join(fp_files[:5])}{'...' if len(fp_files) > 5 else ''}")
+
+          if not gate_passed:
+              print(f"::error::F1 gate FAILED: macro_f1={macro_f1} < {f1_gate}")
+              sys.exit(1)
+          PYEOF
+        env:
+          F1_GATE: ${{ github.event.inputs.f1_gate || '0.92' }}
+
+      - name: Post eval summary annotation
+        if: always()
+        run: |
+          echo "### Held-Out Eval" >> $GITHUB_STEP_SUMMARY
+          echo "- Macro F1: ${{ steps.eval.outputs.macro_f1 }}" >> $GITHUB_STEP_SUMMARY
+          echo "- FPR: ${{ steps.eval.outputs.fpr }}%" >> $GITHUB_STEP_SUMMARY
+          echo "- Accuracy: ${{ steps.eval.outputs.accuracy }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Gate passed: ${{ steps.eval.outputs.gate_passed }}" >> $GITHUB_STEP_SUMMARY
