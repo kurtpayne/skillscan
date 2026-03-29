@@ -10,6 +10,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- `holdout-eval.yml` — weekly CI workflow (M10.6) that runs all 451 held-out eval files against the current scanner on every push to `main`, Sundays at 07:00 UTC, and on demand. Computes macro F1 + FPR; fails if F1 < 0.92 (configurable via `workflow_dispatch` input). Posts per-file FN/FP lists and a metrics table to step summary. Closes the organic eval regression gate loop.
 - `.github/dependabot.yml` — weekly pip + GitHub Actions dependency updates
 - `.github/PULL_REQUEST_TEMPLATE.md` — contributor checklist covering ruff, mypy, pytest, rule tests, showcase, website sync, and no-debug-code requirements
 - `CHANGELOG.md` and `RELEASING.md` — release process documentation
@@ -17,11 +18,17 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `timeout-minutes: 20` on CI test job to prevent hung runners
 
 ### Changed
+- `strict` policy: added `prompt_injection: 2` and `supply_chain: 2` category weights. HIGH-severity rules in these categories now score 70 (was 35), correctly reaching the BLOCK threshold without co-occurring findings. Fixes FN regressions PINJ-015 and SUP-022.
+- `MAL-001` pattern tightened to require a pipe or redirect (`[|>]`) between the download command and the shell invocation. Eliminates false positives where `curl` and a shell name appear in the same documentation sentence (e.g., `zsh`).
+- `CHN-002` `window_lines` reduced from 40 to 5. API integration skills that read an auth token and call their own endpoint on the same line no longer trigger the secret-access + network-exfil chain.
 - `SKILLSCAN_NO_USER_RULES=1` now set in CI env so user-local `~/.skillscan/rules/` never influences test results
 - `load_builtin_rulepack()` emits INFO-level provenance log (version, rule counts, channel) on every cold load
 - User-local rulepack files older than their bundled counterpart are now skipped with a WARNING (version-gate)
 - `tests/test_custom_rules.py` `custom_rules_dir` fixture clears `SKILLSCAN_NO_USER_RULES` so custom-rules tests pass in CI
 - Pattern-update skill step 8 now has a mandatory `pytest -q` gate that must exit 0 before `gh pr create`
+
+### Fixed
+- `test_se_sem_001_semantic_classifier_fires`: fixture text updated from `"access token"` to text containing `password` and `credentials`. The previous fixture did not stem to any `credential_roots` so the semantic classifier correctly returned `None` and the static `SE-001` rule fired instead of `SE-SEM-001`.
 
 ---
 
