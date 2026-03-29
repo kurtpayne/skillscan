@@ -23,6 +23,24 @@ A LoRA-fine-tuned DeBERTa-v3-base adapter for detecting **prompt injection, jail
 
 ---
 
+## ⚠️ Important Notice — Benchmark Metrics Under Revision
+
+**We identified eval set contamination in the v10 benchmark that artificially inflated the reported F1 and FPR figures.**
+
+During a routine decontamination audit, we discovered that the held-out eval set used to measure v1–v10 contained examples with distribution overlap with the training corpus. The reported F1=0.9787 and FPR=2.18% are not reliable estimates of real-world generalization performance.
+
+**What this means:**
+- The v10 model (currently on this Hub page) should be treated as **beta quality** for security-critical decisions
+- The static rule engine layers in `skillscan` are **unaffected** and remain production-ready
+- We are retraining on a fully decontaminated corpus (v11) and will publish corrected benchmark metrics on completion
+- **Do not rely on the v10 benchmark figures for security decisions or compliance reporting**
+
+We are disclosing this proactively in the interest of transparency. The decontamination process and corrected evaluation methodology are documented in [`docs/MODEL_METRICS.md`](https://github.com/kurtpayne/skillscan-security/blob/main/docs/MODEL_METRICS.md) in the public repo.
+
+**Status:** v11 retraining in progress — estimated completion within 1–2 weeks. This notice will be removed and replaced with corrected metrics once v11 is validated.
+
+---
+
 ## Model Description
 
 ### Architecture
@@ -93,36 +111,27 @@ The full training corpus is maintained in a private repository (`kurtpayne/skill
 
 ## Evaluation Results
 
-All evaluations run against the held-out eval set (444 examples). The eval set was never used for training.
+> **Note:** The metrics below were measured on an eval set that was later found to have contamination. They are preserved here for historical reference but should not be used for security decisions. Corrected metrics will be published with v11. See the notice at the top of this card.
 
-### Current model: v18161-5ep (v9)
+### Training progression (historical — contaminated eval set)
 
-| Metric | Value |
-|---|---|
-| Accuracy | 0.9797 |
-| **Macro F1** | **0.9752** |
-| False Positive Rate (FPR) | **1.89%** |
-| False Negative Rate (FNR) | ~4.5% |
-| Eval set size | 444 |
-| Training corpus size | 18,161 |
-
-### Version history
-
-| Version | Corpus size | Macro F1 | FPR | Key improvement |
+| Version | Corpus size | Macro F1 (contaminated) | FPR (contaminated) | Key improvement |
 |---|---|---|---|---|
 | v1278 | 1,278 | 0.2690 | 95.7% | Baseline — heavily injection-biased base model |
 | v7458 | 7,277 | 0.8448 | 15.7% | First gate pass; corpus expansion from 210 → 7,277 |
 | v11461 | 11,461 | 0.9110 | 11.45% | Enterprise benign corpus; MCP/SE coverage |
 | v16589 | 16,589 | 0.9608 | 3.69% | Gap archetype closure; enterprise adversarial examples |
-| **v18161** | **18,161** | **0.9752** | **1.89%** | **Current — both SaaS quality thresholds met** |
+| v18161 | 18,161 | 0.9752 | 1.89% | Both SaaS quality thresholds met (contaminated eval) |
+| v18258 | 18,258 | *(under revision)* | *(under revision)* | Contamination identified; v11 retraining in progress |
 
-### Quality thresholds
+### v11 target metrics (decontaminated eval set)
 
-| Threshold | Target | Current | Status |
-|---|---|---|---|
-| Macro F1 (v1.0) | ≥ 0.97 | 0.9752 | ✅ Met |
-| False Positive Rate (SaaS gate) | ≤ 2% | 1.89% | ✅ Met |
-| Enterprise benign FPR | ≤ 2% | 1.89% | ✅ Met |
+| Metric | Target |
+|---|---|
+| Macro F1 | ≥ 0.92 |
+| False Positive Rate | ≤ 5% |
+| Recall (injection) | ≥ 90% |
+| Per-archetype F1 (worst) | ≥ 0.75 |
 
 ### Known failure modes (persistent FN archetypes)
 
@@ -208,7 +217,7 @@ The ML model is one layer in `skillscan`'s multi-layer detection pipeline. Under
 | 4. Multilang rules | Language-gated regex (.js/.ts/.rb/.go/.rs files only) | Language-specific attack patterns in embedded scripts |
 | 5. Python AST data-flow | Source-to-sink taint analysis (.py files only, stdlib `ast`) | Secret → decode → exec/network flows in embedded Python scripts |
 | 6. Skill graph analysis | Graph-based PSV rules | Tool drift, circular dependencies, permission scope violations |
-| **7. ML classifier** | **DeBERTa-v3 + LoRA (this model) · F1 0.9752 · FPR 1.89%** | **Novel phrasing, obfuscated attacks, semantic patterns no rule can express** |
+| **7. ML classifier** | **DeBERTa-v3 + LoRA (this model) · Beta — metrics under revision** | **Novel phrasing, obfuscated attacks, semantic patterns no rule can express** |
 | 8. Stemmed feature scorer | Porter-stemmed axis scoring via NLTK (`semantic_local.py`) | Multi-sentence intent distributed across text — jailbreaks and credential-harvest instructions not caught by single-line rules. No sentence structure or negation awareness. |
 | 9. Vuln DB matching | Dependency scan (23 Python pkgs, 4 npm pkgs, 111 versions) | Known-vulnerable package versions in requirements.txt / package.json |
 | 10. ClamAV (optional) | Signature-based AV scan (`--clamav` flag) | Known malware signatures in embedded script files (.py, .sh, .js…) |
