@@ -231,8 +231,7 @@ The skill graph layer detects cross-skill and agent-level abuse patterns that si
 | `PINJ-GRAPH-001` | Remote `.md` fetch | Skill loads a remote Markdown file at runtime (e.g., `fetch https://evil.example/payload.md`). The fetched file could contain injected instructions that override the skill's declared behavior. |
 | `PINJ-GRAPH-002` | Undeclared high-risk tool | Skill grants a high-risk tool (`bash`, `computer`, `shell`, `exec`) without a declared purpose in the skill metadata. |
 | `PINJ-GRAPH-003` | Memory/config file write | Skill instructs the agent to write to a memory or configuration file (`soul.md`, `memory.md`, `.claude/settings.json`, etc.) that persists across agent sessions, enabling persistent instruction injection. |
-
-**Planned — `PINJ-GRAPH-004`:** Cross-skill tool escalation detection. A skill that invokes another skill and requests elevated tool permissions not present in the invoked skill's declared scope. This rule is referenced in the CHANGELOG but not yet implemented.
+| `PINJ-GRAPH-004` | Cross-skill tool escalation | Skill references another skill that grants higher-risk tools than the invoking skill declares. An agent running the source skill gains effective access to tools it does not declare. Severity is CRITICAL when the escalated tool tier is 3+ (e.g., `bash`, `computer`), HIGH otherwise. Confidence 0.88 / 0.75 respectively. |
 
 ---
 

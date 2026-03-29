@@ -63,7 +63,7 @@ If SkillScan blocks it, you don't need to spend tokens on it. If it passes, you 
 
 - PyPI: `pip install skillscan-security`
 - Docker: `docker pull kurtpayne/skillscan-security`
-- Pre-commit hook: `skillscan-security>=0.3.1`
+- Pre-commit hook: `skillscan-security>=0.8.0`
 
 Release process: `docs/RELEASE_CHECKLIST.md`.
 
@@ -348,7 +348,7 @@ response = requests.post(
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/kurtpayne/skillscan-security
-    rev: v0.3.1
+    rev: v0.8.0
     hooks:
       - id: skillscan
         args: [--fail-on, warn]

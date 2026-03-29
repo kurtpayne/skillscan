@@ -56,6 +56,7 @@ jobs:
   website-drift:
     name: Detect website rule drift
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,6 +93,7 @@ jobs:
   cross-tool-recall:
     name: Cross-tool recall vs Cisco skill-scanner fixtures
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
