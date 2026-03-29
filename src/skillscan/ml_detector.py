@@ -297,15 +297,24 @@ _ATTACK_HINT_MITIGATIONS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 
+# ---------------------------------------------------------------------------
+# Large-file thresholds (13e)
+# ---------------------------------------------------------------------------
+
+_LARGE_FILE_LINES = 200
+_LARGE_FILE_CHARS = 8_000
+
+
 def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     """Run the ML classifier on *text* and return zero or one Finding.
 
     Behaviour:
-    - ML backend not installed → ERROR finding (PINJ-ML-UNAVAIL) with install
-      instructions. Never silently skips.
+    - ML backend not installed → PINJ-ML-UNAVAIL finding with install instructions.
+    - LoRA adapter not downloaded → PINJ-ML-NO-MODEL finding with sync command.
+    - File exceeds large-file thresholds → PINJ-ML-LARGE-FILE advisory appended.
     - Model age > 30 days → PINJ-ML-STALE LOW finding appended to results.
     - Model age 7–30 days → WARNING logged (not a finding).
-    - No chunk scores above threshold → empty list.
+    - No chunk scores above threshold → empty list (plus any advisory findings).
     - Injection detected → PINJ-ML-001 finding.
     """
     if not text.strip():
@@ -315,28 +324,82 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     from skillscan.model_sync import check_model_age_finding, get_model_status
 
     model_status = get_model_status()
-    age_findings: list[Finding] = []
-    if model_status.installed:
-        if model_status.stale:
-            stale = check_model_age_finding()
-            if stale:
-                age_findings.append(
-                    Finding(
-                        id="PINJ-ML-STALE",
-                        category="prompt_injection_ml",
-                        severity=Severity.LOW,
-                        confidence=1.0,
-                        title=str(stale["message"]),
-                        evidence_path=str(path),
-                        snippet=f"Model age: {stale['age_days']:.0f} days (threshold: 30 days)",
-                        mitigation="Run: skillscan model sync",
-                    )
-                )
-        elif model_status.warn:
-            logger.warning(
-                "ML model is %.0f days old (>7 days). Run `skillscan model sync` to update.",
-                model_status.age_days,
+
+    # M10.5: LoRA adapter not downloaded yet — emit a clear guided finding.
+    if not model_status.installed:
+        return [
+            Finding(
+                id="PINJ-ML-NO-MODEL",
+                category="prompt_injection_ml",
+                severity=Severity.LOW,
+                confidence=1.0,
+                title="ML model not downloaded — run 'skillscan model sync' to install",
+                evidence_path=str(path),
+                snippet=(
+                    "The LoRA adapter weights are not present in ~/.skillscan/models/. "
+                    "ML detection was requested but cannot run without the model."
+                ),
+                mitigation=(
+                    "Run: skillscan model sync\n"
+                    "This downloads the LoRA adapter (~350 MB) from HuggingFace Hub. "
+                    "The download is one-time; subsequent scans use the cached weights. "
+                    "Requires skillscan-security[ml-onnx] or skillscan-security[ml] extras."
+                ),
             )
+        ]
+
+    age_findings: list[Finding] = []
+    if model_status.stale:
+        stale = check_model_age_finding()
+        if stale:
+            age_findings.append(
+                Finding(
+                    id="PINJ-ML-STALE",
+                    category="prompt_injection_ml",
+                    severity=Severity.LOW,
+                    confidence=1.0,
+                    title=str(stale["message"]),
+                    evidence_path=str(path),
+                    snippet=f"Model age: {stale['age_days']:.0f} days (threshold: 30 days)",
+                    mitigation="Run: skillscan model sync",
+                )
+            )
+    elif model_status.warn:
+        logger.warning(
+            "ML model is %.0f days old (>7 days). Run `skillscan model sync` to update.",
+            model_status.age_days,
+        )
+
+    # 13e: Large-file advisory — the model was trained on short skill files;
+    # very large files may produce unreliable chunk-level scores.
+    advisory_findings: list[Finding] = []
+    line_count = text.count("\n") + 1
+    char_count = len(text)
+    if line_count > _LARGE_FILE_LINES or char_count > _LARGE_FILE_CHARS:
+        advisory_findings.append(
+            Finding(
+                id="PINJ-ML-LARGE-FILE",
+                category="prompt_injection_ml",
+                severity=Severity.LOW,
+                confidence=1.0,
+                title=(
+                    f"Large file ({line_count} lines, {char_count:,} chars) — "
+                    "ML inference reliability may be reduced"
+                ),
+                evidence_path=str(path),
+                snippet=(
+                    f"File has {line_count} lines / {char_count:,} chars "
+                    f"(thresholds: {_LARGE_FILE_LINES} lines / {_LARGE_FILE_CHARS:,} chars). "
+                    "The ML model was trained on short skill files; "
+                    "distributed intent across a very large file may be missed."
+                ),
+                mitigation=(
+                    "Split large skill files into smaller focused units. "
+                    "For files over 500 lines, consider running static rules only "
+                    "(omit --ml-detect) and reviewing manually."
+                ),
+            )
+        )
 
     pipe, backend = _get_pipeline()
 
@@ -357,7 +420,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                     "'skillscan-security[ml]' for the PyTorch backend."
                 ),
             )
-        ] + age_findings
+        ] + age_findings + advisory_findings
 
     assert pipe is not None, "pipe should be set when backend != 'unavailable'"
     chunks = _chunk_text(text)
@@ -390,7 +453,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             continue
 
     if best_score < _INJECTION_THRESHOLD:
-        return []
+        return advisory_findings
 
     severity = Severity.HIGH if best_score >= _HIGH_THRESHOLD else Severity.MEDIUM
     confidence = round(min(best_score, 0.99), 3)
@@ -434,4 +497,4 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             mitigation=mitigation,
             attack_hint=attack_hint,
         )
-    ] + age_findings
+    ] + age_findings + advisory_findings
