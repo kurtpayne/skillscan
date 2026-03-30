@@ -149,3 +149,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 130. `130_pinj017_prowler_ec2_tag`: Indirect prompt injection via EC2 tags (`PINJ-017`)
 131. `131_evasion005_idpi_payload`: Web-Based Indirect Prompt Injection (IDPI) payload engineering (`EVASION-005`)
 132. `132_exf021_vscode_live_preview`: VSCode Live Preview and SARIF viewer local file exfiltration (`EXF-021`)
+100. `100_teampcp_telnyx_wav_stego`: TeamPCP Telnyx PyPI supply chain attack with WAV steganography payload (`SUP-023`)
+101. `101_langflow_rce_cve_2026_33017`: Langflow CVE-2026-33017 unauthenticated RCE — CISA KEV (`PSV-006`)
+102. `102_openclaw_priv_esc_cve_2026_32922`: OpenClaw CVE-2026-32922 privilege escalation via device.token.rotate (`PSV-007`)

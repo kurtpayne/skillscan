@@ -1,4 +1,4 @@
-version: 2026.03.29.1
+version: 2026.03.30.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -4339,6 +4339,98 @@ static_rules:
     techniques:
     - id: EXF-001
       name: Local file exfiltration via IDE extension
+- id: SUP-023
+  category: supply_chain
+  severity: critical
+  confidence: 0.93
+  title: TeamPCP Telnyx PyPI supply chain attack (WAV steganography payload)
+  pattern: (?i)(?:telnyx[=~><]{1,2}4\.87\.[12][^\d]|telnyx[=~><]{1,2}4\.87\.[12]$|hangup\.wav[^\n]{0,120}(?:xor|decode|exec|payload|c2)|ringtone\.wav[^\n]{0,120}(?:xor|decode|exec|payload|c2)|83\.142\.209[^\n]{0,40}8080|tpcp\.tar\.gz[^\n]{0,200}(?:telnyx|credential|exfil)|telnyx/_client\.py[^\n]{0,80}(?:import|exec|subprocess|os\.system))
+  mitigation: >
+    TeamPCP compromised telnyx versions 4.87.1 and 4.87.2 on PyPI (published 2026-03-27 03:51–10:13 UTC)
+    by injecting malicious code into telnyx/_client.py. The malware hides its payload inside XOR-obfuscated
+    WAV files (hangup.wav on Windows, ringtone.wav on Linux/macOS) fetched from 83.142.209.203:8080, then
+    executes a credential harvester that exfiltrates SSH keys, cloud credentials, and environment variables
+    as tpcp.tar.gz. On Windows it persists via a Startup folder binary named msbuild.exe. Downgrade to
+    telnyx==4.87.0 immediately and rotate all credentials on affected systems. The attack vector is believed
+    to be credential theft from the prior LiteLLM compromise.
+  metadata:
+    version: 1.0.0
+    status: active
+    cve: []
+    techniques:
+    - id: AML.T0010
+      name: ML Supply Chain Compromise
+    tags:
+    - teampcp
+    - telnyx
+    - wav-steganography
+    - supply-chain
+    - pypi
+    references:
+    - https://thehackernews.com/2026/03/teampcp-pushes-malicious-telnyx.html
+    - https://socket.dev/blog/telnyx-python-sdk-compromised
+    - https://www.endorlabs.com/learn/teampcp-strikes-again-telnyx-compromised-three-days-after-litellm
+    - https://telnyx.com/resources/telnyx-python-sdk-supply-chain-security-notice-march-2026
+
+- id: PSV-006
+  category: passive_vulnerability
+  severity: critical
+  confidence: 0.85
+  title: Langflow CVE-2026-33017 unauthenticated RCE (CISA KEV)
+  pattern: (?i)(?:langflow[=~><]{1,2}1\.(?:[0-7]\.|8\.[01])[^\d]|langflow[=~><]{1,2}1\.8\.[01]$|langflow[=~><]{1,2}1\.[0-7]\.[0-9]+|from langflow[^\n]{0,60}import[^\n]{0,60}(?:run_flow|execute_flow|build_flow)|langflow[^\n]{0,80}(?:LANGFLOW_AUTO_LOGIN|LANGFLOW_SUPERUSER)[^\n]{0,80}(?:true|1|yes))
+  mitigation: >
+    CVE-2026-33017 (CVSS 9.3) is a critical unauthenticated RCE in Langflow ≤1.8.1 that allows arbitrary
+    Python code execution via unsandboxed flow execution. CISA added it to the Known Exploited Vulnerabilities
+    catalog on 2026-03-25 with a federal patch deadline of 2026-04-08. Active exploitation began within 20
+    hours of the advisory, with attackers harvesting .env and .db files within 24 hours. Upgrade to Langflow
+    ≥1.9.0 immediately. Do not expose Langflow directly to the internet. Monitor outbound traffic and rotate
+    all API keys, database credentials, and cloud secrets if the vulnerable version was internet-accessible.
+  metadata:
+    version: 1.0.0
+    status: active
+    cve:
+    - CVE-2026-33017
+    techniques:
+    - id: AML.T0040
+      name: Unsafe ML Artifacts
+    tags:
+    - langflow
+    - rce
+    - cisa-kev
+    - unauthenticated
+    references:
+    - https://www.bleepingcomputer.com/news/security/cisa-new-langflow-flaw-actively-exploited-to-hijack-ai-workflows/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-33017
+    - https://www.sysdig.com/blog/cve-2026-33017-how-attackers-compromised-langflow-ai-pipelines-in-20-hours
+
+- id: PSV-007
+  category: passive_vulnerability
+  severity: high
+  confidence: 0.82
+  title: OpenClaw CVE-2026-32922 privilege escalation via token rotation
+  pattern: (?i)(?:openclaw[=~><]{1,2}202[0-5]\.|openclaw[=~><]{1,2}2026\.(?:[0-2]\.|3\.[0-9][^0-9]|3\.10[^\d])|device\.token\.rotate[^\n]{0,120}operator\.pairing|operator\.pairing[^\n]{0,120}device\.token\.rotate)
+  mitigation: >
+    CVE-2026-32922 is a privilege escalation vulnerability in OpenClaw before version 2026.3.11. Callers
+    with the operator.pairing scope can invoke device.token.rotate to mint tokens with elevated permissions
+    beyond their granted scope, enabling unauthorized access to protected resources. Upgrade to OpenClaw
+    ≥2026.3.11. Audit all tokens minted via device.token.rotate since 2026-01-01 and revoke any with
+    unexpected permission scopes.
+  metadata:
+    version: 1.0.0
+    status: active
+    cve:
+    - CVE-2026-32922
+    techniques:
+    - id: AML.T0051
+      name: LLM Plugin Compromise
+    tags:
+    - openclaw
+    - privilege-escalation
+    - token-rotation
+    references:
+    - https://www.cve.org/CVERecord?id=CVE-2026-32922
+    - https://skywork.ai/skypage/en/openclaw-security-vulnerabilities/2038597463217881088
+
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b
