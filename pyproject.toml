@@ -9,7 +9,7 @@ description = "Standalone AI skill security scanner — detects prompt injection
 readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [{name = "SkillScan", email = "security@skillscan.sh"}]
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 keywords = [
   "security", "mcp", "ai-safety", "prompt-injection", "static-analysis",
   "linter", "claude", "llm", "skill", "agent"
@@ -50,9 +50,11 @@ ml-onnx = [
   "optimum[onnxruntime]>=1.19.0",
 ]
 # PyTorch backend for --ml-detect (heavier, ~500 MB, GPU-capable)
+# peft is required to apply the fine-tuned LoRA adapter (kurtpayne/skillscan-deberta-adapter)
 ml = [
   "transformers>=4.40.0",
   "torch>=2.2.0",
+  "peft>=0.9.0",
 ]
 # Quality linter — delegates to skillscan-lint when installed
 lint = [
