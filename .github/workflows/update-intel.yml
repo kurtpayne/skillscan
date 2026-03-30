@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # Use the built-in GITHUB_TOKEN — no extra secret needed for a same-repo push.
           token: ${{ secrets.GITHUB_TOKEN }}
