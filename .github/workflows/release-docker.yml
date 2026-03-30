@@ -73,7 +73,7 @@ jobs:
         run: python scripts/validate_sbom.py --spdx sbom-docker.spdx.json
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.8.1
+        uses: sigstore/cosign-installer@v4.1.1
 
       - name: Sign image tags and attest SBOM (keyless)
         env:
