@@ -457,22 +457,26 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
 
     if backend == "unavailable":
         # ML extras not installed — error with clear install instructions.
-        return [
-            Finding(
-                id="PINJ-ML-UNAVAIL",
-                category="prompt_injection_ml",
-                severity=Severity.LOW,
-                confidence=1.0,
-                title="ML prompt-injection detector not available (missing extras)",
-                evidence_path=str(path),
-                snippet="Install skillscan-security[ml-onnx] or skillscan-security[ml] to enable.",
-                mitigation=(
-                    "Run: pip install 'skillscan-security[ml-onnx]' "
-                    "for the lightweight ONNX backend (recommended), or "
-                    "'skillscan-security[ml]' for the PyTorch backend with fine-tuned adapter."
-                ),
-            )
-        ] + age_findings + advisory_findings
+        return (
+            [
+                Finding(
+                    id="PINJ-ML-UNAVAIL",
+                    category="prompt_injection_ml",
+                    severity=Severity.LOW,
+                    confidence=1.0,
+                    title="ML prompt-injection detector not available (missing extras)",
+                    evidence_path=str(path),
+                    snippet="Install skillscan-security[ml-onnx] or skillscan-security[ml] to enable.",
+                    mitigation=(
+                        "Run: pip install 'skillscan-security[ml-onnx]' "
+                        "for the lightweight ONNX backend (recommended), or "
+                        "'skillscan-security[ml]' for the PyTorch backend with fine-tuned adapter."
+                    ),
+                )
+            ]
+            + age_findings
+            + advisory_findings
+        )
 
     assert pipe is not None, "pipe should be set when backend != 'unavailable'"
     chunks = _chunk_text(text)
@@ -539,16 +543,20 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
         f" | Score: {confidence:.3f}" + (f" | Attack type: {attack_hint}" if attack_hint else "")
     )
 
-    return [
-        Finding(
-            id="PINJ-ML-001",
-            category="prompt_injection_ml",
-            severity=severity,
-            confidence=confidence,
-            title=title,
-            evidence_path=str(path),
-            snippet=best_snippet,
-            mitigation=mitigation,
-            attack_hint=attack_hint,
-        )
-    ] + age_findings + advisory_findings
+    return (
+        [
+            Finding(
+                id="PINJ-ML-001",
+                category="prompt_injection_ml",
+                severity=severity,
+                confidence=confidence,
+                title=title,
+                evidence_path=str(path),
+                snippet=best_snippet,
+                mitigation=mitigation,
+                attack_hint=attack_hint,
+            )
+        ]
+        + age_findings
+        + advisory_findings
+    )

@@ -120,6 +120,7 @@ class TestMlDetectorNoModel:
         )
         # Patch the import inside the function
         import skillscan.model_sync as sync_mod
+
         monkeypatch.setattr(sync_mod, "get_model_status", lambda: fake_status)
 
         p = Path("skill.md")
