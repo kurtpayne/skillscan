@@ -16,7 +16,7 @@ jobs:
       # Tests must pass against the bundled rulepack only (post-mortem action item).
       SKILLSCAN_NO_USER_RULES: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -58,10 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: skillscan-security
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: kurtpayne/skillscan-website
           path: skillscan-website
@@ -95,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
