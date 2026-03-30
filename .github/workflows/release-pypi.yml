@@ -103,7 +103,7 @@ jobs:
       url: https://pypi.org/p/skillscan-security
     steps:
       - name: Download package artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-dist
           path: dist/
@@ -118,13 +118,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download package artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-dist
           path: dist/
 
       - name: Download release support artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-release-support
           path: dist/
