@@ -55,6 +55,7 @@ def _get_adapter_path() -> Path | None:
     """Return the local fine-tuned adapter path if installed, else None."""
     try:
         from skillscan.model_sync import get_adapter_path  # type: ignore[import]
+
         return get_adapter_path()
     except Exception:
         return None
@@ -81,9 +82,7 @@ def _try_load_onnx() -> Any | None:
 
         tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID, subfolder="onnx")
         tokenizer.model_input_names = ["input_ids", "attention_mask"]
-        model = ORTModelForSequenceClassification.from_pretrained(
-            _MODEL_ID, export=False, subfolder="onnx"
-        )
+        model = ORTModelForSequenceClassification.from_pretrained(_MODEL_ID, export=False, subfolder="onnx")
         return pipeline(
             task="text-classification",
             model=model,
@@ -118,13 +117,12 @@ def _try_load_transformers() -> Any | None:
         if adapter_path is not None:
             try:
                 from peft import PeftModel  # type: ignore[import]
+
                 model = PeftModel.from_pretrained(model, str(adapter_path))
                 model = model.merge_and_unload()  # fold LoRA weights for inference speed
                 global _loaded_model_id
                 _loaded_model_id = f"{_MODEL_ID}+adapter@{adapter_path.name}"
-                logger.info(
-                    "ML detector: fine-tuned adapter loaded from %s", adapter_path
-                )
+                logger.info("ML detector: fine-tuned adapter loaded from %s", adapter_path)
             except ImportError:
                 logger.warning(
                     "ML detector: fine-tuned adapter found at %s but peft is not installed. "
@@ -166,9 +164,7 @@ def _get_pipeline() -> tuple[Any | None, str]:
     pipe = _try_load_transformers()
     if pipe is not None:
         _pipeline_cache, _backend_cache = pipe, "transformers"
-        logger.info(
-            "ML detector: loaded Transformers backend (%s)", _loaded_model_id or _MODEL_ID
-        )
+        logger.info("ML detector: loaded Transformers backend (%s)", _loaded_model_id or _MODEL_ID)
         return pipe, "transformers"
 
     _pipeline_cache, _backend_cache = None, "unavailable"
@@ -477,8 +473,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
 
     mitigation = (
         f"{base_mitigation} Model: {effective_model} | Backend: {backend}"
-        f" | Score: {confidence:.3f}"
-        + (f" | Attack type: {attack_hint}" if attack_hint else "")
+        f" | Score: {confidence:.3f}" + (f" | Attack type: {attack_hint}" if attack_hint else "")
     )
 
     return [
