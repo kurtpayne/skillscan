@@ -4276,7 +4276,7 @@ static_rules:
       name: Indirect prompt injection via external data
 - id: EVASION-005
   category: defense_evasion
-  severity: medium
+  severity: high
   confidence: 0.8
   title: Web-Based Indirect Prompt Injection (IDPI) payload engineering
   pattern: (?i)(?:zero[_\s-]?sizing|css[_\s-]?suppression|invisible[_\s-]?characters|font-size:\s*0|display:\s*none|color:\s*transparent|opacity:\s*0)
