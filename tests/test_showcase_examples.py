@@ -267,9 +267,9 @@ def test_showcase_social_engineering_detected_without_ai() -> None:
         Path("examples/showcase/20_social_engineering_credential_harvest"), STRICT, "builtin:strict"
     )
     finding_ids = {f.id for f in report.findings}
-    assert (
-        "SE-001" in finding_ids or "SE-SEM-001" in finding_ids
-    ), f"Expected SE-001 or SE-SEM-001, got: {sorted(finding_ids)}"
+    assert "SE-001" in finding_ids or "SE-SEM-001" in finding_ids, (
+        f"Expected SE-001 or SE-SEM-001, got: {sorted(finding_ids)}"
+    )
 
 
 def test_showcase_130_pinj017_prowler_ec2_tag() -> None:

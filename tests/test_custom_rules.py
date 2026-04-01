@@ -120,9 +120,9 @@ def test_custom_rule_finding_appears_in_scan(custom_rules_dir: Path, matching_sk
     policy = load_builtin_policy("strict")
     report = scan(matching_skill, policy, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
-    assert (
-        "CORP-TEST-001" in finding_ids
-    ), f"Expected CORP-TEST-001 finding in scan of {matching_skill}. Findings present: {finding_ids}"
+    assert "CORP-TEST-001" in finding_ids, (
+        f"Expected CORP-TEST-001 finding in scan of {matching_skill}. Findings present: {finding_ids}"
+    )
 
 
 def test_custom_rule_no_finding_on_clean_skill(custom_rules_dir: Path, clean_skill: Path) -> None:
@@ -130,9 +130,9 @@ def test_custom_rule_no_finding_on_clean_skill(custom_rules_dir: Path, clean_ski
     policy = load_builtin_policy("strict")
     report = scan(clean_skill, policy, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
-    assert (
-        "CORP-TEST-001" not in finding_ids
-    ), f"Did not expect CORP-TEST-001 finding in scan of {clean_skill}. Findings present: {finding_ids}"
+    assert "CORP-TEST-001" not in finding_ids, (
+        f"Did not expect CORP-TEST-001 finding in scan of {clean_skill}. Findings present: {finding_ids}"
+    )
 
 
 def test_custom_rule_not_loaded_without_rules_dir(
@@ -151,8 +151,8 @@ def test_custom_rule_not_loaded_without_rules_dir(
         policy = load_builtin_policy("strict")
         report = scan(matching_skill, policy, "builtin:strict")
         finding_ids = {f.id for f in report.findings}
-        assert (
-            "CORP-TEST-001" not in finding_ids
-        ), "CORP-TEST-001 should not appear when the user-local rules dir is empty."
+        assert "CORP-TEST-001" not in finding_ids, (
+            "CORP-TEST-001 should not appear when the user-local rules dir is empty."
+        )
     finally:
         load_compiled_builtin_rulepack.cache_clear()

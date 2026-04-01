@@ -36,9 +36,9 @@ def test_static_rules_have_well_formed_metadata_blocks() -> None:
             assert key in metadata, f"{rid}: missing metadata.{key}"
 
         techniques = metadata.get("techniques", [])
-        assert (
-            isinstance(techniques, list) and techniques
-        ), f"{rid}: metadata.techniques must be non-empty list"
+        assert isinstance(techniques, list) and techniques, (
+            f"{rid}: metadata.techniques must be non-empty list"
+        )
         for tech in techniques:
             assert isinstance(tech, dict) and "id" in tech, f"{rid}: each technique must include id"
             assert TECHNIQUE_ID_RE.match(str(tech["id"])), f"{rid}: invalid technique id {tech['id']}"

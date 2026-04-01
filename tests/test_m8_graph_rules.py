@@ -284,6 +284,6 @@ class TestRuleListIntegration:
         rp = load_builtin_rulepack()
         for r in rp.static_rules:
             if r.graph_rule:
-                assert (
-                    re.search(r.pattern, "anything at all") is None
-                ), f"{r.id} sentinel pattern unexpectedly matched"
+                assert re.search(r.pattern, "anything at all") is None, (
+                    f"{r.id} sentinel pattern unexpectedly matched"
+                )
