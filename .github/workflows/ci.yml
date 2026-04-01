@@ -65,7 +65,6 @@ jobs:
         with:
           repository: kurtpayne/skillscan-website
           path: skillscan-website
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
