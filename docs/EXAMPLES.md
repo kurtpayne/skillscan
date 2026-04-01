@@ -2,7 +2,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**136 static rules · 14 chain rules**
+**137 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -77,6 +77,8 @@
 | `MAL-049` | critical | LiteLLM .pth file persistence and sysmon backdoor (TeamPCP) | supply-chain, litellm, teampcp, pth-persistence, credential-theft, backdoor |
 | `MAL-050` | high | Ghost Campaign malicious npm packages (sudo phishing RAT) | malware, npm, ghost-campaign, sudo-phishing, rat, cryptocurrency-theft |
 | `MAL-054` | critical | GlassWorm multi-stage Chrome extension RAT | malware_pattern, glassworm, chrome-extension, solana, rat |
+| `MAL-055` | critical | postmark-mcp BCC email harvesting (first in-the-wild malicious MCP server) | malware_pattern, mcp-server, email-exfiltration, bcc-injection, postmark, supply-chain |
+| `MAL-056` | critical | Nx/s1ngularity AI CLI weaponization via dangerously-skip-permissions | malware_pattern, ai-weaponization, supply-chain, postinstall, nx, s1ngularity |
 
 ### Exfiltration
 | ID | Severity | Title | Tags |
@@ -136,6 +138,8 @@
 | `SUP-020` | high | ClawHavoc malicious ClawHub skill typosquat names | supply-chain, clawhavoc, typosquat, openclaw, clawhub |
 | `SUP-021` | critical | TeamPCP Checkmarx VS Code extension compromise (Open VSX) | supply-chain, vscode-extension, teampcp, open-vsx, infostealer |
 | `SUP-022` | high | React Native npm account takeover supply chain attack | supply-chain, npm, account-takeover, react-native, dependency-chain |
+| `SUP-023` | critical | mcp-remote OAuth authorization_endpoint command injection (CVE-2025-6514) | supply-chain, mcp, cve, oauth, command-injection, rce |
+| `SUP-024` | critical | Compromised axios npm versions (TeamPCP RAT dropper, March 2026) | supply-chain, npm, account-takeover, rat, teampcp, axios |
 | `SUP-001` | critical | npm lifecycle script pipes remote content to shell | supply_chain, sup, npm, lifecycle-script |
 
 ### social_engineering
