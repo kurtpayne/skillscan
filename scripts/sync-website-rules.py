@@ -19,6 +19,7 @@ Exit codes:
     1  Error (missing files, parse failure, etc.).
     2  Files were updated (useful for CI: detect drift).
 """
+
 import argparse
 import re
 import sys
@@ -34,40 +35,42 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Category metadata: maps ID prefix → (label, color, website Category type)
 # ---------------------------------------------------------------------------
-CATEGORY_META = OrderedDict([
-    ("MAL",  {"label": "Malware Patterns",           "color": "oklch(0.65 0.22 25)",  "type": "MAL"}),
-    ("EXF",  {"label": "Exfiltration",               "color": "oklch(0.72 0.19 45)",  "type": "EXF"}),
-    ("ABU",  {"label": "Abuse Patterns",             "color": "oklch(0.70 0.15 160)", "type": "ABU"}),
-    ("INJ",  {"label": "Injection",                  "color": "oklch(0.58 0.22 290)", "type": "INJ"}),
-    ("CHN",  {"label": "Chain Rules",                "color": "oklch(0.65 0.18 200)", "type": "CHN"}),
-    ("PINJ", {"label": "Prompt/Pipeline Injection",  "color": "oklch(0.55 0.24 280)", "type": "PINJ"}),
-    ("SUP",  {"label": "Supply Chain",               "color": "oklch(0.68 0.16 80)",  "type": "SUP"}),
-    ("SE",   {"label": "Social Engineering",         "color": "oklch(0.62 0.20 340)", "type": "SE"}),
-    ("DEF",  {"label": "Defense Evasion",              "color": "oklch(0.60 0.18 240)", "type": "DEF"}),
-    ("EXEC", {"label": "Execution Hijack",             "color": "oklch(0.63 0.20 15)",  "type": "EXEC"}),
-    ("GR",   {"label": "Graph Rules",                  "color": "oklch(0.65 0.15 180)", "type": "GR"}),
-    ("OBF",  {"label": "Obfuscation",                  "color": "oklch(0.58 0.18 270)", "type": "OBF"}),
-    ("PSV",  {"label": "Passive Surveillance",         "color": "oklch(0.67 0.16 60)",  "type": "PSV"}),
-])
+CATEGORY_META = OrderedDict(
+    [
+        ("MAL", {"label": "Malware Patterns", "color": "oklch(0.65 0.22 25)", "type": "MAL"}),
+        ("EXF", {"label": "Exfiltration", "color": "oklch(0.72 0.19 45)", "type": "EXF"}),
+        ("ABU", {"label": "Abuse Patterns", "color": "oklch(0.70 0.15 160)", "type": "ABU"}),
+        ("INJ", {"label": "Injection", "color": "oklch(0.58 0.22 290)", "type": "INJ"}),
+        ("CHN", {"label": "Chain Rules", "color": "oklch(0.65 0.18 200)", "type": "CHN"}),
+        ("PINJ", {"label": "Prompt/Pipeline Injection", "color": "oklch(0.55 0.24 280)", "type": "PINJ"}),
+        ("SUP", {"label": "Supply Chain", "color": "oklch(0.68 0.16 80)", "type": "SUP"}),
+        ("SE", {"label": "Social Engineering", "color": "oklch(0.62 0.20 340)", "type": "SE"}),
+        ("DEF", {"label": "Defense Evasion", "color": "oklch(0.60 0.18 240)", "type": "DEF"}),
+        ("EXEC", {"label": "Execution Hijack", "color": "oklch(0.63 0.20 15)", "type": "EXEC"}),
+        ("GR", {"label": "Graph Rules", "color": "oklch(0.65 0.15 180)", "type": "GR"}),
+        ("OBF", {"label": "Obfuscation", "color": "oklch(0.58 0.18 270)", "type": "OBF"}),
+        ("PSV", {"label": "Passive Surveillance", "color": "oklch(0.67 0.16 60)", "type": "PSV"}),
+    ]
+)
 
 # Severity mapping: YAML severity → website Severity type
 SEVERITY_MAP = {
     "critical": "BLOCK",
-    "high":     "BLOCK",
-    "medium":   "WARN",
-    "low":      "INFO",
-    "info":     "INFO",
+    "high": "BLOCK",
+    "medium": "WARN",
+    "low": "INFO",
+    "info": "INFO",
 }
 
 # ---------------------------------------------------------------------------
 # Sync markers — the script rewrites only the content between these markers
 # ---------------------------------------------------------------------------
 RULES_TSX_BEGIN = "// AUTO_SYNC_BEGIN: rules array"
-RULES_TSX_END   = "// AUTO_SYNC_END: rules array"
-HOME_CAT_BEGIN  = "// AUTO_SYNC_BEGIN: ruleCategories"
-HOME_CAT_END    = "// AUTO_SYNC_END: ruleCategories"
-TERMINAL_BEGIN  = "// AUTO_SYNC_BEGIN: rulepack"
-TERMINAL_END    = "// AUTO_SYNC_END: rulepack"
+RULES_TSX_END = "// AUTO_SYNC_END: rules array"
+HOME_CAT_BEGIN = "// AUTO_SYNC_BEGIN: ruleCategories"
+HOME_CAT_END = "// AUTO_SYNC_END: ruleCategories"
+TERMINAL_BEGIN = "// AUTO_SYNC_BEGIN: rulepack"
+TERMINAL_END = "// AUTO_SYNC_END: rulepack"
 
 
 def load_rules(yaml_path: Path) -> tuple[str, list[dict], list[dict]]:
@@ -88,11 +91,11 @@ def rule_prefix(rule_id: str) -> str:
 def _sanitize_str(s: str) -> str:
     """Escape a string for safe embedding in a TSX double-quoted string literal."""
     # Escape backslashes first, then double quotes, then collapse newlines/tabs
-    s = s.replace('\\', '\\\\')  # \ → \\
-    s = s.replace('"', '\\"')    # " → \"
-    s = s.replace('\n', ' ')      # newlines → space
-    s = s.replace('\r', '')       # carriage returns → removed
-    s = s.replace('\t', ' ')      # tabs → space
+    s = s.replace("\\", "\\\\")  # \ → \\
+    s = s.replace('"', '\\"')  # " → \"
+    s = s.replace("\n", " ")  # newlines → space
+    s = s.replace("\r", "")  # carriage returns → removed
+    s = s.replace("\t", " ")  # tabs → space
     return s
 
 
@@ -104,11 +107,7 @@ def rule_to_tsx(rule: dict) -> str:
     severity = SEVERITY_MAP.get(str(rule.get("severity", "medium")).lower(), "WARN")
     title = _sanitize_str(rule.get("title", rid))
     # Prefer explicit description; fall back to mitigation; fall back to title
-    description = _sanitize_str(
-        rule.get("description")
-        or rule.get("mitigation")
-        or title
-    )
+    description = _sanitize_str(rule.get("description") or rule.get("mitigation") or title)
     # Tags: from metadata.tags, strip the category-name tag (redundant)
     raw_tags = rule.get("metadata", {}).get("tags", [])
     tags = [t for t in raw_tags if t not in (prefix.lower(), rule.get("category", ""))]
@@ -142,8 +141,7 @@ def build_categories_block(rules: list[dict]) -> str:
         if count == 0:
             continue
         lines.append(
-            f'  {{ prefix: "{prefix}", label: "{meta["label"]}", '
-            f'count: {count}, color: "{meta["color"]}" }},'
+            f'  {{ prefix: "{prefix}", label: "{meta["label"]}", count: {count}, color: "{meta["color"]}" }},'
         )
     return "\n".join(lines)
 
@@ -153,7 +151,7 @@ def build_terminal_block(version: str, total: int) -> str:
     return (
         f'  {{ type: "info",    '
         f'text: "SkillScan v{version}  •  rulepack {version}  •  {total} rules loaded", '
-        f'delay: 600 }},'
+        f"delay: 600 }},"
     )
 
 
@@ -209,10 +207,14 @@ def main() -> int:
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--website-dir", default=None,
-                        help="Path to skillscan-website repo root (default: ../skillscan-website)")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="Print what would change without writing files")
+    parser.add_argument(
+        "--website-dir",
+        default=None,
+        help="Path to skillscan-website repo root (default: ../skillscan-website)",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Print what would change without writing files"
+    )
     args = parser.parse_args()
 
     # Resolve paths
@@ -225,8 +227,8 @@ def main() -> int:
     else:
         website_root = (repo_root.parent / "skillscan-website").resolve()
 
-    rules_tsx   = website_root / "client/src/pages/Rules.tsx"
-    home_tsx    = website_root / "client/src/pages/Home.tsx"
+    rules_tsx = website_root / "client/src/pages/Rules.tsx"
+    home_tsx = website_root / "client/src/pages/Home.tsx"
     terminal_tsx = website_root / "client/src/components/TerminalScan.tsx"
 
     # Validate inputs
@@ -248,15 +250,15 @@ def main() -> int:
     )
 
     # Build replacement blocks
-    rules_block    = build_rules_block(all_rules)
-    cats_block     = build_categories_block(all_rules)
+    rules_block = build_rules_block(all_rules)
+    cats_block = build_categories_block(all_rules)
     terminal_block = build_terminal_block(version, total)
 
     # Patch files
     changed = False
-    changed |= sync_file(rules_tsx,    RULES_TSX_BEGIN, RULES_TSX_END,   rules_block,    args.dry_run)
-    changed |= sync_file(home_tsx,     HOME_CAT_BEGIN,  HOME_CAT_END,    cats_block,     args.dry_run)
-    changed |= sync_file(terminal_tsx, TERMINAL_BEGIN,  TERMINAL_END,    terminal_block, args.dry_run)
+    changed |= sync_file(rules_tsx, RULES_TSX_BEGIN, RULES_TSX_END, rules_block, args.dry_run)
+    changed |= sync_file(home_tsx, HOME_CAT_BEGIN, HOME_CAT_END, cats_block, args.dry_run)
+    changed |= sync_file(terminal_tsx, TERMINAL_BEGIN, TERMINAL_END, terminal_block, args.dry_run)
 
     if changed:
         print("\nDone. Files updated." if not args.dry_run else "\nDry run complete. Files would be updated.")

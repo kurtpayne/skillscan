@@ -20,6 +20,7 @@ to avoid bloating the DB with duplicate entries for the same version.
 Usage:
     python3 scripts/seed_vuln_db.py [--dry-run]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -153,8 +154,13 @@ def extract_severity(vuln: dict) -> tuple[str, float | None]:
 
     db_sev_str = vuln.get("database_specific", {}).get("severity", "")
     if db_sev_str and best_sev == "unknown":
-        mapping = {"CRITICAL": "critical", "HIGH": "high", "MODERATE": "medium",
-                   "MEDIUM": "medium", "LOW": "low"}
+        mapping = {
+            "CRITICAL": "critical",
+            "HIGH": "high",
+            "MODERATE": "medium",
+            "MEDIUM": "medium",
+            "LOW": "low",
+        }
         best_sev = mapping.get(db_sev_str.upper(), "medium")
 
     if best_sev == "unknown":
@@ -184,9 +190,7 @@ def extract_fixed_version(vuln: dict, ecosystem: str, package: str) -> str | Non
 
 def query_osv(ecosystem: str, package: str) -> list[dict]:
     """Query OSV.dev for all vulnerabilities affecting a package."""
-    payload = json.dumps({
-        "package": {"name": package, "ecosystem": ecosystem}
-    }).encode()
+    payload = json.dumps({"package": {"name": package, "ecosystem": ecosystem}}).encode()
     req = urllib.request.Request(
         OSV_QUERY_URL,
         data=payload,
