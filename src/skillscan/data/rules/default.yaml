@@ -4428,7 +4428,7 @@ static_rules:
   severity: high
   confidence: 0.82
   title: OpenClaw CVE-2026-32922 privilege escalation via token rotation
-  pattern: (?i)(?:openclaw[=~><]{1,2}202[0-5]\.|openclaw[=~><]{1,2}2026\.(?:[0-2]\.|3\.[0-9][^0-9]|3\.10[^\d])|device\.token\.rotate[^\n]{0,120}operator\.pairing|operator\.pairing[^\n]{0,120}device\.token\.rotate)
+  pattern: (?i)(?:openclaw[=~><]{1,2}202[0-5]\.|openclaw[=~><]{1,2}2026\.(?:[0-2]\.|3\.[0-9](?:[^0-9]|$)|3\.10(?:[^\d]|$))|device\.token\.rotate[^\n]{0,120}operator\.pairing|operator\.pairing[^\n]{0,120}device\.token\.rotate)
   mitigation: >
     CVE-2026-32922 is a privilege escalation vulnerability in OpenClaw before version 2026.3.11. Callers
     with the operator.pairing scope can invoke device.token.rotate to mint tokens with elevated permissions
