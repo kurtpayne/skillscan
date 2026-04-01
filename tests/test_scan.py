@@ -120,9 +120,9 @@ def test_se001_social_engineering_detected(tmp_path: Path) -> None:
     )
     policy = load_builtin_policy("strict")
     report = scan(target, policy, "builtin:strict")
-    assert any(f.id == "SE-001" for f in report.findings), (
-        f"Expected SE-001 finding, got: {[f.id for f in report.findings]}"
-    )
+    assert any(
+        f.id == "SE-001" for f in report.findings
+    ), f"Expected SE-001 finding, got: {[f.id for f in report.findings]}"
 
 
 def test_se_sem_001_semantic_classifier_fires(tmp_path: Path) -> None:
@@ -135,9 +135,9 @@ def test_se_sem_001_semantic_classifier_fires(tmp_path: Path) -> None:
     )
     policy = load_builtin_policy("strict")
     report = scan(target, policy, "builtin:strict")
-    assert any(f.id == "SE-SEM-001" for f in report.findings), (
-        f"Expected SE-SEM-001 finding, got: {[f.id for f in report.findings]}"
-    )
+    assert any(
+        f.id == "SE-SEM-001" for f in report.findings
+    ), f"Expected SE-SEM-001 finding, got: {[f.id for f in report.findings]}"
 
 
 def test_npm_lifecycle_script_abuse_detected(tmp_path: Path) -> None:

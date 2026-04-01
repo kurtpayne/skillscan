@@ -99,6 +99,6 @@ def test_eicar_detected_by_clamav(tmp_path: Path) -> None:
         "check that the signature database is up to date (`freshclam`)"
     )
     signatures = [d.signature for d in result.detections]
-    assert any("Eicar" in sig or "EICAR" in sig for sig in signatures), (
-        f"Expected an Eicar-* signature, got: {signatures}"
-    )
+    assert any(
+        "Eicar" in sig or "EICAR" in sig for sig in signatures
+    ), f"Expected an Eicar-* signature, got: {signatures}"

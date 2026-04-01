@@ -26,9 +26,9 @@ class TestChainRuleProximityWindow:
         )
         text = "\n".join(lines)
         windows = _extract_actions_windowed(text, rp.action_patterns)
-        assert not any({"secret_access", "network"}.issubset(w) for w in windows), (
-            "CHN-002 fired on a benign large file where actions are 201 lines apart"
-        )
+        assert not any(
+            {"secret_access", "network"}.issubset(w) for w in windows
+        ), "CHN-002 fired on a benign large file where actions are 201 lines apart"
 
     def test_chain_fires_when_actions_close(self, tmp_path):
         """CHN-002 MUST fire when secret_access and network are within 12 lines."""
@@ -43,9 +43,9 @@ class TestChainRuleProximityWindow:
         )
         text = "\n".join(lines)
         windows = _extract_actions_windowed(text, rp.action_patterns)
-        assert any({"secret_access", "network"}.issubset(w) for w in windows), (
-            "CHN-002 did not fire for a true positive where actions are 12 lines apart"
-        )
+        assert any(
+            {"secret_access", "network"}.issubset(w) for w in windows
+        ), "CHN-002 did not fire for a true positive where actions are 12 lines apart"
 
 
 class TestMultilangLanguageFilter:

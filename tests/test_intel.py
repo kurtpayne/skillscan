@@ -195,9 +195,9 @@ def test_bundled_vuln_db_parses_correctly():
                     assert "id" in entry, f"{ecosystem}/{pkg}: list entry missing 'id'"
                     assert "severity" in entry, f"{ecosystem}/{pkg}: list entry missing 'severity'"
             else:
-                assert isinstance(versions, dict), (
-                    f"{ecosystem}/{pkg}: expected dict or list, got {type(versions).__name__}"
-                )
+                assert isinstance(
+                    versions, dict
+                ), f"{ecosystem}/{pkg}: expected dict or list, got {type(versions).__name__}"
                 for version, vuln in versions.items():
                     assert "id" in vuln, f"{ecosystem}/{pkg}@{version}: missing 'id'"
                     assert "severity" in vuln, f"{ecosystem}/{pkg}@{version}: missing 'severity'"

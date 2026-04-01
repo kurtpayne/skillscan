@@ -302,9 +302,9 @@ def test_sandbox_verified_excluded_when_not_private(corpus_dir: Path) -> None:
     examples = mgr.iter_examples(include_private=False)
     rel_paths = [str(p.relative_to(corpus_dir)) for p, _ in examples]
 
-    assert not any(rp.startswith("sandbox_verified") for rp in rel_paths), (
-        f"sandbox_verified should be excluded when include_private=False, got: {rel_paths}"
-    )
+    assert not any(
+        rp.startswith("sandbox_verified") for rp in rel_paths
+    ), f"sandbox_verified should be excluded when include_private=False, got: {rel_paths}"
     assert len(examples) == 1, f"Expected 1 example (benign only), got {len(examples)}: {rel_paths}"
 
 

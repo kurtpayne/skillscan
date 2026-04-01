@@ -54,14 +54,12 @@ _SECURITY_PATTERNS: list[tuple[str, str, str]] = [
     (
         "data_access",
         "medium",
-        r"(?i)\b(read.*file|write.*file|delete.*file|list.*directory"
-        r"|glob\(|open\(.*['\"]r['\"])\b",
+        r"(?i)\b(read.*file|write.*file|delete.*file|list.*directory" r"|glob\(|open\(.*['\"]r['\"])\b",
     ),
     (
         "credential_ref",
         "medium",
-        r"(?i)\b(api[_\s]?key|secret[_\s]?key|password|token|bearer"
-        r"|auth[_\s]?header|private[_\s]?key)\b",
+        r"(?i)\b(api[_\s]?key|secret[_\s]?key|password|token|bearer" r"|auth[_\s]?header|private[_\s]?key)\b",
     ),
     ("url_reference", "low", r"https?://[^\s\)\"']{10,}"),
 ]
