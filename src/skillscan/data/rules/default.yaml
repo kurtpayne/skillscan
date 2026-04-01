@@ -1,4 +1,4 @@
-version: 2026.03.29.1
+version: 2026.03.31.2
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -4276,7 +4276,7 @@ static_rules:
       name: Indirect prompt injection via external data
 - id: EVASION-005
   category: defense_evasion
-  severity: medium
+  severity: high
   confidence: 0.8
   title: Web-Based Indirect Prompt Injection (IDPI) payload engineering
   pattern: (?i)(?:zero[_\s-]?sizing|css[_\s-]?suppression|invisible[_\s-]?characters|font-size:\s*0|display:\s*none|color:\s*transparent|opacity:\s*0)
@@ -4339,6 +4339,164 @@ static_rules:
     techniques:
     - id: EXF-001
       name: Local file exfiltration via IDE extension
+
+  mitigation: Passing credentials into a privileged container exposes secrets to full host compromise. Remove the privileged flag or avoid injecting secrets into privileged containers.
+- id: MAL-055
+  category: malware_pattern
+  severity: critical
+  confidence: 0.92
+  title: postmark-mcp BCC email harvesting (first in-the-wild malicious MCP server)
+  pattern: (?i)(?:phan@giftshop\.club|giftshop\.club|phanpak[^\n]{0,120}(?:npm|mcp|package)|postmark-mcp[^\n]{0,400}(?:bcc|blind[_\s]?carbon)|(?:bcc|blind[_\s]?carbon[_\s]?copy)[^\n]{0,120}(?:giftshop|attacker|exfil))
+  mitigation: 'postmark-mcp versions 1.0.16-1.0.18 (npm publisher phanpak) injected a silent BCC on every outbound email to phan@giftshop.club — the first confirmed malicious MCP server in production. All email content processed by AI-automated Postmark workflows (password resets, invoices, internal memos) was silently copied to the attacker. Audit for postmark-mcp versions 1.0.16-1.0.18 and rotate any Postmark API keys that may have been exposed.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-31'
+    updated: '2026-03-31'
+    tags:
+    - malware_pattern
+    - mcp-server
+    - email-exfiltration
+    - bcc-injection
+    - postmark
+    - supply-chain
+    techniques:
+    - id: EXEC-001
+      name: Execution or malware behavior
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-31'
+      last_modified: '2026-03-31'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/
+    - https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html
+    - https://semgrep.dev/blog/2025/so-the-first-malicious-mcp-server-has-been-found-on-npm-what-does-this-mean-for-mcp-security/
+- id: MAL-056
+  category: malware_pattern
+  severity: critical
+  confidence: 0.9
+  title: Nx/s1ngularity AI CLI weaponization via dangerously-skip-permissions
+  pattern: (?i)(?:s1ngularity[_\s-]?repository|shai[_-]?hulud|--dangerously-skip-permissions[^\n]{0,200}(?:claude|gemini|amazon\s*q\b)|(?:claude|gemini|amazon\s*q\b)[^\n]{0,200}--dangerously-skip-permissions|--trust-all-tools[^\n]{0,200}(?:claude|gemini|amazon)|telemetry\.js[^\n]{0,200}(?:credentials|aws|base64|exfil)|sudo\s+shutdown\s+-h\s+0[^\n]{0,200}(?:bashrc|zshrc|profile))
+  mitigation: 'The Nx s1ngularity campaign (August 2025) injected a postinstall script (telemetry.js) that weaponized locally installed AI CLI tools (claude, gemini, amazon q) using permission-bypass flags (--dangerously-skip-permissions, --yolo, --trust-all-tools) to enumerate and exfiltrate sensitive files. Stolen credentials were triple-base64 encoded and exfiltrated to attacker GitHub repos (s1ngularity-repository-NNNN). A destructive payload also appended sudo shutdown -h 0 to ~/.bashrc and ~/.zshrc. Audit node_modules for malicious postinstall hooks invoking AI CLIs with bypass flags.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-31'
+    updated: '2026-03-31'
+    tags:
+    - malware_pattern
+    - ai-weaponization
+    - supply-chain
+    - postinstall
+    - nx
+    - s1ngularity
+    techniques:
+    - id: EXEC-001
+      name: Execution or malware behavior
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-31'
+      last_modified: '2026-03-31'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://snyk.io/blog/weaponizing-ai-coding-agents-for-malware-in-the-nx-malicious-package/
+    - https://www.infoq.com/news/2025/10/npm-s1ngularity-shai-hulud/
+- id: SUP-023
+  category: supply_chain
+  severity: critical
+  confidence: 0.92
+  title: mcp-remote OAuth authorization_endpoint command injection (CVE-2025-6514)
+  pattern: (?i)(?:CVE-2025-6514|mcp-remote[^\n]{0,120}(?:0\.0\.[5-9]|0\.1\.[0-9](?:[^0-9]|$))|authorization_endpoint[^\n]{0,200}(?:file://|javascript:|vbscript:|a:[^\n]{0,80}\$\(|\$\(cmd|powershell[^\n]{0,60}(?:EncodedCommand|NoProfile|Bypass|base64)))
+  mitigation: 'CVE-2025-6514 (CVSS 9.6 critical) affects mcp-remote npm versions 0.0.5-0.1.15. A malicious MCP server can return a crafted authorization_endpoint value during OAuth discovery (e.g., "a:$(cmd.exe /c whoami)?response_type=code") that is passed unsanitized to a shell, enabling full RCE on the MCP client. Upgrade mcp-remote to 0.1.16 or later. On Windows, monitor for PowerShell spawning with -EncodedCommand from MCP client processes. Pin authorization_endpoint values to https:// schemes.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-31'
+    updated: '2026-03-31'
+    tags:
+    - supply-chain
+    - mcp
+    - cve
+    - oauth
+    - command-injection
+    - rce
+    techniques:
+    - id: SUPPLY-018
+      name: Supply chain risk
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-31'
+      last_modified: '2026-03-31'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://jfrog.com/blog/2025-6514-critical-mcp-remote-rce-vulnerability/
+    - https://github.com/advisories/GHSA-6xpm-ggf7-wc3p
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-6514
+- id: SUP-024
+  category: supply_chain
+  severity: critical
+  confidence: 0.93
+  title: Compromised axios npm versions (TeamPCP RAT dropper, March 2026)
+  pattern: (?i)(?:(?:npm\s+install|yarn\s+add|pnpm\s+add)[^\n]{0,80}axios[^\n]{0,40}(?:@1\.14\.1|@0\.30\.4|1\.14\.1|0\.30\.4)|axios[=@~^<>!]*\s*["']?(?:1\.14\.1|0\.30\.4)["']?|["']axios["']\s*:\s*["'](?:\^?1\.14\.1|\^?0\.30\.4)["']|plain-crypto-js[^\n]{0,80}(?:4\.2\.1|postinstall|RAT|malicious))
+  mitigation: 'axios versions 1.14.1 and 0.30.4 were compromised on March 30, 2026 via a hijacked
+    maintainer npm account (jasonsaayman). The malicious versions inject a hidden dependency,
+    plain-crypto-js@4.2.1, whose sole purpose is a postinstall script that drops a cross-platform
+    RAT targeting macOS, Windows, and Linux. The RAT exfiltrates SSH keys, cloud tokens, and
+    credentials to sfrclak.com:8000 (IP 142.11.206.73). Although removed within hours, these versions
+    were present in ~80% of cloud environments. Upgrade to axios@1.7.9 or later (1.x) / axios@0.29.0
+    or later (0.x). Audit node_modules for plain-crypto-js. This attack is linked to the TeamPCP
+    supply chain campaign.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-31'
+    updated: '2026-03-31'
+    tags:
+    - supply-chain
+    - npm
+    - account-takeover
+    - rat
+    - teampcp
+    - axios
+    techniques:
+    - id: SUPPLY-018
+      name: Supply chain risk
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-31'
+      last_modified: '2026-03-31'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/03/axios-supply-chain-attack-pushes-cross.html
+    - https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan
+    - https://snyk.io/blog/axios-npm-package-compromised-supply-chain-attack-delivers-cross-platform/
+    - https://www.aikido.dev/blog/axios-npm-compromised-maintainer-hijacked-rat
+    - https://socket.dev/blog/axios-npm-package-compromised
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b
@@ -4502,4 +4660,3 @@ chain_rules:
   - privileged_container
   - secret_access
   snippet: docker run --privileged -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-  mitigation: Passing credentials into a privileged container exposes secrets to full host compromise. Remove the privileged flag or avoid injecting secrets into privileged containers.
