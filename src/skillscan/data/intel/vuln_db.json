@@ -947,6 +947,36 @@
         "severity": "critical",
         "fixed": "0.29.0"
       }
+    },
+    "@anthropic-ai/mcp-inspector": {
+      "0.14.0": {
+        "id": "CVE-2025-49596",
+        "severity": "critical",
+        "fixed": "0.14.1"
+      }
+    }
+  },
+  "pip": {
+    "gptplus": {
+      "2.2.0": {
+        "id": "PYPI-GPTPLUS-2024-JARKASTEALER",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "claudeai-eng": {
+      "1.0.0": {
+        "id": "PYPI-CLAUDEAIENG-2024-JARKASTEALER",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "devtools-assistant": {
+      "0.1.0": {
+        "id": "PYPI-DEVTOOLS-ASSISTANT-2025-MCP",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
     }
   }
 }
