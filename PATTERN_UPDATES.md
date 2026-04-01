@@ -1,5 +1,27 @@
 # Pattern Updates
 
+## 2026-04-01
+
+rulepack: 2026.04.01.1
+
+Three new detection rules, IOC enrichment, and vuln DB updates.
+
+- Added `MAL-057` (critical): **JarkaStealer AI package trojan** — Malicious PyPI packages `gptplus` (v2.2.0) and `claudeai-eng` (v1.0.0) masqueraded as AI model wrappers. The packages contained Base64-encoded payloads in `__init__.py` that downloaded `JavaUpdater.jar` from `github.com/imystorage/storage` to steal browser data, SSH keys, and credentials. Exfiltration to `api.github-analytics.com`.
+- Added `EXEC-042` (high): **IDE config injection for silent command execution (CurXecute/MCPoison)** — CVE-2025-54135 (CurXecute) modifies global `mcp.json` via prompt injection through MCP-connected services like Slack. CVE-2025-54136 (MCPoison) exploits trust bypass where changes to an already-approved `mcp.json` are auto-trusted. Both enable arbitrary command execution in Cursor IDE without user interaction.
+- Added `PINJ-018` (high): **Hidden prompt injection via CSS/HTML concealment** — Attackers use CSS properties (`display:none`, `font-size:0`, `opacity:0`) and HTML attributes (`aria-hidden`, HTML comments) to embed instructions invisible to humans but processed by AI agents. Observed in wild attacks against AI content moderation systems (December 2025).
+- IOC update: added `api.github-analytics.com` (DevTools-Assistant MCP credential stealer C2) to domain IOC DB.
+- Vuln DB update: added `gptplus` pip v2.2.0 as PYPI-GPTPLUS-2024-JARKASTEALER (critical, package removed from PyPI).
+- Vuln DB update: added `claudeai-eng` pip v1.0.0 as PYPI-CLAUDEAIENG-2024-JARKASTEALER (critical, package removed from PyPI).
+- Vuln DB update: added `devtools-assistant` pip v0.1.0 as PYPI-DEVTOOLS-ASSISTANT-2025-MCP (critical, package removed from PyPI).
+- Vuln DB update: added `@anthropic-ai/mcp-inspector` npm v0.14.0 as CVE-2025-49596 (critical, fixed in 0.14.1).
+
+Sources:
+- Kaspersky Securelist: https://securelist.com/jarkastealer-supply-chain-attack/114937/
+- Trail of Bits CurXecute: https://www.trailofbits.com/documents/CurXecute.pdf
+- Trail of Bits MCPoison: https://www.trailofbits.com/documents/MCPoison.pdf
+- Imperva: https://www.imperva.com/blog/ai-content-moderation-prompt-injection/
+- GitHub Advisory CVE-2025-49596: https://github.com/advisories/GHSA-mcp-inspector-rce
+
 ## 2026-03-31 (patch 2)
 
 rulepack: 2026.03.31.2
