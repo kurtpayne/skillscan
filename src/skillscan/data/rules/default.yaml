@@ -1,4 +1,4 @@
-version: 2026.03.31.1
+version: 2026.03.31.2
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -4451,6 +4451,52 @@ static_rules:
     - https://jfrog.com/blog/2025-6514-critical-mcp-remote-rce-vulnerability/
     - https://github.com/advisories/GHSA-6xpm-ggf7-wc3p
     - https://nvd.nist.gov/vuln/detail/CVE-2025-6514
+- id: SUP-024
+  category: supply_chain
+  severity: critical
+  confidence: 0.93
+  title: Compromised axios npm versions (TeamPCP RAT dropper, March 2026)
+  pattern: (?i)(?:(?:npm\s+install|yarn\s+add|pnpm\s+add)[^\n]{0,80}axios[^\n]{0,40}(?:@1\.14\.1|@0\.30\.4|1\.14\.1|0\.30\.4)|axios[=@~^<>!]*\s*["']?(?:1\.14\.1|0\.30\.4)["']?|["']axios["']\s*:\s*["'](?:\^?1\.14\.1|\^?0\.30\.4)["']|plain-crypto-js[^\n]{0,80}(?:4\.2\.1|postinstall|RAT|malicious))
+  mitigation: 'axios versions 1.14.1 and 0.30.4 were compromised on March 30, 2026 via a hijacked
+    maintainer npm account (jasonsaayman). The malicious versions inject a hidden dependency,
+    plain-crypto-js@4.2.1, whose sole purpose is a postinstall script that drops a cross-platform
+    RAT targeting macOS, Windows, and Linux. The RAT exfiltrates SSH keys, cloud tokens, and
+    credentials to sfrclak.com:8000 (IP 142.11.206.73). Although removed within hours, these versions
+    were present in ~80% of cloud environments. Upgrade to axios@1.7.9 or later (1.x) / axios@0.29.0
+    or later (0.x). Audit node_modules for plain-crypto-js. This attack is linked to the TeamPCP
+    supply chain campaign.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-03-31'
+    updated: '2026-03-31'
+    tags:
+    - supply-chain
+    - npm
+    - account-takeover
+    - rat
+    - teampcp
+    - axios
+    techniques:
+    - id: SUPPLY-018
+      name: Supply chain risk
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-31'
+      last_modified: '2026-03-31'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/03/axios-supply-chain-attack-pushes-cross.html
+    - https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan
+    - https://snyk.io/blog/axios-npm-package-compromised-supply-chain-attack-delivers-cross-platform/
+    - https://www.aikido.dev/blog/axios-npm-compromised-maintainer-hijacked-rat
+    - https://socket.dev/blog/axios-npm-package-compromised
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

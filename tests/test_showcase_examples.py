@@ -312,3 +312,10 @@ def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
     report = scan(Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
+
+
+def test_showcase_136_sup024_axios_compromised_versions() -> None:
+    """SUP-024 fires on the compromised axios npm versions showcase."""
+    report = scan(Path("examples/showcase/136_sup024_axios_compromised_versions"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "SUP-024" in finding_ids, f"Expected SUP-024, got: {sorted(finding_ids)}"

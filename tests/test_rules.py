@@ -1763,3 +1763,15 @@ def test_new_patterns_20260331() -> None:
     # Negative: normal OAuth usage
     assert sup023.pattern.search("authorization_endpoint: https://auth.example.com/oauth") is None
     assert sup023.pattern.search("mcp-remote@0.1.16 upgrade") is None
+
+    # SUP-024: Compromised axios npm versions (TeamPCP RAT dropper)
+    sup024_rules = [r for r in compiled.static_rules if r.id == "SUP-024"]
+    assert len(sup024_rules) >= 1
+    sup024 = sup024_rules[0]
+    assert sup024.pattern.search("npm install axios@1.14.1") is not None
+    assert sup024.pattern.search('npm install axios@0.30.4') is not None
+    assert sup024.pattern.search('"axios": "1.14.1"') is not None
+    assert sup024.pattern.search("plain-crypto-js@4.2.1 postinstall RAT") is not None
+    # Negative: safe axios versions
+    assert sup024.pattern.search("npm install axios@1.7.9") is None
+    assert sup024.pattern.search('"axios": "^1.6.0"') is None
