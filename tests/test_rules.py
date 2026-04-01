@@ -1751,8 +1751,8 @@ def test_sup023_psv006_psv007_patterns() -> None:
     # Positive: vulnerable version pin
     assert psv006.pattern.search("langflow==1.8.0") is not None
     assert psv006.pattern.search("langflow==1.7.5") is not None
-    # Positive: auto-login env var
-    assert psv006.pattern.search("LANGFLOW_AUTO_LOGIN=true") is not None
+    # Positive: auto-login env var (pattern needs langflow context on same line)
+    assert psv006.pattern.search("langflow==1.8.0 LANGFLOW_AUTO_LOGIN=true") is not None
     # Negative: safe version
     assert psv006.pattern.search("langflow==1.9.0") is None
 
