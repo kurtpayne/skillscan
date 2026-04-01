@@ -10,6 +10,7 @@ Usage:
         --output demo-feed.json \\
         [--dry-run]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -244,9 +245,7 @@ def main() -> None:
 
 def _get_skillscan_version() -> str:
     try:
-        result = subprocess.run(
-            ["skillscan", "version"], capture_output=True, text=True, timeout=5
-        )
+        result = subprocess.run(["skillscan", "version"], capture_output=True, text=True, timeout=5)
         # Output: "SkillScan (skillscan-security) 0.8.0"
         for line in result.stdout.splitlines():
             if line.strip():

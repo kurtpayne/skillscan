@@ -153,3 +153,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 134. `134_mal056_nx_s1ngularity_ai_weaponization`: Nx/s1ngularity AI CLI weaponization via --dangerously-skip-permissions to enumerate and exfiltrate credentials, with destructive shutdown payload (`MAL-056`)
 135. `135_sup023_mcp_remote_oauth_cmd_injection`: mcp-remote OAuth authorization_endpoint command injection (CVE-2025-6514, CVSS 9.6) enabling RCE on MCP clients via crafted authorization_endpoint (`SUP-023`)
 136. `136_sup024_axios_compromised_versions`: Compromised axios npm versions 1.14.1 and 0.30.4 (TeamPCP) that inject plain-crypto-js@4.2.1 RAT dropper exfiltrating credentials to sfrclak.com (`SUP-024`)
+137. `137_jarkastealer_ai_trojan`: JarkaStealer AI package trojan — malicious PyPI packages (gptplus, claudeai-eng) downloading JavaUpdater.jar for credential theft (`MAL-057`)
+138. `138_ide_config_injection`: IDE config injection for silent command execution — CurXecute (CVE-2025-54135) and MCPoison (CVE-2025-54136) exploiting mcp.json trust (`EXEC-042`)
+139. `139_hidden_prompt_injection`: Hidden prompt injection via CSS/HTML concealment — display:none, font-size:0, opacity:0, aria-hidden used to embed invisible instructions for AI agents (`PINJ-018`)
