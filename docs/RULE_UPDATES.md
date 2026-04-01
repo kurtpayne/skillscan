@@ -1,5 +1,41 @@
 # Rule Updates
 
+## 2026-03-30
+
+- Added `SUP-023` (critical): **TeamPCP Telnyx PyPI supply chain attack (WAV steganography payload)**.
+- Rationale: TeamPCP compromised telnyx==4.87.1 and 4.87.2 on PyPI by injecting malicious code into
+  telnyx/_client.py. Payload is XOR-obfuscated inside WAV files (hangup.wav / ringtone.wav) and exfiltrates
+  credentials. The attack vector is credential theft from the prior LiteLLM compromise.
+- Rule scope targets telnyx 4.87.x version pins, WAV file references with execution indicators,
+  the C2 IP 83.142.209.203:8080, and tpcp.tar.gz exfiltration artefacts.
+
+Sources:
+- The Hacker News (2026-03-27): https://thehackernews.com/2026/03/teampcp-pushes-malicious-telnyx.html
+- Socket.dev (2026-03-27): https://socket.dev/blog/telnyx-python-sdk-compromised
+- Endor Labs (2026-03-29): https://www.endorlabs.com/learn/teampcp-strikes-again-telnyx-compromised-three-days-after-litellm
+- Telnyx security notice: https://telnyx.com/resources/telnyx-python-sdk-supply-chain-security-notice-march-2026
+
+- Added `PSV-006` (critical): **Langflow CVE-2026-33017 unauthenticated RCE (CISA KEV)**.
+- Rationale: CVE-2026-33017 (CVSS 9.3) allows arbitrary Python execution via unsandboxed Langflow flow
+  execution. CISA added it to KEV on 2026-03-25 with a federal patch deadline of 2026-04-08. Active
+  exploitation began within 20 hours of disclosure.
+- Rule scope targets Langflow version pins ≤1.8.1, flow execution imports, and auto-login env var usage.
+
+Sources:
+- BleepingComputer (2026-03-25): https://www.bleepingcomputer.com/news/security/cisa-new-langflow-flaw-actively-exploited-to-hijack-ai-workflows/
+- NVD: https://nvd.nist.gov/vuln/detail/CVE-2026-33017
+- Sysdig (2026-03): https://www.sysdig.com/blog/cve-2026-33017-how-attackers-compromised-langflow-ai-pipelines-in-20-hours
+
+- Added `PSV-007` (high): **OpenClaw CVE-2026-32922 privilege escalation via token rotation**.
+- Rationale: CVE-2026-32922 allows callers with operator.pairing scope to mint tokens with elevated
+  permissions via device.token.rotate in OpenClaw < 2026.3.11.
+- Rule scope targets OpenClaw version pins before 2026.3.11 and the dangerous device.token.rotate +
+  operator.pairing API combination.
+
+Sources:
+- CVE record: https://www.cve.org/CVERecord?id=CVE-2026-32922
+- Skywork advisory: https://skywork.ai/skypage/en/openclaw-security-vulnerabilities/2038597463217881088
+
 ## 2026-03-27
 
 - Added `MAL-054` (critical): **GlassWorm multi-stage Chrome extension RAT**.

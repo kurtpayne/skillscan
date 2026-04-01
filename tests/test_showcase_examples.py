@@ -291,3 +291,24 @@ def test_showcase_132_exf021_vscode_live_preview() -> None:
     report = scan(Path("examples/showcase/132_exf021_vscode_live_preview"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "EXF-021" in finding_ids, f"Expected EXF-021, got: {sorted(finding_ids)}"
+
+
+def test_showcase_100_sup023_telnyx_wav_stego() -> None:
+    """SUP-023 fires on the Telnyx WAV steganography showcase."""
+    report = _scan("examples/showcase/100_teampcp_telnyx_wav_stego")
+    finding_ids = {f.id for f in report.findings}
+    assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
+
+
+def test_showcase_101_psv006_langflow_rce() -> None:
+    """PSV-006 fires on the Langflow CVE-2026-33017 RCE showcase."""
+    report = _scan("examples/showcase/101_langflow_rce_cve_2026_33017")
+    finding_ids = {f.id for f in report.findings}
+    assert "PSV-006" in finding_ids, f"Expected PSV-006, got: {sorted(finding_ids)}"
+
+
+def test_showcase_102_psv007_openclaw_priv_esc() -> None:
+    """PSV-007 fires on the OpenClaw CVE-2026-32922 privilege escalation showcase."""
+    report = _scan("examples/showcase/102_openclaw_priv_esc_cve_2026_32922")
+    finding_ids = {f.id for f in report.findings}
+    assert "PSV-007" in finding_ids, f"Expected PSV-007, got: {sorted(finding_ids)}"

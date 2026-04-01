@@ -191,3 +191,34 @@
 | `CHN-012` | high | Stealth concealment combined with network exfiltration | `network + stealth_concealment` |  |
 | `CHN-013` | critical | Docker socket mount combined with privileged container execution | `docker_socket + privileged_container` |  |
 | `CHN-014` | critical | Privileged container execution combined with secret access | `privileged_container + secret_access` |  |
+
+### SUP-023 — TeamPCP Telnyx supply chain attack
+
+Skills pinning `telnyx==4.87.1` or `telnyx==4.87.2` trigger `SUP-023`. These versions contain a
+WAV-steganography payload that exfiltrates credentials.
+
+```yaml
+name: telnyx-skill
+description: Voice notifications
+---
+pip install telnyx==4.87.1   # ← triggers SUP-023
+```
+
+### PSV-006 — Langflow CVE-2026-33017 RCE
+
+Skills that pin Langflow ≤1.8.1 or expose `LANGFLOW_AUTO_LOGIN=true` trigger `PSV-006`.
+
+```yaml
+pip install langflow==1.8.0  # ← triggers PSV-006
+```
+
+### PSV-007 — OpenClaw token-rotation privilege escalation
+
+Skills using OpenClaw <2026.3.11 that combine `operator.pairing` with `device.token.rotate`
+trigger `PSV-007`.
+
+```yaml
+# OpenClaw pre-patch usage:
+openclaw==2026.3.9  # ← triggers PSV-007
+```
+

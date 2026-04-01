@@ -1,4 +1,4 @@
-version: 2026.03.30.1
+version: "2026.03.30.2"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -4360,6 +4360,16 @@ static_rules:
     techniques:
     - id: AML.T0010
       name: ML Supply Chain Compromise
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-30'
+      last_modified: '2026-03-30'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
     tags:
     - teampcp
     - telnyx
@@ -4393,6 +4403,16 @@ static_rules:
     techniques:
     - id: AML.T0040
       name: Unsafe ML Artifacts
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-30'
+      last_modified: '2026-03-30'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
     tags:
     - langflow
     - rce
@@ -4423,6 +4443,16 @@ static_rules:
     techniques:
     - id: AML.T0051
       name: LLM Plugin Compromise
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-03-30'
+      last_modified: '2026-03-30'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
     tags:
     - openclaw
     - privilege-escalation

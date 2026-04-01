@@ -1725,3 +1725,45 @@ def test_new_patterns_20260328() -> None:
     # Negative: normal VSCode usage
     assert exf021.pattern.search("vscode extension marketplace") is None
     assert exf021.pattern.search("live preview server") is None
+
+
+def test_sup023_psv006_psv007_patterns() -> None:
+    """SUP-023, PSV-006, PSV-007 pattern compilation and basic matching."""
+    compiled = load_compiled_builtin_rulepack()
+
+    # SUP-023: TeamPCP Telnyx PyPI supply chain attack
+    sup023_rules = [r for r in compiled.static_rules if r.id == "SUP-023"]
+    assert len(sup023_rules) >= 1, "SUP-023 rule not found"
+    sup023 = sup023_rules[0]
+    # Positive: malicious telnyx version pin
+    assert sup023.pattern.search("telnyx==4.87.1") is not None
+    assert sup023.pattern.search("telnyx==4.87.2") is not None
+    # Positive: C2 IP indicator
+    assert sup023.pattern.search("83.142.209.100:8080") is not None
+    # Negative: safe version
+    assert sup023.pattern.search("telnyx==4.87.0") is None
+    assert sup023.pattern.search("telnyx==5.0.0") is None
+
+    # PSV-006: Langflow CVE-2026-33017 unauthenticated RCE
+    psv006_rules = [r for r in compiled.static_rules if r.id == "PSV-006"]
+    assert len(psv006_rules) >= 1, "PSV-006 rule not found"
+    psv006 = psv006_rules[0]
+    # Positive: vulnerable version pin
+    assert psv006.pattern.search("langflow==1.8.0") is not None
+    assert psv006.pattern.search("langflow==1.7.5") is not None
+    # Positive: auto-login env var
+    assert psv006.pattern.search("LANGFLOW_AUTO_LOGIN=true") is not None
+    # Negative: safe version
+    assert psv006.pattern.search("langflow==1.9.0") is None
+
+    # PSV-007: OpenClaw CVE-2026-32922 privilege escalation
+    psv007_rules = [r for r in compiled.static_rules if r.id == "PSV-007"]
+    assert len(psv007_rules) >= 1, "PSV-007 rule not found"
+    psv007 = psv007_rules[0]
+    # Positive: vulnerable version
+    assert psv007.pattern.search("openclaw==2026.3.9") is not None
+    assert psv007.pattern.search("openclaw==2025.12.1") is not None
+    # Positive: dangerous API combination
+    assert psv007.pattern.search("device.token.rotate ... operator.pairing") is not None
+    # Negative: patched version
+    assert psv007.pattern.search("openclaw==2026.3.11") is None
