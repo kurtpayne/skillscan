@@ -92,6 +92,7 @@ def _make_fuzzer(strategy: str, out_dir: pathlib.Path, variants: int = 2) -> Ski
 # Unit tests
 # ---------------------------------------------------------------------------
 
+
 class TestStripCodeFences:
     def test_strips_markdown_fences(self):
         text = "```markdown\nhello world\n```"
@@ -155,9 +156,7 @@ class TestSkillFuzzerDryRun:
         results = fuzzer.fuzz_seed(seeds[0])
         assert len(results) == 3
 
-    def test_output_files_created(
-        self, tmp_seed_dir: pathlib.Path, tmp_output_dir: pathlib.Path
-    ):
+    def test_output_files_created(self, tmp_seed_dir: pathlib.Path, tmp_output_dir: pathlib.Path):
         fuzzer = _make_fuzzer("evasion", tmp_output_dir, variants=2)
         seeds = load_seeds(seed_dir=tmp_seed_dir)
         fuzzer.fuzz_seed(seeds[0])
@@ -178,9 +177,7 @@ class TestSkillFuzzerDryRun:
         scan_file = tmp_output_dir / seed_name / "variant_001.scan.json"
         assert not scan_file.exists()
 
-    def test_summary_written(
-        self, tmp_seed_dir: pathlib.Path, tmp_output_dir: pathlib.Path
-    ):
+    def test_summary_written(self, tmp_seed_dir: pathlib.Path, tmp_output_dir: pathlib.Path):
         fuzzer = _make_fuzzer("evasion", tmp_output_dir, variants=2)
         seeds = load_seeds(seed_dir=tmp_seed_dir)
         fuzzer.run(seeds)

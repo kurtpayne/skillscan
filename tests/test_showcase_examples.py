@@ -323,3 +323,24 @@ def test_showcase_136_sup024_axios_compromised_versions() -> None:
     report = scan(Path("examples/showcase/136_sup024_axios_compromised_versions"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "SUP-024" in finding_ids, f"Expected SUP-024, got: {sorted(finding_ids)}"
+
+
+def test_showcase_137_mal057_jarkastealer_ai_trojan() -> None:
+    """MAL-057 fires on the JarkaStealer AI package trojan showcase."""
+    report = scan(Path("examples/showcase/137_jarkastealer_ai_trojan"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "MAL-057" in finding_ids, f"Expected MAL-057, got: {sorted(finding_ids)}"
+
+
+def test_showcase_138_exec042_ide_config_injection() -> None:
+    """EXEC-042 fires on the IDE config injection showcase."""
+    report = scan(Path("examples/showcase/138_ide_config_injection"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "EXEC-042" in finding_ids, f"Expected EXEC-042, got: {sorted(finding_ids)}"
+
+
+def test_showcase_139_pinj018_hidden_prompt_injection() -> None:
+    """PINJ-018 fires on the hidden prompt injection showcase."""
+    report = scan(Path("examples/showcase/139_hidden_prompt_injection"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "PINJ-018" in finding_ids, f"Expected PINJ-018, got: {sorted(finding_ids)}"

@@ -28,6 +28,7 @@ Runtime-only sources (large, merged at scan time):
 Usage:
     python3 scripts/seed_ioc_db.py [--dry-run]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -165,9 +166,11 @@ def main() -> None:
             feed_ips.update(parsed.get("ips", []))
             feed_cidrs.update(parsed.get("cidrs", []))
             feed_urls.update(parsed.get("urls", []))
-            print(f"  -> {sum(len(v) for v in parsed.values())} entries "
-                  f"({len(parsed['domains'])} domains, {len(parsed['ips'])} IPs, "
-                  f"{len(parsed['cidrs'])} CIDRs, {len(parsed['urls'])} URLs)")
+            print(
+                f"  -> {sum(len(v) for v in parsed.values())} entries "
+                f"({len(parsed['domains'])} domains, {len(parsed['ips'])} IPs, "
+                f"{len(parsed['cidrs'])} CIDRs, {len(parsed['urls'])} URLs)"
+            )
         except (urllib.error.URLError, OSError, TimeoutError) as exc:
             print(f"  ERROR: {exc}")
         time.sleep(0.5)
@@ -178,8 +181,10 @@ def main() -> None:
     final_urls = sorted(set(CURATED_URLS) | feed_urls)
 
     total = len(final_domains) + len(final_ips) + len(final_cidrs) + len(final_urls)
-    print(f"\nFinal bundled DB: {len(final_domains)} domains, {len(final_ips)} IPs, "
-          f"{len(final_cidrs)} CIDRs, {len(final_urls)} URLs")
+    print(
+        f"\nFinal bundled DB: {len(final_domains)} domains, {len(final_ips)} IPs, "
+        f"{len(final_cidrs)} CIDRs, {len(final_urls)} URLs"
+    )
     print(f"Total entries: {total}")
 
     if args.dry_run:
