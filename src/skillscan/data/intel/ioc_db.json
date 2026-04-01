@@ -3963,7 +3963,12 @@
     "models.litellm.cloud",
     "checkmarx.zone",
     "reviewerpressus.mycartpanda.com",
-    "file+.vscode-resource.vscode-cdn.net"
+    "file+.vscode-resource.vscode-cdn.net",
+    "giftshop.club",
+    "trackpipe.dev",
+    "freefan.net",
+    "fanfree.net",
+    "sfrclak.com"
   ],
   "ips": [
     "144.31.224.98",
@@ -3973,7 +3978,9 @@
     "50.16.16.211",
     "54.91.154.110",
     "70.34.242.255",
-    "91.92.242.30"
+    "91.92.242.30",
+    "83.142.209.203",
+    "142.11.206.73"
   ],
   "cidrs": [
     "1.10.16.0/20",

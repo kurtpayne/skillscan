@@ -1,5 +1,47 @@
 # Pattern Updates
 
+## 2026-03-31 (patch 2)
+
+rulepack: 2026.03.31.2
+
+One new detection rule, IOC enrichment, and vuln DB update for the axios npm supply chain attack.
+
+- Added `SUP-024` (critical): **Compromised axios npm versions (TeamPCP RAT dropper, March 2026)** — axios versions 1.14.1 and 0.30.4 were published to npm on March 30, 2026 via a hijacked maintainer account (jasonsaayman). The malicious versions inject a hidden dependency, `plain-crypto-js@4.2.1`, whose postinstall script drops a cross-platform RAT targeting macOS, Windows, and Linux. The RAT harvests SSH keys, cloud tokens, and credentials exfiltrating to `sfrclak.com:8000`. axios has ~100M weekly downloads; ~3% of affected environments showed confirmed execution. Linked to the ongoing TeamPCP supply chain campaign.
+- IOC update: added `sfrclak.com` (axios RAT C2) to domain IOC DB.
+- IOC update: added `142.11.206.73` (axios RAT C2 server IP) to IP IOC DB.
+- Vuln DB update: added `axios` npm versions 1.14.1 and 0.30.4 as NPM-AXIOS-2026-03 (critical). Safe versions: 1.7.9+ (1.x) / 0.29.0+ (0.x).
+
+Sources:
+- The Hacker News (2026-03): https://thehackernews.com/2026/03/axios-supply-chain-attack-pushes-cross.html
+- StepSecurity (2026-03-30): https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan
+- Snyk (2026-03): https://snyk.io/blog/axios-npm-package-compromised-supply-chain-attack-delivers-cross-platform/
+- Aikido Security (2026-03): https://www.aikido.dev/blog/axios-npm-compromised-maintainer-hijacked-rat
+- Socket.dev (2026-03): https://socket.dev/blog/axios-npm-package-compromised
+
+## 2026-03-31
+
+rulepack: 2026.03.31.1
+
+Three new detection rules, IOC enrichment, and vuln DB updates.
+
+- Added `MAL-055` (critical): **postmark-mcp BCC email harvesting** — First confirmed malicious MCP server in production (npm publisher `phanpak`, versions 1.0.16–1.0.18). Injected a silent BCC on every outbound email to `phan@giftshop.club`, silently copying all AI-automated email content (password resets, invoices, internal memos) to the attacker. No existing rule covered MCP server BCC injection.
+- Added `MAL-056` (critical): **Nx/s1ngularity AI CLI weaponization** — The s1ngularity campaign (August 2025) weaponized locally installed AI CLIs (claude, gemini, amazon q) with permission-bypass flags (`--dangerously-skip-permissions`, `--yolo`, `--trust-all-tools`) via a malicious `telemetry.js` postinstall hook to enumerate and exfiltrate credentials. Destructive payload appended `sudo shutdown -h 0` to shell rc files. Exfil to `s1ngularity-repository-NNNN` GitHub repos.
+- Added `SUP-023` (critical): **mcp-remote OAuth authorization_endpoint command injection (CVE-2025-6514)** — CVSS 9.6 critical. Affects mcp-remote npm 0.0.5–0.1.15 (437K+ downloads). A malicious MCP server returns a crafted `authorization_endpoint` (e.g., `a:$(cmd.exe /c whoami)?response_type=code`) that is passed unsanitized to the OS shell, enabling full RCE on the MCP client. Fixed in 0.1.16.
+- IOC update: added `giftshop.club` (postmark-mcp BCC exfil), `trackpipe.dev` (openclaw-ai C2), `freefan.net` and `fanfree.net` (SANDWORM_MODE DNS exfil) to domain IOC DB.
+- IOC update: added `83.142.209.203` (TeamPCP Telnyx C2) to IP IOC DB.
+- Vuln DB update: added `mcp-remote` npm versions 0.0.5–0.1.15 as CVE-2025-6514 (critical, fixed 0.1.16).
+- Vuln DB update: added `telnyx` Python versions 4.87.1 and 4.87.2 as PYPI-TELNYX-2026-03 (critical) — TeamPCP WAV steganography supply chain attack (March 27, 2026). C2 at 83.142.209.203:8080.
+
+Sources:
+- Snyk (2025-09): https://snyk.io/blog/malicious-mcp-server-on-npm-postmark-mcp-harvests-emails/
+- The Hacker News (2025-09): https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html
+- Snyk (2025-08): https://snyk.io/blog/weaponizing-ai-coding-agents-for-malware-in-the-nx-malicious-package/
+- InfoQ (2025-10): https://www.infoq.com/news/2025/10/npm-s1ngularity-shai-hulud/
+- JFrog (2025): https://jfrog.com/blog/2025-6514-critical-mcp-remote-rce-vulnerability/
+- GitHub Advisory: https://github.com/advisories/GHSA-6xpm-ggf7-wc3p
+- Datadog Security Labs (2026-03): https://securitylabs.datadoghq.com/articles/litellm-compromised-pypi-teampcp-supply-chain-campaign/
+- The Register (2026-03-30): https://www.theregister.com/2026/03/30/telnyx_pypi_supply_chain_attack_litellm/
+
 ## 2026-03-27 (patch 2)
 
 rulepack: 2026.03.27.2
