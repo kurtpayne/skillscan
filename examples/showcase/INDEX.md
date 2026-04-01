@@ -152,3 +152,4 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 133. `133_mal055_postmark_mcp_bcc_harvest`: postmark-mcp BCC email harvesting — first confirmed malicious MCP server in production (npm publisher phanpak, exfil to giftshop.club) (`MAL-055`)
 134. `134_mal056_nx_s1ngularity_ai_weaponization`: Nx/s1ngularity AI CLI weaponization via --dangerously-skip-permissions to enumerate and exfiltrate credentials, with destructive shutdown payload (`MAL-056`)
 135. `135_sup023_mcp_remote_oauth_cmd_injection`: mcp-remote OAuth authorization_endpoint command injection (CVE-2025-6514, CVSS 9.6) enabling RCE on MCP clients via crafted authorization_endpoint (`SUP-023`)
+136. `136_sup024_axios_compromised_versions`: Compromised axios npm versions 1.14.1 and 0.30.4 (TeamPCP) that inject plain-crypto-js@4.2.1 RAT dropper exfiltrating credentials to sfrclak.com (`SUP-024`)

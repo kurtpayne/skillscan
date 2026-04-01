@@ -1,5 +1,23 @@
 # Pattern Updates
 
+## 2026-03-31 (patch 2)
+
+rulepack: 2026.03.31.2
+
+One new detection rule, IOC enrichment, and vuln DB update for the axios npm supply chain attack.
+
+- Added `SUP-024` (critical): **Compromised axios npm versions (TeamPCP RAT dropper, March 2026)** — axios versions 1.14.1 and 0.30.4 were published to npm on March 30, 2026 via a hijacked maintainer account (jasonsaayman). The malicious versions inject a hidden dependency, `plain-crypto-js@4.2.1`, whose postinstall script drops a cross-platform RAT targeting macOS, Windows, and Linux. The RAT harvests SSH keys, cloud tokens, and credentials exfiltrating to `sfrclak.com:8000`. axios has ~100M weekly downloads; ~3% of affected environments showed confirmed execution. Linked to the ongoing TeamPCP supply chain campaign.
+- IOC update: added `sfrclak.com` (axios RAT C2) to domain IOC DB.
+- IOC update: added `142.11.206.73` (axios RAT C2 server IP) to IP IOC DB.
+- Vuln DB update: added `axios` npm versions 1.14.1 and 0.30.4 as NPM-AXIOS-2026-03 (critical). Safe versions: 1.7.9+ (1.x) / 0.29.0+ (0.x).
+
+Sources:
+- The Hacker News (2026-03): https://thehackernews.com/2026/03/axios-supply-chain-attack-pushes-cross.html
+- StepSecurity (2026-03-30): https://www.stepsecurity.io/blog/axios-compromised-on-npm-malicious-versions-drop-remote-access-trojan
+- Snyk (2026-03): https://snyk.io/blog/axios-npm-package-compromised-supply-chain-attack-delivers-cross-platform/
+- Aikido Security (2026-03): https://www.aikido.dev/blog/axios-npm-compromised-maintainer-hijacked-rat
+- Socket.dev (2026-03): https://socket.dev/blog/axios-npm-package-compromised
+
 ## 2026-03-31
 
 rulepack: 2026.03.31.1

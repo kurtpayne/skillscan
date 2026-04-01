@@ -935,6 +935,18 @@
         "severity": "critical",
         "fixed": "0.1.16"
       }
+    },
+    "axios": {
+      "1.14.1": {
+        "id": "NPM-AXIOS-2026-03",
+        "severity": "critical",
+        "fixed": "1.7.9"
+      },
+      "0.30.4": {
+        "id": "NPM-AXIOS-2026-03",
+        "severity": "critical",
+        "fixed": "0.29.0"
+      }
     }
   }
 }
