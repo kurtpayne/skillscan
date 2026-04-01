@@ -55,24 +55,29 @@ jobs:
 
   website-drift:
     name: Detect website rule drift
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
           path: skillscan-security
-      - uses: actions/checkout@v4
+      - name: Check out website (skip gracefully if token unavailable)
+        id: checkout-website
+        uses: actions/checkout@v4
+        continue-on-error: true
         with:
           repository: kurtpayne/skillscan-website
           path: skillscan-website
       - name: Setup Python
+        if: steps.checkout-website.outcome == 'success'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install PyYAML
+        if: steps.checkout-website.outcome == 'success'
         run: pip install pyyaml
       - name: Check website rule sync
+        if: steps.checkout-website.outcome == 'success'
         run: |
           python3 skillscan-security/scripts/sync-website-rules.py \
             --website-dir skillscan-website \

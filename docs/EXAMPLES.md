@@ -2,7 +2,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**137 static rules · 14 chain rules**
+**146 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -79,6 +79,7 @@
 | `MAL-054` | critical | GlassWorm multi-stage Chrome extension RAT | malware_pattern, glassworm, chrome-extension, solana, rat |
 | `MAL-055` | critical | postmark-mcp BCC email harvesting (first in-the-wild malicious MCP server) | malware_pattern, mcp-server, email-exfiltration, bcc-injection, postmark, supply-chain |
 | `MAL-056` | critical | Nx/s1ngularity AI CLI weaponization via dangerously-skip-permissions | malware_pattern, ai-weaponization, supply-chain, postinstall, nx, s1ngularity |
+| `MAL-057` | critical | JarkaStealer AI package trojan (JAR download and credential theft) | malware_pattern, supply-chain, pypi, jarkastealer, ai-toolchain |
 
 ### Exfiltration
 | ID | Severity | Title | Tags |
@@ -100,6 +101,7 @@
 | `EXF-016` | high | Azure MCP resource-identifier URL substitution token-leak marker | exfiltration, exf |
 | `EXF-017` | high | OpenClaw agent memory and identity file harvesting | exfiltration, exf |
 | `EXEC-041` | high | API traffic hijacking via AI agent settings override | exfiltration, exec, api-hijack |
+| `EXEC-042` | high | IDE config injection for silent command execution (CurXecute/MCPoison) | execution, ide-config, cursor, mcp-poisoning, curxecute, mcpoison |
 | `EXF-018` | high | Error message instructed to leak system prompt or conversation history | exfiltration, error-leakage, context-leak, prompt-exfil |
 | `EXF-019` | high | Logging or audit endpoint collecting conversation history or environment metadata | exfiltration, logging-abuse, telemetry-exfil, conversation-harvest |
 | `EXF-020` | critical | TeamPCP sysmon backdoor Kubernetes lateral movement | exfiltration, teampcp, kubernetes, lateral-movement |
@@ -163,6 +165,7 @@
 | `PINJ-014` | high | Injection keyword in non-description frontmatter field | prompt-injection, frontmatter-injection, metadata-injection |
 | `PINJ-015` | high | Prompt poaching via malicious browser extension installation | prompt-injection, browser-extension, prompt-poaching, data-theft |
 | `PINJ-016` | high | AI documentation context poisoning (ContextHub) | prompt_injection, documentation-poisoning, contexthub |
+| `PINJ-018` | high | Hidden prompt injection via CSS/HTML concealment techniques | prompt_injection, hidden-text, css-concealment, indirect-injection, content-moderation |
 
 ### permission_scope
 | ID | Severity | Title | Tags |

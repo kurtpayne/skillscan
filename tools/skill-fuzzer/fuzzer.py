@@ -47,6 +47,7 @@ def _load_prompt(strategy: str) -> str:
 # Data types
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class FuzzResult:
     seed_path: pathlib.Path
@@ -84,6 +85,7 @@ class FuzzResult:
 # LLM client
 # ---------------------------------------------------------------------------
 
+
 class LLMClient:
     """Thin wrapper around the OpenAI-compatible chat completions API."""
 
@@ -111,6 +113,7 @@ class LLMClient:
         # a raw HTTP fallback.
         try:
             from openai import OpenAI  # type: ignore
+
             self._client = OpenAI(api_key=self.api_key, base_url=self.base_url)
             self._use_openai_sdk = True
         except ImportError:
@@ -179,6 +182,7 @@ class LLMClient:
 # Seed loader
 # ---------------------------------------------------------------------------
 
+
 def load_seeds(
     seed_dir: pathlib.Path | None = None,
     seed_files: list[pathlib.Path] | None = None,
@@ -206,8 +210,7 @@ def load_seeds(
 
     if not corpus_root.exists():
         raise FileNotFoundError(
-            f"No seed directory found at {corpus_root}. "
-            "Pass --seed-dir or --seed-file explicitly."
+            f"No seed directory found at {corpus_root}. Pass --seed-dir or --seed-file explicitly."
         )
 
     benign_strategies = {"injection", "benign_drift"}
@@ -224,9 +227,7 @@ def load_seeds(
         candidates = list(corpus_root.rglob("*.md"))
 
     if not candidates:
-        raise FileNotFoundError(
-            f"No seed files found in {corpus_root} for strategy '{strategy}'."
-        )
+        raise FileNotFoundError(f"No seed files found in {corpus_root} for strategy '{strategy}'.")
 
     return sorted(candidates)
 
@@ -234,6 +235,7 @@ def load_seeds(
 # ---------------------------------------------------------------------------
 # Diff helper
 # ---------------------------------------------------------------------------
+
 
 def unified_diff(original: str, variant: str, seed_name: str, variant_index: int) -> str:
     """Return a unified diff string between original and variant."""
@@ -252,6 +254,7 @@ def unified_diff(original: str, variant: str, seed_name: str, variant_index: int
 # ---------------------------------------------------------------------------
 # Scan integration
 # ---------------------------------------------------------------------------
+
 
 def run_skillscan(skill_path: pathlib.Path, sarif: bool = True) -> dict | None:
     """
@@ -287,6 +290,7 @@ def run_skillscan(skill_path: pathlib.Path, sarif: bool = True) -> dict | None:
 # ---------------------------------------------------------------------------
 # Core fuzzer
 # ---------------------------------------------------------------------------
+
 
 class SkillFuzzer:
     """
@@ -451,10 +455,12 @@ class SkillFuzzer:
         per_seed = []
         for seed_path_str in seeds_seen:
             seed_results = [r for r in results if str(r.seed_path) == seed_path_str]
-            per_seed.append({
-                "seed": seed_path_str,
-                "variants": [r.to_dict() for r in seed_results],
-            })
+            per_seed.append(
+                {
+                    "seed": seed_path_str,
+                    "variants": [r.to_dict() for r in seed_results],
+                }
+            )
 
         return {
             "strategy": self.strategy,
@@ -471,6 +477,7 @@ class SkillFuzzer:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _strip_code_fences(text: str) -> str:
     """Remove leading/trailing code fences that the model may add."""

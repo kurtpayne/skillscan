@@ -85,6 +85,7 @@ log = logging.getLogger("fuzzer_tracer_pipeline")
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def run_fuzzer(
     strategy: str,
     seed_dir: Path,
@@ -101,11 +102,16 @@ def run_fuzzer(
     cmd = [
         sys.executable,
         str(FUZZER_DIR / "cli.py"),
-        "--strategy", strategy,
-        "--seed-dir", str(seed_dir),
-        "--output-dir", str(output_dir),
-        "--variants", str(variants),
-        "--model", model,
+        "--strategy",
+        strategy,
+        "--seed-dir",
+        str(seed_dir),
+        "--output-dir",
+        str(output_dir),
+        "--variants",
+        str(variants),
+        "--model",
+        model,
         "--scan",  # always run skillscan on variants
     ]
     if max_seeds:
@@ -156,12 +162,14 @@ def collect_variants(output_dir: Path, strategy: str) -> list[dict]:
                     scan_result = json.loads(scan_path.read_text())
                 except json.JSONDecodeError:
                     pass
-            variants.append({
-                "path": str(variant_path),
-                "strategy": strategy,
-                "seed_name": seed_dir.name,
-                "scan_result": scan_result,
-            })
+            variants.append(
+                {
+                    "path": str(variant_path),
+                    "strategy": strategy,
+                    "seed_name": seed_dir.name,
+                    "scan_result": scan_result,
+                }
+            )
     return variants
 
 
@@ -233,9 +241,7 @@ def print_pipeline_summary(
 ) -> None:
     """Print a human-readable pipeline summary."""
     total_variants = len(all_variants)
-    total_errors = sum(
-        s.get("errors", 0) for s in summaries.values() if isinstance(s, dict)
-    )
+    total_errors = sum(s.get("errors", 0) for s in summaries.values() if isinstance(s, dict))
 
     # Count by static detection result
     detected = sum(1 for v in all_variants if _count_findings(v.get("scan_result")) > 0)
@@ -260,9 +266,9 @@ def print_pipeline_summary(
             fp = summary.get("false_positive_rate")
             rate_str = ""
             if er is not None:
-                rate_str = f"  evasion={er*100:.0f}%"
+                rate_str = f"  evasion={er * 100:.0f}%"
             elif fp is not None:
-                rate_str = f"  FP-rate={fp*100:.0f}%"
+                rate_str = f"  FP-rate={fp * 100:.0f}%"
             print(f"    {strategy:<15} {summary['total_variants']:3d} variants{rate_str}")
         else:
             print(f"    {strategy:<15} ERROR: {summary}")
@@ -282,6 +288,7 @@ def print_pipeline_summary(
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -445,9 +452,13 @@ def main() -> None:
                 dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
 
         trace_cmd = [
-            "modal", "run", str(trace_script),
-            "--corpus-dir", str(trace_input_dir),
-            "--output-file", str(args.output_dir / "trace-results.jsonl"),
+            "modal",
+            "run",
+            str(trace_script),
+            "--corpus-dir",
+            str(trace_input_dir),
+            "--output-file",
+            str(args.output_dir / "trace-results.jsonl"),
             "--triage",
         ]
         if args.trace_judge:

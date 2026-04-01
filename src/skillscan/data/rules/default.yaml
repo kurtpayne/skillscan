@@ -1,4 +1,4 @@
-version: 2026.03.31.2
+version: "2026.04.01.1"
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -4497,6 +4497,117 @@ static_rules:
     - https://snyk.io/blog/axios-npm-package-compromised-supply-chain-attack-delivers-cross-platform/
     - https://www.aikido.dev/blog/axios-npm-compromised-maintainer-hijacked-rat
     - https://socket.dev/blog/axios-npm-package-compromised
+- id: MAL-057
+  category: malware_pattern
+  severity: critical
+  confidence: 0.92
+  title: JarkaStealer AI package trojan (JAR download and credential theft)
+  pattern: (?i)(?:JavaUpdater\.jar|imystorage/storage|gptplus[^a-z]|claudeai[_-]eng|jarka[_\s-]?stealer|(?:urllib\.request\.urlretrieve|requests\.get|wget|curl)[^\n]{0,120}\.jar[^\n]{0,80}(?:subprocess|os\.system|exec)|__init__\.py[^\n]{0,200}(?:base64\.b64decode|exec\(|eval\()[^\n]{0,120}(?:http|ftp|socket))
+  mitigation: 'The JarkaStealer campaign distributed malicious PyPI packages (gptplus, claudeai-eng) masquerading as AI model wrappers. The packages contained Base64-encoded payloads in __init__.py that downloaded JavaUpdater.jar from GitHub to steal browser data, SSH keys, and credentials. Remove any dependency on gptplus or claudeai-eng and audit __init__.py files for obfuscated download-and-execute patterns.'
+  references:
+  - https://securelist.com/jarkastealer-supply-chain-attack/114937/
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-04-01'
+    updated: '2026-04-01'
+    tags:
+    - malware_pattern
+    - supply-chain
+    - pypi
+    - jarkastealer
+    - ai-toolchain
+    techniques:
+    - id: EXEC-001
+      name: Execution or malware behavior
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-04-01'
+      last_modified: '2026-04-01'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://securelist.com/jarkastealer-supply-chain-attack/114937/
+- id: EXEC-042
+  category: execution
+  severity: high
+  confidence: 0.88
+  title: IDE config injection for silent command execution (CurXecute/MCPoison)
+  pattern: (?i)(?:(?:mcp\.json|mcp_config)[^\n]{0,200}(?:command|exec|spawn|shell|bash|sh\b|python|node\s+-e)|(?:settings\.json|keybindings\.json)[^\n]{0,200}(?:terminal\.integrated\.shell|runCommand|exec)[^\n]{0,80}(?:curl|wget|bash|python|nc\b)|autoApprove(?:Server)?[^\n]{0,80}(?:true|\*)|mcpServers[^\n]{0,200}(?:curl|wget|bash|python|nc\b)[^\n]{0,80}(?:http|\$|env))
+  mitigation: 'CVE-2025-54135 (CurXecute) and CVE-2025-54136 (MCPoison) exploit IDE MCP configuration trust to execute arbitrary commands. CurXecute modifies global mcp.json via prompt injection through MCP-connected services. MCPoison exploits the trust bypass where changes to an already-approved mcp.json are auto-trusted. Never auto-approve MCP servers and review mcp.json changes before accepting.'
+  references:
+  - https://www.trailofbits.com/documents/CurXecute.pdf
+  - https://www.trailofbits.com/documents/MCPoison.pdf
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-04-01'
+    updated: '2026-04-01'
+    tags:
+    - execution
+    - ide-config
+    - cursor
+    - mcp-poisoning
+    - curxecute
+    - mcpoison
+    techniques:
+    - id: EXEC-001
+      name: Execution or malware behavior
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-04-01'
+      last_modified: '2026-04-01'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.trailofbits.com/documents/CurXecute.pdf
+    - https://www.trailofbits.com/documents/MCPoison.pdf
+- id: PINJ-018
+  category: prompt_injection
+  severity: high
+  confidence: 0.85
+  title: Hidden prompt injection via CSS/HTML concealment techniques
+  pattern: (?i)(?:(?:display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0|opacity\s*:\s*0|position\s*:\s*absolute[^\n]{0,80}(?:left\s*:\s*-\d{4,}|top\s*:\s*-\d{4,}))[^\n]{0,200}(?:ignore\s+(?:previous|above|all)|you\s+are\s+now|system\s*:|IMPORTANT\s*:|\[INST\]|<\|im_start\|>)|<!--[\s\S]{0,500}?(?:ignore\s+previous|override|you\s+must|execute|system\s+prompt)[\s\S]*?-->|<(?:div|span|p)\s+[^>]*(?:aria-hidden|hidden)[^>]*>[^<]{0,500}(?:ignore|override|execute|system))
+  mitigation: 'Hidden prompt injection uses CSS properties (display:none, font-size:0, opacity:0) or HTML attributes (aria-hidden, HTML comments) to embed instructions invisible to humans but processed by AI agents. This technique was observed in wild attacks against AI content moderation systems in December 2025. Sanitize all external content before AI processing and strip hidden text elements.'
+  references:
+  - https://www.imperva.com/blog/ai-content-moderation-prompt-injection/
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-04-01'
+    updated: '2026-04-01'
+    tags:
+    - prompt_injection
+    - hidden-text
+    - css-concealment
+    - indirect-injection
+    - content-moderation
+    techniques:
+    - id: PINJ-001
+      name: Prompt injection
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-04-01'
+      last_modified: '2026-04-01'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://www.imperva.com/blog/ai-content-moderation-prompt-injection/
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b
@@ -4660,3 +4771,4 @@ chain_rules:
   - privileged_container
   - secret_access
   snippet: docker run --privileged -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+  mitigation: Running a privileged container with secret access keys enables full host escape and credential theft. Remove the privileged flag or the secret environment variable.
