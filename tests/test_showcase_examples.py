@@ -267,9 +267,9 @@ def test_showcase_social_engineering_detected_without_ai() -> None:
         Path("examples/showcase/20_social_engineering_credential_harvest"), STRICT, "builtin:strict"
     )
     finding_ids = {f.id for f in report.findings}
-    assert "SE-001" in finding_ids or "SE-SEM-001" in finding_ids, (
-        f"Expected SE-001 or SE-SEM-001, got: {sorted(finding_ids)}"
-    )
+    assert (
+        "SE-001" in finding_ids or "SE-SEM-001" in finding_ids
+    ), f"Expected SE-001 or SE-SEM-001, got: {sorted(finding_ids)}"
 
 
 def test_showcase_130_pinj017_prowler_ec2_tag() -> None:
@@ -302,14 +302,18 @@ def test_showcase_133_mal055_postmark_mcp_bcc_harvest() -> None:
 
 def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
     """MAL-056 fires on the Nx/s1ngularity AI CLI weaponization showcase."""
-    report = scan(Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"), STRICT, "builtin:strict"
+    )
     finding_ids = {f.id for f in report.findings}
     assert "MAL-056" in finding_ids, f"Expected MAL-056, got: {sorted(finding_ids)}"
 
 
 def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
     """SUP-023 fires on the mcp-remote OAuth command injection showcase."""
-    report = scan(Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict"
+    )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
 

