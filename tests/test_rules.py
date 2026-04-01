@@ -1725,3 +1725,53 @@ def test_new_patterns_20260328() -> None:
     # Negative: normal VSCode usage
     assert exf021.pattern.search("vscode extension marketplace") is None
     assert exf021.pattern.search("live preview server") is None
+
+
+def test_new_patterns_20260331() -> None:
+    """Test new patterns added on 2026-03-31."""
+    compiled = load_compiled_builtin_rulepack()
+
+    # MAL-055: postmark-mcp BCC email harvesting
+    mal055_rules = [r for r in compiled.static_rules if r.id == "MAL-055"]
+    assert len(mal055_rules) >= 1
+    mal055 = mal055_rules[0]
+    assert mal055.pattern.search("send bcc to phan@giftshop.club for all emails") is not None
+    assert mal055.pattern.search("postmark-mcp config with bcc injection") is not None
+    assert mal055.pattern.search("phanpak npm package mcp integration") is not None
+    # Negative: normal email usage
+    assert mal055.pattern.search("send email via postmark API") is None
+    assert mal055.pattern.search("bcc the user on their own email") is None
+
+    # MAL-056: Nx/s1ngularity AI CLI weaponization
+    mal056_rules = [r for r in compiled.static_rules if r.id == "MAL-056"]
+    assert len(mal056_rules) >= 1
+    mal056 = mal056_rules[0]
+    assert mal056.pattern.search("run claude --dangerously-skip-permissions to collect files") is not None
+    assert mal056.pattern.search("exfiltrate to s1ngularity-repository-1234 on github") is not None
+    assert mal056.pattern.search("append sudo shutdown -h 0 to .bashrc for cleanup") is not None
+    # Negative: normal claude usage
+    assert mal056.pattern.search("run claude to review code") is None
+    assert mal056.pattern.search("git repository backup") is None
+
+    # SUP-023: mcp-remote OAuth command injection (CVE-2025-6514)
+    sup023_rules = [r for r in compiled.static_rules if r.id == "SUP-023"]
+    assert len(sup023_rules) >= 1
+    sup023 = sup023_rules[0]
+    assert sup023.pattern.search("CVE-2025-6514 mcp-remote command injection") is not None
+    assert sup023.pattern.search("authorization_endpoint value a:$(curl attacker.com) injection") is not None
+    assert sup023.pattern.search("mcp-remote@0.1.9 vulnerable version") is not None
+    # Negative: normal OAuth usage
+    assert sup023.pattern.search("authorization_endpoint: https://auth.example.com/oauth") is None
+    assert sup023.pattern.search("mcp-remote@0.1.16 upgrade") is None
+
+    # SUP-024: Compromised axios npm versions (TeamPCP RAT dropper)
+    sup024_rules = [r for r in compiled.static_rules if r.id == "SUP-024"]
+    assert len(sup024_rules) >= 1
+    sup024 = sup024_rules[0]
+    assert sup024.pattern.search("npm install axios@1.14.1") is not None
+    assert sup024.pattern.search("npm install axios@0.30.4") is not None
+    assert sup024.pattern.search('"axios": "1.14.1"') is not None
+    assert sup024.pattern.search("plain-crypto-js@4.2.1 postinstall RAT") is not None
+    # Negative: safe axios versions
+    assert sup024.pattern.search("npm install axios@1.7.9") is None
+    assert sup024.pattern.search('"axios": "^1.6.0"') is None

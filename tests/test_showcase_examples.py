@@ -291,3 +291,35 @@ def test_showcase_132_exf021_vscode_live_preview() -> None:
     report = scan(Path("examples/showcase/132_exf021_vscode_live_preview"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "EXF-021" in finding_ids, f"Expected EXF-021, got: {sorted(finding_ids)}"
+
+
+def test_showcase_133_mal055_postmark_mcp_bcc_harvest() -> None:
+    """MAL-055 fires on the postmark-mcp BCC email harvesting showcase."""
+    report = scan(Path("examples/showcase/133_mal055_postmark_mcp_bcc_harvest"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "MAL-055" in finding_ids, f"Expected MAL-055, got: {sorted(finding_ids)}"
+
+
+def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
+    """MAL-056 fires on the Nx/s1ngularity AI CLI weaponization showcase."""
+    report = scan(
+        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"), STRICT, "builtin:strict"
+    )
+    finding_ids = {f.id for f in report.findings}
+    assert "MAL-056" in finding_ids, f"Expected MAL-056, got: {sorted(finding_ids)}"
+
+
+def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
+    """SUP-023 fires on the mcp-remote OAuth command injection showcase."""
+    report = scan(
+        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict"
+    )
+    finding_ids = {f.id for f in report.findings}
+    assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
+
+
+def test_showcase_136_sup024_axios_compromised_versions() -> None:
+    """SUP-024 fires on the compromised axios npm versions showcase."""
+    report = scan(Path("examples/showcase/136_sup024_axios_compromised_versions"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "SUP-024" in finding_ids, f"Expected SUP-024, got: {sorted(finding_ids)}"
