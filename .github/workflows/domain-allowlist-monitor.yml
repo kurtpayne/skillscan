@@ -33,7 +33,7 @@ jobs:
         run: pip install requests pyyaml
 
       - name: Restore domain state cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: trace/domains/.domain_state.json
           key: domain-state-${{ runner.os }}
@@ -49,7 +49,7 @@ jobs:
 
       - name: Save updated state
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: trace/domains/.domain_state.json
           key: domain-state-${{ runner.os }}
