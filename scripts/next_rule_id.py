@@ -86,8 +86,10 @@ def main() -> int:
         used = ids_for_prefix(all_ids, prefix)
         nxt = next_id(all_ids, prefix)
         if used:
-            print(f"{prefix}: used {prefix}-{used[0]:03d}..{prefix}-{used[-1]:03d} "
-                  f"({len(used)} rules) → next: {nxt}")
+            print(
+                f"{prefix}: used {prefix}-{used[0]:03d}..{prefix}-{used[-1]:03d} "
+                f"({len(used)} rules) → next: {nxt}"
+            )
         else:
             print(f"{prefix}: no existing rules → next: {nxt}")
 

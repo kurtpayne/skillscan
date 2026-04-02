@@ -26,7 +26,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-
 # ---------------------------------------------------------------------------
 # Field definitions
 # ---------------------------------------------------------------------------
@@ -50,6 +49,7 @@ REQUIRED_SCALARS: list[tuple[tuple[str, ...], str]] = [
 # ---------------------------------------------------------------------------
 # Validation helpers
 # ---------------------------------------------------------------------------
+
 
 def _get_nested(obj: dict, keys: tuple[str, ...]):  # type: ignore[type-arg]
     """Walk a nested dict; return the value or None if any key is missing."""
