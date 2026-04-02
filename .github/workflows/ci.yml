@@ -68,7 +68,6 @@ jobs:
         with:
           repository: kurtpayne/skillscan-website
           path: skillscan-website
-          token: ${{ secrets.INDEX_PAT }}
       - name: Setup Python
         if: steps.checkout-website.outcome == 'success'
         uses: actions/setup-python@v5
