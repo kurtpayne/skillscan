@@ -37,7 +37,7 @@ jobs:
           echo "SCHEMA_SYNC_PAT is set (${#SCHEMA_SYNC_PAT} chars)."
 
       - name: Checkout skillscan-security
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: skillscan-security
 

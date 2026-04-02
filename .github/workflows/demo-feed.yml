@@ -23,12 +23,12 @@ jobs:
 
     steps:
       - name: Checkout skillscan-security
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: skillscan-security
 
       - name: Checkout skillscan-corpus (for skill-index.yaml)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: kurtpayne/skillscan-corpus
           token: ${{ secrets.SCHEMA_SYNC_PAT }}
