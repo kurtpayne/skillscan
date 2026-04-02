@@ -2,7 +2,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**146 static rules · 14 chain rules**
+**148 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -175,6 +175,8 @@
 | `PSV-003` | high | Skill instructions imply shell execution not declared in allowed-tools | permission-scope, shell, graph-rule |
 | `PSV-004` | medium | Unknown frontmatter key may be an injection vector | permission-scope, frontmatter, graph-rule |
 | `PSV-005` | medium | Capability inflation - skill claims wildcard or all-scope permissions | permission-scope, capability-inflation, least-privilege |
+| `PSV-006` | critical | Langflow CVE-2026-33017 unauthenticated RCE (CISA KEV) | langflow, rce, cisa-kev, unauthenticated |
+| `PSV-007` | high | OpenClaw CVE-2026-32922 privilege escalation via token rotation | openclaw, privilege-escalation, token-rotation |
 
 ### abuse
 | ID | Severity | Title | Tags |

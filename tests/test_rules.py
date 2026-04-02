@@ -1831,3 +1831,32 @@ def test_new_patterns_20260401() -> None:
     # Negative: normal CSS/HTML
     assert pinj018.pattern.search('<div style="display: none">loading spinner</div>') is None
     assert pinj018.pattern.search("<!-- This is a comment -->") is None
+
+
+def test_psv006_psv007_patterns() -> None:
+    """PSV-006, PSV-007 pattern compilation and basic matching."""
+    compiled = load_compiled_builtin_rulepack()
+
+    # PSV-006: Langflow CVE-2026-33017 unauthenticated RCE
+    psv006_rules = [r for r in compiled.static_rules if r.id == "PSV-006"]
+    assert len(psv006_rules) >= 1, "PSV-006 rule not found"
+    psv006 = psv006_rules[0]
+    # Positive: vulnerable version pin
+    assert psv006.pattern.search("langflow==1.8.0") is not None
+    assert psv006.pattern.search("langflow==1.7.5") is not None
+    # Positive: auto-login env var (pattern needs langflow context on same line)
+    assert psv006.pattern.search("langflow==1.8.0 LANGFLOW_AUTO_LOGIN=true") is not None
+    # Negative: safe version
+    assert psv006.pattern.search("langflow==1.9.0") is None
+
+    # PSV-007: OpenClaw CVE-2026-32922 privilege escalation
+    psv007_rules = [r for r in compiled.static_rules if r.id == "PSV-007"]
+    assert len(psv007_rules) >= 1, "PSV-007 rule not found"
+    psv007 = psv007_rules[0]
+    # Positive: vulnerable version
+    assert psv007.pattern.search("openclaw==2026.3.9") is not None
+    assert psv007.pattern.search("openclaw==2025.12.1") is not None
+    # Positive: dangerous API combination
+    assert psv007.pattern.search("device.token.rotate ... operator.pairing") is not None
+    # Negative: patched version
+    assert psv007.pattern.search("openclaw==2026.3.11") is None
