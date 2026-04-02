@@ -344,3 +344,19 @@ def test_showcase_139_pinj018_hidden_prompt_injection() -> None:
     report = scan(Path("examples/showcase/139_hidden_prompt_injection"), STRICT, "builtin:strict")
     finding_ids = {f.id for f in report.findings}
     assert "PINJ-018" in finding_ids, f"Expected PINJ-018, got: {sorted(finding_ids)}"
+
+
+def test_showcase_140_psv006_langflow_rce() -> None:
+    """PSV-006 fires on the Langflow CVE-2026-33017 showcase."""
+    report = scan(Path("examples/showcase/140_psv006_langflow_rce_cve_2026_33017"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "PSV-006" in finding_ids, f"Expected PSV-006, got: {sorted(finding_ids)}"
+
+
+def test_showcase_141_psv007_openclaw_privesc() -> None:
+    """PSV-007 fires on the OpenClaw CVE-2026-32922 showcase."""
+    report = scan(
+        Path("examples/showcase/141_psv007_openclaw_privesc_cve_2026_32922"), STRICT, "builtin:strict"
+    )
+    finding_ids = {f.id for f in report.findings}
+    assert "PSV-007" in finding_ids, f"Expected PSV-007, got: {sorted(finding_ids)}"
