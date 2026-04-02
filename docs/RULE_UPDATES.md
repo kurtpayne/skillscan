@@ -1,5 +1,23 @@
 # Rule Updates
 
+## 2026-03-30
+
+- Added `PSV-006` (critical): **Langflow CVE-2026-33017 unauthenticated RCE (CISA KEV)**.
+- Rationale: CVE-2026-33017 (CVSS 9.3) is a critical unauthenticated RCE in Langflow ≤1.8.1. CISA added it to the Known Exploited Vulnerabilities catalog on 2026-03-25 with a federal patch deadline of 2026-04-08. Active exploitation began within 20 hours of the advisory.
+- Rule scope targets version pins to vulnerable Langflow releases and misconfigured deployment env vars (LANGFLOW_AUTO_LOGIN).
+
+Sources:
+- BleepingComputer (2026-03-25), *CISA: New Langflow Flaw Actively Exploited*: https://www.bleepingcomputer.com/news/security/cisa-new-langflow-flaw-actively-exploited-to-hijack-ai-workflows/
+- NVD: https://nvd.nist.gov/vuln/detail/CVE-2026-33017
+
+- Added `PSV-007` (high): **OpenClaw CVE-2026-32922 privilege escalation via token rotation**.
+- Rationale: CVE-2026-32922 affects OpenClaw <2026.3.11. Callers with operator.pairing scope can invoke device.token.rotate to mint tokens with elevated permissions beyond their granted scope.
+- Rule scope targets vulnerable version pins and dangerous API combinations (device.token.rotate + operator.pairing).
+
+Sources:
+- CVE: https://www.cve.org/CVERecord?id=CVE-2026-32922
+- SkyWork: https://skywork.ai/skypage/en/openclaw-security-vulnerabilities/2038597463217881088
+
 ## 2026-03-27
 
 - Added `MAL-054` (critical): **GlassWorm multi-stage Chrome extension RAT**.

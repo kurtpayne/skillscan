@@ -1,33 +1,22 @@
 ## Summary
+- What changed?
+- Why this is needed now?
 
-<!-- What does this PR do? One paragraph. -->
+## Pattern Update Checklist (required for rules/default.yaml edits)
+- [ ] Worked on a feature branch (not `main`)
+- [ ] Added/updated rule IDs in `src/skillscan/data/rules/default.yaml`
+- [ ] Bumped rulepack version (`YYYY.MM.DD.N`)
+- [ ] Added/updated at least one showcase fixture under `examples/showcase/*`
+- [ ] Updated `examples/showcase/INDEX.md`
+- [ ] Updated `docs/EXAMPLES.md`
+- [ ] Added source-backed rationale in `docs/RULE_UPDATES.md` or `PATTERN_UPDATES.md`
+- [ ] Added tests in `tests/test_rules.py`
+- [ ] Added showcase assertion(s) in `tests/test_showcase_examples.py`
 
-## Type of change
+## Validation
+- [ ] `ruff check src tests`
+- [ ] `pytest -q`
 
-- [ ] Bug fix
-- [ ] New rule / pattern
-- [ ] New feature
-- [ ] Refactor / code quality
-- [ ] Documentation
-- [ ] CI / tooling
-- [ ] Dependency update
-
-## Checklist
-
-- [ ] `ruff check` and `ruff format --check` pass locally
-- [ ] `mypy src` passes with no new errors
-- [ ] `pytest -q` passes (all tests green, no debug prints left in test files)
-- [ ] If adding a rule: positive + negative test cases added to `tests/test_rules.py`
-- [ ] If adding a rule: showcase example added to `examples/showcase/`
-- [ ] If adding a rule: `sync-website-rules.py` run and TSX files committed
-- [ ] If changing CLI behavior: `docs/CLI_REFERENCE.md` updated
-- [ ] No hardcoded secrets, tokens, or API keys in any file
-- [ ] No debug code (`print(f"DBG...`)`, inline imports, `pdb.set_trace()`) left in
-
-## Testing
-
-<!-- Describe how you tested this change. -->
-
-## Related issues
-
-<!-- Closes #xxx -->
+## Sources
+- Link 1
+- Link 2
