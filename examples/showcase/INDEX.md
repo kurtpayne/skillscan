@@ -156,3 +156,5 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 137. `137_jarkastealer_ai_trojan`: JarkaStealer AI package trojan — malicious PyPI packages (gptplus, claudeai-eng) downloading JavaUpdater.jar for credential theft (`MAL-057`)
 138. `138_ide_config_injection`: IDE config injection for silent command execution — CurXecute (CVE-2025-54135) and MCPoison (CVE-2025-54136) exploiting mcp.json trust (`EXEC-042`)
 139. `139_hidden_prompt_injection`: Hidden prompt injection via CSS/HTML concealment — display:none, font-size:0, opacity:0, aria-hidden used to embed invisible instructions for AI agents (`PINJ-018`)
+140. `140_psv006_langflow_rce_cve_2026_33017`: Langflow ≤1.8.1 unauthenticated RCE (CVE-2026-33017, CISA KEV) via unsandboxed flow execution (`PSV-006`)
+141. `141_psv007_openclaw_privesc_cve_2026_32922`: OpenClaw <2026.3.11 privilege escalation via token rotation — device.token.rotate + operator.pairing scope (CVE-2026-32922) (`PSV-007`)
