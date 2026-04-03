@@ -78,21 +78,41 @@ class TestDetectArchiveFormat:
             p = Path(f.name)
         assert is_archive(p) is False
 
-    def test_extension_fallback_jar(self):
-        """A .jar with no magic bytes should still be detected via extension."""
-        with tempfile.NamedTemporaryFile(suffix=".jar", delete=False) as f:
-            f.write(b"\x00" * 20)  # no magic
-            p = Path(f.name)
-        # Extension fallback — should return "jar" or None depending on content
-        # The extension fallback kicks in when no magic matches
-        result = detect_archive_format(p)
-        assert result == "jar"
-
     def test_extension_fallback_whl(self):
         with tempfile.NamedTemporaryFile(suffix=".whl", delete=False) as f:
             f.write(b"\x00" * 20)
             p = Path(f.name)
-        assert detect_archive_format(p) == "whl"
+        assert detect_archive_format(p) == "zip"
+
+    def test_extension_fallback_skill(self):
+        """A .skill file with no magic bytes should be detected as zip via extension mapping."""
+        with tempfile.NamedTemporaryFile(suffix=".skill", delete=False) as f:
+            f.write(b"\x00" * 20)
+            p = Path(f.name)
+        assert detect_archive_format(p) == "zip"
+
+    def test_skill_with_zip_magic(self):
+        """A .skill file with ZIP magic bytes should be detected as zip."""
+        p = _write_magic(".skill", b"PK\x03\x04")
+        assert detect_archive_format(p) == "zip"
+
+    def test_is_archive_skill(self):
+        p = _write_magic(".skill", b"PK\x03\x04")
+        assert is_archive(p) is True
+
+    def test_extension_fallback_jar(self):
+        """A .jar with no magic bytes should be detected as zip via extension mapping."""
+        with tempfile.NamedTemporaryFile(suffix=".jar", delete=False) as f:
+            f.write(b"\x00" * 20)
+            p = Path(f.name)
+        assert detect_archive_format(p) == "zip"
+
+    def test_extension_fallback_tgz(self):
+        """A .tgz with no magic bytes should map to gz format."""
+        with tempfile.NamedTemporaryFile(suffix=".tgz", delete=False) as f:
+            f.write(b"\x00" * 20)
+            p = Path(f.name)
+        assert detect_archive_format(p) == "gz"
 
 
 # ── Real archive extraction ───────────────────────────────────────────────────
@@ -123,6 +143,22 @@ class TestRealZipExtraction:
         dst.mkdir()
         with pytest.raises(ScanError, match="too many files"):
             _safe_extract_zip(archive, dst, max_files=3, max_bytes=10_000_000)
+
+
+class TestRealSkillExtraction:
+    def test_skill_archive_with_skill_file(self, tmp_path):
+        """A real .skill archive (ZIP-based) containing a SKILL.md should extract correctly."""
+        from skillscan.analysis import _safe_extract_zip
+
+        archive = tmp_path / "example.skill"
+        with zipfile.ZipFile(archive, "w") as zf:
+            zf.writestr("SKILL.md", "# Test skill\nThis is a benign skill.")
+            zf.writestr("main.py", "print('hello')")
+        dst = tmp_path / "out"
+        dst.mkdir()
+        _safe_extract_zip(archive, dst, max_files=100, max_bytes=10_000_000)
+        assert (dst / "SKILL.md").exists()
+        assert (dst / "main.py").exists()
 
 
 class TestRealTarExtraction:
