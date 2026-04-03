@@ -200,3 +200,6 @@
 | `CHN-012` | high | Stealth concealment combined with network exfiltration | `network + stealth_concealment` |  |
 | `CHN-013` | critical | Docker socket mount combined with privileged container execution | `docker_socket + privileged_container` |  |
 | `CHN-014` | critical | Privileged container execution combined with secret access | `privileged_container + secret_access` |  |
+| 100 | ClawHub ranking manipulation vulnerability | SUP-025 |
+| 101 | MCP tool description behavioral override (secretly/skip approval) | ABU-008 |
+| 102 | Langflow CVE-2026-33017 unauthenticated RCE exploit | MAL-058 |

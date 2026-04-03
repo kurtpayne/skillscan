@@ -360,3 +360,17 @@ def test_showcase_141_psv007_openclaw_privesc() -> None:
     )
     finding_ids = {f.id for f in report.findings}
     assert "PSV-007" in finding_ids, f"Expected PSV-007, got: {sorted(finding_ids)}"
+
+def test_showcase_100_clawhub_ranking_manipulation():
+    findings = _scan("examples/showcase/100_clawhub_ranking_manipulation")
+    assert any(f.id == "SUP-025" for f in findings.findings)
+
+
+def test_showcase_101_mcp_tool_secretly_override():
+    findings = _scan("examples/showcase/101_mcp_tool_secretly_override")
+    assert any(f.id == "ABU-008" for f in findings.findings)
+
+
+def test_showcase_102_langflow_cve_2026_33017_rce():
+    findings = _scan("examples/showcase/102_langflow_cve_2026_33017_rce")
+    assert any(f.id == "MAL-058" for f in findings.findings)
