@@ -1,4 +1,19 @@
 # Pattern Updates
+## 2026-04-02
+rulepack: 2026.04.02.1
+
+Three new detection rules, IOC enrichment, and vuln DB updates.
+
+- Added `SUP-025` (critical): **ClawHub ranking manipulation vulnerability** — A vulnerability in ClawHub allowed attackers to artificially inflate download counts of malicious skills by exploiting an exposed internalMutation endpoint. This was used to push malicious skills to the #1 spot.
+- Added `ABU-008` (high): **MCP tool description behavioral override (secretly/skip approval)** — MCP tool descriptions must not contain behavioral directives that instruct the LLM to act secretly, skip financial approvals, or hide actions from the user. These directives override security guardrails and can lead to unauthorized actions.
+- Added `MAL-058` (critical): **Langflow CVE-2026-33017 unauthenticated RCE exploit** — CVE-2026-33017 is a critical unauthenticated remote code execution vulnerability in Langflow <= 1.8.2. Attackers can exploit the /api/v1/build_public_tmp/{flow_id}/flow endpoint by passing arbitrary Python code in the data parameter, which is executed via unsandboxed exec().
+
+Sources:
+- Silverfort: https://www.silverfort.com/blog/clawhub-vulnerability-enables-attackers-to-manipulate-rankings-to-become-the-number-one-skill/
+- Cyber Security News: https://cybersecuritynews.com/clawhub-vulnerability-manipulate-rankings-to-become-the-1-skill/
+- Reddit: https://www.reddit.com/r/cybersecurity/comments/1sanrxx/research_we_found_mcp_servers_telling_ai_agents/
+- GitHub Advisory: https://github.com/langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx
+- NVD: https://nvd.nist.gov/vuln/detail/CVE-2026-33017
 
 ## 2026-04-01
 

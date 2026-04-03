@@ -158,3 +158,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 139. `139_hidden_prompt_injection`: Hidden prompt injection via CSS/HTML concealment — display:none, font-size:0, opacity:0, aria-hidden used to embed invisible instructions for AI agents (`PINJ-018`)
 140. `140_psv006_langflow_rce_cve_2026_33017`: Langflow ≤1.8.1 unauthenticated RCE (CVE-2026-33017, CISA KEV) via unsandboxed flow execution (`PSV-006`)
 141. `141_psv007_openclaw_privesc_cve_2026_32922`: OpenClaw <2026.3.11 privilege escalation via token rotation — device.token.rotate + operator.pairing scope (CVE-2026-32922) (`PSV-007`)
+| 100 | ClawHub ranking manipulation vulnerability | SUP-025 |
+| 101 | MCP tool description behavioral override (secretly/skip approval) | ABU-008 |
+| 102 | Langflow CVE-2026-33017 unauthenticated RCE exploit | MAL-058 |
