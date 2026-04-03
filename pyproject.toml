@@ -69,6 +69,14 @@ fuzzer = [
   "openai>=1.30.0",
   "click>=8.1.0",
 ]
+# ONNX export verification and INT8 quantization scripts (scripts/verify_onnx_export.py, scripts/quantize_onnx.py)
+model-quality = [
+  "transformers>=4.40.0",
+  "torch>=2.2.0",
+  "onnx>=1.16.0",
+  "onnxruntime>=1.18.0",
+  "scikit-learn>=1.4.0",
+]
 
 [project.scripts]
 skillscan-security = "skillscan.cli:app"
