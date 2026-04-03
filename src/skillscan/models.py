@@ -206,8 +206,24 @@ _ARCHIVE_EXTENSIONS: frozenset[str] = frozenset(
         ".apk",
         ".whl",
         ".nupkg",
+        ".skill",
     }
 )
+
+# Map non-obvious extensions to their canonical archive format so that
+# prepare_target can route them to the correct extractor.
+_EXTENSION_FORMAT_MAP: dict[str, str] = {
+    ".tgz": "gz",
+    ".tbz2": "bz2",
+    ".txz": "xz",
+    ".tzst": "zst",
+    ".jar": "zip",
+    ".war": "zip",
+    ".apk": "zip",
+    ".whl": "zip",
+    ".nupkg": "zip",
+    ".skill": "zip",
+}
 
 
 def _read_magic(path: Path, n: int = 8) -> bytes:
@@ -235,7 +251,7 @@ def detect_archive_format(path: Path) -> str | None:
     # Fall back to extension for formats with variable magic
     ext = path.suffix.lower()
     if ext in _ARCHIVE_EXTENSIONS:
-        return ext.lstrip(".")
+        return _EXTENSION_FORMAT_MAP.get(ext, ext.lstrip("."))
     return None
 
 

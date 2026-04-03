@@ -65,6 +65,30 @@ def test_prepare_target_rejects_symlink_tar(tmp_path: Path) -> None:
         pass
 
 
+def test_prepare_target_skill_archive(tmp_path: Path) -> None:
+    """A .skill file (ZIP-based) should be extracted as an archive."""
+    s = tmp_path / "example.skill"
+    with zipfile.ZipFile(s, "w") as zf:
+        zf.writestr("SKILL.md", "# Safe skill\nNothing bad here.")
+        zf.writestr("main.py", "print('hello')")
+    prepared = prepare_target(s, _policy())
+    assert prepared.target_type == "archive"
+    assert (prepared.root / "SKILL.md").exists()
+    assert (prepared.root / "main.py").exists()
+    if prepared.cleanup_dir:
+        prepared.cleanup_dir.cleanup()
+
+
+def test_scan_skill_archive(tmp_path: Path) -> None:
+    """End-to-end scan of a .skill archive should succeed."""
+    s = tmp_path / "test.skill"
+    with zipfile.ZipFile(s, "w") as zf:
+        zf.writestr("SKILL.md", "# Benign skill\nDoes nothing dangerous.")
+    policy = load_builtin_policy("strict")
+    report = scan(s, policy, "builtin:strict")
+    assert report.metadata.target_type == "archive"
+
+
 def test_scan_archive_and_ip_cidr_match(tmp_path: Path) -> None:
     z = tmp_path / "ioc.zip"
     with zipfile.ZipFile(z, "w") as zf:

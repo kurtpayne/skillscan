@@ -170,9 +170,9 @@ def test_scan_json_stdout_and_auto_intel_message(monkeypatch) -> None:
         ],
     )
     assert result.exit_code == 0
-    assert "intel refresh" in result.stdout
-    start = result.stdout.find("{")
-    parsed = json.loads(result.stdout[start:])
+    # Intel refresh messages must not pollute machine-readable output
+    assert "intel refresh" not in result.stdout
+    parsed = json.loads(result.stdout)
     assert parsed["metadata"]["target"].endswith("basic_skill")
 
 

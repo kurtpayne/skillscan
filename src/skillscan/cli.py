@@ -650,9 +650,10 @@ def scan_cmd(
         )
 
     # --- Intel auto-refresh ---
+    _machine_format = format in {"json", "sarif", "junit"}
     if auto_intel:
         stats = sync_managed(max_age_seconds=intel_max_age_minutes * 60)
-        if stats["updated"] > 0 or stats["errors"] > 0:
+        if (stats["updated"] > 0 or stats["errors"] > 0) and not _machine_format:
             console.print(
                 f"[dim]intel refresh updated={stats['updated']} "
                 f"skipped={stats['skipped']} errors={stats['errors']}[/dim]"
@@ -662,7 +663,7 @@ def scan_cmd(
     from skillscan.rules_sync import maybe_sync_rules
 
     rules_result = maybe_sync_rules(max_age_seconds=intel_max_age_minutes * 60)
-    if rules_result.updated:
+    if rules_result.updated and not _machine_format:
         console.print(f"[dim]rules refresh updated={len(rules_result.updated)}[/dim]")
 
     # --- Graph scan auto-enable ---
