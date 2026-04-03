@@ -1861,6 +1861,7 @@ def test_psv006_psv007_patterns() -> None:
     # Negative: patched version
     assert psv007.pattern.search("openclaw==2026.3.11") is None
 
+
 def test_sup_025_clawhub_ranking_manipulation():
     compiled = load_compiled_builtin_rulepack()
     rule = next(r for r in compiled.static_rules if r.id == "SUP-025")
@@ -1881,6 +1882,7 @@ def test_abu_008_mcp_tool_secretly_override():
 def test_mal_058_langflow_cve_2026_33017_rce():
     compiled = load_compiled_builtin_rulepack()
     rule = next(r for r in compiled.static_rules if r.id == "MAL-058")
-    assert rule.pattern.search("/api/v1/build_public_tmp/12345678-1234-1234-1234-123456789012/flow") is not None
+    url = "/api/v1/build_public_tmp/12345678-1234-1234-1234-123456789012/flow"
+    assert rule.pattern.search(url) is not None
     assert rule.pattern.search("build_public_tmp data = { code: os.system('id') }") is not None
     assert rule.pattern.search("/api/v1/build_public_tmp/flow") is None
