@@ -3,6 +3,10 @@ name: Pattern Update Guard
 on:
   pull_request:
     branches: [main]
+    paths:
+      - 'src/skillscan/data/rules/**'
+      - 'src/skillscan/data/intel/**'
+      - 'scripts/validate_pattern_update.py'
   push:
     branches:
       - "chore/pattern-update-*"

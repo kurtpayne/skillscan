@@ -1,0 +1,58 @@
+name: Website Drift Check
+
+# Only runs when default.yaml or the sync script itself changes.
+# Avoids firing on every PR that has nothing to do with rule definitions.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/skillscan/data/rules/default.yaml'
+      - 'scripts/sync-website-rules.py'
+  pull_request:
+    paths:
+      - 'src/skillscan/data/rules/default.yaml'
+      - 'scripts/sync-website-rules.py'
+
+jobs:
+  website-drift:
+    name: Detect website rule drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: skillscan-security
+      - name: Check out website (skip gracefully if token unavailable)
+        id: checkout-website
+        uses: actions/checkout@v6
+        continue-on-error: true
+        with:
+          repository: kurtpayne/skillscan-website
+          path: skillscan-website
+      - name: Setup Python
+        if: steps.checkout-website.outcome == 'success'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PyYAML
+        if: steps.checkout-website.outcome == 'success'
+        run: pip install pyyaml
+      - name: Check website rule sync
+        if: steps.checkout-website.outcome == 'success'
+        run: |
+          python3 skillscan-security/scripts/sync-website-rules.py \
+            --website-dir skillscan-website \
+            --dry-run
+          EXIT=$?
+          if [ $EXIT -eq 2 ]; then
+            echo ""
+            echo "::error::Website TSX files are out of sync with default.yaml."
+            echo "::error::Run: python3 scripts/sync-website-rules.py"
+            echo "::error::Then commit the updated TSX files."
+            exit 1
+          elif [ $EXIT -eq 1 ]; then
+            echo "::error::sync-website-rules.py encountered an error."
+            exit 1
+          fi
+          echo "Website rule files are in sync."
