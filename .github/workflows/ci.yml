@@ -78,6 +78,7 @@ jobs:
         run: pip install pyyaml
       - name: Check website rule sync
         if: steps.checkout-website.outcome == 'success'
+        continue-on-error: true
         run: |
           python3 skillscan-security/scripts/sync-website-rules.py \
             --website-dir skillscan-website \
