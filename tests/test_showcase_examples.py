@@ -264,7 +264,9 @@ def test_showcase_ecosystem_hints() -> None:
 def test_showcase_social_engineering_detected_without_ai() -> None:
     """SE-001 and SE-SEM-001 fire on the social engineering showcase example with no AI layer."""
     report = scan(
-        Path("examples/showcase/20_social_engineering_credential_harvest"), STRICT, "builtin:strict"
+        Path("examples/showcase/20_social_engineering_credential_harvest"),
+        STRICT,
+        "builtin:strict",
     )
     finding_ids = {f.id for f in report.findings}
     assert "SE-001" in finding_ids or "SE-SEM-001" in finding_ids, (
@@ -288,14 +290,22 @@ def test_showcase_131_evasion005_idpi_payload() -> None:
 
 def test_showcase_132_exf021_vscode_live_preview() -> None:
     """EXF-021 fires on the VSCode Live Preview local file exfiltration showcase."""
-    report = scan(Path("examples/showcase/132_exf021_vscode_live_preview"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/132_exf021_vscode_live_preview"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "EXF-021" in finding_ids, f"Expected EXF-021, got: {sorted(finding_ids)}"
 
 
 def test_showcase_133_mal055_postmark_mcp_bcc_harvest() -> None:
     """MAL-055 fires on the postmark-mcp BCC email harvesting showcase."""
-    report = scan(Path("examples/showcase/133_mal055_postmark_mcp_bcc_harvest"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/133_mal055_postmark_mcp_bcc_harvest"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "MAL-055" in finding_ids, f"Expected MAL-055, got: {sorted(finding_ids)}"
 
@@ -320,7 +330,11 @@ def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
 
 def test_showcase_136_sup024_axios_compromised_versions() -> None:
     """SUP-024 fires on the compromised axios npm versions showcase."""
-    report = scan(Path("examples/showcase/136_sup024_axios_compromised_versions"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/136_sup024_axios_compromised_versions"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-024" in finding_ids, f"Expected SUP-024, got: {sorted(finding_ids)}"
 

@@ -674,7 +674,11 @@ def test_rulepack_channel_filtering() -> None:
     labs = _filter_rule_files_for_channel(files, "labs")
 
     assert [f.name for f in stable] == ["default.yaml", "overlay.stable.yaml"]
-    assert [f.name for f in preview] == ["default.yaml", "overlay.stable.yaml", "new.preview.yaml"]
+    assert [f.name for f in preview] == [
+        "default.yaml",
+        "overlay.stable.yaml",
+        "new.preview.yaml",
+    ]
     assert [f.name for f in labs] == [
         "default.yaml",
         "overlay.stable.yaml",

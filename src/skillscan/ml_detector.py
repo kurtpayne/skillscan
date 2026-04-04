@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 
 _MODEL_ID = "ProtectAI/deberta-v3-base-prompt-injection-v2"
 _MAX_LENGTH = 512
-_INJECTION_THRESHOLD = 0.70  # minimum score for INJECTION label to fire
-_HIGH_THRESHOLD = 0.88  # score above this → HIGH severity, else MEDIUM
+_INJECTION_THRESHOLD = 0.70  # minimum score for INJECTION label to fire; matches v15 model card
+_HIGH_THRESHOLD = 0.88  # score above this → HIGH severity, else MEDIUM (tuned on v14; v15 unspecified)
 
 # ---------------------------------------------------------------------------
 # Lazy singleton cache
@@ -164,7 +164,10 @@ def _get_pipeline() -> tuple[Any | None, str]:
     pipe = _try_load_transformers()
     if pipe is not None:
         _pipeline_cache, _backend_cache = pipe, "transformers"
-        logger.info("ML detector: loaded Transformers backend (%s)", _loaded_model_id or _MODEL_ID)
+        logger.info(
+            "ML detector: loaded Transformers backend (%s)",
+            _loaded_model_id or _MODEL_ID,
+        )
         return pipe, "transformers"
 
     _pipeline_cache, _backend_cache = None, "unavailable"
