@@ -1571,7 +1571,7 @@ def model_install_cmd(
             console.print()
             console.print("[bold]What this enables:[/bold]")
             console.print(
-                "  DeBERTa-v3-base LoRA adapter fine-tuned on 18,161 examples of "
+                "  DeBERTa-v3-base LoRA adapter fine-tuned on 21,468 examples of "
                 "prompt injection, jailbreaks, social engineering, and supply chain attacks."
             )
             console.print("  Macro F1: [green]0.9752[/green] | FPR: [green]1.89%[/green]")
