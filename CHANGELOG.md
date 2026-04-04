@@ -10,6 +10,8 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Model v15**: 21,468 training examples (up from 18,161), Macro F1 0.8788, class-weighted fine-tuning of ProtectAI DeBERTa adapter.
+- **Phase 1 corpus taxonomy**: new optional frontmatter fields `attack_vector`, `attack_labels`, `container_format`, `evasion_technique`, and `confidence` for annotating injection training/eval samples. Added to `skill-schema.yaml`; existing samples without these fields remain valid.
 - **C-2 decontamination** (2026-03-29): removed 204 training files that were duplicated in `held_out_eval/`. Post-audit v11 true Macro F1 on 259 clean examples: **0.555** (injection recall 19.6%). v11 reported F1 of 0.926 was inflated by training/eval leakage introduced during v11 prep (commit `cf855ab8`). Full disclosure in `EVAL_RESULTS.md`.
 - **`eval-integrity.yml`** CI gate: fails any push to `main` if any `held_out_eval/` file hash appears in `training_corpus/`. Prevents future training/eval leakage.
 - **86 targeted injection training examples** across 8 zero-recall archetypes: organic real-world malicious (22 FN), enterprise auth/redirect (10 FN), organic PI (8 FN), MCP poisoning (8 FN), supply chain (6 FN), social engineering (8 FN), jailbreaks (18 FN), evasion (7 FN). Added to `training_corpus/malicious/` with zero eval overlap.

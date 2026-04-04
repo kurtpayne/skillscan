@@ -53,6 +53,12 @@ standard_frontmatter_keys:
   - sub_skills
   # Context / memory
   - context
+  # Corpus taxonomy (injection samples only — optional)
+  - attack_vector
+  - attack_labels
+  - container_format
+  - evasion_technique
+  - confidence
 
 # ---------------------------------------------------------------------------
 # High-risk unknown keys
@@ -130,3 +136,49 @@ tool_risk_tiers:
     - list_files
     - search
     - grep
+
+# ---------------------------------------------------------------------------
+# Corpus taxonomy fields (Phase 1)
+# Optional fields used in injection training/eval samples to annotate attack
+# characteristics. Not expected in production skill files. All fields are
+# optional — existing samples without them remain valid.
+# ---------------------------------------------------------------------------
+corpus_taxonomy_fields:
+  attack_vector:
+    type: string
+    description: "Primary attack vector used in the sample."
+    examples:
+      - prompt_injection
+      - data_exfiltration
+      - code_injection
+      - path_traversal
+      - supply_chain
+      - social_engineering
+  attack_labels:
+    type: array
+    items: string
+    description: "One or more attack-type labels (multi-label annotation)."
+    examples:
+      - [prompt_injection, evasion]
+  container_format:
+    type: string
+    description: "Encoding/container format of the injected payload."
+    examples:
+      - markdown
+      - json
+      - yaml
+      - raw
+  evasion_technique:
+    type: string
+    description: "Obfuscation technique applied to evade detection."
+    examples:
+      - none
+      - base64
+      - unicode_homoglyph
+      - whitespace
+      - comment_injection
+  confidence:
+    type: integer
+    description: "Human annotator confidence in the label (1 = low, 5 = high)."
+    minimum: 1
+    maximum: 5
