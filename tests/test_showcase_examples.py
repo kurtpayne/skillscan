@@ -313,9 +313,7 @@ def test_showcase_133_mal055_postmark_mcp_bcc_harvest() -> None:
 def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
     """MAL-056 fires on the Nx/s1ngularity AI CLI weaponization showcase."""
     report = scan(
-        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"),
-        STRICT,
-        "builtin:strict",
+        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"), STRICT, "builtin:strict"
     )
     finding_ids = {f.id for f in report.findings}
     assert "MAL-056" in finding_ids, f"Expected MAL-056, got: {sorted(finding_ids)}"
@@ -324,9 +322,7 @@ def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
 def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
     """SUP-023 fires on the mcp-remote OAuth command injection showcase."""
     report = scan(
-        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"),
-        STRICT,
-        "builtin:strict",
+        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict"
     )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
@@ -341,3 +337,70 @@ def test_showcase_136_sup024_axios_compromised_versions() -> None:
     )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-024" in finding_ids, f"Expected SUP-024, got: {sorted(finding_ids)}"
+
+
+def test_showcase_137_mal057_jarkastealer_ai_trojan() -> None:
+    """MAL-057 fires on the JarkaStealer AI package trojan showcase."""
+    report = scan(Path("examples/showcase/137_jarkastealer_ai_trojan"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "MAL-057" in finding_ids, f"Expected MAL-057, got: {sorted(finding_ids)}"
+
+
+def test_showcase_138_exec042_ide_config_injection() -> None:
+    """EXEC-042 fires on the IDE config injection showcase."""
+    report = scan(Path("examples/showcase/138_ide_config_injection"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "EXEC-042" in finding_ids, f"Expected EXEC-042, got: {sorted(finding_ids)}"
+
+
+def test_showcase_139_pinj018_hidden_prompt_injection() -> None:
+    """PINJ-018 fires on the hidden prompt injection showcase."""
+    report = scan(Path("examples/showcase/139_hidden_prompt_injection"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "PINJ-018" in finding_ids, f"Expected PINJ-018, got: {sorted(finding_ids)}"
+
+
+def test_showcase_140_psv006_langflow_rce() -> None:
+    """PSV-006 fires on the Langflow CVE-2026-33017 showcase."""
+    report = scan(Path("examples/showcase/140_psv006_langflow_rce_cve_2026_33017"), STRICT, "builtin:strict")
+    finding_ids = {f.id for f in report.findings}
+    assert "PSV-006" in finding_ids, f"Expected PSV-006, got: {sorted(finding_ids)}"
+
+
+def test_showcase_141_psv007_openclaw_privesc() -> None:
+    """PSV-007 fires on the OpenClaw CVE-2026-32922 showcase."""
+    report = scan(
+        Path("examples/showcase/141_psv007_openclaw_privesc_cve_2026_32922"), STRICT, "builtin:strict"
+    )
+    finding_ids = {f.id for f in report.findings}
+    assert "PSV-007" in finding_ids, f"Expected PSV-007, got: {sorted(finding_ids)}"
+
+
+def test_showcase_100_clawhub_ranking_manipulation():
+    findings = _scan("examples/showcase/100_clawhub_ranking_manipulation")
+    assert any(f.id == "SUP-025" for f in findings.findings)
+
+
+def test_showcase_101_mcp_tool_secretly_override():
+    findings = _scan("examples/showcase/101_mcp_tool_secretly_override")
+    assert any(f.id == "ABU-008" for f in findings.findings)
+
+
+def test_showcase_102_langflow_cve_2026_33017_rce():
+    findings = _scan("examples/showcase/102_langflow_cve_2026_33017_rce")
+    assert any(f.id == "MAL-058" for f in findings.findings)
+
+
+def test_142_mal059_glassworm_mcp():
+    findings = _scan("examples/showcase/142_mal059_glassworm_mcp")
+    assert any(f.id == "MAL-059" for f in findings.findings)
+
+
+def test_143_sup026_maliciouscorgi_vscode():
+    findings = _scan("examples/showcase/143_sup026_maliciouscorgi_vscode")
+    assert any(f.id == "SUP-026" for f in findings.findings)
+
+
+def test_144_psv008_cursor_rce():
+    findings = _scan("examples/showcase/144_psv008_cursor_rce")
+    assert any(f.id == "PSV-008" for f in findings.findings)
