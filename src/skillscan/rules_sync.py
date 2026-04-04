@@ -39,7 +39,7 @@ GITHUB_RAW_BASE = (
 RULE_FILES = [
     "default.yaml",
     "ast_flows.yaml",
-    "exfil_channels.yaml",
+    "multilang.yaml",
 ]
 
 USER_RULES_DIR = Path.home() / ".skillscan" / "rules"
