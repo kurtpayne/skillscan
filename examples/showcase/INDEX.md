@@ -161,3 +161,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 | 100 | ClawHub ranking manipulation vulnerability | SUP-025 |
 | 101 | MCP tool description behavioral override (secretly/skip approval) | ABU-008 |
 | 102 | Langflow CVE-2026-33017 unauthenticated RCE exploit | MAL-058 |
+| 142 | `mal059_glassworm_mcp` | GlassWorm 5th Wave MCP Server Supply Chain Attack |
+| 143 | `sup026_maliciouscorgi_vscode` | MaliciousCorgi VS Code AI Extensions Data Exfiltration |
+| 144 | `psv008_cursor_rce` | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins |

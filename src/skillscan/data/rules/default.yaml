@@ -1,4 +1,4 @@
-version: 2026.04.02.1
+version: "2026.04.03.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5194,6 +5194,113 @@ static_rules:
       references:
         - https://github.com/langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx
         - https://nvd.nist.gov/vuln/detail/CVE-2026-33017
+  - id: MAL-059
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: GlassWorm 5th Wave MCP Server Supply Chain Attack
+    pattern: (?i)(?:@iflow-mcp/watercrawl-watercrawl-mcp|@aifabrix/miso-client|quartz\.quartz-markdown-editor|glassworm[^\n]{0,120}mcp|45\.32\.150\.251|45\.32\.151\.157|70\.34\.242\.255|6YGcuyFRJKZtcaYCCFba9fScNUvPkGXodXE1mJiSzqDJ|BjVeAjPrSKFiingBn4vZvghsGj9KCE8AJVtbc9S8o8SC)
+    mitigation: The GlassWorm 5th wave attack targets MCP servers, GitHub repos, and VSCode extensions using invisible Unicode characters to execute payloads. Remove any compromised packages like @iflow-mcp/watercrawl-watercrawl-mcp and block known C2 IPs.
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-03'
+      updated: '2026-04-03'
+      tags:
+        - malware_pattern
+        - mal
+        - glassworm
+        - mcp
+        - supply-chain
+      last_modified: '2026-04-03'
+      techniques:
+        - id: EXEC-047
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-03'
+        last_modified: '2026-04-03'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.koi.ai/blog/glassworm-hits-mcp-5th-wave-with-new-delivery-techniques
+  - id: SUP-026
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: MaliciousCorgi VS Code AI Extensions Data Exfiltration
+    pattern: (?i)(?:whensunset\.chatgpt-china|zhukunpeng\.chat-moss|aihao123\.cn|chatmoss|codemoss|maliciouscorgi)
+    mitigation: The MaliciousCorgi campaign involves VS Code extensions (ChatGPT - 中文版 and ChatMoss) that silently exfiltrate source code and developer profiles to Chinese servers (aihao123.cn). Uninstall these extensions immediately and rotate any exposed credentials.
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-03'
+      updated: '2026-04-03'
+      tags:
+        - supply_chain
+        - sup
+        - vscode
+        - maliciouscorgi
+        - exfiltration
+      last_modified: '2026-04-03'
+      techniques:
+        - id: EXFIL-010
+          name: Data Exfiltration
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-03'
+        last_modified: '2026-04-03'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.koi.ai/blog/maliciouscorgi-the-cute-looking-ai-extensions-leaking-code-from-1-5-million-developers
+        - https://www.bleepingcomputer.com/news/security/malicious-ai-extensions-on-vscode-marketplace-steal-developer-data/
+  - id: PSV-008
+    category: platform_security
+    severity: critical
+    confidence: 0.95
+    title: Cursor IDE CVE-2026-22708 RCE via Shell Built-ins
+    pattern: (?i)(?:CVE-2026-22708|cursor[^\n]{0,120}(?:typeset|declare|export)[^\n]{0,120}(?:open\s+-a|Calculator|PYTHONWARNINGS|BROWSER|PERL5OPT)|typeset\s+-i\s+\$\{\(e\):-|export\s+&&\s+<<<|export\s+(?:PAGER|PYTHONWARNINGS|BROWSER|PERL5OPT)\s*=\s*[^\n]{0,100}(?:open\s+-a|Calculator|system\(|exec\())
+    mitigation: CVE-2026-22708 is a critical RCE vulnerability in Cursor IDE where implicitly trusted shell built-ins (export, typeset, declare) can be abused to manipulate environment variables and execute arbitrary code, bypassing the command allowlist. Update Cursor to the latest patched version.
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-03'
+      updated: '2026-04-03'
+      tags:
+        - platform_security
+        - psv
+        - cursor
+        - rce
+        - cve-2026-22708
+      last_modified: '2026-04-03'
+      techniques:
+        - id: EXEC-048
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-03'
+        last_modified: '2026-04-03'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.pillar.security/blog/the-agent-security-paradox-when-trusted-commands-in-cursor-become-attack-vectors
+
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

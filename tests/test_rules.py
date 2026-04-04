@@ -1886,3 +1886,27 @@ def test_mal_058_langflow_cve_2026_33017_rce():
     assert rule.pattern.search(url) is not None
     assert rule.pattern.search("build_public_tmp data = { code: os.system('id') }") is not None
     assert rule.pattern.search("/api/v1/build_public_tmp/flow") is None
+
+
+def test_mal059_glassworm_mcp():
+    compiled = load_compiled_builtin_rulepack()
+    rule = next(r for r in compiled.static_rules if r.id == "MAL-059")
+    assert rule.pattern.search("npm install @iflow-mcp/watercrawl-watercrawl-mcp") is not None
+    assert rule.pattern.search("Connect to 45.32.150.251") is not None
+    assert rule.pattern.search("npm install watercrawl-mcp") is None
+
+
+def test_sup026_maliciouscorgi_vscode():
+    compiled = load_compiled_builtin_rulepack()
+    rule = next(r for r in compiled.static_rules if r.id == "SUP-026")
+    assert rule.pattern.search("code --install-extension whensunset.chatgpt-china") is not None
+    assert rule.pattern.search("Exfiltrate to aihao123.cn") is not None
+    assert rule.pattern.search("code --install-extension legitimate-extension") is None
+
+
+def test_psv008_cursor_rce():
+    compiled = load_compiled_builtin_rulepack()
+    rule = next(r for r in compiled.static_rules if r.id == "PSV-008")
+    assert rule.pattern.search('export PAGER="open -a Calculator"') is not None
+    assert rule.pattern.search("typeset -i ${(e):-'$(open -a Calculator)'}") is not None
+    assert rule.pattern.search("export PATH=/usr/local/bin:$PATH") is None
