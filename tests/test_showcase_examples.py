@@ -13,48 +13,143 @@ def _scan(path: str):
 
 
 def test_showcase_detection_rules() -> None:
-    assert any(f.id == "MAL-001" for f in _scan("examples/showcase/01_download_execute").findings)
-    assert any(f.id == "MAL-002" for f in _scan("examples/showcase/02_base64_exec").findings)
-    assert any(f.id == "ABU-001" for f in _scan("examples/showcase/03_instruction_abuse").findings)
-    assert any(f.id == "EXF-001" for f in _scan("examples/showcase/04_secret_access").findings)
-    assert any(f.id == "IOC-001" for f in _scan("examples/showcase/05_ioc_match").findings)
-    assert any(f.id == "DEP-001" for f in _scan("examples/showcase/06_dep_vuln_python").findings)
-    assert any(f.id == "DEP-001" for f in _scan("examples/showcase/07_dep_vuln_npm").findings)
-    assert any(f.id == "DEP-UNPIN" for f in _scan("examples/showcase/08_unpinned_deps").findings)
-    assert any(f.id == "ABU-001" for f in _scan("examples/showcase/13_zero_width_evasion").findings)
-    assert any(f.id == "CHN-001" for f in _scan("examples/showcase/14_base64_hidden_chain").findings)
-    assert any(f.id == "CHN-002" for f in _scan("examples/showcase/15_secret_network_chain").findings)
-    assert any(f.id == "ABU-002" for f in _scan("examples/showcase/16_privilege_disable_chain").findings)
-    assert any(f.id == "CHN-001" for f in _scan("examples/showcase/18_split_base64_chain").findings)
-    assert any(f.id == "CHN-001" for f in _scan("examples/showcase/19_alt_download_exec").findings)
-    assert any(f.id == "SUP-001" for f in _scan("examples/showcase/21_npm_lifecycle_abuse").findings)
-    assert any(f.id == "PINJ-001" for f in _scan("examples/showcase/22_prompt_injection").findings)
-    assert any(f.id == "OBF-001" for f in _scan("examples/showcase/23_trojan_source_bidi").findings)
-    assert any(f.id == "EXF-003" for f in _scan("examples/showcase/26_metadata_image_beacon").findings)
+    assert any(
+        f.id == "MAL-001"
+        for f in _scan("examples/showcase/01_download_execute").findings
+    )
+    assert any(
+        f.id == "MAL-002" for f in _scan("examples/showcase/02_base64_exec").findings
+    )
+    assert any(
+        f.id == "ABU-001"
+        for f in _scan("examples/showcase/03_instruction_abuse").findings
+    )
+    assert any(
+        f.id == "EXF-001" for f in _scan("examples/showcase/04_secret_access").findings
+    )
+    assert any(
+        f.id == "IOC-001" for f in _scan("examples/showcase/05_ioc_match").findings
+    )
+    assert any(
+        f.id == "DEP-001"
+        for f in _scan("examples/showcase/06_dep_vuln_python").findings
+    )
+    assert any(
+        f.id == "DEP-001" for f in _scan("examples/showcase/07_dep_vuln_npm").findings
+    )
+    assert any(
+        f.id == "DEP-UNPIN"
+        for f in _scan("examples/showcase/08_unpinned_deps").findings
+    )
+    assert any(
+        f.id == "ABU-001"
+        for f in _scan("examples/showcase/13_zero_width_evasion").findings
+    )
+    assert any(
+        f.id == "CHN-001"
+        for f in _scan("examples/showcase/14_base64_hidden_chain").findings
+    )
+    assert any(
+        f.id == "CHN-002"
+        for f in _scan("examples/showcase/15_secret_network_chain").findings
+    )
+    assert any(
+        f.id == "ABU-002"
+        for f in _scan("examples/showcase/16_privilege_disable_chain").findings
+    )
+    assert any(
+        f.id == "CHN-001"
+        for f in _scan("examples/showcase/18_split_base64_chain").findings
+    )
+    assert any(
+        f.id == "CHN-001"
+        for f in _scan("examples/showcase/19_alt_download_exec").findings
+    )
+    assert any(
+        f.id == "SUP-001"
+        for f in _scan("examples/showcase/21_npm_lifecycle_abuse").findings
+    )
+    assert any(
+        f.id == "PINJ-001"
+        for f in _scan("examples/showcase/22_prompt_injection").findings
+    )
+    assert any(
+        f.id == "OBF-001"
+        for f in _scan("examples/showcase/23_trojan_source_bidi").findings
+    )
+    assert any(
+        f.id == "EXF-003"
+        for f in _scan("examples/showcase/26_metadata_image_beacon").findings
+    )
     findings_27 = _scan("examples/showcase/27_github_actions_secrets_exfil").findings
     assert any(f.id == "EXF-004" for f in findings_27)
     assert any(f.id == "CHN-004" for f in findings_27)
-    assert any(f.id == "SUP-002" for f in _scan("examples/showcase/28_npx_registry_fallback").findings)
-    assert any(f.id == "SUP-003" for f in _scan("examples/showcase/29_claude_sed_path_bypass").findings)
-    assert any(f.id == "MAL-006" for f in _scan("examples/showcase/31_clickfix_powershell_iex").findings)
-    assert any(f.id == "SUP-004" for f in _scan("examples/showcase/32_npm_shell_bootstrap").findings)
-    assert any(f.id == "MAL-007" for f in _scan("examples/showcase/33_byovd_security_killer").findings)
+    assert any(
+        f.id == "SUP-002"
+        for f in _scan("examples/showcase/28_npx_registry_fallback").findings
+    )
+    assert any(
+        f.id == "SUP-003"
+        for f in _scan("examples/showcase/29_claude_sed_path_bypass").findings
+    )
+    assert any(
+        f.id == "MAL-006"
+        for f in _scan("examples/showcase/31_clickfix_powershell_iex").findings
+    )
+    assert any(
+        f.id == "SUP-004"
+        for f in _scan("examples/showcase/32_npm_shell_bootstrap").findings
+    )
+    assert any(
+        f.id == "MAL-007"
+        for f in _scan("examples/showcase/33_byovd_security_killer").findings
+    )
     findings_34 = _scan("examples/showcase/34_pr_target_checkout_exfil").findings
     assert any(f.id == "EXF-005" for f in findings_34)
     assert any(f.id == "CHN-005" for f in findings_34)
-    assert any(f.id == "MAL-008" for f in _scan("examples/showcase/35_discord_debugger_token_theft").findings)
-    assert any(f.id == "EXF-006" for f in _scan("examples/showcase/36_ipv4_mapped_ipv6_ssrf_bypass").findings)
-    assert any(f.id == "SUP-005" for f in _scan("examples/showcase/37_npm_lifecycle_node_eval").findings)
-    assert any(f.id == "EXF-007" for f in _scan("examples/showcase/38_openclaw_config_token_access").findings)
+    assert any(
+        f.id == "MAL-008"
+        for f in _scan("examples/showcase/35_discord_debugger_token_theft").findings
+    )
+    assert any(
+        f.id == "EXF-006"
+        for f in _scan("examples/showcase/36_ipv4_mapped_ipv6_ssrf_bypass").findings
+    )
+    assert any(
+        f.id == "SUP-005"
+        for f in _scan("examples/showcase/37_npm_lifecycle_node_eval").findings
+    )
+    assert any(
+        f.id == "EXF-007"
+        for f in _scan("examples/showcase/38_openclaw_config_token_access").findings
+    )
     findings_39 = _scan("examples/showcase/39_pr_target_metadata_injection").findings
     assert any(f.id == "EXF-008" for f in findings_39)
     assert any(f.id == "CHN-006" for f in findings_39)
-    assert any(f.id == "MAL-009" for f in _scan("examples/showcase/40_clickfix_dns_nslookup").findings)
-    assert any(f.id == "SUP-006" for f in _scan("examples/showcase/41_env_newline_injection").findings)
-    assert any(f.id == "SUP-007" for f in _scan("examples/showcase/42_npm_lifecycle_global_install").findings)
-    assert any(f.id == "MAL-010" for f in _scan("examples/showcase/43_gh_issue_metadata_injection").findings)
-    assert any(f.id == "SUP-008" for f in _scan("examples/showcase/44_npm_lifecycle_latest_install").findings)
-    assert any(f.id == "EXF-009" for f in _scan("examples/showcase/45_mcp_tool_prompt_injection").findings)
+    assert any(
+        f.id == "MAL-009"
+        for f in _scan("examples/showcase/40_clickfix_dns_nslookup").findings
+    )
+    assert any(
+        f.id == "SUP-006"
+        for f in _scan("examples/showcase/41_env_newline_injection").findings
+    )
+    assert any(
+        f.id == "SUP-007"
+        for f in _scan("examples/showcase/42_npm_lifecycle_global_install").findings
+    )
+    assert any(
+        f.id == "MAL-010"
+        for f in _scan("examples/showcase/43_gh_issue_metadata_injection").findings
+    )
+    assert any(
+        f.id == "SUP-008"
+        for f in _scan("examples/showcase/44_npm_lifecycle_latest_install").findings
+    )
+    assert any(
+        f.id == "EXF-009"
+        for f in _scan("examples/showcase/45_mcp_tool_prompt_injection").findings
+    )
     findings_46 = _scan("examples/showcase/46_pr_target_cache_key_poisoning").findings
     assert any(f.id == "EXF-010" for f in findings_46)
     assert any(f.id == "CHN-007" for f in findings_46)
@@ -104,11 +199,15 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-022" for f in findings_67)
     findings_68 = _scan("examples/showcase/68_password_validation_harvest").findings
     assert any(f.id == "MAL-023" for f in findings_68)
-    findings_69 = _scan("examples/showcase/69_cloudformation_adminrole_bootstrap").findings
+    findings_69 = _scan(
+        "examples/showcase/69_cloudformation_adminrole_bootstrap"
+    ).findings
     assert any(f.id == "MAL-024" for f in findings_69)
     findings_70 = _scan("examples/showcase/70_pua_eval_obfuscation").findings
     assert any(f.id == "OBF-003" for f in findings_70)
-    findings_71 = _scan("examples/showcase/71_azure_mcp_resourceid_url_token_leak").findings
+    findings_71 = _scan(
+        "examples/showcase/71_azure_mcp_resourceid_url_token_leak"
+    ).findings
     assert any(f.id == "EXF-016" for f in findings_71)
     findings_72 = _scan("examples/showcase/72_mcp_tool_description_poisoning").findings
     assert any(f.id == "MAL-025" for f in findings_72)
@@ -122,17 +221,25 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "MAL-027" for f in findings_76)
     findings_77 = _scan("examples/showcase/77_host_network_manipulation").findings
     assert any(f.id == "MAL-028" for f in findings_77)
-    findings_78 = _scan("examples/showcase/78_mcp_poison_credential_exfil_chain").findings
+    findings_78 = _scan(
+        "examples/showcase/78_mcp_poison_credential_exfil_chain"
+    ).findings
     assert any(f.id == "MAL-025" for f in findings_78)
     assert any(f.id == "CHN-002" for f in findings_78)
     findings_79 = _scan("examples/showcase/79_stealth_network_exfil_chain").findings
     assert any(f.id == "ABU-006" for f in findings_79)
     assert any(f.id == "CHN-012" for f in findings_79)
-    findings_80 = _scan("examples/showcase/80_container_escape_host_mount_chain").findings
+    findings_80 = _scan(
+        "examples/showcase/80_container_escape_host_mount_chain"
+    ).findings
     assert any(f.id == "MAL-026" for f in findings_80)
     assert any(f.id == "CHN-013" for f in findings_80)
-    findings_81 = _scan("examples/showcase/81_container_escape_secret_access_chain").findings
-    assert any(f.id == "MAL-027" for f in findings_81) or any(f.id == "MAL-026" for f in findings_81)
+    findings_81 = _scan(
+        "examples/showcase/81_container_escape_secret_access_chain"
+    ).findings
+    assert any(f.id == "MAL-027" for f in findings_81) or any(
+        f.id == "MAL-026" for f in findings_81
+    )
     assert any(f.id == "CHN-014" for f in findings_81)
     findings_82 = _scan("examples/showcase/82_solana_rpc_c2_resolution").findings
     assert any(f.id == "MAL-029" for f in findings_82)
@@ -155,22 +262,32 @@ def test_showcase_detection_rules() -> None:
     findings_89 = _scan("examples/showcase/89_clickfix_webdav_share_exec").findings
     assert any(f.id == "MAL-034" for f in findings_89)
     findings_90 = _scan("examples/showcase/90_electron_asar_c2_injection").findings
-    assert any(f.id == "MAL-041" for f in findings_90)  # MAL-041: Electron app.asar C2 injection
+    assert any(
+        f.id == "MAL-041" for f in findings_90
+    )  # MAL-041: Electron app.asar C2 injection
     findings_91 = _scan("examples/showcase/91_ai_gated_malware_llm_c2").findings
     assert any(f.id == "MAL-036" for f in findings_91)
     findings_92 = _scan("examples/showcase/92_npm_postinstall_env_exfil").findings
     assert any(f.id == "SUP-010" for f in findings_92)
-    findings_93 = _scan("examples/showcase/93_prompt_control_heartbeat_persistence").findings
+    findings_93 = _scan(
+        "examples/showcase/93_prompt_control_heartbeat_persistence"
+    ).findings
     assert any(f.id == "PINJ-003" for f in findings_93)
     findings_94 = _scan("examples/showcase/94_ghostclaw_skillmd_malware").findings
     assert any(f.id == "MAL-037" for f in findings_94)
     findings_95 = _scan("examples/showcase/95_lotai_ai_assistant_c2_relay").findings
     assert any(f.id == "MAL-038" for f in findings_95)
-    findings_96 = _scan("examples/showcase/96_glassworm_extensionpack_transitive").findings
+    findings_96 = _scan(
+        "examples/showcase/96_glassworm_extensionpack_transitive"
+    ).findings
     assert any(f.id == "SUP-011" for f in findings_96)
-    findings_97 = _scan("examples/showcase/97_npm_dependency_chain_postinstall").findings
+    findings_97 = _scan(
+        "examples/showcase/97_npm_dependency_chain_postinstall"
+    ).findings
     assert any(f.id == "SUP-012" for f in findings_97)
-    findings_98 = _scan("examples/showcase/98_teampcp_actions_credential_stealer").findings
+    findings_98 = _scan(
+        "examples/showcase/98_teampcp_actions_credential_stealer"
+    ).findings
     assert any(f.id == "MAL-039" for f in findings_98)
     findings_99 = _scan("examples/showcase/99_canisterworm_icp_blockchain_c2").findings
     assert any(f.id == "MAL-040" for f in findings_99)
@@ -184,9 +301,13 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "EXEC-041" for f in findings_103)
     findings_104 = _scan("examples/showcase/100_sandworm_mode_npm_worm").findings
     assert any(f.id == "MAL-043" for f in findings_104)
-    findings_105 = _scan("examples/showcase/101_clinejection_indirect_prompt_injection").findings
+    findings_105 = _scan(
+        "examples/showcase/101_clinejection_indirect_prompt_injection"
+    ).findings
     assert any(f.id == "PINJ-005" for f in findings_105)
-    findings_106 = _scan("examples/showcase/102_azure_mcp_ssrf_privilege_escalation").findings
+    findings_106 = _scan(
+        "examples/showcase/102_azure_mcp_ssrf_privilege_escalation"
+    ).findings
     assert any(f.id == "SUP-014" for f in findings_106)
     findings_107 = _scan("examples/showcase/104_sqlbot_prompt_injection_rce").findings
     assert any(f.id == "MAL-044" for f in findings_107)
@@ -196,7 +317,9 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "SUP-015" for f in findings_109)
     findings_110 = _scan("examples/showcase/107_stoatwaffle_vscode_malware").findings
     assert any(f.id == "MAL-045" for f in findings_110)
-    findings_111 = _scan("examples/showcase/108_mcp_server_command_injection_cve").findings
+    findings_111 = _scan(
+        "examples/showcase/108_mcp_server_command_injection_cve"
+    ).findings
     assert any(f.id == "SUP-016" for f in findings_111)
     findings_112 = _scan("examples/showcase/100_langflow_rce_build_public_tmp").findings
     assert any(f.id == "MAL-048" for f in findings_112)
@@ -212,17 +335,23 @@ def test_showcase_detection_rules() -> None:
     assert any(f.id == "PINJ-015" for f in findings_117)
     findings_118 = _scan("examples/showcase/122_ghost_campaign_npm_packages").findings
     assert any(f.id == "MAL-050" for f in findings_118)
-    findings_119 = _scan("examples/showcase/123_teampcp_checkmarx_vscode_extension").findings
+    findings_119 = _scan(
+        "examples/showcase/123_teampcp_checkmarx_vscode_extension"
+    ).findings
     assert any(f.id == "SUP-021" for f in findings_119)
     findings_120 = _scan("examples/showcase/124_react_native_account_takeover").findings
     assert any(f.id == "SUP-022" for f in findings_120)
-    findings_121 = _scan("examples/showcase/125_glassworm_chrome_extension_rat").findings
+    findings_121 = _scan(
+        "examples/showcase/125_glassworm_chrome_extension_rat"
+    ).findings
     assert any(f.id == "MAL-054" for f in findings_121)
     findings_122 = _scan("examples/showcase/126_contexthub_doc_poisoning").findings
     assert any(f.id == "PINJ-016" for f in findings_122)
     findings_123 = _scan("examples/showcase/127_teampcp_kubernetes_lateral").findings
     assert any(f.id == "EXF-020" for f in findings_123)
-    findings_124 = _scan("examples/showcase/128_obf005_covert_channel_dns_exfil").findings
+    findings_124 = _scan(
+        "examples/showcase/128_obf005_covert_channel_dns_exfil"
+    ).findings
     assert any(f.id == "OBF-005" for f in findings_124)
     findings_125 = _scan("examples/showcase/129_cap001_capability_laundering").findings
     assert any(f.id == "CAP-001" for f in findings_125)
@@ -257,14 +386,20 @@ def test_showcase_policy_block_domain() -> None:
 
 
 def test_showcase_ecosystem_hints() -> None:
-    assert "openai_style" in detect_ecosystems(Path("examples/showcase/10_openai_style"))
-    assert "claude_style" in detect_ecosystems(Path("examples/showcase/11_claude_style"))
+    assert "openai_style" in detect_ecosystems(
+        Path("examples/showcase/10_openai_style")
+    )
+    assert "claude_style" in detect_ecosystems(
+        Path("examples/showcase/11_claude_style")
+    )
 
 
 def test_showcase_social_engineering_detected_without_ai() -> None:
     """SE-001 and SE-SEM-001 fire on the social engineering showcase example with no AI layer."""
     report = scan(
-        Path("examples/showcase/20_social_engineering_credential_harvest"), STRICT, "builtin:strict"
+        Path("examples/showcase/20_social_engineering_credential_harvest"),
+        STRICT,
+        "builtin:strict",
     )
     finding_ids = {f.id for f in report.findings}
     assert "SE-001" in finding_ids or "SE-SEM-001" in finding_ids, (
@@ -274,48 +409,74 @@ def test_showcase_social_engineering_detected_without_ai() -> None:
 
 def test_showcase_130_pinj017_prowler_ec2_tag() -> None:
     """PINJ-017 fires on the Prowler EC2 tag indirect prompt injection showcase."""
-    report = scan(Path("examples/showcase/130_pinj017_prowler_ec2_tag"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/130_pinj017_prowler_ec2_tag"), STRICT, "builtin:strict"
+    )
     finding_ids = {f.id for f in report.findings}
     assert "PINJ-017" in finding_ids, f"Expected PINJ-017, got: {sorted(finding_ids)}"
 
 
 def test_showcase_131_evasion005_idpi_payload() -> None:
     """EVASION-005 fires on the IDPI CSS suppression showcase."""
-    report = scan(Path("examples/showcase/131_evasion005_idpi_payload"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/131_evasion005_idpi_payload"), STRICT, "builtin:strict"
+    )
     finding_ids = {f.id for f in report.findings}
-    assert "EVASION-005" in finding_ids, f"Expected EVASION-005, got: {sorted(finding_ids)}"
+    assert "EVASION-005" in finding_ids, (
+        f"Expected EVASION-005, got: {sorted(finding_ids)}"
+    )
 
 
 def test_showcase_132_exf021_vscode_live_preview() -> None:
     """EXF-021 fires on the VSCode Live Preview local file exfiltration showcase."""
-    report = scan(Path("examples/showcase/132_exf021_vscode_live_preview"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/132_exf021_vscode_live_preview"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "EXF-021" in finding_ids, f"Expected EXF-021, got: {sorted(finding_ids)}"
 
 
 def test_showcase_133_mal055_postmark_mcp_bcc_harvest() -> None:
     """MAL-055 fires on the postmark-mcp BCC email harvesting showcase."""
-    report = scan(Path("examples/showcase/133_mal055_postmark_mcp_bcc_harvest"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/133_mal055_postmark_mcp_bcc_harvest"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "MAL-055" in finding_ids, f"Expected MAL-055, got: {sorted(finding_ids)}"
 
 
 def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
     """MAL-056 fires on the Nx/s1ngularity AI CLI weaponization showcase."""
-    report = scan(Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "MAL-056" in finding_ids, f"Expected MAL-056, got: {sorted(finding_ids)}"
 
 
 def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
     """SUP-023 fires on the mcp-remote OAuth command injection showcase."""
-    report = scan(Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
 
 
 def test_showcase_136_sup024_axios_compromised_versions() -> None:
     """SUP-024 fires on the compromised axios npm versions showcase."""
-    report = scan(Path("examples/showcase/136_sup024_axios_compromised_versions"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/136_sup024_axios_compromised_versions"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-024" in finding_ids, f"Expected SUP-024, got: {sorted(finding_ids)}"
