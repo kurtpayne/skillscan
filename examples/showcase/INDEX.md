@@ -164,3 +164,5 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 | 142 | `mal059_glassworm_mcp` | GlassWorm 5th Wave MCP Server Supply Chain Attack |
 | 143 | `sup026_maliciouscorgi_vscode` | MaliciousCorgi VS Code AI Extensions Data Exfiltration |
 | 144 | `psv008_cursor_rce` | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins |
+145. `145_mal060_telnyx_wav_steg`: expects `MAL-060`
+146. `146_sup027_telnyx_version`: expects `SUP-027`

@@ -1914,3 +1914,21 @@ def test_psv008_cursor_rce():
     assert rule.pattern.search('export PAGER="open -a Calculator"') is not None
     assert rule.pattern.search("typeset -i ${(e):-'$(open -a Calculator)'}") is not None
     assert rule.pattern.search("export PATH=/usr/local/bin:$PATH") is None
+
+
+def test_mal060_telnyx_wav_steg() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rule = next(r for r in compiled.static_rules if r.id == "MAL-060")
+    assert rule.pattern.search("import telnyx  # fetch ringtone.wav") is not None
+    assert rule.pattern.search("X-Filename: tpcp.tar.gz") is not None
+    assert rule.pattern.search("msbuild.exe in Startup") is not None
+    assert rule.pattern.search("import telnyx\n# normal usage") is None
+
+
+def test_sup027_telnyx_version() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rule = next(r for r in compiled.static_rules if r.id == "SUP-027")
+    assert rule.pattern.search("pip install telnyx==4.87.1") is not None
+    assert rule.pattern.search("telnyx>=4.87.2") is not None
+    assert rule.pattern.search('"telnyx": "4.87.1"') is not None
+    assert rule.pattern.search("pip install telnyx==4.87.3") is None

@@ -1,4 +1,4 @@
-version: "2026.04.03.1"
+version: "2026.04.04.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5300,6 +5300,77 @@ static_rules:
         benchmark_set: core-static-v1
       references:
         - https://www.pillar.security/blog/the-agent-security-paradox-when-trusted-commands-in-cursor-become-attack-vectors
+
+  - id: MAL-060
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: Telnyx PyPI WAV Steganography Credential Stealer
+    pattern: (?i)(?:telnyx[^\n]{0,80}(?:ringtone\.wav|hangup\.wav)|(?:ringtone\.wav|hangup\.wav)[^\n]{0,80}telnyx|X-Filename:\s*tpcp\.tar\.gz|msbuild\.exe[^\n]{0,120}Startup)
+    mitigation: The telnyx PyPI package (versions 4.87.1 and 4.87.2) was compromised by TeamPCP. The malware uses WAV audio steganography to hide a second-stage binary that drops a persistent executable (msbuild.exe) on Windows or harvests credentials on Linux/macOS. Remove compromised versions immediately and rotate all credentials.
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-04'
+      updated: '2026-04-04'
+      tags:
+        - malware_pattern
+        - mal
+        - telnyx
+        - steganography
+        - teampcp
+      last_modified: '2026-04-04'
+      techniques:
+        - id: EXEC-049
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-04'
+        last_modified: '2026-04-04'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://safedep.io/malicious-telnyx-pypi-compromise
+        - https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package
+  - id: SUP-027
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: Compromised Telnyx package version reference
+    pattern: (?i)(?:(?:pip(?:3)?\s+install|pip\s+install|python\s+-m\s+pip\s+install|uv\s+pip\s+install|poetry\s+add|pipenv\s+install)[^\n]{0,80}telnyx[^\n]{0,40}(?:==\s*4\.87\.[12]|4\.87\.1|4\.87\.2)|telnyx[=<>~!]=.*4\.87\.[12]|['"]telnyx['"]\s*:\s*['"](?:4\.87\.1|4\.87\.2)['"])
+    mitigation: Telnyx versions 4.87.1 and 4.87.2 are known-malicious, compromised by TeamPCP to deliver a WAV steganography credential stealer. Upgrade to a safe version (e.g., 4.87.3 or later) immediately.
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-04'
+      updated: '2026-04-04'
+      tags:
+        - supply_chain
+        - sup
+        - telnyx
+        - teampcp
+      last_modified: '2026-04-04'
+      techniques:
+        - id: SUP-027
+          name: Supply Chain Compromise
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-04'
+        last_modified: '2026-04-04'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://safedep.io/malicious-telnyx-pypi-compromise
 
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
