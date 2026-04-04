@@ -1,3 +1,18 @@
+## 2026-04-04
+rulepack: 2026.04.04.1
+
+Two new detection rules, IOC enrichment, and vuln DB updates for the Telnyx PyPI compromise.
+
+- Added `MAL-060` (critical): **Telnyx PyPI WAV Steganography Credential Stealer** — The telnyx PyPI package (versions 4.87.1 and 4.87.2) was compromised by TeamPCP. The malware uses WAV audio steganography to hide a second-stage binary that drops a persistent executable (msbuild.exe) on Windows or harvests credentials on Linux/macOS.
+- Added `SUP-027` (critical): **Compromised Telnyx package version reference** — Detects references to the known-malicious telnyx versions 4.87.1 and 4.87.2.
+
+- IOC update: added `83.142.209.203` and `83.142.209.0/24` to IP IOC DB.
+- Vuln DB update: added `telnyx` python versions 4.87.1 and 4.87.2 as PYPI-TELNYX-2026-03 (critical, fixed 4.87.3).
+
+Sources:
+- SafeDep (Telnyx Compromise): https://safedep.io/malicious-telnyx-pypi-compromise
+- StepSecurity (Telnyx Compromise): https://www.stepsecurity.io/blog/teampcp-plants-wav-steganography-credential-stealer-in-telnyx-pypi-package
+
 ## 2026-04-03
 rulepack: 2026.04.03.1
 

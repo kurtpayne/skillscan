@@ -404,3 +404,9 @@ def test_143_sup026_maliciouscorgi_vscode():
 def test_144_psv008_cursor_rce():
     findings = _scan("examples/showcase/144_psv008_cursor_rce")
     assert any(f.id == "PSV-008" for f in findings.findings)
+
+    findings_145 = _scan("examples/showcase/145_mal060_telnyx_wav_steg")
+    assert any(f.id == "MAL-060" for f in findings_145.findings)
+
+    findings_146 = _scan("examples/showcase/146_sup027_telnyx_version")
+    assert any(f.id == "SUP-027" for f in findings_146.findings)
