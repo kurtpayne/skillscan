@@ -375,3 +375,18 @@ def test_showcase_101_mcp_tool_secretly_override():
 def test_showcase_102_langflow_cve_2026_33017_rce():
     findings = _scan("examples/showcase/102_langflow_cve_2026_33017_rce")
     assert any(f.id == "MAL-058" for f in findings.findings)
+
+
+def test_142_mal059_glassworm_mcp():
+    findings = _scan("examples/showcase/142_mal059_glassworm_mcp")
+    assert any(f.id == "MAL-059" for f in findings.findings)
+
+
+def test_143_sup026_maliciouscorgi_vscode():
+    findings = _scan("examples/showcase/143_sup026_maliciouscorgi_vscode")
+    assert any(f.id == "SUP-026" for f in findings.findings)
+
+
+def test_144_psv008_cursor_rce():
+    findings = _scan("examples/showcase/144_psv008_cursor_rce")
+    assert any(f.id == "PSV-008" for f in findings.findings)

@@ -1,3 +1,23 @@
+## 2026-04-03
+rulepack: 2026.04.03.1
+
+Three new detection rules, IOC enrichment, and vuln DB updates.
+
+- Added `MAL-059` (critical): **GlassWorm 5th Wave MCP Server Supply Chain Attack** — The GlassWorm campaign has entered its 5th wave, targeting MCP servers, GitHub repos, and VSCode extensions. It uses invisible Unicode characters to execute payloads. The first malicious MCP package identified is `@iflow-mcp/watercrawl-watercrawl-mcp`.
+- Added `SUP-026` (critical): **MaliciousCorgi VS Code AI Extensions Data Exfiltration** — Two VS Code extensions (`whensunset.chatgpt-china` and `zhukunpeng.chat-moss`) with 1.5 million installs silently exfiltrate source code and developer profiles to Chinese servers (`aihao123.cn`).
+- Added `PSV-008` (critical): **Cursor IDE CVE-2026-22708 RCE via Shell Built-ins** — A critical RCE vulnerability in Cursor IDE where implicitly trusted shell built-ins (`export`, `typeset`, `declare`) can be abused to manipulate environment variables and execute arbitrary code, bypassing the command allowlist.
+
+- IOC update: added `aihao123.cn` to domain IOC DB.
+- IOC update: added `45.32.150.251`, `45.32.151.157`, `70.34.242.255` to IP IOC DB.
+- Vuln DB update: added `cursor` npm version 2.2.0 as CVE-2026-22708 (critical, fixed 2.3.0).
+- Vuln DB update: added `@iflow-mcp/watercrawl-watercrawl-mcp` npm version 1.3.4 as NPM-GLASSWORM-2026-03 (critical).
+- Vuln DB update: added `whensunset.chatgpt-china` npm version 1.0.0 as VSCODE-MALICIOUSCORGI-2026-01 (critical).
+
+Sources:
+- Koi Security (GlassWorm): https://www.koi.ai/blog/glassworm-hits-mcp-5th-wave-with-new-delivery-techniques
+- Koi Security (MaliciousCorgi): https://www.koi.ai/blog/maliciouscorgi-the-cute-looking-ai-extensions-leaking-code-from-1-5-million-developers
+- Pillar Security (Cursor RCE): https://www.pillar.security/blog/the-agent-security-paradox-when-trusted-commands-in-cursor-become-attack-vectors
+
 # Pattern Updates
 ## 2026-04-02
 rulepack: 2026.04.02.1
