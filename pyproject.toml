@@ -64,10 +64,9 @@ lint = [
 trace = [
   "skillscan-trace>=0.1.0",
 ]
-# LLM-powered adversarial skill fuzzer (M19)
+# LLM-powered adversarial skill fuzzer (M19) — now a standalone package
 fuzzer = [
-  "openai>=1.30.0",
-  "click>=8.1.0",
+  "skillscan-fuzzer>=0.1.0",
 ]
 # ONNX export verification and INT8 quantization scripts (scripts/verify_onnx_export.py, scripts/quantize_onnx.py)
 model-quality = [
