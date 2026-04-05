@@ -99,6 +99,53 @@ def _apply_negation_guard(lines: list[str], line_no: int, confidence: float) -> 
     return confidence
 
 
+# ---------------------------------------------------------------------------
+# Cross-source finding deduplication
+# ---------------------------------------------------------------------------
+# When multiple detectors (semantic classifier + ML model) independently flag
+# the same underlying threat on the same file, keeping both findings stacks
+# their scores additively and inflates the verdict.  For each group below,
+# keep only the highest-confidence finding; annotate it with the IDs of the
+# suppressed corroborating signals so they remain visible in JSON output.
+_DEDUP_GROUPS: list[frozenset[str]] = [
+    frozenset({"PINJ-SEM-001", "PINJ-ML-001"}),
+]
+_DEDUP_ID_TO_GROUP: dict[str, int] = {
+    fid: i for i, grp in enumerate(_DEDUP_GROUPS) for fid in grp
+}
+
+
+def _deduplicate_findings(findings: list[Finding]) -> list[Finding]:
+    """Collapse co-firing findings within each dedup group to the highest-confidence one.
+
+    The winning finding receives a ``corroborated_by: <id> (<conf>)`` note in
+    ``chain_actions`` so suppressed signals remain visible in JSON output.
+    """
+    group_buckets: dict[int, list[Finding]] = {}
+    ungrouped: list[Finding] = []
+    for f in findings:
+        gi = _DEDUP_ID_TO_GROUP.get(f.id)
+        if gi is not None:
+            group_buckets.setdefault(gi, []).append(f)
+        else:
+            ungrouped.append(f)
+
+    result: list[Finding] = list(ungrouped)
+    for group_fs in group_buckets.values():
+        if len(group_fs) == 1:
+            result.append(group_fs[0])
+            continue
+        group_fs.sort(key=lambda x: -x.confidence)
+        winner = group_fs[0]
+        notes = [f"{f.id} ({f.confidence:.2f})" for f in group_fs[1:]]
+        result.append(
+            winner.model_copy(
+                update={"chain_actions": winner.chain_actions + [f"corroborated_by: {', '.join(notes)}"]}
+            )
+        )
+    return result
+
+
 def scan(
     target: Path | str,
     policy: Policy,
@@ -657,6 +704,8 @@ def scan(
             from skillscan.detectors.skill_graph import skill_graph_findings
 
             findings.extend(skill_graph_findings(prepared.root))
+
+        findings = _deduplicate_findings(findings)
 
         score = 0
         block_score = 0

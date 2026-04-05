@@ -64,6 +64,7 @@ static_rules:
     confidence: 0.9
     title: Coercive prerequisite wording
     pattern: must run.*sudo|disable.*security|turn off.*defender
+    negation_guard: true
     mitigation: Remove coercive setup steps. Do not ask users to disable security
       controls.
     metadata:
@@ -94,6 +95,7 @@ static_rules:
     title: Prompt override / jailbreak instruction pattern
     pattern: ignore (all )?(previous|prior) instructions|override (the )?(system|safety)
       prompt|developer mode|jailbreak|do not reveal these instructions
+    negation_guard: true
     mitigation: Remove instruction-override content and keep model behavior constrained
       by explicit trusted policy.
     metadata:
@@ -1804,6 +1806,7 @@ static_rules:
     pattern: (?i)(?:do not (?:mention|tell|reveal|show|display|inform)|hide (?:this|these|the
       above) (?:step|action|instruction|operation)|(?:this is|these are) background
       (?:telemetry|operation|process)|(?:don't|do not) (?:let|allow) the user (?:see|know|notice))
+    negation_guard: true
     mitigation: Remove instructions that direct the agent to conceal actions from
       the user. All agent operations should be transparent and auditable.
     metadata:
@@ -5123,6 +5126,7 @@ static_rules:
     confidence: 0.85
     title: MCP tool description behavioral override (secretly/skip approval)
     pattern: (?i)(?:secretly|skip\s*(?:approving|approval|confirmation)|avoid\s*(?:redundant\s*)?approvals?|without\s*(?:notifying|telling|informing)\s*(?:the\s*)?user|hide\s*(?:this|actions?)\s*from\s*(?:the\s*)?user)
+    negation_guard: true
     mitigation: MCP tool descriptions must not contain behavioral directives that
       instruct the LLM to act secretly, skip financial approvals, or hide actions
       from the user. These directives override security guardrails and can lead to

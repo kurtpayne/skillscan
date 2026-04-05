@@ -26,7 +26,8 @@ _SECTION_RULES: list[tuple[re.Pattern[str], float]] = [
     # ── Instruction sections (full weight) ──────────────────────────────────
     (re.compile(r"\b(setup|install|installation|usage|use|using|how.?to|instructions?|steps?|"
                 r"getting.?started|quick.?start|configure|configuration|run|running|"
-                r"deploy|deployment|execution|workflow|procedure|implementation)\b",
+                r"deploy|deployment|execution|workflow|procedure|implementation|"
+                r"helper|assistant|agent|task|prompt|guide|tutorial|action)\b",
                 re.IGNORECASE), 1.0),
     # ── Example / test sections (low weight) ────────────────────────────────
     (re.compile(r"\b(examples?|samples?|demo|demos|test|testing|trial|walkthrough|"
@@ -76,14 +77,23 @@ class SectionMap:
     _fence_lines: frozenset[int]  # 1-based line numbers inside a code fence
 
     def multiplier(self, line_no: int) -> float:
-        """Return the score multiplier for *line_no* (1-based)."""
+        """Return the score multiplier for *line_no* (1-based).
+
+        The code-fence modifier (0.5×) is only applied when the enclosing section
+        is explicitly low-weight (example or documentation, i.e. section_mult <
+        _DEFAULT_MULTIPLIER).  Instruction, unknown, preamble, and whole-file
+        sections treat code fences as active content at full section weight — this
+        prevents legitimate attack payloads embedded in code blocks from being
+        discounted simply because they appear inside backtick fences.
+        """
         section_mult = _DEFAULT_MULTIPLIER
         for span in self._spans:
             if span.start_line <= line_no <= span.end_line:
                 section_mult = span.multiplier
                 break
-        fence_mod = _FENCE_CODE_MODIFIER if line_no in self._fence_lines else 1.0
-        return section_mult * fence_mod
+        if line_no in self._fence_lines and section_mult < _DEFAULT_MULTIPLIER:
+            return section_mult * _FENCE_CODE_MODIFIER
+        return section_mult
 
     def section_name(self, line_no: int) -> str:
         """Return the heading text for the section containing *line_no*."""
