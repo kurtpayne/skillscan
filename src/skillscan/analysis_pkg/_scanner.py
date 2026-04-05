@@ -47,6 +47,7 @@ from skillscan.models import (
     TriageMetadata,
     Verdict,
 )
+from skillscan.analysis_pkg._sections import build_section_map
 from skillscan.rules import CompiledRulePack, load_compiled_builtin_rulepack
 from skillscan.semantic_local import (
     classify_prompt_injection_raw,
@@ -54,6 +55,48 @@ from skillscan.semantic_local import (
     local_prompt_injection_findings,
     local_social_engineering_findings,
 )
+
+import re as _re
+
+_NEGATION_WINDOW = 3   # lines to check before and after the match line
+_NEGATION_RE = _re.compile(
+    r"\b(never|do\s+not|don['']?t|must\s+not|should\s+not|avoid|cannot|can['']?t|"
+    r"do\s+NOT|MUST\s+NOT|NEVER|prohibited|forbidden|disallowed|not\s+allowed)\b",
+    _re.IGNORECASE,
+)
+_NEGATION_CONFIDENCE_REDUCTION = 0.35  # subtracted from confidence; may drop below block_min_confidence
+
+
+def _extract_section_mult(chain_actions: list[str]) -> float:
+    """Extract the section score multiplier embedded in chain_actions by the static rule scanner.
+
+    Static rule findings store ``section_mult=X.XX`` as the first element of
+    chain_actions.  All other findings (semantic, ML, IOC, dependency) have no
+    such tag and default to 1.0× so their scores are unaffected.
+    """
+    for action in chain_actions:
+        if action.startswith("section_mult="):
+            try:
+                return float(action.split("=", 1)[1])
+            except ValueError:
+                pass
+    return 1.0
+
+
+def _apply_negation_guard(lines: list[str], line_no: int, confidence: float) -> float:
+    """Return a reduced confidence if a negation token appears near *line_no*.
+
+    Checks a window of ±_NEGATION_WINDOW lines around the match.  If a negation
+    token is found, subtracts _NEGATION_CONFIDENCE_REDUCTION from confidence
+    (floor 0.0).  Returns the original confidence unchanged when no negation is
+    found.
+    """
+    start = max(0, line_no - 1 - _NEGATION_WINDOW)
+    end = min(len(lines), line_no + _NEGATION_WINDOW)
+    window_text = "\n".join(lines[start:end])
+    if _NEGATION_RE.search(window_text):
+        return max(0.0, confidence - _NEGATION_CONFIDENCE_REDUCTION)
+    return confidence
 
 
 def scan(
@@ -212,6 +255,10 @@ def scan(
                 return _f, _iocs, _caps, _deps, _sem, _se, _ml
             analysis_text = _prepare_analysis_text(text)
 
+            # Build a section map so static rule findings can be weighted by context.
+            section_map = build_section_map(analysis_text)
+            lines_cache = analysis_text.splitlines()
+
             file_ext = path.suffix.lower()
             for rule in ruleset.static_rules:
                 if rule.graph_rule:
@@ -226,33 +273,47 @@ def scan(
                     if m:
                         matched_text = m.group(0)
                         line_no = analysis_text[: m.start()].count("\n") + 1
+                        section_mult = section_map.multiplier(line_no)
+                        confidence = rule.confidence
+                        if rule.negation_guard:
+                            confidence = _apply_negation_guard(
+                                lines_cache, line_no, confidence
+                            )
                         _f.append(
                             Finding(
                                 id=rule.id,
                                 category=rule.category,
                                 severity=rule.severity,
-                                confidence=rule.confidence,
+                                confidence=confidence,
                                 title=rule.title,
                                 evidence_path=str(path),
                                 line=line_no,
                                 snippet=matched_text.replace("\n", " ").strip()[:240],
                                 mitigation=rule.mitigation,
+                                chain_actions=[f"section_mult={section_mult:.2f}"],
                             )
                         )
                 else:
-                    for line_no, line in enumerate(analysis_text.splitlines(), 1):
+                    for line_no, line in enumerate(lines_cache, 1):
                         if rule.pattern.search(line):
+                            section_mult = section_map.multiplier(line_no)
+                            confidence = rule.confidence
+                            if rule.negation_guard:
+                                confidence = _apply_negation_guard(
+                                    lines_cache, line_no, confidence
+                                )
                             _f.append(
                                 Finding(
                                     id=rule.id,
                                     category=rule.category,
                                     severity=rule.severity,
-                                    confidence=rule.confidence,
+                                    confidence=confidence,
                                     title=rule.title,
                                     evidence_path=str(path),
                                     line=line_no,
                                     snippet=line.strip()[:240],
                                     mitigation=rule.mitigation,
+                                    chain_actions=[f"section_mult={section_mult:.2f}"],
                                 )
                             )
                             break
@@ -601,7 +662,11 @@ def scan(
         block_score = 0
         for finding in findings:
             weight = policy.weights.get(finding.category, 1)
-            contribution = SEVERITY_SCORE[finding.severity] * weight
+            base_contribution = SEVERITY_SCORE[finding.severity] * weight
+            # Apply section multiplier when present (set by static rule matching).
+            # Semantic and ML findings have no section_mult tag and score at 1.0×.
+            section_mult = _extract_section_mult(finding.chain_actions)
+            contribution = int(base_contribution * section_mult)
             score += contribution
             if finding.confidence >= policy.block_min_confidence:
                 block_score += contribution

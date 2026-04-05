@@ -47,6 +47,7 @@ class StaticRule(BaseModel):
     metadata: RuleMetadata | None = None
     graph_rule: bool = False  # True = detection is in skill_graph.py; pattern is a sentinel (never matches)
     multiline: bool = False  # True = match against full file text instead of line-by-line
+    negation_guard: bool = False  # True = reduce confidence if a negation token precedes the match
 
 
 class ChainRule(BaseModel):
@@ -81,6 +82,7 @@ class CompiledStaticRule:
     language: str | None = None  # e.g. "javascript", "ruby", "go", "rust"
     graph_rule: bool = False  # True = skip pattern matching; detection is in skill_graph.py
     multiline: bool = False  # True = match against full file text instead of line-by-line
+    negation_guard: bool = False  # True = reduce confidence when negation precedes the match
 
 
 @dataclass
@@ -271,6 +273,7 @@ def load_compiled_builtin_rulepack(channel: str = "stable") -> CompiledRulePack:
                 language=(r.metadata.language if r.metadata else None),
                 graph_rule=r.graph_rule,
                 multiline=_is_multiline,
+                negation_guard=r.negation_guard,
             )
         )
     action_patterns = {
