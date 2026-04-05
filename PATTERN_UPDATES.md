@@ -1,3 +1,20 @@
+## 2026-04-05
+rulepack: 2026.04.05.1
+
+Two new detection rules, IOC enrichment, and vuln DB updates.
+
+- Added `MAL-061` (critical): **NomShub cursor-tunnel sandbox escape and persistence via shell builtins** — NomShub (disclosed April 3, 2026 by Straiker) is a critical vulnerability chain in Cursor AI code editor. A malicious repository embeds indirect prompt injection to trick Cursor's AI agent into running shell builtin chains (export/cd) that escape the workspace sandbox, overwrite `~/.zshenv` for persistence, and activate cursor-tunnel for persistent remote shell access via spawn/fs_write RPC methods. The cursor-tunnel binary can also be hijacked via GitHub device code OAuth flow. Fixed in Cursor 3.0.
+- Added `SUP-028` (critical): **UNC1069 social engineering lure domain (teams.onlivemeet.com)** — `teams.onlivemeet.com` is a known-malicious domain operated by UNC1069 (Sapphire Sleet / North Korean APT). The domain impersonates Microsoft Teams to trick open-source npm/Node.js maintainers into joining fake video calls, during which a RAT is installed. The compromised maintainer accounts are then used to publish malicious npm packages (e.g., axios 1.14.1 and 0.30.4 in the March 2026 Axios supply chain attack).
+
+- IOC update: added `teams.onlivemeet.com` and `onlivemeet.com` to domain IOC DB.
+- Vuln DB update: added `cursor` npm version 2.x as NOMSHUB-2026-04 (critical, fixed 3.0.0).
+
+Sources:
+- Straiker (NomShub): https://www.straiker.ai/blog/nomshub-cursor-remote-tunneling-sandbox-breakout
+- The Hacker News (UNC1069): https://thehackernews.com/2026/04/unc1069-social-engineering-of-axios.html
+- Socket.dev (UNC1069): https://socket.dev/blog/attackers-hunting-high-impact-nodejs-maintainers
+- Microsoft Security Blog (Axios/UNC1069): https://www.microsoft.com/en-us/security/blog/2026/04/01/mitigating-the-axios-npm-supply-chain-compromise/
+
 ## 2026-04-04
 rulepack: 2026.04.04.1
 

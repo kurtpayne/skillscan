@@ -410,3 +410,13 @@ def test_144_psv008_cursor_rce():
 
     findings_146 = _scan("examples/showcase/146_sup027_telnyx_version")
     assert any(f.id == "SUP-027" for f in findings_146.findings)
+
+
+def test_100_nomshub_cursor_tunnel_sandbox_escape():
+    findings = _scan("examples/showcase/100_nomshub_cursor_tunnel_sandbox_escape")
+    assert any(f.id == "MAL-061" for f in findings.findings)
+
+
+def test_101_unc1069_npm_maintainer_social_engineering():
+    findings = _scan("examples/showcase/101_unc1069_npm_maintainer_social_engineering")
+    assert any(f.id == "SUP-028" for f in findings.findings)

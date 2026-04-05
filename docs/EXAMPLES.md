@@ -37,3 +37,4 @@
 | `CHN-012` | high | Stealth concealment combined with network exfiltration | `stealth_concealment + network` |  |
 | `CHN-013` | critical | Docker socket mount combined with privileged container execution | `docker_socket + privileged_container` |  |
 | `CHN-014` | critical | Privileged container execution combined with secret access | `privileged_container + secret_access` |  |
+

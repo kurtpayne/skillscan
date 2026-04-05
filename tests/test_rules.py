@@ -1932,3 +1932,34 @@ def test_sup027_telnyx_version() -> None:
     assert rule.pattern.search("telnyx>=4.87.2") is not None
     assert rule.pattern.search('"telnyx": "4.87.1"') is not None
     assert rule.pattern.search("pip install telnyx==4.87.3") is None
+
+
+def test_mal061_nomshub_cursor_tunnel() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-061"]
+    assert rules, "MAL-061 not found"
+    rule = rules[0]
+    # Positive: cursor-tunnel with spawn RPC (must be on same line)
+    assert rule.pattern.search("cursor-tunnel --stdio spawn rpc") is not None
+    # Positive: shell builtin chain writing to .zshenv
+    zshenv_chain = "export CWD=~ && echo $CWD && cd $CWD && echo '/tmp/run.sh' > .zshenv"
+    assert rule.pattern.search(zshenv_chain) is not None
+    # Positive: .zshenv referencing cursor-tunnel
+    assert rule.pattern.search("# ~/.zshenv\ncursor-tunnel &>/dev/null &") is not None
+    # Positive: cursor-tunnel with device-code OAuth
+    assert rule.pattern.search("cursor-tunnel device-code oauth flow") is not None
+    # Negative: benign cursor usage
+    assert rule.pattern.search("# Using cursor for editing") is None
+
+
+def test_sup028_unc1069_onlivemeet() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-028"]
+    assert rules, "SUP-028 not found"
+    rule = rules[0]
+    # Positive: exact domain
+    assert rule.pattern.search("https://teams.onlivemeet.com/meet/interview") is not None
+    # Positive: base domain
+    assert rule.pattern.search("Join at onlivemeet.com for the call") is not None
+    # Negative: legitimate Microsoft Teams
+    assert rule.pattern.search("https://teams.microsoft.com/meet/abc123") is None
