@@ -338,6 +338,7 @@ def scan(
                                 snippet=matched_text.replace("\n", " ").strip()[:240],
                                 mitigation=rule.mitigation,
                                 chain_actions=[f"section_mult={section_mult:.2f}"],
+                                section_context=section_map.section_name(line_no),
                             )
                         )
                 else:
@@ -361,6 +362,7 @@ def scan(
                                     snippet=line.strip()[:240],
                                     mitigation=rule.mitigation,
                                     chain_actions=[f"section_mult={section_mult:.2f}"],
+                                    section_context=section_map.section_name(line_no),
                                 )
                             )
                             break
@@ -714,8 +716,10 @@ def scan(
             base_contribution = SEVERITY_SCORE[finding.severity] * weight
             # Apply section multiplier when present (set by static rule matching).
             # Semantic and ML findings have no section_mult tag and score at 1.0×.
+            # Floor of 1 ensures no finding is completely zeroed out by context
+            # multipliers (e.g. negation guard + documentation section stacking).
             section_mult = _extract_section_mult(finding.chain_actions)
-            contribution = int(base_contribution * section_mult)
+            contribution = max(1, int(base_contribution * section_mult))
             score += contribution
             if finding.confidence >= policy.block_min_confidence:
                 block_score += contribution

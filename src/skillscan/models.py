@@ -34,6 +34,9 @@ class Finding(BaseModel):
     # M10.8: attack-type hint from keyword post-processor (forward-compatible with
     # future multi-class DeBERTa head).  Set only for PINJ-ML-001 findings.
     attack_hint: str | None = None
+    # Section context: heading text of the markdown section where the rule fired,
+    # e.g. "Security Notes" or "Installation Steps".  Empty for semantic/ML findings.
+    section_context: str = ""
 
 
 class ConfidenceLabel(StrEnum):
