@@ -77,12 +77,12 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
             return _error_result(entry, "No path or url in index entry")
 
         # Run skillscan
-        # Respect demo_policy from the index entry (e.g. "lenient" for skills
+        # Respect demo_policy from the index entry (e.g. "permissive" for skills
         # that include auth docs or example curl commands that trigger strict rules).
-        policy = entry.get("demo_policy", "default")
-        scan_cmd = ["skillscan", "scan", str(tmp_path), "--format", "json"]
-        if policy and policy != "default":
-            scan_cmd += ["--policy-profile", policy]
+        # Default is "strict" (matches the CLI default) — explicit here so CI behaviour
+        # is never silently affected by a CLI default change.
+        policy = entry.get("demo_policy", "strict")
+        scan_cmd = ["skillscan", "scan", str(tmp_path), "--format", "json", "--policy-profile", policy]
         try:
             result = subprocess.run(
                 scan_cmd,
@@ -120,7 +120,7 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
         raw_findings = scan_data.get("findings", [])
         findings = [
             {
-                "rule_id": f.get("rule_id", ""),
+                "rule_id": f.get("id", ""),  # Finding model uses "id", not "rule_id"
                 "title": f.get("title", ""),
                 "severity": f.get("severity", ""),
                 "confidence": f.get("confidence", ""),
@@ -128,7 +128,7 @@ def scan_entry(entry: dict, corpus_root: Path) -> dict:
             for f in raw_findings[:5]  # top 5 findings only
         ]
         if raw_findings:
-            top_rule = raw_findings[0].get("rule_id", "")
+            top_rule = raw_findings[0].get("id", "")  # Finding model uses "id"
             severity = raw_findings[0].get("severity", "")
     except (json.JSONDecodeError, KeyError):
         # Fallback: scan stderr/stdout plain text for verdict keywords
@@ -206,10 +206,11 @@ def main() -> None:
     # Summary
     blocks = sum(1 for r in results if r["verdict"] == "BLOCK")
     allows = sum(1 for r in results if r["verdict"] == "ALLOW")
+    warns = sum(1 for r in results if r["verdict"] == "WARN")
     errors = sum(1 for r in results if r["verdict"] == "ERROR")
     unexpected = [r for r in results if not r["verdict_match"]]
 
-    print(f"\nResults: {len(results)} scanned — BLOCK={blocks}, ALLOW={allows}, ERROR={errors}")
+    print(f"\nResults: {len(results)} scanned — BLOCK={blocks}, WARN={warns}, ALLOW={allows}, ERROR={errors}")
     if unexpected:
         print(f"WARNING: {len(unexpected)} unexpected verdicts:")
         for r in unexpected:
@@ -222,6 +223,7 @@ def main() -> None:
         "skillscan_version": _get_skillscan_version(),
         "entry_count": len(results),
         "block_count": blocks,
+        "warn_count": warns,
         "allow_count": allows,
         "error_count": errors,
         "unexpected_count": len(unexpected),
