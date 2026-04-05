@@ -1,6 +1,6 @@
 {
     "_meta": {
-        "generated": "2026-03-28",
+        "generated": "2026-04-05",
         "source": "OSV.dev (https://osv.dev)",
         "python_packages_checked": [
             "mcp",
@@ -960,6 +960,13 @@
                 "id": "CVE-2026-22708",
                 "severity": "critical",
                 "fixed": "2.3.0"
+            },
+            "2.x": {
+                "id": "NOMSHUB-2026-04",
+                "severity": "critical",
+                "title": "NomShub: cursor-tunnel sandbox escape and persistent remote access via shell builtins",
+                "fixed": "3.0.0",
+                "description": "Cursor AI code editor versions prior to 3.0 are vulnerable to NomShub, a critical vulnerability chain combining indirect prompt injection, shell builtin sandbox escape, and cursor-tunnel remote access hijacking. A malicious repository can silently hijack a developer machine. Disclosed April 3, 2026 by Straiker."
             }
         },
         "@iflow-mcp/watercrawl-watercrawl-mcp": {

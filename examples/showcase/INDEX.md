@@ -166,3 +166,5 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 | 144 | `psv008_cursor_rce` | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins |
 145. `145_mal060_telnyx_wav_steg`: expects `MAL-060`
 146. `146_sup027_telnyx_version`: expects `SUP-027`
+147. `100_nomshub_cursor_tunnel_sandbox_escape`: NomShub cursor-tunnel sandbox escape and persistence via shell builtins (`MAL-061`)
+148. `101_unc1069_npm_maintainer_social_engineering`: UNC1069 social engineering lure domain teams.onlivemeet.com targeting npm maintainers (`SUP-028`)
