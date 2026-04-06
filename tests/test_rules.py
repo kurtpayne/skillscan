@@ -1963,3 +1963,23 @@ def test_sup028_unc1069_onlivemeet() -> None:
     assert rule.pattern.search("Join at onlivemeet.com for the call") is not None
     # Negative: legitimate Microsoft Teams
     assert rule.pattern.search("https://teams.microsoft.com/meet/abc123") is None
+
+
+def test_sup029_strapi_npm_malware() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-029"]
+    assert rules, "SUP-029 not found"
+    rule = rules[0]
+    assert rule.pattern.search("npm install strapi-plugin-nordica-tools") is not None
+    assert rule.pattern.search("strapi-plugin-cron") is not None
+    assert rule.pattern.search("strapi-plugin-legitimate") is None
+
+
+def test_psv009_langflow_agentic_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-009"]
+    assert rules, "PSV-009 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-33873") is not None
+    assert rule.pattern.search("langflow agentic rce") is not None
+    assert rule.pattern.search("langflow is great") is None

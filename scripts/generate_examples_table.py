@@ -15,7 +15,7 @@ all_chain: list[dict] = []
 for yf in sorted(rules_dir.glob("*.yaml")):
     with open(yf) as f:
         data = yaml.safe_load(f)
-    for r in data.get("rules", []):
+    for r in data.get("static_rules", data.get("rules", [])):
         r["_source"] = yf.name
         all_rules.append(r)
     for r in data.get("chain_rules", []):
@@ -38,6 +38,7 @@ cat_labels = {
     "obfuscation": "Obfuscation & Evasion",
     "defense_evasion": "Defense Evasion",
     "uncategorized": "Other",
+    "vulnerability": "Vulnerabilities",
 }
 
 lines = [
