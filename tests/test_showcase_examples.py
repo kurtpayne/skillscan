@@ -420,3 +420,13 @@ def test_100_nomshub_cursor_tunnel_sandbox_escape():
 def test_101_unc1069_npm_maintainer_social_engineering():
     findings = _scan("examples/showcase/101_unc1069_npm_maintainer_social_engineering")
     assert any(f.id == "SUP-028" for f in findings.findings)
+
+
+def test_147_sup029_strapi_npm_malware():
+    findings = _scan("examples/showcase/147_sup029_strapi_npm_malware")
+    assert any(f.id == "SUP-029" for f in findings.findings)
+
+
+def test_148_psv009_langflow_agentic_rce():
+    findings = _scan("examples/showcase/148_psv009_langflow_agentic_rce")
+    assert any(f.id == "PSV-009" for f in findings.findings)

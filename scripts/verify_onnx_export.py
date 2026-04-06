@@ -87,8 +87,7 @@ def main() -> int:
         # ── Step 3: PyTorch forward passes on 5 test strings ─────────────────
         print("[3/8] Running PyTorch forward passes on 5 test strings…")
         encodings = [
-            tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
-            for text in TEST_STRINGS
+            tokenizer(text, return_tensors="pt", truncation=True, max_length=512) for text in TEST_STRINGS
         ]
         pt_outputs = [_run_pt_forward(model, enc) for enc in encodings]
         print(f"      output shape per sample: {pt_outputs[0].shape}")
@@ -183,10 +182,7 @@ def main() -> int:
         latencies_ms.sort()
         report["median_inference_ms"] = round(latencies_ms[49], 3)
         report["p95_inference_ms"] = round(latencies_ms[94], 3)
-        print(
-            f"      Median: {report['median_inference_ms']} ms  "
-            f"P95: {report['p95_inference_ms']} ms"
-        )
+        print(f"      Median: {report['median_inference_ms']} ms  P95: {report['p95_inference_ms']} ms")
 
     except Exception as exc:
         print(f"\nERROR: {exc}", file=sys.stderr)

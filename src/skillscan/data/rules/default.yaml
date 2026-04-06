@@ -1,4 +1,4 @@
-version: "2026.04.05.1"
+version: "2026.04.06.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5462,6 +5462,77 @@ static_rules:
         - https://socket.dev/blog/attackers-hunting-high-impact-nodejs-maintainers
         - https://www.microsoft.com/en-us/security/blog/2026/04/01/mitigating-the-axios-npm-supply-chain-compromise/
 
+  - id: SUP-029
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: Malicious Strapi npm packages (Redis RCE / Credential Harvesting)
+    pattern: (?i)(?:strapi-plugin-(?:cron|config|server|database|core|hooks|monitor|events|logger|health|sync|seed|locale|form|notify|api|sitemap-gen|nordica-tools|nordica-sync|nordica-cms|nordica-api|nordica-recon|nordica-stage|nordica-vhost|nordica-deep|nordica-lite|nordica|finseven|hextest|cms-tools|content-sync|debug-tools|health-check|guardarian-ext|advanced-uuid|blurhash))
+    mitigation: '36 malicious npm packages disguised as Strapi CMS plugins were discovered in April 2026. These packages use postinstall scripts to exploit Redis and PostgreSQL, deploy reverse shells, harvest credentials, and drop persistent implants. Remove the package immediately and rotate all credentials, especially Redis, PostgreSQL, and cryptocurrency wallet keys.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-06'
+      updated: '2026-04-06'
+      tags:
+        - supply_chain
+        - npm
+        - strapi
+        - redis
+        - rce
+        - credential-harvesting
+      last_modified: '2026-04-06'
+      techniques:
+        - id: SUP-029
+          name: Supply Chain Compromise
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-06'
+        last_modified: '2026-04-06'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://thehackernews.com/2026/04/36-malicious-npm-packages-exploited.html
+        - https://gbhackers.com/36-malicious-strapi-npm/
+  - id: PSV-009
+    category: vulnerability
+    severity: critical
+    confidence: 0.95
+    title: Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873)
+    pattern: '(?i)(?:CVE-2026-33873|langflow[^\n]{0,200}agentic[^\n]{0,200}rce)'
+    mitigation: 'A remote code execution flaw in Langflow Agentic Assistant (CVE-2026-33873) allows attackers to execute LLM-generated Python code server-side, potentially leading to system compromise. Update Langflow to a patched version.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-06'
+      updated: '2026-04-06'
+      tags:
+        - vulnerability
+        - langflow
+        - rce
+        - cve-2026-33873
+      last_modified: '2026-04-06'
+      techniques:
+        - id: PSV-009
+          name: Vulnerability Exploitation
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-06'
+        last_modified: '2026-04-06'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-33873/
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

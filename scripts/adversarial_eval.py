@@ -31,10 +31,9 @@ import json
 import random
 import re
 import sys
-from datetime import datetime, timezone
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Callable
-
 
 # ---------------------------------------------------------------------------
 # Perturbation techniques
@@ -231,17 +230,16 @@ def load_model(model_path: str, tokenizer_dir: str) -> tuple[object, object]:
         import onnxruntime as ort
         from transformers import AutoTokenizer
     except ImportError as exc:
-        sys.exit(
-            f"Missing dependency: {exc}\n"
-            "Install with: pip install skillscan-security[ml-onnx]"
-        )
+        sys.exit(f"Missing dependency: {exc}\nInstall with: pip install skillscan-security[ml-onnx]")
 
     session = ort.InferenceSession(model_path, providers=["CPUExecutionProvider"])
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
     return session, tokenizer
 
 
-def predict_injection_probability(session: object, tokenizer: object, text: str, max_length: int = 384) -> float:
+def predict_injection_probability(
+    session: object, tokenizer: object, text: str, max_length: int = 384
+) -> float:
     """Return injection probability (0–1) for the given text."""
     import numpy as np
 
@@ -374,7 +372,10 @@ def main(argv: list[str] | None = None) -> int:
         for name in args.techniques.split(","):
             name = name.strip().lower()
             if name not in _ALL_TECHNIQUES:
-                print(f"ERROR: unknown technique '{name}'. Choose from: {', '.join(_ALL_TECHNIQUES)}", file=sys.stderr)
+                print(
+                    f"ERROR: unknown technique '{name}'. Choose from: {', '.join(_ALL_TECHNIQUES)}",
+                    file=sys.stderr,
+                )
                 return 1
             selected[name] = _ALL_TECHNIQUES[name]
 
@@ -407,7 +408,7 @@ def main(argv: list[str] | None = None) -> int:
         "n_injection_samples": len(samples),
         "techniques": results,
         "overall_vulnerable": any_vulnerable,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "threshold_asr": 0.10,
     }
 

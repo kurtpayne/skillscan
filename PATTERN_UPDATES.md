@@ -1,3 +1,14 @@
+## 2026-04-06
+rulepack: 2026.04.06.1
+Two new detection rules, IOC enrichment, and vuln DB updates.
+- Added `SUP-029` (critical): **Malicious Strapi npm packages (Redis RCE / Credential Harvesting)** — 36 malicious npm packages disguised as Strapi CMS plugins were discovered in April 2026. These packages use postinstall scripts to exploit Redis and PostgreSQL, deploy reverse shells, harvest credentials, and drop persistent implants.
+- Added `PSV-009` (critical): **Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873)** — A remote code execution flaw in Langflow Agentic Assistant allows attackers to execute LLM-generated Python code server-side, potentially leading to system compromise.
+- IOC update: added `prod-strapi` to domain IOC DB.
+- Vuln DB update: added `langflow` python version 1.0.0 as CVE-2026-33873 (critical, fixed 1.0.1).
+Sources:
+- The Hacker News (Strapi): https://thehackernews.com/2026/04/36-malicious-npm-packages-exploited.html
+- GBHackers (Strapi): https://gbhackers.com/36-malicious-strapi-npm/
+- SentinelOne (Langflow): https://www.sentinelone.com/vulnerability-database/cve-2026-33873/
 ## 2026-04-05
 rulepack: 2026.04.05.1
 
