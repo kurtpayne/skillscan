@@ -16,6 +16,7 @@ Design notes (do not remove):
   separately in the rule definitions, so this test doubles as a sanity check for
   that derivation.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -35,71 +36,68 @@ from skillscan.analysis_pkg._sections import (
     "heading, expected_mult, apply_fence",
     [
         # ── Instruction (1.0×, no fence modifier) ───────────────────────────
-        ("Setup",                                1.0,  False),
-        ("Installation Steps",                   1.0,  False),
-        ("Usage",                                1.0,  False),
-        ("How to Use",                           1.0,  False),
-        ("Getting Started",                      1.0,  False),
-        ("Quick Start",                          1.0,  False),
-        ("Configuration",                        1.0,  False),
-        ("Run",                                  1.0,  False),
-        ("Running the Agent",                    1.0,  False),
-        ("Deploy",                               1.0,  False),
-        ("Implementation",                       1.0,  False),
-        ("System Diagnostics Helper",            1.0,  False),  # "helper" keyword
-        ("AI Assistant",                         1.0,  False),  # "assistant" keyword
-        ("Agent Configuration",                  1.0,  False),  # "agent" keyword
-        ("Task",                                 1.0,  False),  # "task" keyword
-        ("Call to Action",                       1.0,  False),  # "action" keyword
+        ("Setup", 1.0, False),
+        ("Installation Steps", 1.0, False),
+        ("Usage", 1.0, False),
+        ("How to Use", 1.0, False),
+        ("Getting Started", 1.0, False),
+        ("Quick Start", 1.0, False),
+        ("Configuration", 1.0, False),
+        ("Run", 1.0, False),
+        ("Running the Agent", 1.0, False),
+        ("Deploy", 1.0, False),
+        ("Implementation", 1.0, False),
+        ("System Diagnostics Helper", 1.0, False),  # "helper" keyword
+        ("AI Assistant", 1.0, False),  # "assistant" keyword
+        ("Agent Configuration", 1.0, False),  # "agent" keyword
+        ("Task", 1.0, False),  # "task" keyword
+        ("Call to Action", 1.0, False),  # "action" keyword
         # Ambiguous headings resolve to instruction (higher weight = safer)
-        ("Security Setup",                       1.0,  False),  # "setup" matches before "security"
-        ("Security Notes and Installation Steps",1.0,  False),  # "installation" before "security"
+        ("Security Setup", 1.0, False),  # "setup" matches before "security"
+        ("Security Notes and Installation Steps", 1.0, False),  # "installation" before "security"
         # ── Example (0.4×, fence modifier applies) ──────────────────────────
-        ("Examples",                             0.4,  True),
+        ("Examples", 0.4, True),
         # "usage" matches instruction before "sample" matches example — higher weight wins
-        ("Sample Usage",                         1.0,  False),
-        ("Demo",                                 0.4,  True),
-        ("Testing",                              0.4,  True),
-        ("Walkthrough",                          0.4,  True),
-        ("Scenario",                             0.4,  True),
+        ("Sample Usage", 1.0, False),
+        ("Demo", 0.4, True),
+        ("Testing", 0.4, True),
+        ("Walkthrough", 0.4, True),
+        ("Scenario", 0.4, True),
         # ── Documentation (0.15×, fence modifier applies) ───────────────────
-        ("Security Notes",                       0.15, True),
-        ("Notes",                                0.15, True),
-        ("Warning",                              0.15, True),
-        ("Warnings",                             0.15, True),
-        ("References",                           0.15, True),
-        ("Background",                           0.15, True),
-        ("About",                                0.15, True),
-        ("Overview",                             0.15, True),
-        ("Introduction",                         0.15, True),
-        ("Privacy Policy",                       0.15, True),
-        ("License",                              0.15, True),
-        ("Legal",                                0.15, True),
-        ("Troubleshooting",                      0.15, True),
-        ("FAQ",                                  0.15, True),
-        ("Known Issues",                         0.15, True),
-        ("Limitations",                          0.15, True),
-        ("Changelog",                            0.15, True),
-        ("Migration Guide",                      0.15, True),  # "migration" before nothing
+        ("Security Notes", 0.15, True),
+        ("Notes", 0.15, True),
+        ("Warning", 0.15, True),
+        ("Warnings", 0.15, True),
+        ("References", 0.15, True),
+        ("Background", 0.15, True),
+        ("About", 0.15, True),
+        ("Overview", 0.15, True),
+        ("Introduction", 0.15, True),
+        ("Privacy Policy", 0.15, True),
+        ("License", 0.15, True),
+        ("Legal", 0.15, True),
+        ("Troubleshooting", 0.15, True),
+        ("FAQ", 0.15, True),
+        ("Known Issues", 0.15, True),
+        ("Limitations", 0.15, True),
+        ("Changelog", 0.15, True),
+        ("Migration Guide", 0.15, True),  # "migration" before nothing
         # ── Unknown (0.7×, no fence modifier) ───────────────────────────────
-        ("Random Heading",                       0.7,  False),
-        ("Output Format",                        0.7,  False),
-        ("API Reference",                        0.15, True),   # "reference" matches documentation
+        ("Random Heading", 0.7, False),
+        ("Output Format", 0.7, False),
+        ("API Reference", 0.15, True),  # "reference" matches documentation
     ],
 )
 def test_classify_heading(heading: str, expected_mult: float, apply_fence: bool) -> None:
     mult, fence = _classify_heading(heading)
-    assert mult == expected_mult, (
-        f"Heading {heading!r}: expected mult={expected_mult}, got {mult}"
-    )
-    assert fence == apply_fence, (
-        f"Heading {heading!r}: expected apply_fence={apply_fence}, got {fence}"
-    )
+    assert mult == expected_mult, f"Heading {heading!r}: expected mult={expected_mult}, got {mult}"
+    assert fence == apply_fence, f"Heading {heading!r}: expected apply_fence={apply_fence}, got {fence}"
 
 
 # ---------------------------------------------------------------------------
 # SectionMap behaviour
 # ---------------------------------------------------------------------------
+
 
 def test_no_headings_full_weight() -> None:
     """File with no headings scores at 1.0× (active content assumed)."""
@@ -113,9 +111,9 @@ def test_preamble_full_weight() -> None:
     """Lines before the first heading score at 1.0×."""
     text = "Preamble line.\n# Setup\nInstruction line."
     sm = build_section_map(text)
-    assert sm.multiplier(1) == 1.0   # preamble
-    assert sm.multiplier(2) == 1.0   # instruction section
-    assert sm.multiplier(3) == 1.0   # instruction section
+    assert sm.multiplier(1) == 1.0  # preamble
+    assert sm.multiplier(2) == 1.0  # instruction section
+    assert sm.multiplier(3) == 1.0  # instruction section
 
 
 def test_documentation_section_low_weight() -> None:
@@ -147,7 +145,7 @@ def test_fence_modifier_applies_in_documentation() -> None:
     text = "# Security Notes\n```\ncurl | bash\n```\nProse line."
     sm = build_section_map(text)
     assert sm.multiplier(3) == pytest.approx(0.15 * _FENCE_CODE_MODIFIER)  # inside fence
-    assert sm.multiplier(5) == 0.15   # prose, no fence modifier
+    assert sm.multiplier(5) == 0.15  # prose, no fence modifier
 
 
 def test_fence_modifier_applies_in_example() -> None:
@@ -194,8 +192,8 @@ def test_heading_inside_code_fence_ignored() -> None:
     sm = build_section_map(text)
     # Line 3 ("# Security Notes") is inside the fence and should be ignored as a heading.
     # All lines should be in the "Setup" section (1.0×).
-    assert sm.multiplier(3) == 1.0   # inside fence in instruction section
-    assert sm.multiplier(6) == 1.0   # prose after fence, still in Setup
+    assert sm.multiplier(3) == 1.0  # inside fence in instruction section
+    assert sm.multiplier(6) == 1.0  # prose after fence, still in Setup
 
 
 def test_h3_inherits_parent_section() -> None:
@@ -209,18 +207,11 @@ def test_h3_inherits_parent_section() -> None:
 
 def test_multi_section_transitions() -> None:
     """Multiplier changes correctly when sections transition."""
-    text = (
-        "# Instructions\n"
-        "Do the thing.\n"
-        "# Examples\n"
-        "Here is an example.\n"
-        "# Security Notes\n"
-        "Be careful.\n"
-    )
+    text = "# Instructions\nDo the thing.\n# Examples\nHere is an example.\n# Security Notes\nBe careful.\n"
     sm = build_section_map(text)
-    assert sm.multiplier(1) == 1.0   # Instructions
+    assert sm.multiplier(1) == 1.0  # Instructions
     assert sm.multiplier(2) == 1.0
-    assert sm.multiplier(3) == 0.4   # Examples
+    assert sm.multiplier(3) == 0.4  # Examples
     assert sm.multiplier(4) == 0.4
     assert sm.multiplier(5) == 0.15  # Security Notes
     assert sm.multiplier(6) == 0.15

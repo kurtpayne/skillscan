@@ -1,3 +1,15 @@
+## 2026-04-07
+rulepack: 2026.04.07.1
+Three new detection rules, vuln DB update.
+- Added `MAL-062` (critical): **ClawHub malicious skill keylogger/Atomic Stealer payload delivery** — ClawHub (OpenClaw's public skill marketplace) was found to contain 335 malicious skills in April 2026, representing approximately 12% of the registry. These skills use professional documentation and innocuous names (e.g., "solana-wallet-tracker") to appear legitimate, then instruct users to run external code that installs keyloggers on Windows or Atomic Stealer malware on macOS. Compromised agents can access sensitive data and OAuth tokens.
+- Added `SUP-030` (high): **a11y-mcp SSRF vulnerability (CVE-2026-5323)** — A Server-Side Request Forgery vulnerability in priyankark/a11y-mcp up to version 1.0.5 allows manipulation of URL parameters in the A11yServer function to trigger unauthorized server-side requests, potentially leading to data exfiltration, service enumeration, or abuse of cloud metadata endpoints (e.g., 169.254.169.254).
+- Added `PINJ-019` (critical): **Claudy Day invisible URL parameter prompt injection + Files API exfiltration** — The "Claudy Day" attack (demonstrated by Oasis Security, March 2026) chains three vulnerabilities against claude.ai: invisible prompt injection via URL parameters containing hidden HTML tags, data exfiltration through the Anthropic Files API, and conversation history theft enabling attackers to steal sensitive information without requiring MCP servers or special configuration.
+- Vuln DB update: added `a11y-mcp` npm versions 1.0.0-1.0.5 as CVE-2026-5323 (high, fixed 1.0.6).
+Sources:
+- Reco.ai (ClawHub malicious skills): https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now
+- SentinelOne (CVE-2026-5323): https://www.sentinelone.com/vulnerability-database/cve-2026-5323/
+- Oasis Security (Claudy Day): https://oasis.security/blog/claudy-day-attack
+- TrueFoundry (Claudy Day): https://www.truefoundry.com/blog/claude-code-prompt-injection
 ## 2026-04-06
 rulepack: 2026.04.06.1
 Two new detection rules, IOC enrichment, and vuln DB updates.

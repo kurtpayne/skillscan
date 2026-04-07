@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated": "2026-04-05",
+    "generated": "2026-04-07",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -989,6 +989,38 @@
         "id": "VSCODE-MALICIOUSCORGI-2026-01",
         "severity": "critical",
         "fixed": "REMOVED"
+      }
+    },
+    "a11y-mcp": {
+      "1.0.0": {
+        "id": "CVE-2026-5323",
+        "severity": "high",
+        "fixed": "1.0.6"
+      },
+      "1.0.1": {
+        "id": "CVE-2026-5323",
+        "severity": "high",
+        "fixed": "1.0.6"
+      },
+      "1.0.2": {
+        "id": "CVE-2026-5323",
+        "severity": "high",
+        "fixed": "1.0.6"
+      },
+      "1.0.3": {
+        "id": "CVE-2026-5323",
+        "severity": "high",
+        "fixed": "1.0.6"
+      },
+      "1.0.4": {
+        "id": "CVE-2026-5323",
+        "severity": "high",
+        "fixed": "1.0.6"
+      },
+      "1.0.5": {
+        "id": "CVE-2026-5323",
+        "severity": "high",
+        "fixed": "1.0.6"
       }
     }
   },

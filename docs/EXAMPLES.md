@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**179 static rules · 14 chain rules**
+**182 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -82,6 +82,7 @@
 | `MAL-058` | critical | Langflow CVE-2026-33017 unauthenticated RCE exploit | malware_pattern, mal, langflow, rce, cve-2026-33017 |
 | `MAL-059` | critical | GlassWorm 5th Wave MCP Server Supply Chain Attack | malware_pattern, mal, glassworm, mcp, supply-chain |
 | `MAL-060` | critical | Telnyx PyPI WAV Steganography Credential Stealer | malware_pattern, mal, telnyx, steganography, teampcp |
+| `MAL-062` | critical | ClawHub malicious skill keylogger/Atomic Stealer payload delivery | malware, clawhub, openclaw, keylogger, atomic-stealer, supply-chain, skill-registry |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -172,6 +173,7 @@
 | `SUP-027` | critical | Compromised Telnyx package version reference | supply_chain, sup, telnyx, teampcp |
 | `SUP-028` | critical | UNC1069 social engineering lure domain (teams.onlivemeet.com) | supply_chain, unc1069, sapphire-sleet, north-korea, social-engineering, npm, axios |
 | `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
+| `SUP-030` | high | a11y-mcp SSRF vulnerability (CVE-2026-5323) | supply-chain, mcp, ssrf, cve-2026-5323, a11y |
 
 ### Defense Evasion
 
@@ -184,6 +186,49 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
+
+### Prompt Injection
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `PINJ-006` | high | RAG poisoning multi-stage AI agent attack chain | rag, prompt-injection, ai-agent, knowledge-base, data-poisoning |
+| `PINJ-007` | high | MCP sampling-based context exfiltration | mcp, sampling, prompt-injection, context-exfiltration, indirect-injection |
+| `PINJ-008` | high | YAML anchor/alias injection in skill frontmatter | prompt-injection, yaml-injection, frontmatter, anchor-alias |
+| `PINJ-009` | high | Fake end-of-prompt divider injection | prompt-injection, divider-injection, context-reset, instruction-override |
+| `PINJ-010` | critical | Fake system header before skill frontmatter | prompt-injection, system-header-spoofing, role-override, instruction-override |
+| `PINJ-011` | high | Tool alias injection mapping safe name to dangerous tool | prompt-injection, tool-alias, instruction-abuse |
+| `PINJ-012` | critical | AGENT INSTRUCTION block injection | prompt-injection, covert-instructions, agent-hijacking, hidden-directives |
+| `PINJ-013` | high | Conditional time-lock with instruction override | prompt-injection, time-lock, conditional-payload, delayed-activation |
+| `PINJ-014` | high | Injection keyword in non-description frontmatter field | prompt-injection, frontmatter-injection, metadata-injection |
+| `PINJ-015` | high | Prompt poaching via malicious browser extension installation | prompt-injection, browser-extension, prompt-poaching, data-theft |
+| `PINJ-016` | high | AI documentation context poisoning (ContextHub) | prompt_injection, documentation-poisoning, contexthub |
+| `PINJ-018` | high | Hidden prompt injection via CSS/HTML concealment techniques | prompt_injection, hidden-text, css-concealment, indirect-injection, content-moderation |
+| `PINJ-019` | critical | Claudy Day invisible URL parameter prompt injection + Files API exfiltration | prompt-injection, claude, anthropic, files-api, exfiltration, claudy-day |
+
+### Passive Vulnerabilities
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `PSV-006` | critical | Langflow CVE-2026-33017 unauthenticated RCE (CISA KEV) | langflow, rce, cisa-kev, unauthenticated |
+| `PSV-007` | high | OpenClaw CVE-2026-32922 privilege escalation via token rotation | openclaw, privilege-escalation, token-rotation |
+
+### Platform Security
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `PSV-008` | critical | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins | platform_security, psv, cursor, rce, cve-2026-22708 |
+
+### Execution
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `EXEC-042` | high | IDE config injection for silent command execution (CurXecute/MCPoison) | execution, ide-config, cursor, mcp-poisoning, curxecute, mcpoison |
+
+### Malware
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `MAL-061` | critical | NomShub cursor-tunnel sandbox escape and persistence via shell builtins | malware, cursor, ide, sandbox-escape, persistence, remote-tunnel, nomshub, prompt-injection |
 
 ## Chain Rules
 

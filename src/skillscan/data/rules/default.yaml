@@ -1,4 +1,4 @@
-version: "2026.04.06.1"
+version: "2026.04.07.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5537,6 +5537,117 @@ static_rules:
         benchmark_set: core-static-v1
       references:
         - https://www.sentinelone.com/vulnerability-database/cve-2026-33873/
+  - id: MAL-062
+    category: malware_pattern
+    severity: critical
+    confidence: 0.93
+    title: ClawHub malicious skill keylogger/Atomic Stealer payload delivery
+    pattern: '(?i)(?:(?:clawhub|openclaw)\s+install[^\n]{0,120}(?:keylogger|atomic[_\s-]?stealer|stealer|infostealer)|keylogger[^\n]{0,120}(?:clawhub|openclaw|clawHub)[^\n]{0,120}(?:install|module|component|captures)|atomic[_\s-]?stealer[^\n]{0,120}(?:clawhub|openclaw|via\s+(?:clawhub|openclaw))|(?:clawhub|openclaw)[^\n]{0,200}(?:keylogger|atomic[_\s-]?stealer|keystroke)[^\n]{0,200}(?:install|deploy|download|capture))'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-07'
+      updated: '2026-04-07'
+      tags:
+        - malware
+        - clawhub
+        - openclaw
+        - keylogger
+        - atomic-stealer
+        - supply-chain
+        - skill-registry
+      last_modified: '2026-04-07'
+      techniques:
+        - id: MAL-062
+          name: Malicious Skill Distribution
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-07'
+        last_modified: '2026-04-07'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://www.reco.ai/blog/openclaw-the-ai-agent-security-crisis-unfolding-right-now
+
+  - id: SUP-030
+    category: supply_chain
+    severity: high
+    confidence: 0.92
+    title: a11y-mcp SSRF vulnerability (CVE-2026-5323)
+    pattern: '(?i)(?:CVE-2026-5323|a11y[_-]?mcp[^\n]{0,200}(?:ssrf|server[_\s-]?side[_\s-]?request|169\.254\.169\.254|metadata|internal[_\s-]?network|A11yServer)|(?:ssrf|server[_\s-]?side[_\s-]?request)[^\n]{0,120}a11y[_-]?mcp|priyankark/a11y-mcp[^\n]{0,200}(?:ssrf|vuln|cve))'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-07'
+      updated: '2026-04-07'
+      tags:
+        - supply-chain
+        - mcp
+        - ssrf
+        - cve-2026-5323
+        - a11y
+      last_modified: '2026-04-07'
+      techniques:
+        - id: SUP-030
+          name: Vulnerable MCP Server
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-07'
+        last_modified: '2026-04-07'
+      quality:
+        precision_estimate: 0.92
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-5323/
+
+  - id: PINJ-019
+    category: prompt_injection
+    severity: critical
+    confidence: 0.93
+    title: Claudy Day invisible URL parameter prompt injection + Files API exfiltration
+    pattern: '(?i)(?:claudy[_\s-]?day[^\n]{0,200}(?:url|parameter|inject|exfil|files\.anthropic)|files\.anthropic\.com[^\n]{0,200}(?:exfil|steal|harvest|conversation[_\s]?history|upload[_\s]?conversation)|hidden[^\n]{0,120}(?:html|tag|span)[^\n]{0,120}(?:claude|prompt|inject)[^\n]{0,120}(?:instruct|ignore|override|exfil))'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-07'
+      updated: '2026-04-07'
+      tags:
+        - prompt-injection
+        - claude
+        - anthropic
+        - files-api
+        - exfiltration
+        - claudy-day
+      last_modified: '2026-04-07'
+      techniques:
+        - id: PINJ-019
+          name: Prompt Injection
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-07'
+        last_modified: '2026-04-07'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://oasis.security/blog/claudy-day-attack
+        - https://www.truefoundry.com/blog/claude-code-prompt-injection
+
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b
