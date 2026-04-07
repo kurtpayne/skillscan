@@ -5544,6 +5544,11 @@ static_rules:
     title: ClawHub malicious skill keylogger/Atomic Stealer payload delivery
     pattern: '(?i)(?:(?:clawhub|openclaw)\s+install[^\n]{0,120}(?:keylogger|atomic[_\s-]?stealer|stealer|infostealer)|keylogger[^\n]{0,120}(?:clawhub|openclaw|clawHub)[^\n]{0,120}(?:install|module|component|captures)|atomic[_\s-]?stealer[^\n]{0,120}(?:clawhub|openclaw|via\s+(?:clawhub|openclaw))|(?:clawhub|openclaw)[^\n]{0,200}(?:keylogger|atomic[_\s-]?stealer|keystroke)[^\n]{0,200}(?:install|deploy|download|capture))'
     metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-07'
+      updated: '2026-04-07'
       tags:
         - malware
         - clawhub
@@ -5577,6 +5582,11 @@ static_rules:
     title: a11y-mcp SSRF vulnerability (CVE-2026-5323)
     pattern: '(?i)(?:CVE-2026-5323|a11y[_-]?mcp[^\n]{0,200}(?:ssrf|server[_\s-]?side[_\s-]?request|169\.254\.169\.254|metadata|internal[_\s-]?network|A11yServer)|(?:ssrf|server[_\s-]?side[_\s-]?request)[^\n]{0,120}a11y[_-]?mcp|priyankark/a11y-mcp[^\n]{0,200}(?:ssrf|vuln|cve))'
     metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-07'
+      updated: '2026-04-07'
       tags:
         - supply-chain
         - mcp
@@ -5607,6 +5617,11 @@ static_rules:
     title: Claudy Day invisible URL parameter prompt injection + Files API exfiltration
     pattern: '(?i)(?:claudy[_\s-]?day[^\n]{0,200}(?:url|parameter|inject|exfil|files\.anthropic)|files\.anthropic\.com[^\n]{0,200}(?:exfil|steal|harvest|conversation[_\s]?history|upload[_\s]?conversation)|hidden[^\n]{0,120}(?:html|tag|span)[^\n]{0,120}(?:claude|prompt|inject)[^\n]{0,120}(?:instruct|ignore|override|exfil))'
     metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-07'
+      updated: '2026-04-07'
       tags:
         - prompt-injection
         - claude
