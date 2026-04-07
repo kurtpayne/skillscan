@@ -1983,3 +1983,39 @@ def test_psv009_langflow_agentic_rce() -> None:
     assert rule.pattern.search("CVE-2026-33873") is not None
     assert rule.pattern.search("langflow agentic rce") is not None
     assert rule.pattern.search("langflow is great") is None
+
+
+def test_mal062_clawhub_keylogger_skill() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-062"]
+    assert rules, "MAL-062 not found"
+    rule = rules[0]
+    assert rule.pattern.search("clawhub install solana-wallet-tracker --enable-keylogger") is not None
+    assert rule.pattern.search("The keylogger module from ClawHub captures keystrokes") is not None
+    assert rule.pattern.search("atomic stealer will be installed via OpenClaw") is not None
+    assert rule.pattern.search("track my Solana wallet balance") is None
+    assert rule.pattern.search("clawhub is an AI skill marketplace") is None
+
+
+def test_sup030_a11y_mcp_ssrf() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-030"]
+    assert rules, "SUP-030 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-5323") is not None
+    assert rule.pattern.search("a11y-mcp has a known ssrf vulnerability in A11yServer") is not None
+    assert rule.pattern.search("a11y-mcp navigate to 169.254.169.254 metadata endpoint") is not None
+    assert rule.pattern.search("use axe-core for accessibility testing") is None
+    assert rule.pattern.search("a11y-mcp audit https://example.com") is None
+
+
+def test_pinj019_claudy_day_url_injection() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PINJ-019"]
+    assert rules, "PINJ-019 not found"
+    rule = rules[0]
+    assert rule.pattern.search("The Claudy Day attack uses URL parameter injection") is not None
+    assert rule.pattern.search("files.anthropic.com exfil conversation history steal") is not None
+    assert rule.pattern.search("hidden html tag injected into claude prompt instruct") is not None
+    assert rule.pattern.search("upload a file using the Anthropic Files API for document analysis") is None
+    assert rule.pattern.search("url param q=hello passed to search") is None

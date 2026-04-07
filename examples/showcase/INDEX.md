@@ -170,3 +170,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 148. `101_unc1069_npm_maintainer_social_engineering`: UNC1069 social engineering lure domain teams.onlivemeet.com targeting npm maintainers (`SUP-028`)
 149. `147_sup029_strapi_npm_malware`: Malicious Strapi npm packages (Redis RCE / Credential Harvesting) (`SUP-029`)
 150. `148_psv009_langflow_agentic_rce`: Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) (`PSV-009`)
+151. `149_mal062_clawhub_keylogger_skill`: ClawHub malicious skill keylogger/Atomic Stealer payload delivery (`MAL-062`)
+152. `150_sup030_a11y_mcp_ssrf`: a11y-mcp SSRF vulnerability CVE-2026-5323 (`SUP-030`)
+153. `151_pinj019_claudy_day_url_injection`: Claudy Day invisible URL parameter prompt injection + Files API exfiltration (`PINJ-019`)

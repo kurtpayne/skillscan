@@ -430,3 +430,18 @@ def test_147_sup029_strapi_npm_malware():
 def test_148_psv009_langflow_agentic_rce():
     findings = _scan("examples/showcase/148_psv009_langflow_agentic_rce")
     assert any(f.id == "PSV-009" for f in findings.findings)
+
+
+def test_149_mal062_clawhub_keylogger_skill():
+    findings_149 = _scan("examples/showcase/149_mal062_clawhub_keylogger_skill")
+    assert any(f.id == "MAL-062" for f in findings_149.findings)
+
+
+def test_150_sup030_a11y_mcp_ssrf():
+    findings_150 = _scan("examples/showcase/150_sup030_a11y_mcp_ssrf")
+    assert any(f.id == "SUP-030" for f in findings_150.findings)
+
+
+def test_151_pinj019_claudy_day_url_injection():
+    findings_151 = _scan("examples/showcase/151_pinj019_claudy_day_url_injection")
+    assert any(f.id == "PINJ-019" for f in findings_151.findings)

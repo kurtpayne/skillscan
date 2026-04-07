@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import concurrent.futures
 import os
+import re as _re
 from pathlib import Path
 
 from skillscan import __version__
@@ -10,6 +11,7 @@ from skillscan.analysis_pkg._archive import (
     SCRIPT_SUFFIXES,
     prepare_target,
 )
+from skillscan.analysis_pkg._sections import build_section_map
 from skillscan.analysis_pkg._text import (
     _CHAIN_WINDOW_LINES,
     _LANG_EXTENSIONS,
@@ -47,7 +49,6 @@ from skillscan.models import (
     TriageMetadata,
     Verdict,
 )
-from skillscan.analysis_pkg._sections import build_section_map
 from skillscan.rules import CompiledRulePack, load_compiled_builtin_rulepack
 from skillscan.semantic_local import (
     classify_prompt_injection_raw,
@@ -56,9 +57,7 @@ from skillscan.semantic_local import (
     local_social_engineering_findings,
 )
 
-import re as _re
-
-_NEGATION_WINDOW = 3   # lines to check before and after the match line
+_NEGATION_WINDOW = 3  # lines to check before and after the match line
 _NEGATION_RE = _re.compile(
     r"\b(never|do\s+not|don['']?t|must\s+not|should\s+not|avoid|cannot|can['']?t|"
     r"do\s+NOT|MUST\s+NOT|NEVER|prohibited|forbidden|disallowed|not\s+allowed)\b",
@@ -110,9 +109,7 @@ def _apply_negation_guard(lines: list[str], line_no: int, confidence: float) -> 
 _DEDUP_GROUPS: list[frozenset[str]] = [
     frozenset({"PINJ-SEM-001", "PINJ-ML-001"}),
 ]
-_DEDUP_ID_TO_GROUP: dict[str, int] = {
-    fid: i for i, grp in enumerate(_DEDUP_GROUPS) for fid in grp
-}
+_DEDUP_ID_TO_GROUP: dict[str, int] = {fid: i for i, grp in enumerate(_DEDUP_GROUPS) for fid in grp}
 
 
 def _deduplicate_findings(findings: list[Finding]) -> list[Finding]:
@@ -323,9 +320,7 @@ def scan(
                         section_mult = section_map.multiplier(line_no)
                         confidence = rule.confidence
                         if rule.negation_guard:
-                            confidence = _apply_negation_guard(
-                                lines_cache, line_no, confidence
-                            )
+                            confidence = _apply_negation_guard(lines_cache, line_no, confidence)
                         _f.append(
                             Finding(
                                 id=rule.id,
@@ -347,9 +342,7 @@ def scan(
                             section_mult = section_map.multiplier(line_no)
                             confidence = rule.confidence
                             if rule.negation_guard:
-                                confidence = _apply_negation_guard(
-                                    lines_cache, line_no, confidence
-                                )
+                                confidence = _apply_negation_guard(lines_cache, line_no, confidence)
                             _f.append(
                                 Finding(
                                     id=rule.id,

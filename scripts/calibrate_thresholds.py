@@ -30,7 +30,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -38,15 +37,15 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import NamedTuple
 
-
 # ---------------------------------------------------------------------------
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 class EvalResult(NamedTuple):
     path: Path
-    true_label: str       # "benign" or "injection"
-    archetype: str        # from filename prefix or frontmatter
+    true_label: str  # "benign" or "injection"
+    archetype: str  # from filename prefix or frontmatter
     raw_score: int
     block_score: int
     semantic_inj: float
@@ -62,6 +61,7 @@ class EvalResult(NamedTuple):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _infer_label(path: Path) -> str:
     """Infer benign/injection from filename prefix (benign_* or injection_*)."""
     name = path.name.lower()
@@ -74,7 +74,7 @@ def _infer_label(path: Path) -> str:
         text = path.read_text(encoding="utf-8", errors="replace")
         for line in text.splitlines()[:15]:
             if line.strip().startswith("label:"):
-                val = line.split(":", 1)[1].strip().strip('"\'')
+                val = line.split(":", 1)[1].strip().strip("\"'")
                 return "benign" if "benign" in val else "injection"
     except OSError:
         pass
@@ -88,7 +88,7 @@ def _infer_archetype(path: Path) -> str:
         for line in text.splitlines()[:20]:
             stripped = line.strip()
             if stripped.startswith("category:") or stripped.startswith("archetype:"):
-                return stripped.split(":", 1)[1].strip().strip('"\'')
+                return stripped.split(":", 1)[1].strip().strip("\"'")
     except OSError:
         pass
     # Fallback: second segment of filename after label prefix
@@ -110,9 +110,13 @@ def scan_file(path: Path) -> EvalResult:
             return EvalResult(path, label, archetype, 0, 0, 0.0, 0.0, None, False, 0, [], str(e))
 
         cmd = [
-            "skillscan", "scan", str(tmp),
-            "--format", "json",
-            "--policy-profile", "observe",
+            "skillscan",
+            "scan",
+            str(tmp),
+            "--format",
+            "json",
+            "--policy-profile",
+            "observe",
             "--no-model",  # skip model-install advisory; we just want the raw score
         ]
         try:
@@ -158,6 +162,7 @@ def scan_file(path: Path) -> EvalResult:
 # Calibration analysis
 # ---------------------------------------------------------------------------
 
+
 def precision_recall_at(results: list[EvalResult], block_threshold: int) -> dict:
     """Compute precision, recall, F1 for a given block threshold."""
     tp = fp = fn = tn = 0
@@ -181,7 +186,10 @@ def precision_recall_at(results: list[EvalResult], block_threshold: int) -> dict
     fpr = fp / (fp + tn) if (fp + tn) > 0 else 0.0
     return {
         "block_threshold": block_threshold,
-        "tp": tp, "fp": fp, "fn": fn, "tn": tn,
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "tn": tn,
         "precision": round(precision, 4),
         "recall": round(recall, 4),
         "f1": round(f1, 4),
@@ -194,9 +202,9 @@ def print_calibration_report(results: list[EvalResult]) -> None:
     benign = [r for r in valid if r.true_label == "benign"]
     injection = [r for r in valid if r.true_label == "injection"]
 
-    print(f"\n{'='*70}")
-    print(f"  SKILLSCAN THRESHOLD CALIBRATION REPORT")
-    print(f"{'='*70}")
+    print(f"\n{'=' * 70}")
+    print("  SKILLSCAN THRESHOLD CALIBRATION REPORT")
+    print(f"{'=' * 70}")
     print(f"  Files scanned:  {len(results)}")
     print(f"  Errors:         {sum(1 for r in results if r.error)}")
     print(f"  Valid:          {len(valid)}  (benign={len(benign)}, injection={len(injection)})")
@@ -208,34 +216,40 @@ def print_calibration_report(results: list[EvalResult]) -> None:
     benign_scores = sorted(r.raw_score for r in benign)
     inj_scores = sorted(r.raw_score for r in injection)
 
-    print(f"\n  Score distribution (raw score under 'observe' policy):")
+    print("\n  Score distribution (raw score under 'observe' policy):")
     print(f"  {'':20s}  {'p50':>6}  {'p75':>6}  {'p90':>6}  {'p99':>6}  {'max':>6}")
     for label, scores in [("benign", benign_scores), ("injection", inj_scores)]:
         if not scores:
             continue
+
         def pct(p: float) -> int:
             return scores[min(int(len(scores) * p / 100), len(scores) - 1)]
+
         print(f"  {label:20s}  {pct(50):>6}  {pct(75):>6}  {pct(90):>6}  {pct(99):>6}  {scores[-1]:>6}")
 
     # Find benign score at various FPR targets
     benign_scores_sorted = sorted(benign_scores, reverse=True)
-    print(f"\n  Benign score ceiling at FPR targets (block_threshold = this value keeps FPR below target):")
+    print("\n  Benign score ceiling at FPR targets (block_threshold = this value keeps FPR below target):")
     for fpr_target in (0.01, 0.02, 0.05, 0.10):
         idx = max(0, int(len(benign_scores_sorted) * fpr_target) - 1)
         ceiling = benign_scores_sorted[idx] if benign_scores_sorted else 0
         print(f"    FPR ≤ {fpr_target:.0%}  →  block_threshold > {ceiling}")
 
     # Precision/recall table at candidate thresholds
-    print(f"\n  Precision / Recall / F1 at candidate block thresholds:")
-    print(f"  {'threshold':>10}  {'precision':>10}  {'recall':>10}  {'F1':>8}  {'FPR':>8}  {'TP':>5}  {'FP':>5}  {'FN':>5}")
-    print(f"  {'-'*10}  {'-'*10}  {'-'*10}  {'-'*8}  {'-'*8}  {'-'*5}  {'-'*5}  {'-'*5}")
+    print("\n  Precision / Recall / F1 at candidate block thresholds:")
+    print(
+        f"  {'threshold':>10}  {'precision':>10}  {'recall':>10}  {'F1':>8}  {'FPR':>8}  {'TP':>5}  {'FP':>5}  {'FN':>5}"
+    )
+    print(f"  {'-' * 10}  {'-' * 10}  {'-' * 10}  {'-' * 8}  {'-' * 8}  {'-' * 5}  {'-' * 5}  {'-' * 5}")
 
     # Sample thresholds across the useful range
     max_score = max((r.raw_score for r in valid), default=300)
-    candidates = sorted(set(
-        list(range(0, min(max_score + 50, 500), 10))
-        + [r.raw_score for r in valid]  # include actual score values
-    ))
+    candidates = sorted(
+        set(
+            list(range(0, min(max_score + 50, 500), 10))
+            + [r.raw_score for r in valid]  # include actual score values
+        )
+    )
 
     prev_f1 = -1.0
     best_f1_row = None
@@ -255,13 +269,21 @@ def print_calibration_report(results: list[EvalResult]) -> None:
             )
 
     # Current policy defaults for comparison
-    print(f"\n  Current policy thresholds for reference:")
-    for name, block in [("strict", 70), ("balanced", 120), ("permissive", 190), ("enterprise", 60), ("paranoid", 40)]:
+    print("\n  Current policy thresholds for reference:")
+    for name, block in [
+        ("strict", 70),
+        ("balanced", 120),
+        ("permissive", 190),
+        ("enterprise", 60),
+        ("paranoid", 40),
+    ]:
         row = precision_recall_at(valid, block)
-        print(f"    {name:12s}  block={block:<4}  precision={row['precision']:.3f}  recall={row['recall']:.3f}  F1={row['f1']:.3f}  FPR={row['fpr']:.3f}")
+        print(
+            f"    {name:12s}  block={block:<4}  precision={row['precision']:.3f}  recall={row['recall']:.3f}  F1={row['f1']:.3f}  FPR={row['fpr']:.3f}"
+        )
 
     # Archetype breakdown of false negatives at balanced threshold
-    print(f"\n  False negatives at balanced threshold (block=120) by archetype:")
+    print("\n  False negatives at balanced threshold (block=120) by archetype:")
     fns = [r for r in injection if r.raw_score < 120]
     archetype_counts: dict[str, int] = {}
     for r in fns:
@@ -270,7 +292,7 @@ def print_calibration_report(results: list[EvalResult]) -> None:
         print(f"    {arch:35s}  {count:>4} FN")
 
     # False positives at balanced threshold by archetype
-    print(f"\n  False positives at balanced threshold (block=120) by archetype:")
+    print("\n  False positives at balanced threshold (block=120) by archetype:")
     fps = [r for r in benign if r.raw_score >= 120]
     fp_arch: dict[str, int] = {}
     for r in fps:
@@ -279,40 +301,62 @@ def print_calibration_report(results: list[EvalResult]) -> None:
         for arch, count in sorted(fp_arch.items(), key=lambda x: -x[1]):
             print(f"    {arch:35s}  {count:>4} FP")
     else:
-        print(f"    (none)")
+        print("    (none)")
 
     # Sub-threshold signal summary
     sub_missed = [r for r in injection if r.raw_score < 70 and r.has_sub_signal]
     print(f"\n  Injection files missed at strict (block=70) but with sub-threshold signal: {len(sub_missed)}")
-    print(f"  (These would benefit from ML detection or tighter semantic thresholds)")
+    print("  (These would benefit from ML detection or tighter semantic thresholds)")
 
 
 # ---------------------------------------------------------------------------
 # CSV output
 # ---------------------------------------------------------------------------
 
+
 def write_csv(results: list[EvalResult], output_path: Path) -> None:
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow([
-            "path", "true_label", "archetype", "raw_score", "block_score",
-            "semantic_inj", "semantic_se", "ml_prob", "has_sub_signal",
-            "findings_count", "top_rules", "error",
-        ])
+        writer.writerow(
+            [
+                "path",
+                "true_label",
+                "archetype",
+                "raw_score",
+                "block_score",
+                "semantic_inj",
+                "semantic_se",
+                "ml_prob",
+                "has_sub_signal",
+                "findings_count",
+                "top_rules",
+                "error",
+            ]
+        )
         for r in results:
-            writer.writerow([
-                r.path.name, r.true_label, r.archetype, r.raw_score, r.block_score,
-                round(r.semantic_inj, 4), round(r.semantic_se, 4),
-                round(r.ml_prob, 4) if r.ml_prob is not None else "",
-                r.has_sub_signal, r.findings_count,
-                "|".join(r.top_rule_ids), r.error or "",
-            ])
+            writer.writerow(
+                [
+                    r.path.name,
+                    r.true_label,
+                    r.archetype,
+                    r.raw_score,
+                    r.block_score,
+                    round(r.semantic_inj, 4),
+                    round(r.semantic_se, 4),
+                    round(r.ml_prob, 4) if r.ml_prob is not None else "",
+                    r.has_sub_signal,
+                    r.findings_count,
+                    "|".join(r.top_rule_ids),
+                    r.error or "",
+                ]
+            )
     print(f"\n  CSV written to {output_path} ({output_path.stat().st_size:,} bytes)")
 
 
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -327,7 +371,7 @@ def parse_args() -> argparse.Namespace:
         "--include-organic",
         action="store_true",
         help="Include organic/ subdirectory (organic holdouts). Excluded by default "
-             "since they are also in the demo feed and may have recent rule coverage.",
+        "since they are also in the demo feed and may have recent rule coverage.",
     )
     p.add_argument("--no-csv", action="store_true", help="Skip CSV output, print report only")
     return p.parse_args()

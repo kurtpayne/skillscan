@@ -39,6 +39,11 @@ cat_labels = {
     "defense_evasion": "Defense Evasion",
     "uncategorized": "Other",
     "vulnerability": "Vulnerabilities",
+    "prompt_injection": "Prompt Injection",
+    "passive_vulnerability": "Passive Vulnerabilities",
+    "platform_security": "Platform Security",
+    "execution": "Execution",
+    "malware": "Malware",
 }
 
 lines = [

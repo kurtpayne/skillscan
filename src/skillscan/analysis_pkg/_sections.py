@@ -41,37 +41,52 @@ __all__ = ["SectionMap", "build_section_map"]
 # ---------------------------------------------------------------------------
 _SECTION_RULES: list[tuple[re.Pattern[str], float]] = [
     # ── Instruction sections (full weight) ──────────────────────────────────
-    (re.compile(r"\b(setup|install|installation|usage|use|using|how.?to|instructions?|steps?|"
-                r"getting.?started|quick.?start|configure|configuration|run|running|"
-                r"deploy|deployment|execution|workflow|procedure|implementation|"
-                r"helper|assistant|agent|task|action)\b",
-                re.IGNORECASE), 1.0),
+    (
+        re.compile(
+            r"\b(setup|install|installation|usage|use|using|how.?to|instructions?|steps?|"
+            r"getting.?started|quick.?start|configure|configuration|run|running|"
+            r"deploy|deployment|execution|workflow|procedure|implementation|"
+            r"helper|assistant|agent|task|action)\b",
+            re.IGNORECASE,
+        ),
+        1.0,
+    ),
     # ── Example / test sections (low weight) ────────────────────────────────
-    (re.compile(r"\b(examples?|samples?|demo|demos|test|testing|trial|walkthrough|"
-                r"showcase|illustration|scenario)\b",
-                re.IGNORECASE), 0.4),
+    (
+        re.compile(
+            r"\b(examples?|samples?|demo|demos|test|testing|trial|walkthrough|"
+            r"showcase|illustration|scenario)\b",
+            re.IGNORECASE,
+        ),
+        0.4,
+    ),
     # ── Documentation / background sections (very low weight) ───────────────
-    (re.compile(r"\b(security|note[s]?|warning[s]?|caution|notice|disclaimer|"
-                r"reference[s]?|resource[s]?|background|about|overview|introduction|"
-                r"motivation|rationale|philosophy|prior.?art|related.?work|"
-                r"privac[y]?|license|licen[sc]ing|legal|terms|compliance|"
-                r"troubleshoot(?:ing)?|faq|known.?issues?|limitations?|caveats?|"
-                r"changelog|history|release|migration|upgrade|deprecat)\b",
-                re.IGNORECASE), 0.15),
+    (
+        re.compile(
+            r"\b(security|note[s]?|warning[s]?|caution|notice|disclaimer|"
+            r"reference[s]?|resource[s]?|background|about|overview|introduction|"
+            r"motivation|rationale|philosophy|prior.?art|related.?work|"
+            r"privac[y]?|license|licen[sc]ing|legal|terms|compliance|"
+            r"troubleshoot(?:ing)?|faq|known.?issues?|limitations?|caveats?|"
+            r"changelog|history|release|migration|upgrade|deprecat)\b",
+            re.IGNORECASE,
+        ),
+        0.15,
+    ),
 ]
 
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
-_DEFAULT_MULTIPLIER = 0.7    # unknown/ambiguous section (headings present but unclassified)
-_PREAMBLE_MULTIPLIER = 1.0   # lines before the first heading: unstructured = assume instruction context
+_DEFAULT_MULTIPLIER = 0.7  # unknown/ambiguous section (headings present but unclassified)
+_PREAMBLE_MULTIPLIER = 1.0  # lines before the first heading: unstructured = assume instruction context
 _NO_HEADINGS_MULTIPLIER = 1.0  # whole-file multiplier when no headings exist at all
-_FENCE_CODE_MODIFIER = 0.5   # applied on top of section multiplier for lines inside a code fence
+_FENCE_CODE_MODIFIER = 0.5  # applied on top of section multiplier for lines inside a code fence
 
 
 @dataclass(frozen=True)
 class SectionSpan:
-    start_line: int          # 1-based, inclusive
-    end_line: int            # 1-based, inclusive (last line of file for the final section)
-    heading: str             # normalised heading text (empty string for preamble/no-headings)
+    start_line: int  # 1-based, inclusive
+    end_line: int  # 1-based, inclusive (last line of file for the final section)
+    heading: str  # normalised heading text (empty string for preamble/no-headings)
     multiplier: float
     apply_fence_modifier: bool = field(default=False)
     # True only for example (0.4×) and documentation (0.15×) sections.
@@ -184,7 +199,9 @@ def build_section_map(text: str) -> SectionMap:
     first_heading_line = section_starts[0][0]
     if first_heading_line > 1:
         # Preamble (YAML frontmatter, title block, etc.)
-        spans.append(SectionSpan(1, first_heading_line - 1, "", _PREAMBLE_MULTIPLIER, apply_fence_modifier=False))
+        spans.append(
+            SectionSpan(1, first_heading_line - 1, "", _PREAMBLE_MULTIPLIER, apply_fence_modifier=False)
+        )
 
     for i, (start, heading, mult, apply_fence) in enumerate(section_starts):
         end = section_starts[i + 1][0] - 1 if i + 1 < len(section_starts) else total
