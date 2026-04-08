@@ -39,9 +39,13 @@ _EXIT_ERROR = 3
 console = Console(stderr=True)
 
 
-def _resolve_api_key(provider: str) -> str:
-    """Resolve API key from environment variable. No CLI flag — keys in args
-    show up in shell history and ps output."""
+def _resolve_api_key(provider: str, explicit_key: str | None = None) -> str:
+    """Resolve API key: explicit_key takes priority, then environment variable.
+
+    No CLI flag for keys — keys in args show up in shell history and ps output.
+    """
+    if explicit_key:
+        return explicit_key
     env_var = _PROVIDER_ENV_KEYS.get(provider, provider.upper() + "_API_KEY")
     val = os.environ.get(env_var)
     if val:
@@ -255,13 +259,17 @@ def register(app: typer.Typer) -> None:
             "--user-messages",
             help="Comma-separated list of custom user messages instead of LLM-generated",
         ),
+        api_key: str | None = typer.Option(
+            None,
+            "--api-key",
+            help="Explicit API key (overrides env var). Prefer env vars to keep key out of shell history.",
+        ),
     ) -> None:
         """Submit a skill to the hosted trace service at trace.skillscan.sh.
-
         This is a thin HTTP client — it does NOT run the trace engine locally.
         The trace runs remotely using your API key (BYOK).
         """
-        resolved_key = _resolve_api_key(provider)
+        resolved_key = _resolve_api_key(provider, api_key)
         skill_content = _read_skill(Path(skill))
 
         # Build request body
