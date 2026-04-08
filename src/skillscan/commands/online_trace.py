@@ -14,7 +14,6 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -47,10 +46,7 @@ def _resolve_api_key(provider: str) -> str:
     val = os.environ.get(env_var)
     if val:
         return val
-    console.print(
-        f"[red]No API key found.[/red] "
-        f"Set [bold]{env_var}[/bold] in your environment."
-    )
+    console.print(f"[red]No API key found.[/red] Set [bold]{env_var}[/bold] in your environment.")
     raise typer.Exit(_EXIT_ERROR)
 
 
@@ -120,9 +116,7 @@ def _http_get_json(url: str) -> dict:
         raise typer.Exit(_EXIT_ERROR)
 
 
-def _poll_for_result(
-    remote_host: str, job_id: str, *, is_tty: bool
-) -> dict:
+def _poll_for_result(remote_host: str, job_id: str, *, is_tty: bool) -> dict:
     """Poll /v1/status/{job_id} until the job completes or fails."""
     url = f"{remote_host}/v1/status/{job_id}"
 
@@ -245,30 +239,18 @@ def register(app: typer.Typer) -> None:
         provider: str = typer.Option(
             "openrouter", "--provider", "-p", help="LLM provider: openrouter, openai, anthropic"
         ),
-        model: str = typer.Option(
-            _DEFAULT_MODEL, "--model", "-m", help="Model name"
-        ),
-        variants: int = typer.Option(
-            3, "--variants", "-n", help="Fuzz variant count"
-        ),
-        max_turns: int = typer.Option(
-            10, "--max-turns", help="Max turns per input"
-        ),
+        model: str = typer.Option(_DEFAULT_MODEL, "--model", "-m", help="Model name"),
+        variants: int = typer.Option(3, "--variants", "-n", help="Fuzz variant count"),
+        max_turns: int = typer.Option(10, "--max-turns", help="Max turns per input"),
         scan: bool = typer.Option(False, "--scan", help="Include static scan"),
         lint: bool = typer.Option(False, "--lint", help="Include lint"),
-        judge_model: Optional[str] = typer.Option(
-            None, "--judge-model", help="Model for the judge"
-        ),
-        output_file: Optional[Path] = typer.Option(
+        judge_model: str | None = typer.Option(None, "--judge-model", help="Model for the judge"),
+        output_file: Path | None = typer.Option(
             None, "--output-file", "-o", help="Save full report JSON to file"
         ),
-        format: str = typer.Option(
-            "text", "--format", help="Output format: text, json, md"
-        ),
-        remote_host: str = typer.Option(
-            _DEFAULT_HOST, "--remote-host", help="Override API endpoint"
-        ),
-        user_messages: Optional[str] = typer.Option(
+        format: str = typer.Option("text", "--format", help="Output format: text, json, md"),
+        remote_host: str = typer.Option(_DEFAULT_HOST, "--remote-host", help="Override API endpoint"),
+        user_messages: str | None = typer.Option(
             None,
             "--user-messages",
             help="Comma-separated list of custom user messages instead of LLM-generated",

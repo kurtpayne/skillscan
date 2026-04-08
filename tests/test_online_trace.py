@@ -13,8 +13,8 @@ from skillscan.cli import app
 from skillscan.commands.online_trace import (
     _format_md,
     _format_text,
-    _resolve_api_key,
     _read_skill,
+    _resolve_api_key,
     _verdict_exit_code,
 )
 
