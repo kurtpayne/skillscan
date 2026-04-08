@@ -13,8 +13,8 @@ from skillscan.cli import app
 from skillscan.commands.online_trace import (
     _format_md,
     _format_text,
-    _resolve_api_key,
     _read_skill,
+    _resolve_api_key,
     _verdict_exit_code,
 )
 
@@ -54,11 +54,15 @@ class TestReadSkill:
         assert _read_skill(tmp_path) == "from dir"
 
     def test_missing_file_exits(self, tmp_path: Path) -> None:
-        with pytest.raises(SystemExit):
+        import click
+
+        with pytest.raises((SystemExit, click.exceptions.Exit)):
             _read_skill(tmp_path / "nonexistent.md")
 
     def test_directory_without_skill_md_exits(self, tmp_path: Path) -> None:
-        with pytest.raises(SystemExit):
+        import click
+
+        with pytest.raises((SystemExit, click.exceptions.Exit)):
             _read_skill(tmp_path)
 
 
@@ -71,8 +75,10 @@ class TestResolveApiKey:
         assert _resolve_api_key("openai", None) == "sk-from-env"
 
     def test_missing_key_exits(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        import click
+
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        with pytest.raises(SystemExit):
+        with pytest.raises((SystemExit, click.exceptions.Exit)):
             _resolve_api_key("openai", None)
 
 

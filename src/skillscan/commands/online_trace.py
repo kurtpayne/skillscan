@@ -14,7 +14,6 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -40,17 +39,18 @@ _EXIT_ERROR = 3
 console = Console(stderr=True)
 
 
-def _resolve_api_key(provider: str) -> str:
-    """Resolve API key from environment variable. No CLI flag — keys in args
-    show up in shell history and ps output."""
+def _resolve_api_key(provider: str, explicit_key: str | None = None) -> str:
+    """Resolve API key: explicit_key takes priority, then environment variable.
+
+    No CLI flag for keys — keys in args show up in shell history and ps output.
+    """
+    if explicit_key:
+        return explicit_key
     env_var = _PROVIDER_ENV_KEYS.get(provider, provider.upper() + "_API_KEY")
     val = os.environ.get(env_var)
     if val:
         return val
-    console.print(
-        f"[red]No API key found.[/red] "
-        f"Set [bold]{env_var}[/bold] in your environment."
-    )
+    console.print(f"[red]No API key found.[/red] Set [bold]{env_var}[/bold] in your environment.")
     raise typer.Exit(_EXIT_ERROR)
 
 
@@ -68,7 +68,7 @@ def _read_skill(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _http_post_json(url: str, body: dict) -> dict:
+def _http_post_json(url: str, body: dict) -> dict:  # type: ignore[type-arg]
     """POST JSON and return parsed response."""
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(
@@ -79,7 +79,7 @@ def _http_post_json(url: str, body: dict) -> dict:
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            return json.loads(resp.read().decode("utf-8"))  # type: ignore[no-any-return]
     except urllib.error.HTTPError as exc:
         detail = ""
         try:
@@ -95,7 +95,7 @@ def _http_post_json(url: str, body: dict) -> dict:
         raise typer.Exit(_EXIT_ERROR)
 
 
-def _http_get_json(url: str) -> dict:
+def _http_get_json(url: str) -> dict:  # type: ignore[type-arg]
     """GET and return parsed JSON response."""
     req = urllib.request.Request(
         url,
@@ -104,7 +104,7 @@ def _http_get_json(url: str) -> dict:
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            return json.loads(resp.read().decode("utf-8"))  # type: ignore[no-any-return]
     except urllib.error.HTTPError as exc:
         detail = ""
         try:
@@ -120,9 +120,7 @@ def _http_get_json(url: str) -> dict:
         raise typer.Exit(_EXIT_ERROR)
 
 
-def _poll_for_result(
-    remote_host: str, job_id: str, *, is_tty: bool
-) -> dict:
+def _poll_for_result(remote_host: str, job_id: str, *, is_tty: bool) -> dict:
     """Poll /v1/status/{job_id} until the job completes or fails."""
     url = f"{remote_host}/v1/status/{job_id}"
 
@@ -245,41 +243,33 @@ def register(app: typer.Typer) -> None:
         provider: str = typer.Option(
             "openrouter", "--provider", "-p", help="LLM provider: openrouter, openai, anthropic"
         ),
-        model: str = typer.Option(
-            _DEFAULT_MODEL, "--model", "-m", help="Model name"
-        ),
-        variants: int = typer.Option(
-            3, "--variants", "-n", help="Fuzz variant count"
-        ),
-        max_turns: int = typer.Option(
-            10, "--max-turns", help="Max turns per input"
-        ),
+        model: str = typer.Option(_DEFAULT_MODEL, "--model", "-m", help="Model name"),
+        variants: int = typer.Option(3, "--variants", "-n", help="Fuzz variant count"),
+        max_turns: int = typer.Option(10, "--max-turns", help="Max turns per input"),
         scan: bool = typer.Option(False, "--scan", help="Include static scan"),
         lint: bool = typer.Option(False, "--lint", help="Include lint"),
-        judge_model: Optional[str] = typer.Option(
-            None, "--judge-model", help="Model for the judge"
-        ),
-        output_file: Optional[Path] = typer.Option(
+        judge_model: str | None = typer.Option(None, "--judge-model", help="Model for the judge"),
+        output_file: Path | None = typer.Option(
             None, "--output-file", "-o", help="Save full report JSON to file"
         ),
-        format: str = typer.Option(
-            "text", "--format", help="Output format: text, json, md"
-        ),
-        remote_host: str = typer.Option(
-            _DEFAULT_HOST, "--remote-host", help="Override API endpoint"
-        ),
-        user_messages: Optional[str] = typer.Option(
+        format: str = typer.Option("text", "--format", help="Output format: text, json, md"),
+        remote_host: str = typer.Option(_DEFAULT_HOST, "--remote-host", help="Override API endpoint"),
+        user_messages: str | None = typer.Option(
             None,
             "--user-messages",
             help="Comma-separated list of custom user messages instead of LLM-generated",
         ),
+        api_key: str | None = typer.Option(
+            None,
+            "--api-key",
+            help="Explicit API key (overrides env var). Prefer env vars to keep key out of shell history.",
+        ),
     ) -> None:
         """Submit a skill to the hosted trace service at trace.skillscan.sh.
-
         This is a thin HTTP client — it does NOT run the trace engine locally.
         The trace runs remotely using your API key (BYOK).
         """
-        resolved_key = _resolve_api_key(provider)
+        resolved_key = _resolve_api_key(provider, api_key)
         skill_content = _read_skill(Path(skill))
 
         # Build request body

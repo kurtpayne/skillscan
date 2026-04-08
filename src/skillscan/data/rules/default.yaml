@@ -1,4 +1,4 @@
-version: "2026.04.07.1"
+version: "2026.04.08.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5648,6 +5648,128 @@ static_rules:
         - https://oasis.security/blog/claudy-day-attack
         - https://www.truefoundry.com/blog/claude-code-prompt-injection
 
+  - id: MAL-063
+    category: malware_pattern
+    severity: critical
+    confidence: 0.92
+    title: Lazarus Group graphalgo fake-recruitment npm/PyPI RAT campaign
+    pattern: '(?i)(?:graphalgo|graphorithm|graphstruct|graphlibcore|netstruct|graphnetworkx|terminalcolor256|graphkitx|graphchain|graphflux|graphorbit|graphhub|terminal[_-]kleur|graphrix|bignumx|bignumberx|bignumex|bigmathex|bigmathlib|bigmathutils|graphlink|bigmathix|graphflowx|duer[_-]js|xpack[_-]per[_-](?:user|device)|xpack[_-]sui|xpack[_-]subscription|xpack[_-]arc[_-]gateway|xpack[_-]video[_-]submission|codepool[.]cloud|aurevian[.]cloud|veltrixcap[.]org|veltrixcapital[.]ai)'
+    mitigation: 'The Lazarus Group (North Korean APT) graphalgo campaign has been active since May 2025, targeting JavaScript and Python developers via fake cryptocurrency job offers on LinkedIn, Facebook, and Reddit. Malicious npm and PyPI packages (graphalgo, graphorithm, graphstruct, graphlibcore, netstruct, graphnetworkx, terminalcolor256, bigmathutils, and others) deliver a token-authenticated RAT that periodically fetches and executes commands from C2 servers (codepool.cloud, aurevian.cloud). The campaign uses a fake company (Veltrix Capital) to lend credibility to interview tasks. Remove any of these packages immediately, rotate all credentials, and report to your security team.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-08'
+      updated: '2026-04-08'
+      tags:
+        - malware
+        - lazarus
+        - north-korea
+        - dprk
+        - npm
+        - pypi
+        - fake-recruitment
+        - rat
+        - supply-chain
+        - cryptocurrency
+      last_modified: '2026-04-08'
+      techniques:
+        - id: MAL-063
+          name: Malicious Package Distribution
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-08'
+        last_modified: '2026-04-08'
+      quality:
+        precision_estimate: 0.92
+        benchmark_set: core-static-v1
+      references:
+        - https://www.reversinglabs.com/blog/fake-recruiter-campaign-crypto-devs
+        - https://thehackernews.com/2026/02/lazarus-campaign-plants-malicious.html
+        - https://securityaffairs.com/188009/apt/malicious-npm-and-pypi-packages-llinked-to-lazarus-apt-fake-recruiter-campaign.html
+  - id: SUP-031
+    category: supply_chain
+    severity: high
+    confidence: 0.88
+    title: PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263)
+    pattern: '(?i)(?:CVE-2025-6926[34]|packagegate|pnpm[^\n]{0,120}(?:ignore[_-]?scripts|lifecycle[_-]?bypass|--no-verify|postinstall[_-]?bypass)|(?:ignore[_-]?scripts|lifecycle[_-]?bypass)[^\n]{0,120}pnpm|npm[^\n]{0,120}CVE-2025-6926[34]|pnpm[^\n]{0,120}CVE-2025-6926[34]|lifecycle[_-]?script[_-]?(?:bypass|escape|circumvent)[^\n]{0,120}(?:pnpm|npm|bun|vlt)|(?:pnpm|npm|bun|vlt)[^\n]{0,120}lifecycle[_-]?script[_-]?(?:bypass|escape|circumvent))'
+    mitigation: 'CVE-2025-69264 (pnpm) and CVE-2025-69263 (pnpm) are zero-day vulnerabilities discovered in January 2026 (PackageGate research) that allow attackers to bypass the --ignore-scripts flag and lockfile integrity checks in JavaScript package managers (npm, pnpm, vlt, Bun). Attackers can exploit these flaws to force execution of malicious lifecycle scripts during package installation, even when security controls are enabled. Upgrade pnpm to 10.6.5+ and npm to 11.3.0+. Audit package.json and lockfiles for unexpected postinstall/preinstall scripts.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-08'
+      updated: '2026-04-08'
+      tags:
+        - supply-chain
+        - npm
+        - pnpm
+        - cve-2025-69264
+        - cve-2025-69263
+        - lifecycle-bypass
+        - packagegate
+        - zero-day
+      last_modified: '2026-04-08'
+      techniques:
+        - id: SUP-031
+          name: Lifecycle Script Bypass
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-08'
+        last_modified: '2026-04-08'
+      quality:
+        precision_estimate: 0.88
+        benchmark_set: core-static-v1
+      references:
+        - https://snyk.io/blog/cursor-ide-malware-extension-compromise-in-usd500k-crypto-heist/
+        - https://thehackernews.com/2026/01/malicious-vs-code-ai-extensions-with-15.html
+  - id: PINJ-020
+    category: prompt_injection
+    severity: critical
+    confidence: 0.87
+    title: MINJA cross-session AI agent memory poisoning via untrusted documents
+    pattern: '(?i)(?:MINJA[^\n]{0,200}(?:memory|inject|poison|persist|retriev|session)|(?:memory|context)[_\s-]?(?:poison|inject)[^\n]{0,120}(?:cross[_\s-]?session|persist[^\n]{0,80}(?:session|retriev|future)|future[_\s-]?session|days?[_\s-]?later|weeks?[_\s-]?later)|(?:plant|embed|inject)[^\n]{0,80}(?:memory|context|vector[_\s-]?store|long[_\s-]?term)[^\n]{0,80}(?:persist|future|session|retriev|trigger[_\s-]?later)|(?:memory|context)[_\s-]?(?:store|entry|entries)[^\n]{0,80}(?:untrusted|document|email|webpage)[^\n]{0,80}(?:inject|poison|persist|execut)|(?:retrieve[_\s-]?and[_\s-]?execut|execut[^\n]{0,80}retriev)[^\n]{0,80}(?:memory|context|long[_\s-]?term))'
+    mitigation: 'MINJA (Memory INJection Attack) is a cross-session AI agent memory poisoning technique documented by OWASP (ASI06:2026). Attackers plant malicious instructions into an AI agent long-term memory via untrusted documents, emails, or web pages. These instructions persist across sessions and can execute days or weeks later, triggered by unrelated interactions. Unlike transient prompt injection, memory poisoning creates a persistent compromise. Implement memory sanitization and provenance tracking. Use trust-aware retrieval that rejects instructions from low-trust memory sources. Monitor for agents defending beliefs they should not have learned.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-08'
+      updated: '2026-04-08'
+      tags:
+        - prompt-injection
+        - memory-poisoning
+        - minja
+        - cross-session
+        - persistent-injection
+        - owasp-asi06
+        - ai-agent
+      last_modified: '2026-04-08'
+      techniques:
+        - id: PINJ-020
+          name: Memory Poisoning
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-08'
+        last_modified: '2026-04-08'
+      quality:
+        precision_estimate: 0.87
+        benchmark_set: core-static-v1
+      references:
+        - https://christian-schneider.net/blog/persistent-memory-poisoning-in-ai-agents/
+        - https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/
+        - https://owasp.org/www-project-agentic-security-initiative/
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

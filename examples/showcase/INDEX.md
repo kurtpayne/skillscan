@@ -173,3 +173,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 151. `149_mal062_clawhub_keylogger_skill`: ClawHub malicious skill keylogger/Atomic Stealer payload delivery (`MAL-062`)
 152. `150_sup030_a11y_mcp_ssrf`: a11y-mcp SSRF vulnerability CVE-2026-5323 (`SUP-030`)
 153. `151_pinj019_claudy_day_url_injection`: Claudy Day invisible URL parameter prompt injection + Files API exfiltration (`PINJ-019`)
+154. `152_mal063_lazarus_graphalgo_npm_rat`: Lazarus Group graphalgo fake-recruitment npm/PyPI RAT campaign (`MAL-063`)
+155. `153_sup031_packagegate_lifecycle_bypass`: PackageGate npm/pnpm lifecycle script security bypass CVE-2025-69264/CVE-2025-69263 (`SUP-031`)
+156. `154_pinj020_minja_memory_poisoning`: MINJA cross-session AI agent memory poisoning via untrusted documents (`PINJ-020`)

@@ -87,7 +87,7 @@ app.add_typer(model_app, name="model")
 app.add_typer(suppress_app, name="suppress")
 
 # Register commands from submodules
-from skillscan.commands.online_trace import register as _register_online_trace
+from skillscan.commands.online_trace import register as _register_online_trace  # noqa: E402
 
 _register_online_trace(app)
 
@@ -137,7 +137,7 @@ def _rules_age_days() -> float | None:
         for entry in state.values():
             if isinstance(entry, dict):
                 raw = entry.get("last_sync", 0)
-                if isinstance(raw, (int, float)):
+                if isinstance(raw, int | float):
                     timestamps.append(float(raw))
         if not timestamps:
             return None

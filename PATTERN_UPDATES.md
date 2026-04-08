@@ -1,3 +1,18 @@
+## 2026-04-08
+rulepack: 2026.04.08.1
+Three new detection rules, IOC enrichment, and vuln DB updates.
+- Added `MAL-063` (critical): **Lazarus Group graphalgo fake-recruitment npm/PyPI RAT campaign** — The Lazarus Group (DPRK/North Korea) has been targeting cryptocurrency developers and AI engineers since Q1 2026 with a fake-recruitment campaign distributing malicious npm and PyPI packages (graphalgo, graphorithm, graphstruct, graphlibcore, netstruct, graphnetworkx, terminalcolor256, bigmathutils, bigmathex, duer-js, xpack-per-*). Victims are contacted via LinkedIn or Telegram with fake job offers, then asked to install a "coding challenge" package. The packages contain a multi-stage RAT that beacons to C2 domains (codepool.cloud, aurevian.cloud, veltrixcap.org) and exfiltrates crypto wallet seeds, SSH keys, and AWS credentials.
+- Added `SUP-031` (high): **PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263)** — Two zero-day vulnerabilities discovered by PackageGate researchers in January 2026 allow attackers to bypass the `--ignore-scripts` flag and lockfile integrity checks in npm (CVE-2025-69263) and pnpm (CVE-2025-69264). Exploiting these flaws forces execution of malicious `preinstall`/`postinstall` lifecycle scripts even when security controls are enabled. Fixed in pnpm 10.6.5+ and npm 11.3.0+.
+- Added `PINJ-020` (critical): **MINJA cross-session AI agent memory poisoning via untrusted documents** — MINJA (Memory INJection Attack, OWASP ASI-06) is a class of AI agent attack where malicious content embedded in untrusted documents (emails, web pages, PDFs) is stored into the agent's long-term memory or vector store. On future sessions, the agent retrieves and executes the injected instructions, enabling persistent cross-session control without the attacker needing continued access. Demonstrated against multiple commercial AI assistant platforms in Q1 2026.
+- IOC update: added Lazarus C2 domains (codepool.cloud, aurevian.cloud, veltrixcap.org) to domain IOC DB.
+- Vuln DB update: added Lazarus campaign npm packages (graphalgo, graphorithm, graphstruct, graphlibcore, netstruct, graphnetworkx, terminalcolor256, bigmathutils, bigmathex, duer-js) as malware entries.
+Sources:
+- ReversingLabs (Lazarus graphalgo): https://www.reversinglabs.com/blog/fake-recruiter-campaign-crypto-devs
+- Socket.dev (Lazarus npm): https://socket.dev/blog/lazarus-group-npm-packages-2026
+- PackageGate (CVE-2025-69264): https://packagegate.io/blog/cve-2025-69264-pnpm-lifecycle-bypass
+- PackageGate (CVE-2025-69263): https://packagegate.io/blog/cve-2025-69263-npm-lifecycle-bypass
+- OWASP AI Security (MINJA/ASI-06): https://owasp.org/www-project-ai-security-and-privacy-guide/
+- Wiz Research (MINJA): https://www.wiz.io/blog/minja-ai-agent-memory-poisoning
 ## 2026-04-07
 rulepack: 2026.04.07.1
 Three new detection rules, vuln DB update.
