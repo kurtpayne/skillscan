@@ -86,6 +86,11 @@ app.add_typer(rule_app, name="rule")
 app.add_typer(model_app, name="model")
 app.add_typer(suppress_app, name="suppress")
 
+# Register commands from submodules
+from skillscan.commands.online_trace import register as _register_online_trace
+
+_register_online_trace(app)
+
 console = Console()
 err_console = Console(stderr=True)
 
