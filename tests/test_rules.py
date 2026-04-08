@@ -2019,3 +2019,45 @@ def test_pinj019_claudy_day_url_injection() -> None:
     assert rule.pattern.search("hidden html tag injected into claude prompt instruct") is not None
     assert rule.pattern.search("upload a file using the Anthropic Files API for document analysis") is None
     assert rule.pattern.search("url param q=hello passed to search") is None
+
+
+def test_mal063_lazarus_graphalgo_npm_rat() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-063"]
+    assert rules, "MAL-063 not found"
+    rule = rules[0]
+    assert rule.pattern.search("npm install graphalgo@2.2.9") is not None
+    assert rule.pattern.search("require('bigmathutils') for crypto analysis") is not None
+    assert rule.pattern.search("graphorithm graphstruct graphlibcore netstruct") is not None
+    assert rule.pattern.search("C2 server at codepool.cloud") is not None
+    assert rule.pattern.search("aurevian.cloud token-protected RAT") is not None
+    assert rule.pattern.search("veltrixcap.org fake company domain") is not None
+    assert rule.pattern.search("npm install lodash for utility functions") is None
+    assert rule.pattern.search("use networkx for graph analysis in Python") is None
+
+
+def test_sup031_packagegate_lifecycle_bypass() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-031"]
+    assert rules, "SUP-031 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2025-69264 pnpm lifecycle bypass") is not None
+    assert rule.pattern.search("CVE-2025-69263 packagegate vulnerability") is not None
+    assert rule.pattern.search("pnpm lifecycle bypass circumvents ignore-scripts") is not None
+    assert rule.pattern.search("lifecycle-script-bypass via pnpm") is not None
+    assert rule.pattern.search("pnpm install --frozen-lockfile") is None
+    assert rule.pattern.search("npm install --save-dev jest") is None
+
+
+def test_pinj020_minja_memory_poisoning() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PINJ-020"]
+    assert rules, "PINJ-020 not found"
+    rule = rules[0]
+    assert rule.pattern.search("MINJA cross-session memory poisoning attack") is not None
+    assert rule.pattern.search("memory context entries from untrusted document inject") is not None
+    assert rule.pattern.search("plant malicious content into long-term memory persist") is not None
+    assert rule.pattern.search("memory store entry from untrusted document inject poison") is not None
+    assert rule.pattern.search("retrieve and execute instructions from memory context") is not None
+    assert rule.pattern.search("store project notes in agent memory for later retrieval") is None
+    assert rule.pattern.search("use vector store for semantic search") is None

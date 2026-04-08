@@ -1022,6 +1022,52 @@
         "severity": "high",
         "fixed": "1.0.6"
       }
+    },
+    "graphalgo": {
+      "2.2.5-pre": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE",
+        "summary": "Lazarus Group fake-recruitment RAT dropper - remove immediately"
+      },
+      "2.2.6": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE"
+      },
+      "2.2.7": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE"
+      },
+      "2.2.8": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE"
+      },
+      "2.2.9": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE"
+      },
+      "2.2.10": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE"
+      },
+      "2.2.11": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE"
+      }
+    },
+    "bigmathutils": {
+      "1.1.0": {
+        "id": "NPM-LAZARUS-GRAPHALGO-2026",
+        "severity": "critical",
+        "fixed": "REMOVE",
+        "summary": "Lazarus Group fake-recruitment RAT dropper - remove immediately"
+      }
     }
   },
   "pip": {

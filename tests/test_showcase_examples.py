@@ -445,3 +445,18 @@ def test_150_sup030_a11y_mcp_ssrf():
 def test_151_pinj019_claudy_day_url_injection():
     findings_151 = _scan("examples/showcase/151_pinj019_claudy_day_url_injection")
     assert any(f.id == "PINJ-019" for f in findings_151.findings)
+
+
+def test_152_mal063_lazarus_graphalgo_npm_rat():
+    findings = _scan("examples/showcase/152_mal063_lazarus_graphalgo_npm_rat")
+    assert any(f.id == "MAL-063" for f in findings.findings)
+
+
+def test_153_sup031_packagegate_lifecycle_bypass():
+    findings = _scan("examples/showcase/153_sup031_packagegate_lifecycle_bypass")
+    assert any(f.id == "SUP-031" for f in findings.findings)
+
+
+def test_154_pinj020_minja_memory_poisoning():
+    findings = _scan("examples/showcase/154_pinj020_minja_memory_poisoning")
+    assert any(f.id == "PINJ-020" for f in findings.findings)
