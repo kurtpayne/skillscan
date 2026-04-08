@@ -64,7 +64,7 @@ def _read_skill(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _http_post_json(url: str, body: dict) -> dict:
+def _http_post_json(url: str, body: dict) -> dict:  # type: ignore[type-arg]
     """POST JSON and return parsed response."""
     data = json.dumps(body).encode("utf-8")
     req = urllib.request.Request(
@@ -75,7 +75,7 @@ def _http_post_json(url: str, body: dict) -> dict:
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            return json.loads(resp.read().decode("utf-8"))  # type: ignore[no-any-return]
     except urllib.error.HTTPError as exc:
         detail = ""
         try:
@@ -91,7 +91,7 @@ def _http_post_json(url: str, body: dict) -> dict:
         raise typer.Exit(_EXIT_ERROR)
 
 
-def _http_get_json(url: str) -> dict:
+def _http_get_json(url: str) -> dict:  # type: ignore[type-arg]
     """GET and return parsed JSON response."""
     req = urllib.request.Request(
         url,
@@ -100,7 +100,7 @@ def _http_get_json(url: str) -> dict:
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            return json.loads(resp.read().decode("utf-8"))  # type: ignore[no-any-return]
     except urllib.error.HTTPError as exc:
         detail = ""
         try:
