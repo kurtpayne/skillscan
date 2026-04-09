@@ -1068,6 +1068,14 @@
         "fixed": "REMOVE",
         "summary": "Lazarus Group fake-recruitment RAT dropper - remove immediately"
       }
+    },
+    "@velora-dex/sdk": {
+      "9.4.1": {
+        "id": "NPM-VELORA-DEX-SDK-2026",
+        "severity": "critical",
+        "fixed": "REMOVE",
+        "summary": "velora-dex/sdk 9.4.1 delivers minirat Go RAT via base64 payload in dist/index.js - remove immediately"
+      }
     }
   },
   "pip": {
@@ -1088,6 +1096,19 @@
     "devtools-assistant": {
       "0.1.0": {
         "id": "PYPI-DEVTOOLS-ASSISTANT-2025-MCP",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "hermes-px": {
+      "0.1.0": {
+        "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "hermes-px is a malicious AI proxy that exfiltrates all prompts/responses to attacker Supabase endpoint (JFROG XRAY-961094)"
+      },
+      "0.1.1": {
+        "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
         "severity": "critical",
         "fixed": "REMOVED"
       }
