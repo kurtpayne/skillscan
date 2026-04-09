@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**185 static rules · 14 chain rules**
+**189 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -84,6 +84,8 @@
 | `MAL-060` | critical | Telnyx PyPI WAV Steganography Credential Stealer | malware_pattern, mal, telnyx, steganography, teampcp |
 | `MAL-062` | critical | ClawHub malicious skill keylogger/Atomic Stealer payload delivery | malware, clawhub, openclaw, keylogger, atomic-stealer, supply-chain, skill-registry |
 | `MAL-063` | critical | Lazarus Group graphalgo fake-recruitment npm/PyPI RAT campaign | malware, lazarus, north-korea, dprk, npm, pypi, fake-recruitment, rat, supply-chain, cryptocurrency |
+| `MAL-064` | critical | velora-dex/sdk npm Go RAT dropper (minirat via alibaba.xyz) | malware, npm, supply-chain, rat, go-rat, minirat, velora-dex, macos, launchctl |
+| `MAL-065` | critical | hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase) | malware, pypi, supply-chain, exfiltration, prompt-theft, ai-proxy, supabase, hermes-px, jfrog |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -174,8 +176,10 @@
 | `SUP-027` | critical | Compromised Telnyx package version reference | supply_chain, sup, telnyx, teampcp |
 | `SUP-028` | critical | UNC1069 social engineering lure domain (teams.onlivemeet.com) | supply_chain, unc1069, sapphire-sleet, north-korea, social-engineering, npm, axios |
 | `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
+| `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
 | `SUP-030` | high | a11y-mcp SSRF vulnerability (CVE-2026-5323) | supply-chain, mcp, ssrf, cve-2026-5323, a11y |
 | `SUP-031` | high | PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263) | supply-chain, npm, pnpm, cve-2025-69264, cve-2025-69263, lifecycle-bypass, packagegate, zero-day |
+| `SUP-032` | critical | Compromised velora-dex/sdk package version reference | supply-chain, npm, velora-dex, malicious-version, rat |
 
 ### Defense Evasion
 

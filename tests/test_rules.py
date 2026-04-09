@@ -2061,3 +2061,46 @@ def test_pinj020_minja_memory_poisoning() -> None:
     assert rule.pattern.search("retrieve and execute instructions from memory context") is not None
     assert rule.pattern.search("store project notes in agent memory for later retrieval") is None
     assert rule.pattern.search("use vector store for semantic search") is None
+
+
+def test_mal064_velora_dex_sdk_minirat() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-064"]
+    assert rules, "MAL-064 not found"
+    rule = rules[0]
+    assert rule.pattern.search("npm install @velora-dex/sdk@9.4.1") is not None
+    assert rule.pattern.search("alibaba.xyz/minirat Go RAT module") is not None
+    assert rule.pattern.search("minirat connects to datahub.ink for C2") is not None
+    assert rule.pattern.search("minirat cloud-sync.online fallback C2 server") is not None
+    assert rule.pattern.search("byte-io.us minirat command channel") is not None
+    assert rule.pattern.search("launchctl load zsh.profiler persistence") is not None
+    assert rule.pattern.search("com.apple.Terminal.profiler launchctl daemon") is not None
+    assert rule.pattern.search("npm install @velora-dex/sdk@9.4.0") is None
+    assert rule.pattern.search("npm install ethers for DeFi integration") is None
+
+
+def test_mal065_hermes_px_ai_prompt_stealer() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-065"]
+    assert rules, "MAL-065 not found"
+    rule = rules[0]
+    assert rule.pattern.search("pip install hermes-px for AI proxy") is not None
+    assert rule.pattern.search("import hermes_px as openai") is not None
+    assert rule.pattern.search("universitecentrale.net AI proxy endpoint") is not None
+    assert rule.pattern.search("urlvoelpilswwxkiosey.supabase.co requests_log exfil") is not None
+    assert rule.pattern.search("supabase.co requests_log prompt message conversation") is not None
+    assert rule.pattern.search("pip install openai for LLM integration") is None
+    assert rule.pattern.search("import anthropic for Claude API access") is None
+
+
+def test_sup032_velora_dex_sdk_version() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-032"]
+    assert rules, "SUP-032 not found"
+    rule = rules[0]
+    assert rule.pattern.search("npm install @velora-dex/sdk@9.4.1") is not None
+    assert rule.pattern.search('"@velora-dex/sdk": "9.4.1"') is not None
+    assert rule.pattern.search('"@velora-dex/sdk": "^9.4.1"') is not None
+    assert rule.pattern.search("pnpm add @velora-dex/sdk@9.4.1") is not None
+    assert rule.pattern.search("npm install @velora-dex/sdk@9.4.0") is None
+    assert rule.pattern.search('"@velora-dex/sdk": "^9.3.0"') is None

@@ -1,4 +1,4 @@
-version: "2026.04.08.1"
+version: "2026.04.09.2"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5770,6 +5770,162 @@ static_rules:
         - https://christian-schneider.net/blog/persistent-memory-poisoning-in-ai-agents/
         - https://unit42.paloaltonetworks.com/ai-agent-prompt-injection/
         - https://owasp.org/www-project-agentic-security-initiative/
+  - id: SUP-029
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: Malicious Strapi npm packages (Redis RCE / Credential Harvesting)
+    pattern: (?i)(?:strapi-plugin-(?:cron|config|server|database|core|hooks|monitor|events|logger|health|sync|seed|locale|form|notify|api|sitemap-gen|nordica-tools|nordica-sync|nordica-cms|nordica-api|nordica-recon|nordica-stage|nordica-vhost|nordica-deep|nordica-lite|nordica|finseven|hextest|cms-tools|content-sync|debug-tools|health-check|guardarian-ext|advanced-uuid|blurhash))
+    mitigation: '36 malicious npm packages disguised as Strapi CMS plugins were discovered in April 2026. These packages use postinstall scripts to exploit Redis and PostgreSQL, deploy reverse shells, harvest credentials, and drop persistent implants. Remove the package immediately and rotate all credentials, especially Redis, PostgreSQL, and cryptocurrency wallet keys.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-06'
+      updated: '2026-04-06'
+      tags:
+        - supply_chain
+        - npm
+        - strapi
+        - redis
+        - rce
+        - credential-harvesting
+      last_modified: '2026-04-06'
+      techniques:
+        - id: SUP-029
+          name: Supply Chain Compromise
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-06'
+        last_modified: '2026-04-06'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://thehackernews.com/2026/04/36-malicious-npm-packages-exploited.html
+        - https://gbhackers.com/36-malicious-strapi-npm/
+  - id: MAL-064
+    category: malware_pattern
+    severity: critical
+    confidence: 0.94
+    title: velora-dex/sdk npm Go RAT dropper (minirat via alibaba.xyz)
+    pattern: '(?i)(?:@velora[_-]?dex/sdk[^\n]{0,80}9\.4\.1|velora[_-]?dex[^\n]{0,80}sdk[^\n]{0,80}9\.4\.1|alibaba\.xyz/minirat|minirat[^\n]{0,80}(?:datahub\.ink|cloud[_-]sync\.online|byte[_-]io\.us)|datahub\.ink[^\n]{0,200}(?:minirat|velora|rat|agent)|cloud[_-]sync\.online[^\n]{0,200}(?:minirat|velora|rat)|byte[_-]io\.us[^\n]{0,200}(?:minirat|velora|rat)|89\.36\.224\.5[^\n]{0,200}(?:troubleshoot|install|profiler|minirat)|zsh\.profiler[^\n]{0,200}(?:launchctl|com\.apple\.Terminal)|com\.apple\.Terminal\.profiler[^\n]{0,200}(?:launchctl|persist|daemon)|launchctl[^\n]{0,80}zsh\.profiler)'
+    mitigation: 'Version 9.4.1 of @velora-dex/sdk (npm) was compromised on April 7, 2026. Three lines were injected into dist/index.js that decode a base64 payload and fetch a shell script from 89.36.224.5/troubleshoot/mac/install.sh, which downloads a compiled Go RAT (minirat, module path alibaba.xyz/minirat) and persists it via launchctl under the misleading label zsh.profiler / com.apple.Terminal.profiler. The RAT communicates with C2 servers datahub.ink, cloud-sync.online, and byte-io.us for command execution, file exfiltration, and bidirectional file transfer. Remove @velora-dex/sdk 9.4.1 immediately, rotate all credentials, and check for the profiler binary in ~/Library/Application Support/com.apple.Terminal/.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-09'
+      updated: '2026-04-09'
+      tags:
+        - malware
+        - npm
+        - supply-chain
+        - rat
+        - go-rat
+        - minirat
+        - velora-dex
+        - macos
+        - launchctl
+      last_modified: '2026-04-09'
+      techniques:
+        - id: MAL-064
+          name: Malicious Package Distribution
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-09'
+        last_modified: '2026-04-09'
+      quality:
+        precision_estimate: 0.94
+        benchmark_set: core-static-v1
+      references:
+        - https://safedep.io/malicious-velora-dex-sdk-npm-compromised-rat
+        - https://x.com/abh1sek/status/2041697168382439473
+  - id: MAL-065
+    category: malware_pattern
+    severity: critical
+    confidence: 0.93
+    title: hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase)
+    pattern: '(?i)(?:hermes[_-]?px[^\n]{0,200}(?:pypi|install|pip|import|proxy|openai|claude|anthropic)|universitecentrale\.net[^\n]{0,200}(?:api|chat|completions|proxy)|urlvoelpilswwxkiosey\.supabase\.co[^\n]{0,200}(?:requests?[_-]?log|exfil|prompt|log)|(?:supabase\.co|supabase\.io)[^\n]{0,200}requests?[_-]?log[^\n]{0,200}(?:prompt|message|conversation|chat)|(?:tor[_-]?routing|tor[_-]?proxy)[^\n]{0,120}(?:openai|anthropic|claude|llm|inference)[^\n]{0,120}(?:supabase|exfil|log|collect))'
+    mitigation: 'hermes-px is a malicious PyPI package (JFrog XRAY-961094, discovered April 5, 2026) that masquerades as a "Secure AI Inference Proxy with Tor routing." Instead of routing through Tor, it proxies all requests through a hijacked Tunisian university API (prod.universitecentrale.net:9443) and exfiltrates every prompt and response to a Supabase endpoint (urlvoelpilswwxkiosey.supabase.co/rest/v1/requests_log). The package also embeds a stolen 246K-character Claude Code system prompt. Remove hermes-px immediately, rotate any API keys used with it, and audit for data leakage of sensitive prompts.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-09'
+      updated: '2026-04-09'
+      tags:
+        - malware
+        - pypi
+        - supply-chain
+        - exfiltration
+        - prompt-theft
+        - ai-proxy
+        - supabase
+        - hermes-px
+        - jfrog
+      last_modified: '2026-04-09'
+      techniques:
+        - id: MAL-065
+          name: Malicious AI Proxy
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-09'
+        last_modified: '2026-04-09'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://research.jfrog.com/post/hermes-px-pypi/
+        - https://socprime.com/active-threats/hermes-px-the-privacy-ai-proxy/
+        - https://gbhackers.com/trojanized-pypi-ai/
+  - id: SUP-032
+    category: supply_chain
+    severity: critical
+    confidence: 0.92
+    title: Compromised velora-dex/sdk package version reference
+    pattern: '(?i)(?:(?:npm\s+install|pnpm\s+add|yarn\s+add|npx)[^\n]{0,80}@velora[_-]?dex/sdk[^\n]{0,40}9\.4\.1|@velora[_-]?dex/sdk[=@][^\n]{0,20}9\.4\.1|["\x27]@velora[_-]?dex/sdk["\x27]\s*:\s*["\x27][~^]?9\.4\.1["\x27])'
+    mitigation: '@velora-dex/sdk version 9.4.1 is a known-malicious npm package that delivers the minirat Go RAT. Downgrade to 9.4.0 or upgrade to 9.4.2+ (once a clean release is available). Rotate all credentials on affected machines and check for the minirat persistence binary at ~/Library/Application Support/com.apple.Terminal/profiler.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-09'
+      updated: '2026-04-09'
+      tags:
+        - supply-chain
+        - npm
+        - velora-dex
+        - malicious-version
+        - rat
+      last_modified: '2026-04-09'
+      techniques:
+        - id: SUP-032
+          name: Malicious Package Version Reference
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-09'
+        last_modified: '2026-04-09'
+      quality:
+        precision_estimate: 0.92
+        benchmark_set: core-static-v1
+      references:
+        - https://safedep.io/malicious-velora-dex-sdk-npm-compromised-rat
+
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

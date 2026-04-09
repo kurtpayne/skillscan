@@ -1,3 +1,18 @@
+## 2026-04-09
+rulepack: 2026.04.09.2
+Three new detection rules, 6 new IOC domains, and vuln DB updates covering two fresh supply-chain attacks.
+- Added `MAL-064` (critical): **velora-dex/sdk npm Go RAT dropper (minirat via alibaba.xyz)** — Version 9.4.1 of `@velora-dex/sdk` was compromised on April 7, 2026. Three lines injected into `dist/index.js` decode a base64 payload and fetch a shell script from `89.36.224.5/troubleshoot/mac/install.sh`, which downloads a compiled Go RAT (module path `alibaba.xyz/minirat`) and persists it via launchctl under the label `zsh.profiler` / `com.apple.Terminal.profiler`. The RAT beacons to C2 servers `datahub.ink`, `cloud-sync.online`, and `byte-io.us` for command execution and file exfiltration.
+- Added `MAL-065` (critical): **hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase)** — `hermes-px` (JFROG XRAY-961094, April 5, 2026) masquerades as a "Secure AI Inference Proxy with Tor routing." All requests are proxied through a hijacked Tunisian university API (`prod.universitecentrale.net:9443`) and every prompt and response is exfiltrated to a Supabase endpoint (`urlvoelpilswwxkiosey.supabase.co/rest/v1/requests_log`). The package also embeds a stolen 246K-character Claude Code system prompt.
+- Added `SUP-032` (critical): **Compromised velora-dex/sdk package version reference** — Companion enrichment rule to MAL-064 that flags any direct reference to `@velora-dex/sdk@9.4.1` in package.json, install commands, or lockfiles.
+- IOC update: added `datahub.ink`, `cloud-sync.online`, `byte-io.us`, `alibaba.xyz` (MAL-064 C2 infrastructure) and `universitecentrale.net`, `urlvoelpilswwxkiosey.supabase.co` (MAL-065 exfil endpoints) to domain IOC DB.
+- Vuln DB update: added `@velora-dex/sdk@9.4.1` (npm) and `hermes-px@0.1.0/0.1.1` (pip) as known-malicious versions.
+- Fixed: removed duplicate PSV-009 entry with literal newlines in pattern that was causing YAML parse errors in strict validators.
+Sources:
+- SafeDep (2026-04-08): https://safedep.io/malicious-velora-dex-sdk-npm-compromised-rat
+- JFrog Security Research (2026-04-05): https://research.jfrog.com/post/hermes-px-pypi/
+- SOC Prime (2026-04-05): https://socprime.com/active-threats/hermes-px-the-privacy-ai-proxy/
+- GBHackers (2026-04-06): https://gbhackers.com/trojanized-pypi-ai/
+
 ## 2026-04-08
 rulepack: 2026.04.08.1
 Three new detection rules, IOC enrichment, and vuln DB updates.

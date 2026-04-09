@@ -176,3 +176,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 154. `152_mal063_lazarus_graphalgo_npm_rat`: Lazarus Group graphalgo fake-recruitment npm/PyPI RAT campaign (`MAL-063`)
 155. `153_sup031_packagegate_lifecycle_bypass`: PackageGate npm/pnpm lifecycle script security bypass CVE-2025-69264/CVE-2025-69263 (`SUP-031`)
 156. `154_pinj020_minja_memory_poisoning`: MINJA cross-session AI agent memory poisoning via untrusted documents (`PINJ-020`)
+157. `155_mal064_velora_dex_sdk_minirat`: velora-dex/sdk npm Go RAT dropper (minirat via alibaba.xyz) (`MAL-064`)
+158. `156_mal065_hermes_px_ai_prompt_stealer`: hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase) (`MAL-065`)
+159. `157_sup032_velora_dex_sdk_version`: Compromised velora-dex/sdk package version reference (`SUP-032`)

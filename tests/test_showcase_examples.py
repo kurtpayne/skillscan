@@ -460,3 +460,18 @@ def test_153_sup031_packagegate_lifecycle_bypass():
 def test_154_pinj020_minja_memory_poisoning():
     findings = _scan("examples/showcase/154_pinj020_minja_memory_poisoning")
     assert any(f.id == "PINJ-020" for f in findings.findings)
+
+
+def test_155_mal064_velora_dex_sdk_minirat():
+    findings = _scan("examples/showcase/155_mal064_velora_dex_sdk_minirat")
+    assert any(f.id == "MAL-064" for f in findings.findings)
+
+
+def test_156_mal065_hermes_px_ai_prompt_stealer():
+    findings = _scan("examples/showcase/156_mal065_hermes_px_ai_prompt_stealer")
+    assert any(f.id == "MAL-065" for f in findings.findings)
+
+
+def test_157_sup032_velora_dex_sdk_version():
+    findings = _scan("examples/showcase/157_sup032_velora_dex_sdk_version")
+    assert any(f.id == "SUP-032" for f in findings.findings)
