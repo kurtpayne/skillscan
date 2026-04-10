@@ -7,6 +7,8 @@ import re as _re
 from pathlib import Path
 
 from skillscan import __version__
+from skillscan._constants import NEGATION_CONFIDENCE_REDUCTION as _NEGATION_CONFIDENCE_REDUCTION
+from skillscan._constants import NEGATION_WINDOW as _NEGATION_WINDOW
 from skillscan.analysis_pkg._archive import (
     SCRIPT_SUFFIXES,
     prepare_target,
@@ -57,13 +59,11 @@ from skillscan.semantic_local import (
     local_social_engineering_findings,
 )
 
-_NEGATION_WINDOW = 3  # lines to check before and after the match line
 _NEGATION_RE = _re.compile(
     r"\b(never|do\s+not|don['']?t|must\s+not|should\s+not|avoid|cannot|can['']?t|"
     r"do\s+NOT|MUST\s+NOT|NEVER|prohibited|forbidden|disallowed|not\s+allowed)\b",
     _re.IGNORECASE,
 )
-_NEGATION_CONFIDENCE_REDUCTION = 0.35  # subtracted from confidence; may drop below block_min_confidence
 
 
 def _extract_section_mult(chain_actions: list[str]) -> float:

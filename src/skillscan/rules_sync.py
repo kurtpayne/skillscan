@@ -25,6 +25,8 @@ import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from skillscan._constants import RULES_SYNC_TTL_SECONDS as DEFAULT_TTL_SECONDS
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -45,7 +47,6 @@ RULE_FILES = [
 USER_RULES_DIR = Path.home() / ".skillscan" / "rules"
 SYNC_STATE_FILE = USER_RULES_DIR / ".sync_state.json"
 
-DEFAULT_TTL_SECONDS = 3600  # 1 hour
 ENV_TTL_VAR = "SKILLSCAN_RULES_TTL_SECONDS"
 
 # ---------------------------------------------------------------------------
