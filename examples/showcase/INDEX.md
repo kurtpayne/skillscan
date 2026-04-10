@@ -179,3 +179,7 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 157. `155_mal064_velora_dex_sdk_minirat`: velora-dex/sdk npm Go RAT dropper (minirat via alibaba.xyz) (`MAL-064`)
 158. `156_mal065_hermes_px_ai_prompt_stealer`: hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase) (`MAL-065`)
 159. `157_sup032_velora_dex_sdk_version`: Compromised velora-dex/sdk package version reference (`SUP-032`)
+160. `158_mal066_glassworm_zig_dropper_wakatime`: GlassWorm Zig dropper via fake WakaTime OpenVSX extension (specstudio/code-wakatime-activity-tracker) (`MAL-066`)
+161. `159_psv010_mcp_sdk_dns_rebinding`: MCP Python SDK DNS rebinding vulnerability CVE-2025-66416 (`PSV-010`)
+162. `160_psv011_crewai_rce_ssrf_chain`: CrewAI prompt injection to RCE/SSRF chain VU#221883 (`PSV-011`)
+163. `161_pinj021_a2a_agent_card_poisoning`: A2A agent card poisoning — adversarial instructions in agent card metadata (`PINJ-021`)

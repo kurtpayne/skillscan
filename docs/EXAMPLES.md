@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**189 static rules · 14 chain rules**
+**193 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -86,6 +86,7 @@
 | `MAL-063` | critical | Lazarus Group graphalgo fake-recruitment npm/PyPI RAT campaign | malware, lazarus, north-korea, dprk, npm, pypi, fake-recruitment, rat, supply-chain, cryptocurrency |
 | `MAL-064` | critical | velora-dex/sdk npm Go RAT dropper (minirat via alibaba.xyz) | malware, npm, supply-chain, rat, go-rat, minirat, velora-dex, macos, launchctl |
 | `MAL-065` | critical | hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase) | malware, pypi, supply-chain, exfiltration, prompt-theft, ai-proxy, supabase, hermes-px, jfrog |
+| `MAL-066` | critical | GlassWorm Zig dropper via fake WakaTime OpenVSX extension (specstudio/code-wakatime-activity-tracker) | malware, glassworm, vscode-extension, openvsx, zig-dropper, supply-chain, wakatime-fake, rat, multi-ide |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -192,6 +193,8 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
+| `PSV-010` | high | MCP Python SDK DNS rebinding vulnerability (CVE-2025-66416, mcp < 1.23.0) | vulnerability, mcp, dns-rebinding, cve-2025-66416, python-sdk, localhost |
+| `PSV-011` | critical | CrewAI prompt injection to RCE/SSRF chain (VU#221883, CVE-2026-2275/2285/2286/2287) | vulnerability, crewai, rce, ssrf, prompt-injection, sandbox-escape, cve-2026-2275, cve-2026-2285, cve-2026-2286, cve-2026-2287, vu-221883 |
 
 ### Prompt Injection
 
@@ -211,6 +214,7 @@
 | `PINJ-018` | high | Hidden prompt injection via CSS/HTML concealment techniques | prompt_injection, hidden-text, css-concealment, indirect-injection, content-moderation |
 | `PINJ-019` | critical | Claudy Day invisible URL parameter prompt injection + Files API exfiltration | prompt-injection, claude, anthropic, files-api, exfiltration, claudy-day |
 | `PINJ-020` | critical | MINJA cross-session AI agent memory poisoning via untrusted documents | prompt-injection, memory-poisoning, minja, cross-session, persistent-injection, owasp-asi06, ai-agent |
+| `PINJ-021` | high | A2A agent card poisoning — adversarial instructions in agent card metadata | prompt-injection, a2a, agent-card, metadata-injection, google-a2a, multi-agent, exfiltration |
 
 ### Passive Vulnerabilities
 
