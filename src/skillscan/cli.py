@@ -43,6 +43,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from skillscan import __version__
+from skillscan._constants import DEFAULT_STALE_WARN_DAYS
 from skillscan.analysis import ScanError, scan
 from skillscan.compact import report_to_compact_text
 from skillscan.intel import (
@@ -97,8 +98,6 @@ err_console = Console(stderr=True)
 # ---------------------------------------------------------------------------
 # Staleness threshold (configurable via .skillscan.toml stale_warn_days)
 # ---------------------------------------------------------------------------
-
-DEFAULT_STALE_WARN_DAYS = 7
 
 
 def _stale_warn_days() -> int:
@@ -1279,6 +1278,120 @@ def rule_test(
     if not matched_any:
         console.print(f"[dim]No rules matched in {skill_file.name}[/dim]")
         raise typer.Exit(1)
+
+
+@rule_app.command("validate")
+def rule_validate(
+    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
+    rule_file: Path | None = typer.Option(
+        None,
+        "--file",
+        exists=True,
+        readable=True,
+        help="Validate a single rule file instead of the full rulepack",
+    ),
+) -> None:
+    """Validate rules for duplicate IDs, broken regex patterns, and schema errors.
+
+    By default validates the entire built-in rulepack.  Use --file to check a
+    single custom rule file before deploying it.
+    """
+    import re as _re
+
+    import yaml  # type: ignore[import-untyped]
+
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    if rule_file is not None:
+        # Validate a single file
+        try:
+            raw = rule_file.read_text(encoding="utf-8")
+            parsed = yaml.safe_load(raw)
+        except Exception as exc:
+            console.print(f"[bold red]Failed to parse {rule_file}:[/] {exc}")
+            raise typer.Exit(2)
+        if not isinstance(parsed, dict):
+            console.print("[bold red]Invalid rule file:[/] expected a YAML mapping")
+            raise typer.Exit(2)
+        try:
+            from skillscan.rules import RulePack
+
+            rp = RulePack.model_validate(parsed)
+        except Exception as exc:
+            console.print(f"[bold red]Schema validation failed:[/] {exc}")
+            raise typer.Exit(2)
+        all_static = rp.static_rules
+        all_chain = rp.chain_rules
+        action_pattern_keys = set(rp.action_patterns.keys())
+        action_pattern_values = rp.action_patterns
+    else:
+        rp = load_builtin_rulepack(channel=channel)
+        all_static = rp.static_rules
+        all_chain = rp.chain_rules
+        action_pattern_keys = set(rp.action_patterns.keys())
+        action_pattern_values = rp.action_patterns
+
+    # --- Check 1: Duplicate IDs ---
+    seen_ids: dict[str, int] = {}
+    for r in all_static:
+        seen_ids[r.id] = seen_ids.get(r.id, 0) + 1
+    for r in all_chain:
+        seen_ids[r.id] = seen_ids.get(r.id, 0) + 1
+    for rid, count in seen_ids.items():
+        if count > 1:
+            errors.append(f"Duplicate rule ID: {rid} (appears {count} times)")
+
+    # --- Check 2: Regex patterns compile ---
+    for r in all_static:
+        if r.graph_rule:
+            continue  # graph rules use sentinel patterns
+        try:
+            flags = _re.IGNORECASE | _re.MULTILINE
+            if r.multiline:
+                flags |= _re.DOTALL
+            _re.compile(r.pattern, flags)
+        except _re.error as exc:
+            errors.append(f"Rule {r.id}: invalid regex pattern: {exc}")
+
+    for name, pat in action_pattern_values.items():
+        try:
+            _re.compile(pat, _re.IGNORECASE | _re.MULTILINE)
+        except _re.error as exc:
+            errors.append(f"Action pattern '{name}': invalid regex: {exc}")
+
+    # --- Check 3: Chain rules reference defined action patterns ---
+    for cr in all_chain:
+        for action in cr.all_of:
+            if action not in action_pattern_keys:
+                errors.append(f"Chain rule {cr.id}: references undefined action pattern '{action}'")
+
+    # --- Check 4: Required fields ---
+    for r in all_static:
+        if not r.title.strip():
+            warnings.append(f"Rule {r.id}: empty title")
+        if not r.pattern.strip() and not r.graph_rule:
+            errors.append(f"Rule {r.id}: empty pattern (and not a graph rule)")
+
+    # --- Report ---
+    total_rules = len(all_static) + len(all_chain)
+    if errors:
+        console.print(f"[bold red]Validation FAILED[/] — {len(errors)} error(s) in {total_rules} rules:\n")
+        for e in errors:
+            console.print(f"  [red]ERROR:[/] {e}")
+        if warnings:
+            for w in warnings:
+                console.print(f"  [yellow]WARN:[/] {w}")
+        raise typer.Exit(1)
+
+    if warnings:
+        console.print(
+            f"[yellow]Validation passed with {len(warnings)} warning(s)[/] ({total_rules} rules):\n"
+        )
+        for w in warnings:
+            console.print(f"  [yellow]WARN:[/] {w}")
+    else:
+        console.print(f"[green]All {total_rules} rules valid.[/green] No errors, no warnings.")
 
 
 # ---------------------------------------------------------------------------

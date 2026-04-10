@@ -11,6 +11,7 @@ from importlib import resources
 from pathlib import Path
 from typing import cast
 
+from skillscan._constants import CHAIN_WINDOW_LINES as _CHAIN_WINDOW_LINES
 from skillscan.analysis_pkg._archive import (
     BYTECODE_SUFFIXES,
     EXECUTABLE_SUFFIXES,
@@ -244,7 +245,6 @@ _LANG_EXTENSIONS: dict[str, frozenset[str]] = {
     "python": frozenset({".py"}),
     "shell": frozenset({".sh", ".bash", ".zsh"}),
 }
-_CHAIN_WINDOW_LINES = 40
 
 
 def _extract_actions_windowed(
