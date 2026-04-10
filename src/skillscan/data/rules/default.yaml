@@ -1,4 +1,4 @@
-version: "2026.04.09.2"
+version: "2026.04.10.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5925,6 +5925,172 @@ static_rules:
         benchmark_set: core-static-v1
       references:
         - https://safedep.io/malicious-velora-dex-sdk-npm-compromised-rat
+
+
+  - id: MAL-066
+    category: malware_pattern
+    severity: critical
+    confidence: 0.93
+    title: GlassWorm Zig dropper via fake WakaTime OpenVSX extension (specstudio/code-wakatime-activity-tracker)
+    pattern: '(?i)(?:specstudio[/.]code[_-]?wakatime[_-]?activity[_-]?tracker|floktokbok[.]autoimport|autoimport[_-]?2\.7\.9\.vsix|ColossusQuailPray[^\n]{0,80}oiegjqde|vsx[_-]?installer[_-]?zig|davidioasd[^\n]{0,80}(?:vsx|zig|dropper)|(?:win|mac)\.node[^\n]{0,80}(?:require|install|dropper|zig|glassworm|activate|load)|bin/(?:win|mac)\.node[^\n]{0,80}(?:require|install|activate|load))'
+    mitigation: 'A new GlassWorm campaign (disclosed April 8, 2026 by Aikido Security) delivers a Zig-compiled native dropper via a fake WakaTime VS Code extension (specstudio/code-wakatime-activity-tracker) published on OpenVSX. The extension bundles win.node (PE32+ DLL) and mac.node (universal Mach-O) native Node.js addons compiled in Zig. On activation, the binary silently installs a second-stage malicious extension (floktokbok.autoimport, autoimport-2.7.9.vsix) into every IDE on the machine (VS Code, Cursor, Windsurf, VSCodium, Positron). The second-stage extension beacons to a Solana blockchain C2, exfiltrates secrets, and installs a persistent RAT. Remove specstudio/code-wakatime-activity-tracker and floktokbok.autoimport from all IDEs immediately, rotate all secrets, and check for ~/init.json and ~/node-v22 persistence artifacts.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-10'
+      updated: '2026-04-10'
+      tags:
+        - malware
+        - glassworm
+        - vscode-extension
+        - openvsx
+        - zig-dropper
+        - supply-chain
+        - wakatime-fake
+        - rat
+        - multi-ide
+      last_modified: '2026-04-10'
+      techniques:
+        - id: MAL-066
+          name: Zig Native Dropper via Fake IDE Extension
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-10'
+        last_modified: '2026-04-10'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://www.aikido.dev/blog/glassworm-zig-dropper-infects-every-ide-on-your-machine
+        - https://thehackernews.com/2026/04/glassworm-campaign-uses-zig-dropper-to.html
+        - https://cybersecuritynews.com/trojanized-openvsx-extension-spreads-glassworm/amp/
+  - id: PSV-010
+    category: vulnerability
+    severity: high
+    confidence: 0.9
+    title: MCP Python SDK DNS rebinding vulnerability (CVE-2025-66416, mcp < 1.23.0)
+    pattern: '(?i)(?:CVE-2025-66416|GHSA-9h52-p55h-vw2f|(?:mcp[^\n]{0,80}(?:1\.(?:0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22)(?:\.|[^\d])|0\.[0-9]))|(?:dns[_\s-]?rebind[^\n]{0,80}mcp|mcp[^\n]{0,80}dns[_\s-]?rebind)[^\n]{0,80}(?:http[_\s-]?server|streamable|sse|localhost)|(?:mcp[^\n]{0,80}http[_\s-]?server[^\n]{0,80}(?:no[_\s-]?rebind[_\s-]?protect|allow[_\s-]?origin|cors))|(?:pip[^\n]{0,80}install[^\n]{0,80}mcp[^\n]{0,40}(?:1\.[01][0-9]?(?:\.[0-9]+)?|1\.2[012](?:\.[0-9]+)?)))'
+    mitigation: 'CVE-2025-66416 (GHSA-9h52-p55h-vw2f) is a DNS rebinding vulnerability in the MCP Python SDK (modelcontextprotocol/python-sdk) prior to version 1.23.0. HTTP-based MCP servers do not enable DNS rebinding protection by default, allowing a malicious website to make cross-origin requests to a locally running MCP server and potentially hijack tool execution. Upgrade mcp to 1.23.0 or later. If upgrading is not immediately possible, bind the MCP server to 127.0.0.1 and add strict Host header validation.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-10'
+      updated: '2026-04-10'
+      tags:
+        - vulnerability
+        - mcp
+        - dns-rebinding
+        - cve-2025-66416
+        - python-sdk
+        - localhost
+      last_modified: '2026-04-10'
+      techniques:
+        - id: PSV-010
+          name: Vulnerability Exploitation
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-10'
+        last_modified: '2026-04-10'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2025-66416
+        - https://github.com/advisories/GHSA-9h52-p55h-vw2f
+        - https://www.ibm.com/support/pages/node/7268889
+  - id: PSV-011
+    category: vulnerability
+    severity: critical
+    confidence: 0.92
+    title: CrewAI prompt injection to RCE/SSRF chain (VU#221883, CVE-2026-2275/2285/2286/2287)
+    pattern: '(?i)(?:CVE-2026-2275|CVE-2026-2285|CVE-2026-2286|CVE-2026-2287|VU.221883|(?:crewai[^\n]{0,200}(?:allow_code_execution\s*=\s*True|CodeInterpreterTool|SandboxPython|sandbox[_\s-]?python|ctypes[^\n]{0,80}(?:crewai|code[_\s-]?interp))|(?:allow_code_execution\s*=\s*True[^\n]{0,200}crewai|CodeInterpreterTool[^\n]{0,200}crewai))|(?:crewai[^\n]{0,200}(?:ssrf|server[_\s-]?side[_\s-]?request[_\s-]?forg|rag[_\s-]?search[^\n]{0,80}(?:internal|cloud|metadata|169\.254)|json[_\s-]?loader[^\n]{0,80}(?:path[_\s-]?travers|arbitrary[_\s-]?file|\/etc\/passwd|\.\.\/))))'
+    mitigation: 'VU#221883 (disclosed 2026-03-30 by CERT/CC) describes four vulnerabilities in CrewAI that can be chained via prompt injection for sandbox escape and full RCE. CVE-2026-2275: CodeInterpreterTool falls back to SandboxPython when Docker is unavailable, enabling arbitrary C function calls via ctypes. CVE-2026-2287: CrewAI does not verify Docker is still running at runtime and falls back to unsafe sandbox mode. CVE-2026-2286: SSRF via RAG search tools that do not validate URLs, enabling access to internal services and cloud metadata endpoints. CVE-2026-2285: Arbitrary local file read via JSON loader tool without path validation. Until patches are available, disable allow_code_execution=True, remove CodeInterpreterTool from agents, and restrict agent exposure to untrusted input.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-10'
+      updated: '2026-04-10'
+      tags:
+        - vulnerability
+        - crewai
+        - rce
+        - ssrf
+        - prompt-injection
+        - sandbox-escape
+        - cve-2026-2275
+        - cve-2026-2285
+        - cve-2026-2286
+        - cve-2026-2287
+        - vu-221883
+      last_modified: '2026-04-10'
+      techniques:
+        - id: PSV-011
+          name: Vulnerability Exploitation
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-10'
+        last_modified: '2026-04-10'
+      quality:
+        precision_estimate: 0.92
+        benchmark_set: core-static-v1
+      references:
+        - https://kb.cert.org/vuls/id/221883
+        - https://www.securityweek.com/crewai-vulnerabilities-expose-devices-to-hacking/
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-2275/
+  - id: PINJ-021
+    category: prompt_injection
+    severity: high
+    confidence: 0.87
+    title: A2A agent card poisoning -- adversarial instructions in agent card metadata
+    pattern: '(?i)(?:agent[_\s-]?card[^\n]{0,200}(?:ignore[^\n]{0,80}(?:previous|prior|above|instruction|system|prompt)|disregard[^\n]{0,80}(?:previous|instruction|system)|do[_\s-]?not[^\n]{0,80}(?:mention|tell|reveal|disclose)[^\n]{0,80}(?:user|human)|exfil[^\n]{0,80}(?:user|data|pii|secret|token|key|credential)|send[^\n]{0,80}(?:user|data|pii|secret|token|key|credential)[^\n]{0,80}(?:http|url|endpoint|webhook|attacker))|(?:\.well-known/agent\.json[^\n]{0,200}(?:inject|poison|adversarial|malicious|ignore[_\s-]?instruction|IGNORE)|agentcard[^\n]{0,200}(?:inject|poison|adversarial|malicious|exfil|ignore[_\s-]?instruction))|(?:a2a[^\n]{0,200}(?:agent[_\s-]?card[^\n]{0,80}(?:inject|poison|adversarial)|metadata[^\n]{0,80}(?:inject|poison|adversarial)))|(?:description[^\n]{0,200}(?:ignore[^\n]{0,80}(?:previous|prior|above|all)[^\n]{0,80}instruction|IGNORE[^\n]{0,80}PREVIOUS[^\n]{0,80}INSTRUCTION)[^\n]{0,200}(?:agent[_\s-]?card|a2a|\.well-known)))'
+    mitigation: 'Agent Card Poisoning is a metadata injection vulnerability in the Google Agent2Agent (A2A) protocol (disclosed March 2026 by Keysight/CyPerf). A malicious remote agent embeds adversarial instructions within its agent card metadata (served at /.well-known/agent.json). When the host LLM incorporates this poisoned metadata into its reasoning context, the injected instructions can influence tool-selection and execution decisions, causing the model to issue unintended tool calls, transmit sensitive user data to attacker-controlled endpoints, or silently hijack control flow during legitimate task delegation. Validate and sanitize agent card content before incorporating it into the LLM context. Treat agent card descriptions as untrusted input. Implement strict boundary enforcement between agent metadata and instruction context.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-10'
+      updated: '2026-04-10'
+      tags:
+        - prompt-injection
+        - a2a
+        - agent-card
+        - metadata-injection
+        - google-a2a
+        - multi-agent
+        - exfiltration
+      last_modified: '2026-04-10'
+      techniques:
+        - id: PINJ-021
+          name: Agent Card Metadata Injection
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-10'
+        last_modified: '2026-04-10'
+      quality:
+        precision_estimate: 0.87
+        benchmark_set: core-static-v1
+      references:
+        - https://www.keysight.com/blogs/en/tech/nwvs/2026/03/12/agent-card-poisoning
+        - https://semiengineering.com/agent-card-poisoning-a-metadata-injection-vulnerability-in-the-systems-using-google-a2a-protocol/
+        - https://adversa.ai/blog/top-agentic-ai-security-resources-april-2026/
 
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

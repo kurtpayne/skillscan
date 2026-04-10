@@ -63,7 +63,8 @@
       "tough-cookie",
       "word-wrap"
     ],
-    "updated": "2026-04-06"
+    "updated": "2026-04-10",
+    "version": "2026.04.10.1"
   },
   "python": {
     "bittensor-wallet": {
@@ -120,6 +121,84 @@
         "id": "GHSA-9h52-p55h-vw2f",
         "severity": "high",
         "fixed": "1.23.0"
+      },
+      "1.10.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.11.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.12.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.13.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.14.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.15.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.16.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.17.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.18.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.19.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.20.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.21.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      },
+      "1.22.0": {
+        "id": "CVE-2025-66416",
+        "severity": "high",
+        "fixed": "1.23.0",
+        "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
       }
     },
     "langchain": {
@@ -679,6 +758,98 @@
         "id": "CVE-2026-33873",
         "severity": "critical",
         "fixed": "1.0.1"
+      }
+    },
+    "crewai": {
+      "0.100.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.101.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.102.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.103.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.104.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.105.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.106.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.107.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.108.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.109.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.110.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.111.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.112.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.113.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
+      },
+      "0.114.0": {
+        "id": "VU#221883",
+        "severity": "critical",
+        "fixed": "PENDING",
+        "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
       }
     }
   },

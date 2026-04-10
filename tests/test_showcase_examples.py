@@ -475,3 +475,23 @@ def test_156_mal065_hermes_px_ai_prompt_stealer():
 def test_157_sup032_velora_dex_sdk_version():
     findings = _scan("examples/showcase/157_sup032_velora_dex_sdk_version")
     assert any(f.id == "SUP-032" for f in findings.findings)
+
+
+def test_158_mal066_glassworm_zig_dropper_wakatime():
+    findings = _scan("examples/showcase/158_mal066_glassworm_zig_dropper_wakatime")
+    assert any(f.id == "MAL-066" for f in findings.findings)
+
+
+def test_159_psv010_mcp_sdk_dns_rebinding():
+    findings = _scan("examples/showcase/159_psv010_mcp_sdk_dns_rebinding")
+    assert any(f.id == "PSV-010" for f in findings.findings)
+
+
+def test_160_psv011_crewai_rce_ssrf_chain():
+    findings = _scan("examples/showcase/160_psv011_crewai_rce_ssrf_chain")
+    assert any(f.id == "PSV-011" for f in findings.findings)
+
+
+def test_161_pinj021_a2a_agent_card_poisoning():
+    findings = _scan("examples/showcase/161_pinj021_a2a_agent_card_poisoning")
+    assert any(f.id == "PINJ-021" for f in findings.findings)

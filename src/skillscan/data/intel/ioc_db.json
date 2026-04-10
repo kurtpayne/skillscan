@@ -8,7 +8,8 @@
       "urlhaus_hosts"
     ],
     "note": "Bundled high-precision IOC DB. Hand-curated campaign IOCs are always included. Large feeds (URLhaus URLs, Hagezi TIF, Phishing Army, KADhosts) are runtime-only and merged at scan time via managed_sources.json.",
-    "updated": "2026-04-06"
+    "updated": "2026-04-10",
+    "version": "2026.04.10.1"
   },
   "domains": [
     "001.smallnode.net",
@@ -5560,6 +5561,7 @@
   "urls": [
     "https://backupdailyawss.s3.us-east-1.amazonaws.com",
     "https://fastdlvrss.s3.us-east-1.amazonaws.com",
-    "https://glot.io/snippets/malicious-bootstrap"
+    "https://glot.io/snippets/malicious-bootstrap",
+    "https://github.com/ColossusQuailPray/oiegjqde/releases/download/12/autoimport-2.7.9.vsix"
   ]
 }
