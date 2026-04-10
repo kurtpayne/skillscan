@@ -44,17 +44,14 @@ dev = [
   "ruff>=0.4.4",
   "mypy>=1.10.0"
 ]
-# Lightweight ONNX backend for --ml-detect (recommended, CPU-only, ~200 MB)
+# Generative ML detector via llama.cpp (CPU, ~935 MB GGUF model)
+ml = [
+  "llama-cpp-python>=0.3.0",
+]
+# Legacy ONNX backend — deprecated, will be removed in a future release
 ml-onnx = [
   "transformers>=4.40.0",
   "optimum[onnxruntime]>=1.19.0",
-]
-# PyTorch backend for --ml-detect (heavier, ~500 MB, GPU-capable)
-# peft is required to apply the fine-tuned LoRA adapter (kurtpayne/skillscan-deberta-adapter)
-ml = [
-  "transformers>=4.40.0",
-  "torch>=2.2.0",
-  "peft>=0.9.0",
 ]
 # Quality linter — delegates to skillscan-lint when installed
 lint = [
