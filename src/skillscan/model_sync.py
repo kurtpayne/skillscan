@@ -1,4 +1,4 @@
-"""Model sync: explicit opt-in download of the SkillScan LoRA adapter.
+"""Model sync: explicit opt-in download of the SkillScan GGUF detector model.
 
 Design principles:
 - NEVER auto-download. The user must explicitly run `skillscan model sync`.
@@ -26,17 +26,12 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-DEFAULT_HF_REPO = "kurtpayne/skillscan-deberta-adapter"
+DEFAULT_HF_REPO = "kurtpayne/skillscan-detector-v4"
 HF_MANIFEST_URL = "https://huggingface.co/{repo}/resolve/main/adapter_manifest.json"
-HF_ADAPTER_URL = "https://huggingface.co/{repo}/resolve/main/{filename}"
+HF_FILE_URL = "https://huggingface.co/{repo}/resolve/main/{filename}"
 
-ADAPTER_FILES = [
-    "adapter_config.json",
-    "adapter_model.safetensors",
-    "tokenizer_config.json",
-    "tokenizer.json",
-    "special_tokens_map.json",
-]
+GGUF_MODEL_FILE = "skillscan-detector-v4-q4_k_m.gguf"
+MODEL_FILES = [GGUF_MODEL_FILE]
 
 MODEL_CACHE_DIR = Path.home() / ".skillscan" / "models"
 MODEL_MANIFEST_FILE = MODEL_CACHE_DIR / "model_manifest.json"
@@ -67,7 +62,7 @@ class ModelStatus:
 
     def summary(self) -> str:
         if not self.installed:
-            return "ML model not installed. Run `skillscan model sync` to download (~350 MB)."
+            return "ML model not installed. Run `skillscan model sync` to download (~935 MB)."
         age_str = f"{self.age_days:.0f}" if self.age_days is not None else "?"
         lines = [
             f"Model:   {self.repo_id}",
@@ -105,12 +100,15 @@ class SyncResult:
 # ---------------------------------------------------------------------------
 
 
-def _sha256_dir(directory: Path) -> str:
-    """Compute a combined SHA-256 of all files in a directory (sorted)."""
+def _sha256_file(filepath: Path) -> str:
+    """Compute SHA-256 of a single file."""
     h = hashlib.sha256()
-    for f in sorted(directory.rglob("*")):
-        if f.is_file():
-            h.update(f.read_bytes())
+    with open(filepath, "rb") as f:
+        while True:
+            chunk = f.read(1 << 20)  # 1 MB chunks
+            if not chunk:
+                break
+            h.update(chunk)
     return h.hexdigest()
 
 
@@ -140,7 +138,7 @@ def _download_file(url: str, dest: Path) -> int:
 
 
 def get_model_status(repo_id: str = DEFAULT_HF_REPO, check_remote: bool = False) -> ModelStatus:
-    """Return the current status of the cached model."""
+    """Return the current status of the cached GGUF model."""
     manifest_data: dict = {}
     if MODEL_MANIFEST_FILE.exists():
         try:
@@ -195,7 +193,7 @@ def sync_model(
     force: bool = False,
     progress: bool = True,
 ) -> SyncResult:
-    """Explicitly download or update the LoRA adapter from HuggingFace Hub.
+    """Explicitly download or update the GGUF detector model from HuggingFace Hub.
 
     This is the ONLY function that downloads model files. It must be called
     explicitly by the user via `skillscan model sync`.
@@ -206,7 +204,7 @@ def sync_model(
 
     if remote_manifest is None:
         # Fall back: try to download without a manifest (direct file list)
-        remote_manifest = {"version": "latest", "files": ADAPTER_FILES}
+        remote_manifest = {"version": "latest", "files": MODEL_FILES}
 
     remote_version = str(remote_manifest.get("version", "latest"))
 
@@ -224,21 +222,19 @@ def sync_model(
 
     # Download to a temp dir, then atomically move to cache
     MODEL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    adapter_dir = MODEL_CACHE_DIR / "adapter"
 
     with tempfile.TemporaryDirectory(dir=MODEL_CACHE_DIR) as tmpdir:
-        tmp_adapter = Path(tmpdir) / "adapter"
-        tmp_adapter.mkdir()
+        tmp_dir = Path(tmpdir)
 
-        raw_files = remote_manifest.get("files", ADAPTER_FILES)
+        raw_files = remote_manifest.get("files", MODEL_FILES)
         files_to_download: list[str] = (
-            list(raw_files) if isinstance(raw_files, (list, tuple)) else ADAPTER_FILES
+            list(raw_files) if isinstance(raw_files, (list, tuple)) else MODEL_FILES
         )
         total_bytes = 0
 
         for filename in files_to_download:
-            url = HF_ADAPTER_URL.format(repo=repo_id, filename=filename)
-            dest = tmp_adapter / filename
+            url = HF_FILE_URL.format(repo=repo_id, filename=filename)
+            dest = tmp_dir / filename
             if progress:
                 print(f"  Downloading {filename}...", end=" ", flush=True)
             try:
@@ -257,13 +253,16 @@ def sync_model(
                     message=f"Download failed for {filename}: {exc}",
                 )
 
-        # Compute SHA-256 of downloaded adapter
-        sha256 = _sha256_dir(tmp_adapter)
+        # Compute SHA-256 of downloaded GGUF model file
+        sha256 = _sha256_file(tmp_dir / GGUF_MODEL_FILE)
 
-        # Atomically replace the adapter directory
-        if adapter_dir.exists():
-            shutil.rmtree(adapter_dir)
-        shutil.copytree(tmp_adapter, adapter_dir)
+        # Atomically replace the model file(s) in cache
+        for filename in files_to_download:
+            dest = MODEL_CACHE_DIR / filename
+            src = tmp_dir / filename
+            if dest.exists():
+                dest.unlink()
+            shutil.move(str(src), str(dest))
 
     # Write local manifest
     local_manifest = {
@@ -281,21 +280,36 @@ def sync_model(
         downloaded=True,
         version=remote_version,
         sha256=sha256,
-        message=f"Downloaded adapter v{remote_version} ({total_bytes // 1024} KB)",
+        message=f"Downloaded model v{remote_version} ({total_bytes // (1024 * 1024)} MB)",
         bytes_downloaded=total_bytes,
     )
 
 
-def get_adapter_path() -> Path | None:
-    """Return the path to the cached adapter directory, or None if not installed."""
-    adapter_dir = MODEL_CACHE_DIR / "adapter"
-    if adapter_dir.exists() and (adapter_dir / "adapter_config.json").exists():
-        return adapter_dir
+def get_model_path() -> Path | None:
+    """Return the path to the cached GGUF model file, or None if not installed."""
+    model_file = MODEL_CACHE_DIR / GGUF_MODEL_FILE
+    if model_file.exists():
+        return model_file
     return None
 
 
+def get_adapter_path() -> Path | None:
+    """Deprecated: use get_model_path() instead.
+
+    Kept for backward compatibility. Returns the GGUF model path.
+    """
+    import warnings
+
+    warnings.warn(
+        "get_adapter_path() is deprecated, use get_model_path() instead",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return get_model_path()
+
+
 def check_model_age_finding(repo_id: str = DEFAULT_HF_REPO) -> dict[str, object] | None:
-    """Return a PINJ-ML-STALE finding dict if the model is stale, else None.
+    """Return a PINJ-ML-STALE finding dict if the GGUF model is stale, else None.
 
     The caller (ml_detector.py) should include this in scan findings when
     --ml-detect is active and the model age exceeds STALE_AGE_DAYS.
@@ -310,7 +324,7 @@ def check_model_age_finding(repo_id: str = DEFAULT_HF_REPO) -> dict[str, object]
         "severity": "LOW",
         "message": (
             f"ML model is {status.age_days:.0f} days old (threshold: {STALE_AGE_DAYS} days). "
-            f"Run `skillscan model sync` to update to the latest adapter."
+            f"Run `skillscan model sync` to update to the latest model."
         ),
         "age_days": status.age_days,
     }

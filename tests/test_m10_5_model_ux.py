@@ -171,8 +171,8 @@ class TestRequireModel:
             ),
             # Prevent actual ML inference
             patch(
-                "skillscan.ml_detector._get_pipeline",
-                return_value=(None, "unavailable"),
+                "skillscan.ml_detector._get_llm",
+                return_value=None,
             ),
         ):
             result = runner.invoke(
@@ -201,8 +201,8 @@ class TestMlDetectNoModelNonTTY:
             patch("sys.stdin.isatty", return_value=False),
             patch("sys.stderr.isatty", return_value=False),
             patch(
-                "skillscan.ml_detector._get_pipeline",
-                return_value=(None, "unavailable"),
+                "skillscan.ml_detector._get_llm",
+                return_value=None,
             ),
         ):
             result = runner.invoke(

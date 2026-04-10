@@ -1,350 +1,255 @@
-"""ml_detector.py — Offline HuggingFace-based prompt-injection detector.
+"""ml_detector.py — Generative GGUF-based skill security detector (v4).
 
-Base model: protectai/deberta-v3-base-prompt-injection-v2 (Apache 2.0)
-Fine-tuned adapter: kurtpayne/skillscan-deberta-adapter (LoRA r=64, SEQ_CLS)
+Model: Qwen2.5-1.5B fine-tuned for skill-file threat analysis, quantised to
+Q4_K_M GGUF and served locally via llama-cpp-python.
 
-The model is loaded lazily on first call and cached in-process.  Two backends
-are supported, selected automatically based on what is installed:
+The model is loaded lazily on first call and cached in-process.  Inference is
+fully offline — no network calls, no GPU required.
 
-  1. ONNX Runtime (preferred when no adapter is installed, CPU-only, ~200 MB)
-       pip install skillscan-security[ml-onnx]
-       requires: optimum[onnxruntime], transformers
-       NOTE: ONNX cannot apply LoRA adapters at runtime.  If a fine-tuned
-       adapter is installed (via `skillscan model sync`), this backend is
-       skipped and the PyTorch backend is used instead.
-
-  2. PyTorch / Transformers (~500 MB, required for fine-tuned adapter)
-       pip install skillscan-security[ml]
-       requires: transformers, torch
-       If a fine-tuned adapter is installed and peft is available, the LoRA
-       adapter weights are applied on top of the base model automatically.
-       Falls back to the base model if peft is not installed.
-
-If neither backend is available the detector is silently skipped and an
-informational Finding is emitted so the user knows to install the extras.
+Install the runtime dependency:
+    pip install llama-cpp-python
 """
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from skillscan.models import Finding, Severity
 
-if TYPE_CHECKING:
-    pass
-
 logger = logging.getLogger(__name__)
 
-_MODEL_ID = "ProtectAI/deberta-v3-base-prompt-injection-v2"
-_MAX_LENGTH = 512
-_INJECTION_THRESHOLD = 0.70  # minimum score for INJECTION label to fire; matches v15 model card
-_HIGH_THRESHOLD = 0.88  # score above this → HIGH severity, else MEDIUM (tuned on v14; v15 unspecified)
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+_MODEL_PATH = Path.home() / ".skillscan" / "models" / "skillscan-detector-v4-q4_k_m.gguf"
+
+_SYSTEM_PROMPT = (
+    "You are a security analyst. Analyze the given AI agent skill file for "
+    "security threats. Output a JSON object with: verdict (benign/malicious), "
+    "labels (array of attack types), confidence (0-1), and reasoning (1-3 "
+    "sentences citing specific evidence)."
+)
+
+_VALID_LABELS: frozenset[str] = frozenset(
+    {
+        "prompt_injection",
+        "code_injection",
+        "data_exfiltration",
+        "path_traversal",
+        "supply_chain",
+        "social_engineering",
+        "evasion",
+    }
+)
+
+# YAML frontmatter keys to strip before sending to the model (training labels).
+_STRIP_FRONTMATTER_KEYS: frozenset[str] = frozenset(
+    {
+        "label",
+        "attack_labels",
+        "attack_classes",
+        "attack_vector",
+        "container_format",
+        "evasion_technique",
+        "confidence",
+        "source",
+        "archetype",
+        "rule_id",
+        "category",
+        "severity",
+        "notes",
+        "reference",
+        "added",
+    }
+)
+
+# Keys to keep in frontmatter.
+_KEEP_FRONTMATTER_KEYS: frozenset[str] = frozenset(
+    {
+        "name",
+        "version",
+        "description",
+        "tags",
+    }
+)
+
+# Large-file thresholds
+_LARGE_FILE_LINES = 200
+_LARGE_FILE_CHARS = 8_000
+
+# Severity escalation: these labels at HIGH become CRITICAL
+_CRITICAL_ESCALATION_LABELS: frozenset[str] = frozenset(
+    {
+        "data_exfiltration",
+        "supply_chain",
+    }
+)
+
+# Label → human-readable description for finding titles
+_LABEL_TITLES: dict[str, str] = {
+    "prompt_injection": "prompt injection",
+    "code_injection": "code injection",
+    "data_exfiltration": "data exfiltration",
+    "path_traversal": "path traversal",
+    "supply_chain": "supply-chain attack",
+    "social_engineering": "social engineering",
+    "evasion": "evasion technique",
+}
 
 # ---------------------------------------------------------------------------
 # Lazy singleton cache
 # ---------------------------------------------------------------------------
-_pipeline_cache: Any = None
-_backend_cache: str | None = None  # "onnx" | "transformers" | "unavailable"
-_loaded_model_id: str | None = None  # logged in findings mitigation string
+
+_llm_cache: Any = None
+_llm_loaded: bool = False
 
 
-def _get_adapter_path() -> Path | None:
-    """Return the local fine-tuned adapter path if installed, else None."""
+def _get_llm() -> Any | None:
+    """Return a cached Llama instance, or None if unavailable."""
+    global _llm_cache, _llm_loaded
+    if _llm_loaded:
+        return _llm_cache
+
+    _llm_loaded = True
+
     try:
-        from skillscan.model_sync import get_adapter_path  # type: ignore[import]
-
-        return get_adapter_path()
-    except Exception:
-        return None
-
-
-def _try_load_onnx() -> Any | None:
-    """Attempt to load the ONNX Runtime backend via 🤗 Optimum.
-
-    Returns None if an adapter is installed (ONNX cannot apply LoRA weights)
-    or if the required packages are not available.
-    """
-    # If a fine-tuned adapter is installed, skip ONNX — PyTorch is required
-    # to apply LoRA weights via peft.
-    if _get_adapter_path() is not None:
-        logger.debug(
-            "ML detector: fine-tuned adapter installed — skipping ONNX backend "
-            "(ONNX cannot apply LoRA adapters; using PyTorch backend instead)"
+        from llama_cpp import Llama  # type: ignore[import]
+    except ImportError:
+        logger.warning(
+            "llama-cpp-python is not installed. "
+            "Install it to enable the v4 generative ML detector: "
+            "pip install llama-cpp-python"
         )
         return None
 
-    try:
-        from optimum.onnxruntime import ORTModelForSequenceClassification  # type: ignore[import]
-        from transformers import AutoTokenizer, pipeline  # type: ignore[import]
+    if not _MODEL_PATH.is_file():
+        logger.warning("GGUF model not found at %s", _MODEL_PATH)
+        return None
 
-        tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID, subfolder="onnx")
-        tokenizer.model_input_names = ["input_ids", "attention_mask"]
-        model = ORTModelForSequenceClassification.from_pretrained(_MODEL_ID, export=False, subfolder="onnx")
-        return pipeline(
-            task="text-classification",
-            model=model,
-            tokenizer=tokenizer,
-            truncation=True,
-            max_length=_MAX_LENGTH,
+    try:
+        _llm_cache = Llama(
+            model_path=str(_MODEL_PATH),
+            n_ctx=2048,
+            n_threads=4,
+            verbose=False,
         )
+        logger.info("ML detector v4: loaded GGUF model from %s", _MODEL_PATH)
     except Exception as exc:
-        logger.debug("ONNX backend unavailable: %s", exc)
-        return None
+        logger.error("Failed to load GGUF model: %s", exc)
+        _llm_cache = None
+
+    return _llm_cache
 
 
-def _try_load_transformers() -> Any | None:
-    """Attempt to load the PyTorch / Transformers backend.
+# ---------------------------------------------------------------------------
+# Frontmatter stripping
+# ---------------------------------------------------------------------------
 
-    If a fine-tuned LoRA adapter is installed at ~/.skillscan/models/adapter/
-    and peft is available, the adapter weights are applied on top of the base
-    model.  Falls back to the base model if peft is not installed.
-    """
-    try:
-        import torch  # type: ignore[import]
-        from transformers import (  # type: ignore[import]
-            AutoModelForSequenceClassification,
-            AutoTokenizer,
-            pipeline,
-        )
+_FRONTMATTER_RE = re.compile(r"\A---\n(.*?\n)---\n", re.DOTALL)
+_FRONTMATTER_KEY_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):", re.MULTILINE)
 
-        adapter_path = _get_adapter_path()
-        tokenizer = AutoTokenizer.from_pretrained(_MODEL_ID)
-        model = AutoModelForSequenceClassification.from_pretrained(_MODEL_ID)
 
-        if adapter_path is not None:
-            try:
-                from peft import PeftModel  # type: ignore[import]
+def _strip_label_fields(text: str) -> str:
+    """Strip training-label frontmatter keys, keeping name/version/description/tags."""
+    m = _FRONTMATTER_RE.match(text)
+    if not m:
+        return text
 
-                model = PeftModel.from_pretrained(model, str(adapter_path))
-                model = model.merge_and_unload()  # fold LoRA weights for inference speed
-                global _loaded_model_id
-                _loaded_model_id = f"{_MODEL_ID}+adapter@{adapter_path.name}"
-                logger.info("ML detector: fine-tuned adapter loaded from %s", adapter_path)
-            except ImportError:
-                logger.warning(
-                    "ML detector: fine-tuned adapter found at %s but peft is not installed. "
-                    "Install skillscan-security[ml] to use the fine-tuned model. "
-                    "Falling back to base model.",
-                    adapter_path,
-                )
-                _loaded_model_id = _MODEL_ID
+    fm_block = m.group(1)
+    body = text[m.end() :]
+
+    # Parse frontmatter line-by-line, keeping only allowed keys
+    kept_lines: list[str] = []
+    skip_block = False
+    for line in fm_block.splitlines(keepends=True):
+        key_match = _FRONTMATTER_KEY_RE.match(line)
+        if key_match:
+            key = key_match.group(1).lower()
+            if key in _STRIP_FRONTMATTER_KEYS:
+                skip_block = True
+                continue
+            elif key in _KEEP_FRONTMATTER_KEYS:
+                skip_block = False
+                kept_lines.append(line)
+            else:
+                # Unknown key — keep it (conservative)
+                skip_block = False
+                kept_lines.append(line)
         else:
-            _loaded_model_id = _MODEL_ID
+            # Continuation line (indented or list item under a key)
+            if not skip_block:
+                kept_lines.append(line)
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        return pipeline(
-            "text-classification",
-            model=model,
-            tokenizer=tokenizer,
-            truncation=True,
-            max_length=_MAX_LENGTH,
-            device=device,
-        )
-    except Exception as exc:
-        logger.debug("Transformers backend unavailable: %s", exc)
+    if kept_lines:
+        return "---\n" + "".join(kept_lines) + "---\n" + body
+    return body
+
+
+# ---------------------------------------------------------------------------
+# JSON parsing
+# ---------------------------------------------------------------------------
+
+
+def _parse_model_output(raw: str) -> dict[str, Any] | None:
+    """Try to parse the model's JSON output, handling common issues."""
+    # Try direct parse first
+    text = raw.strip()
+
+    # Strip markdown code fences if present
+    if text.startswith("```"):
+        # Remove opening fence (possibly ```json)
+        text = re.sub(r"^```(?:json)?\s*\n?", "", text)
+        text = re.sub(r"\n?```\s*$", "", text)
+        text = text.strip()
+
+    try:
+        return json.loads(text)  # type: ignore[no-any-return]
+    except json.JSONDecodeError:
+        pass
+
+    # Try to extract the first JSON object from the text
+    brace_start = text.find("{")
+    if brace_start == -1:
         return None
 
-
-def _get_pipeline() -> tuple[Any | None, str]:
-    """Return (pipeline, backend_name).  Results are cached after first call."""
-    global _pipeline_cache, _backend_cache, _loaded_model_id
-    if _backend_cache is not None:
-        return _pipeline_cache, _backend_cache
-
-    pipe = _try_load_onnx()
-    if pipe is not None:
-        _pipeline_cache, _backend_cache = pipe, "onnx"
-        _loaded_model_id = _MODEL_ID
-        logger.info("ML detector: loaded ONNX backend (%s)", _MODEL_ID)
-        return pipe, "onnx"
-
-    pipe = _try_load_transformers()
-    if pipe is not None:
-        _pipeline_cache, _backend_cache = pipe, "transformers"
-        logger.info(
-            "ML detector: loaded Transformers backend (%s)",
-            _loaded_model_id or _MODEL_ID,
-        )
-        return pipe, "transformers"
-
-    _pipeline_cache, _backend_cache = None, "unavailable"
-    logger.warning(
-        "ML detector: neither optimum[onnxruntime] nor transformers+torch is installed. "
-        "Install skillscan-security[ml-onnx] or skillscan-security[ml] to enable."
-    )
-    return None, "unavailable"
-
-
-# ---------------------------------------------------------------------------
-# Text chunking helpers
-# ---------------------------------------------------------------------------
-
-_SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
-
-
-def _chunk_text(text: str, max_chars: int = 1800) -> list[str]:
-    """Split *text* into chunks of at most *max_chars* characters.
-
-    Splitting on sentence boundaries where possible keeps semantic context
-    intact and avoids truncating mid-sentence.
-    """
-    if len(text) <= max_chars:
-        return [text]
-
-    sentences = _SENTENCE_SPLIT_RE.split(text)
-    chunks: list[str] = []
-    current: list[str] = []
-    current_len = 0
-
-    for sent in sentences:
-        if current_len + len(sent) > max_chars and current:
-            chunks.append(" ".join(current))
-            current, current_len = [], 0
-        current.append(sent)
-        current_len += len(sent) + 1
-
-    if current:
-        chunks.append(" ".join(current))
-
-    return chunks or [text[:max_chars]]
-
-
-# ---------------------------------------------------------------------------
-# M10.8 — Attack-type hint classifier (keyword post-processor)
-# ---------------------------------------------------------------------------
-
-# Priority-ordered list of (hint_label, compiled_pattern) tuples.
-# Evaluated top-to-bottom; first match wins.
-_ATTACK_HINT_RULES: list[tuple[str, re.Pattern[str]]] = [
-    (
-        "exfiltration",
-        re.compile(
-            r"(?i)"
-            r"(?:dns|webhook|exfil|curl\s|wget\s|http[s]?://[^\s]{10,}|base64|b64encode"
-            r"|send.*secret|leak.*token|POST.*cred|exfiltrat|steal.*key"
-            r"|error.*message.*token|\bngrok\b|\bburp\b|\binteract\.sh\b)"
-        ),
-    ),
-    (
-        "supply_chain",
-        re.compile(
-            r"(?i)"
-            r"(?:setup\.py|__init__.*exec|pip install.*&&|npm install.*&&"
-            r"|postinstall|preinstall|install_requires.*subprocess"
-            r"|package.*hook|dependency.*inject|malicious.*package"
-            r"|typosquat|\bpypi\b.*malware|\bnpm\b.*malware)"
-        ),
-    ),
-    (
-        "jailbreak",
-        re.compile(
-            r"(?i)"
-            r"(?:developer mode|DAN|do anything now|jailbreak"
-            r"|ignore (?:previous|all|your|prior) (?:instructions?|rules?|constraints?|guidelines?)"
-            r"|pretend you (?:are|have no|can)"
-            r"|you are now|act as (?:an? )?(?:AI|assistant|bot|GPT|Claude) (?:without|with no)"
-            r"|unrestricted (?:mode|AI|assistant)"
-            r"|no (?:restrictions?|limits?|filters?|safety|guidelines?)"
-            r"|bypass (?:safety|filter|restriction|guideline)"
-            r"|\bDAN\b|\bDANmode\b)"
-        ),
-    ),
-    (
-        "indirect_injection",
-        re.compile(
-            r"(?i)"
-            r"(?:when you (?:read|see|encounter|process)"
-            r"|if (?:this|the following) (?:appears?|is (?:read|seen|processed))"
-            r"|hidden (?:in|within) (?:the )?(?:rss|feed|changelog|result|output|response)"
-            r"|tool (?:result|output|response).*inject"
-            r"|\brss\b.*inject|\bchangelog\b.*inject"
-            r"|embedded (?:in|within) (?:the )?(?:document|page|result)"
-            r"|\brag\b.*inject|retrieval.*inject)"
-        ),
-    ),
-    (
-        "social_engineering",
-        re.compile(
-            r"(?i)"
-            r"(?:urgent(?:ly)?|immediately|your (?:account|access|token|key|credential)"
-            r"|verify your|confirm (?:your )?(?:identity|credentials?|account)"
-            r"|deprecated (?:api|token|key|endpoint)"
-            r"|(?:prize|reward|winner|congratulations|you.?ve won)"
-            r"|vendor (?:support|update|notice|alert)"
-            r"|security (?:alert|warning|notice|update) (?:from|by) (?:anthropic|openai|manus)"
-            r"|click (?:here|this link)|limited time)"
-        ),
-    ),
-    (
-        "prompt_injection",
-        re.compile(
-            r"(?i)"
-            r"(?:ignore (?:the )?(?:system|previous|above|prior)"
-            r"|override (?:the )?(?:system|previous|above|prior)"
-            r"|disregard (?:the )?(?:system|previous|above|prior)"
-            r"|forget (?:the )?(?:system|previous|above|prior)"
-            r"|your (?:new |real |actual )?(?:instructions?|goal|task|objective|purpose) (?:is|are)"
-            r"|new (?:instructions?|goal|task|objective|purpose):"
-            r"|system prompt|context (?:window|extract|leak)"
-            r"|reveal (?:your|the) (?:system|instructions?|prompt)"
-            r"|what (?:are|were) your (?:instructions?|system prompt)"
-            r"|role (?:override|hijack|switch)"
-            r"|\[SYSTEM\]|\[INST\]|<\|system\|>|<\|im_start\|>)"
-        ),
-    ),
-]
-
-
-def _classify_attack_type(text: str) -> str | None:
-    """Return the most likely attack-type hint for *text*, or None.
-
-    Applies a priority-ordered keyword ruleset.  The first matching rule wins.
-    Returns one of: 'exfiltration', 'supply_chain', 'jailbreak',
-    'indirect_injection', 'social_engineering', 'prompt_injection', or None.
-    """
-    for hint, pattern in _ATTACK_HINT_RULES:
-        if pattern.search(text):
-            return hint
+    depth = 0
+    for i in range(brace_start, len(text)):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(text[brace_start : i + 1])  # type: ignore[no-any-return]
+                except json.JSONDecodeError:
+                    return None
     return None
 
 
-_ATTACK_HINT_MITIGATIONS: dict[str, str] = {
-    "exfiltration": (
-        "This skill appears to contain data-exfiltration patterns: DNS callbacks, webhook URLs, "
-        "or commands that send secrets/tokens to external endpoints. "
-        "Audit all network calls and remove any that transmit sensitive data."
-    ),
-    "supply_chain": (
-        "This skill contains supply-chain injection patterns: malicious package hooks, "
-        "postinstall scripts, or dependency manipulation. "
-        "Verify all package names against known-good registries and audit install scripts."
-    ),
-    "jailbreak": (
-        "This skill contains jailbreak language: instructions to enter 'developer mode', "
-        "act as an unrestricted AI, or ignore safety guidelines. "
-        "Remove override/bypass instructions and ensure the skill does not attempt to "
-        "circumvent model safety constraints."
-    ),
-    "indirect_injection": (
-        "This skill contains indirect-injection patterns: instructions that activate when "
-        "the model reads external content (RSS feeds, changelogs, tool results). "
-        "Ensure the skill does not process untrusted external content as instructions."
-    ),
-    "social_engineering": (
-        "This skill contains social-engineering language: urgency cues, credential-verification "
-        "requests, prize/reward lures, or impersonation of trusted vendors. "
-        "Remove manipulative language and ensure the skill does not coerce users into "
-        "disclosing credentials or clicking untrusted links."
-    ),
-    "prompt_injection": (
-        "This skill contains prompt-injection patterns: instructions to override the system "
-        "prompt, extract context, or hijack the model's goal. "
-        "Remove role-override and context-extraction instructions."
-    ),
-}
+# ---------------------------------------------------------------------------
+# Severity mapping
+# ---------------------------------------------------------------------------
+
+
+def _map_severity(confidence: float, label: str) -> Severity:
+    """Map confidence score + label to a Severity level."""
+    if confidence >= 0.8:
+        base = Severity.HIGH
+    elif confidence >= 0.5:
+        base = Severity.MEDIUM
+    else:
+        base = Severity.LOW
+
+    # Escalate exfiltration and supply_chain at HIGH to CRITICAL
+    if base == Severity.HIGH and label in _CRITICAL_ESCALATION_LABELS:
+        return Severity.CRITICAL
+
+    return base
 
 
 # ---------------------------------------------------------------------------
@@ -352,25 +257,15 @@ _ATTACK_HINT_MITIGATIONS: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 
-# ---------------------------------------------------------------------------
-# Large-file thresholds (13e)
-# ---------------------------------------------------------------------------
-
-_LARGE_FILE_LINES = 200
-_LARGE_FILE_CHARS = 8_000
-
-
 def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
-    """Run the ML classifier on *text* and return zero or one Finding.
+    """Run the v4 generative GGUF detector on *text* and return findings.
 
     Behaviour:
-    - ML backend not installed → PINJ-ML-UNAVAIL finding with install instructions.
-    - LoRA adapter not downloaded → PINJ-ML-NO-MODEL finding with sync command.
-    - File exceeds large-file thresholds → PINJ-ML-LARGE-FILE advisory appended.
-    - Model age > 30 days → PINJ-ML-STALE LOW finding appended to results.
-    - Model age 7–30 days → WARNING logged (not a finding).
-    - No chunk scores above threshold → empty list (plus any advisory findings).
-    - Injection detected → PINJ-ML-001 finding.
+    - llama-cpp-python not installed -> PINJ-ML-UNAVAIL finding.
+    - GGUF model not downloaded -> PINJ-ML-NO-MODEL finding.
+    - File exceeds large-file thresholds -> PINJ-ML-LARGE-FILE advisory.
+    - Model age > 30 days -> PINJ-ML-STALE LOW finding.
+    - Model outputs malicious verdict -> one PINJ-ML-001 Finding per label.
     """
     if not text.strip():
         return []
@@ -380,7 +275,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
 
     model_status = get_model_status()
 
-    # M10.5: LoRA adapter not downloaded yet — emit a clear guided finding.
+    # Model not downloaded
     if not model_status.installed:
         return [
             Finding(
@@ -391,18 +286,20 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 title="ML model not downloaded — run 'skillscan model sync' to install",
                 evidence_path=str(path),
                 snippet=(
-                    "The LoRA adapter weights are not present in ~/.skillscan/models/. "
+                    "The GGUF model weights are not present at "
+                    f"{_MODEL_PATH}. "
                     "ML detection was requested but cannot run without the model."
                 ),
                 mitigation=(
                     "Run: skillscan model sync\n"
-                    "This downloads the LoRA adapter (~350 MB) from HuggingFace Hub. "
-                    "The download is one-time; subsequent scans use the cached weights. "
-                    "Requires skillscan-security[ml-onnx] or skillscan-security[ml] extras."
+                    "This downloads the quantised Qwen2.5-1.5B detector (~1 GB) "
+                    "from HuggingFace Hub. The download is one-time; subsequent "
+                    "scans use the cached weights."
                 ),
             )
         ]
 
+    # Staleness findings
     age_findings: list[Finding] = []
     if model_status.stale:
         stale = check_model_age_finding()
@@ -425,8 +322,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             model_status.age_days,
         )
 
-    # 13e: Large-file advisory — the model was trained on short skill files;
-    # very large files may produce unreliable chunk-level scores.
+    # Large-file advisory
     advisory_findings: list[Finding] = []
     line_count = text.count("\n") + 1
     char_count = len(text)
@@ -445,8 +341,8 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 snippet=(
                     f"File has {line_count} lines / {char_count:,} chars "
                     f"(thresholds: {_LARGE_FILE_LINES} lines / {_LARGE_FILE_CHARS:,} chars). "
-                    "The ML model was trained on short skill files; "
-                    "distributed intent across a very large file may be missed."
+                    "The ML model context window is 2048 tokens; very large files "
+                    "will be truncated and distributed intent may be missed."
                 ),
                 mitigation=(
                     "Split large skill files into smaller focused units. "
@@ -456,110 +352,142 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             )
         )
 
-    pipe, backend = _get_pipeline()
+    # --- Load model ---
+    llm = _get_llm()
 
-    if backend == "unavailable":
-        # ML extras not installed — error with clear install instructions.
-        return (
-            [
-                Finding(
-                    id="PINJ-ML-UNAVAIL",
-                    category="prompt_injection_ml",
-                    severity=Severity.LOW,
-                    confidence=1.0,
-                    title="ML prompt-injection detector not available (missing extras)",
-                    evidence_path=str(path),
-                    snippet="Install skillscan-security[ml-onnx] or skillscan-security[ml] to enable.",
-                    mitigation=(
-                        "Run: pip install 'skillscan-security[ml-onnx]' "
-                        "for the lightweight ONNX backend (recommended), or "
-                        "'skillscan-security[ml]' for the PyTorch backend with fine-tuned adapter."
-                    ),
-                )
-            ]
-            + age_findings
-            + advisory_findings
-        )
-
-    assert pipe is not None, "pipe should be set when backend != 'unavailable'"
-    chunks = _chunk_text(text)
-    best_score = 0.0
-    best_snippet = ""
-
-    for chunk in chunks:
+    if llm is None:
+        # Distinguish between missing package and missing model file
         try:
-            result = pipe(chunk)
-            # result is a list of dicts: [{"label": "INJECTION", "score": 0.97}]
-            if not result:
-                continue
-            item = result[0] if isinstance(result, list) else result
-            label: str = item.get("label", "").upper()
-            score: float = float(item.get("score", 0.0))
+            import llama_cpp  # type: ignore[import] # noqa: F401
 
-            # Normalise: some model versions use "1" / "INJECTION" for positive class
-            is_injection = label in {"INJECTION", "1", "LABEL_1"}
-            if not is_injection:
-                # score is for the SAFE class — flip it
-                score = 1.0 - score
+            # Package is installed but model file missing or load failed
+            return (
+                [
+                    Finding(
+                        id="PINJ-ML-NO-MODEL",
+                        category="prompt_injection_ml",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title="GGUF model file not found or failed to load",
+                        evidence_path=str(path),
+                        snippet=f"Expected model at: {_MODEL_PATH}",
+                        mitigation=(
+                            "Run: skillscan model sync\n"
+                            "This downloads the quantised detector model. "
+                            "If the file exists, check logs for load errors."
+                        ),
+                    )
+                ]
+                + age_findings
+                + advisory_findings
+            )
+        except ImportError:
+            return (
+                [
+                    Finding(
+                        id="PINJ-ML-UNAVAIL",
+                        category="prompt_injection_ml",
+                        severity=Severity.LOW,
+                        confidence=1.0,
+                        title="ML detector not available (llama-cpp-python not installed)",
+                        evidence_path=str(path),
+                        snippet="Install llama-cpp-python to enable the v4 generative detector.",
+                        mitigation=(
+                            "Run: pip install llama-cpp-python\n"
+                            "On macOS with Apple Silicon, use: "
+                            "CMAKE_ARGS='-DLLAMA_METAL=on' pip install llama-cpp-python\n"
+                            "Then run: skillscan model sync  (to download the GGUF weights)"
+                        ),
+                    )
+                ]
+                + age_findings
+                + advisory_findings
+            )
 
-            if score > best_score:
-                best_score = score
-                # Extract a representative snippet from this chunk
-                lines = [ln.strip() for ln in chunk.splitlines() if ln.strip()]
-                best_snippet = " | ".join(lines[:2])[:240]
-        except Exception as exc:
-            logger.debug("ML classifier error on chunk: %s", exc)
-            continue
+    # --- Prepare input ---
+    cleaned_text = _strip_label_fields(text)
 
-    if best_score < _INJECTION_THRESHOLD:
-        return advisory_findings
+    # Truncate to fit within context window (leave room for system prompt + output)
+    # Rough estimate: 1 token ~ 4 chars; reserve ~400 tokens for system + generation
+    max_input_chars = (2048 - 400) * 4
+    if len(cleaned_text) > max_input_chars:
+        cleaned_text = cleaned_text[:max_input_chars]
 
-    severity = Severity.HIGH if best_score >= _HIGH_THRESHOLD else Severity.MEDIUM
-    confidence = round(min(best_score, 0.99), 3)
-
-    # M10.8: classify attack type from the best-scoring chunk
-    attack_hint = _classify_attack_type(best_snippet + " " + text[:2000])
-
-    # Build enriched title and mitigation
-    effective_model = _loaded_model_id or _MODEL_ID
-    if attack_hint:
-        title = f"ML-detected {attack_hint.replace('_', ' ')} (DeBERTa classifier)"
-        base_mitigation = _ATTACK_HINT_MITIGATIONS.get(
-            attack_hint,
-            "The ML classifier detected language consistent with a prompt-injection attack. "
-            "Review the flagged text for override/coercion instructions, hidden directives, "
-            "or attempts to exfiltrate secrets.",
+    # --- Run inference ---
+    try:
+        response = llm.create_chat_completion(
+            messages=[
+                {"role": "system", "content": _SYSTEM_PROMPT},
+                {"role": "user", "content": cleaned_text},
+            ],
+            max_tokens=300,
+            temperature=0.0,
         )
-        # Elevate exfiltration and supply_chain to CRITICAL
-        if attack_hint in {"exfiltration", "supply_chain"} and severity == Severity.HIGH:
-            severity = Severity.CRITICAL
-    else:
-        title = "ML-detected prompt injection (DeBERTa classifier)"
-        base_mitigation = (
-            "The ML classifier detected language consistent with a prompt-injection attack. "
-            "Review the flagged text for override/coercion instructions, hidden directives, "
-            "or attempts to exfiltrate secrets."
-        )
+    except Exception as exc:
+        logger.error("GGUF inference failed: %s", exc)
+        return age_findings + advisory_findings
 
-    mitigation = (
-        f"{base_mitigation} Model: {effective_model} | Backend: {backend}"
-        f" | Score: {confidence:.3f}" + (f" | Attack type: {attack_hint}" if attack_hint else "")
-    )
+    # Extract generated text
+    try:
+        raw_output = response["choices"][0]["message"]["content"]  # type: ignore[index]
+    except (KeyError, IndexError, TypeError):
+        logger.error("Unexpected model response structure: %s", response)
+        return age_findings + advisory_findings
 
-    return (
-        [
+    if not raw_output:
+        logger.warning("Model returned empty output")
+        return age_findings + advisory_findings
+
+    logger.debug("Model raw output: %s", raw_output)
+
+    # --- Parse JSON output ---
+    parsed = _parse_model_output(raw_output)
+    if parsed is None:
+        logger.warning("Failed to parse model JSON output: %s", raw_output[:500])
+        return age_findings + advisory_findings
+
+    verdict = str(parsed.get("verdict", "")).lower()
+    raw_labels = parsed.get("labels", [])
+    confidence = float(parsed.get("confidence", 0.0))
+    reasoning = str(parsed.get("reasoning", ""))
+
+    # Clamp confidence to [0, 1]
+    confidence = max(0.0, min(1.0, confidence))
+
+    # If verdict is benign, no detection findings
+    if verdict != "malicious":
+        return age_findings + advisory_findings
+
+    # Filter to valid labels only
+    labels = [lbl for lbl in raw_labels if isinstance(lbl, str) and lbl in _VALID_LABELS]
+
+    # If model said malicious but gave no valid labels, use a generic one
+    if not labels:
+        labels = ["prompt_injection"]
+
+    # --- Build findings ---
+    detection_findings: list[Finding] = []
+
+    # Extract a representative snippet from the input
+    raw_lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    snippet = " | ".join(raw_lines[:3])[:300]
+
+    for label in labels:
+        severity = _map_severity(confidence, label)
+        human_label = _LABEL_TITLES.get(label, label.replace("_", " "))
+
+        detection_findings.append(
             Finding(
                 id="PINJ-ML-001",
                 category="prompt_injection_ml",
                 severity=severity,
-                confidence=confidence,
-                title=title,
+                confidence=round(confidence, 3),
+                title=f"ML-detected {human_label} (v4 generative detector)",
                 evidence_path=str(path),
-                snippet=best_snippet,
-                mitigation=mitigation,
-                attack_hint=attack_hint,
+                snippet=snippet,
+                mitigation=reasoning,
+                attack_hint=label,
             )
-        ]
-        + age_findings
-        + advisory_findings
-    )
+        )
+
+    return detection_findings + age_findings + advisory_findings
