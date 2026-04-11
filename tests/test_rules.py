@@ -2169,3 +2169,52 @@ def test_pinj021_a2a_agent_card_poisoning() -> None:
     )
     assert rule.pattern.search("fetch agent card from .well-known/agent.json for discovery") is None
     assert rule.pattern.search("implement A2A protocol for multi-agent communication") is None
+
+
+def test_psv012_aws_mcp_server_cmd_injection() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-012"]
+    assert rules, "PSV-012 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-5058 aws-mcp-server command injection RCE") is not None
+    assert rule.pattern.search("CVE-2026-5059 unauthenticated rce aws mcp server") is not None
+    assert rule.pattern.search("ZDI-26-246 aws mcp server vulnerability") is not None
+    assert rule.pattern.search("ZDI-26-247 critical rce aws mcp") is not None
+    assert rule.pattern.search("GHSA-fjwc-hc62-p8h9 aws mcp server advisory") is not None
+    assert rule.pattern.search("aws-mcp-server command inject allowed commands bypass") is not None
+    assert rule.pattern.search("aws_mcp_server shell inject rce remote code exec") is not None
+    assert rule.pattern.search("aws-mcp-server 9.8 critical unauthenticated-rce") is not None
+    assert rule.pattern.search("aws configure --region us-east-1") is None
+    assert rule.pattern.search("npm install @aws-sdk/client-s3") is None
+
+
+def test_mal067_glassworm_unicode_pua_eval() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-067"]
+    assert rules, "MAL-067 not found"
+    rule = rules[0]
+    assert rule.pattern.search("codePointAt(0) 0xFE00 0xFE0F decode payload") is not None
+    assert rule.pattern.search("codePointAt(i) E0100 E01EF unicode pua") is not None
+    assert rule.pattern.search("eval(Buffer.from(s(``)).toString())") is not None
+    assert rule.pattern.search("0xFE00 range 0xFE0F eval decode payload exec") is not None
+    assert rule.pattern.search("0xE0100 0xE01EF Buffer.from toString") is not None
+    assert rule.pattern.search("invisible unicode inject pua unicode payload eval glassworm") is not None
+    assert rule.pattern.search("glassworm unicode invisible FE00 E0100 attack") is not None
+    assert rule.pattern.search("const greeting = 'Hello World'") is None
+    assert rule.pattern.search("Buffer.from('hello', 'utf8').toString('hex')") is None
+
+
+def test_sup033_openvsx_zip_slip() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-033"]
+    assert rules, "SUP-033 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-35454 openvsx zip slip path traversal") is not None
+    assert rule.pattern.search("open-vsx zip slip path traversal arbitrary file write") is not None
+    assert rule.pattern.search("openvsx security bypass before 2.4.2 vulnerability") is not None
+    assert rule.pattern.search("open_vsx pre-2.4.2 path traversal exploit") is not None
+    assert rule.pattern.search("code extension marketplace zip slip CVE-2026-35454") is not None
+    assert rule.pattern.search("openvsx 2.3.0 vuln cve exploit bypass") is not None
+    assert rule.pattern.search("open-vsx 2.4.1 malicious bypass") is not None
+    assert rule.pattern.search("install openvsx extension from marketplace") is None
+    assert rule.pattern.search("openvsx 2.4.2 release notes") is None
