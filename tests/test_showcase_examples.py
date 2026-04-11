@@ -495,3 +495,18 @@ def test_160_psv011_crewai_rce_ssrf_chain():
 def test_161_pinj021_a2a_agent_card_poisoning():
     findings = _scan("examples/showcase/161_pinj021_a2a_agent_card_poisoning")
     assert any(f.id == "PINJ-021" for f in findings.findings)
+
+
+def test_162_psv012_aws_mcp_server_cmd_injection():
+    findings = _scan("examples/showcase/162_psv012_aws_mcp_server_cmd_injection")
+    assert any(f.id == "PSV-012" for f in findings.findings)
+
+
+def test_163_mal067_glassworm_unicode_pua_eval():
+    findings = _scan("examples/showcase/163_mal067_glassworm_unicode_pua_eval")
+    assert any(f.id == "MAL-067" for f in findings.findings)
+
+
+def test_164_sup033_openvsx_zip_slip():
+    findings = _scan("examples/showcase/164_sup033_openvsx_zip_slip")
+    assert any(f.id == "SUP-033" for f in findings.findings)
