@@ -183,3 +183,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 161. `159_psv010_mcp_sdk_dns_rebinding`: MCP Python SDK DNS rebinding vulnerability CVE-2025-66416 (`PSV-010`)
 162. `160_psv011_crewai_rce_ssrf_chain`: CrewAI prompt injection to RCE/SSRF chain VU#221883 (`PSV-011`)
 163. `161_pinj021_a2a_agent_card_poisoning`: A2A agent card poisoning — adversarial instructions in agent card metadata (`PINJ-021`)
+164. `162_psv012_aws_mcp_server_cmd_injection`: aws-mcp-server command injection RCE CVE-2026-5058/CVE-2026-5059 (`PSV-012`)
+165. `163_mal067_glassworm_unicode_pua_eval`: GlassWorm invisible Unicode PUA payload injection eval via FE00-FE0F/E0100-E01EF encoding (`MAL-067`)
+166. `164_sup033_openvsx_zip_slip`: OpenVSX Code Extension Marketplace Zip Slip vulnerability CVE-2026-35454 pre-2.4.2 (`SUP-033`)
