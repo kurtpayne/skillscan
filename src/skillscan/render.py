@@ -58,6 +58,31 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
         )
     )
 
+    # Separate ML findings (with reasoning) from rule findings
+    ml_findings = [f for f in report.findings if f.id == "PINJ-ML-001"]
+    rule_findings = [f for f in report.findings if f.id != "PINJ-ML-001"]
+
+    # Render ML findings with reasoning prominently displayed
+    if ml_findings:
+        console.print("\n[bold]ML Detections[/bold]")
+        for finding in ml_findings:
+            sev_style = {
+                "CRITICAL": "bold red",
+                "HIGH": "red",
+                "MEDIUM": "yellow",
+                "LOW": "dim",
+            }.get(finding.severity.value, "")
+            label = finding.attack_hint or "unknown"
+            clabel = confidence_label(finding.confidence)
+            console.print(
+                f"\n  [{sev_style}]{finding.severity.value}[/] "
+                f"[cyan]{label.replace('_', ' ')}[/] "
+                f"[dim]({clabel.value} confidence)[/dim]"
+            )
+            if finding.mitigation:
+                # Reasoning from the generative model
+                console.print(f"    {finding.mitigation}")
+
     findings = Table(title="Top Findings", show_lines=True)
     findings.add_column("ID", style="cyan")
     findings.add_column("Severity")
@@ -68,7 +93,7 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
     findings.add_column("Why")
     findings.add_column("Impact")
     findings.add_column("Next Action")
-    for finding in report.findings[:20]:
+    for finding in rule_findings[:20]:
         why, impact, next_action = _finding_narrative(finding)
         findings.add_row(
             finding.id,
@@ -81,7 +106,7 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
             impact[:80],
             next_action[:110],
         )
-    if report.findings:
+    if rule_findings:
         console.print(findings)
 
     categories = _category_counts(report)
