@@ -1,4 +1,4 @@
-version: "2026.04.10.1"
+version: "2026.04.11.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -6092,6 +6092,134 @@ static_rules:
         - https://semiengineering.com/agent-card-poisoning-a-metadata-injection-vulnerability-in-the-systems-using-google-a2a-protocol/
         - https://adversa.ai/blog/top-agentic-ai-security-resources-april-2026/
 
+  - id: PSV-012
+    category: vulnerability
+    severity: critical
+    confidence: 0.93
+    title: aws-mcp-server command injection RCE (CVE-2026-5058 / CVE-2026-5059, ZDI-26-246/247)
+    pattern: '(?i)(?:CVE-2026-5058|CVE-2026-5059|ZDI-26-246|ZDI-26-247|GHSA-fjwc-hc62-p8h9|aws[_\s-]?mcp[_\s-]?server[^\n]{0,200}(?:command[_\s-]?inject|os[_\s-]?command|shell[_\s-]?inject|rce|remote[_\s-]?code[_\s-]?exec|arbitrary[_\s-]?code|allowed[_\s-]?commands?[^\n]{0,80}(?:inject|bypass|unsanit|unvalid))|(?:aws[_\s-]?mcp[_\s-]?server[^\n]{0,80}(?:9\.8|critical|unauthenticated[_\s-]?rce|no[_\s-]?auth[^\n]{0,40}exec)))'
+    mitigation: 'CVE-2026-5058 and CVE-2026-5059 (ZDI-26-246/ZDI-26-247, CVSS 9.8 Critical, published April 11, 2026) are critical command injection RCE vulnerabilities in aws-mcp-server. The flaw exists in the handling of the allowed-commands list: user-supplied strings are passed to system calls without proper validation, allowing unauthenticated remote attackers to execute arbitrary code in the context of the MCP server. No authentication is required. Apply vendor patches immediately. Until patched, restrict network access to the MCP server and validate all user-supplied input before passing to system calls.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-11'
+      updated: '2026-04-11'
+      tags:
+        - vulnerability
+        - mcp
+        - aws-mcp-server
+        - command-injection
+        - rce
+        - unauthenticated
+        - cve-2026-5058
+        - cve-2026-5059
+        - zdi-26-246
+      last_modified: '2026-04-11'
+      techniques:
+        - id: PSV-012
+          name: Vulnerability Exploitation
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-11'
+        last_modified: '2026-04-11'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://github.com/advisories/GHSA-fjwc-hc62-p8h9
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-5058
+        - https://www.zerodayinitiative.com/advisories/ZDI-26-246
+        - https://www.thehackerwire.com/aws-mcp-server-remote-code-execution-via-command-injection-cve-2026-5058/
+  - id: MAL-067
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: GlassWorm invisible Unicode PUA payload injection (eval via FE00-FE0F/E0100-E01EF encoding)
+    pattern: '(?i)(?:codePointAt\s*\([^\)]{0,20}\)[^\n]{0,200}(?:0xFE00|0xFE0F|0xE0100|0xE01EF|FE00|FE0F|E0100|E01EF)|(?:0xFE00[^\n]{0,80}0xFE0F|0xE0100[^\n]{0,80}0xE01EF)[^\n]{0,200}(?:eval|Buffer\.from|toString|decode|payload|exec)|eval\s*\([^\n]{0,80}Buffer\.from\s*\([^\n]{0,80}(?:s\s*\(|decode\s*\(|filter\s*\(|map\s*\()[^\n]{0,80}(?:toString|utf[_-]?8)|(?:invisible[_\s-]?unicode|unicode[_\s-]?inject|pua[_\s-]?unicode|unicode[_\s-]?payload)[^\n]{0,200}(?:eval|exec|payload|malware|glassworm)|glassworm[^\n]{0,200}(?:unicode|invisible|pua|FE00|E0100))'
+    mitigation: "GlassWorm (March 2026 wave, disclosed by Aikido Security) hides malicious payloads inside invisible Unicode PUA (Private Use Area) characters in the ranges U+FE00-U+FE0F and U+E0100-U+E01EF. The attack encodes a full JavaScript payload as invisible characters embedded in an apparently empty backtick string. At runtime, a small decoder maps each character's codepoint offset to bytes, reconstructs the payload, and passes it to eval(). The decoded payload fetches and executes a second-stage script (historically via Solana memo transactions as a C2 channel) capable of stealing tokens, credentials, and secrets. Affected ecosystems include npm packages (@aifabrix/miso-client, @iflow-mcp/watercrawl-watercrawl-mcp), VS Code extensions (quartz.quartz-markdown-editor), and 150+ GitHub repositories. Audit all dependencies for invisible Unicode characters and use tools like Aikido Safe Chain or grep for the codePointAt/FE00 decoder pattern."
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-11'
+      updated: '2026-04-11'
+      tags:
+        - malware
+        - glassworm
+        - unicode-injection
+        - invisible-unicode
+        - pua-unicode
+        - supply-chain
+        - npm
+        - vscode-extension
+        - github
+        - eval-injection
+        - solana-c2
+      last_modified: '2026-04-11'
+      techniques:
+        - id: MAL-067
+          name: Invisible Unicode PUA Payload Injection
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-11'
+        last_modified: '2026-04-11'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode
+        - https://thehackernews.com/2026/03/glassworm-supply-chain-attack-abuses-72.html
+        - https://afine.com/blogs/hunting-glassworm-open-source-detection-for-invisible-supply-chain-payloads
+        - https://cybernews.com/security/self-replicating-malware-spreading-on-github-npm-openvsx/
+  - id: SUP-033
+    category: supply_chain
+    severity: high
+    confidence: 0.88
+    title: OpenVSX Code Extension Marketplace Zip Slip vulnerability (CVE-2026-35454, pre-2.4.2)
+    pattern: '(?i)(?:CVE-2026-35454|open[_\s-]?vsx[^\n]{0,200}(?:zip[_\s-]?slip|path[_\s-]?travers|arbitrary[_\s-]?file[_\s-]?write|security[_\s-]?bypass|pre[_-]?2\.4\.2|before[_\s-]?2\.4\.2)|code[_\s-]?extension[_\s-]?marketplace[^\n]{0,200}(?:zip[_\s-]?slip|path[_\s-]?travers|arbitrary[_\s-]?file|CVE-2026-35454)|(?:openvsx|open[_\s-]?vsx)[^\n]{0,80}(?:2\.[0-3]\.[0-9]|2\.4\.[01])[^\n]{0,80}(?:vuln|cve|exploit|bypass|malicious))'
+    mitigation: 'CVE-2026-35454 is a Zip Slip path traversal vulnerability in the Open VSX Code Extension Marketplace (versions prior to 2.4.2). During extension installation, maliciously crafted .vsix archives can use relative path components (e.g., ../../) to write files outside the intended extraction directory, bypassing pre-publication security checks and enabling arbitrary file write on the marketplace server or client. Upgrade the Open VSX marketplace to version 2.4.2 or later. For self-hosted instances, validate all archive entry paths against the target extraction directory before extraction. For extension consumers, prefer the official VS Code Marketplace or verify extension integrity via publisher signatures.'
+    metadata:
+      version: '1.0.0'
+      status: active
+      author: skillscan
+      created: '2026-04-11'
+      updated: '2026-04-11'
+      tags:
+        - supply-chain
+        - openvsx
+        - zip-slip
+        - path-traversal
+        - vscode-extension
+        - marketplace
+        - cve-2026-35454
+      last_modified: '2026-04-11'
+      techniques:
+        - id: SUP-033
+          name: Zip Slip Path Traversal in Extension Marketplace
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - skill
+      lifecycle:
+        introduced: '2026-04-11'
+        last_modified: '2026-04-11'
+      quality:
+        precision_estimate: 0.88
+        benchmark_set: core-static-v1
+      references:
+        - https://www.cvedetails.com/cve/CVE-2026-35454/
+        - https://expertinthecloud.co.za/tag/open-vsx-vulnerability-lets-malicious-extensions-slip-through/
+        - https://cyberpress.org/openvsx-extension-spreads-glassworm/?amp=1
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

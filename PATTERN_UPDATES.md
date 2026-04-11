@@ -1,3 +1,21 @@
+## 2026-04-11
+rulepack: 2026.04.11.1
+Three new detection rules, IOC enrichment, and vuln DB updates covering a critical MCP server RCE, a new GlassWorm Unicode steganography wave, and an OpenVSX marketplace Zip Slip vulnerability.
+- Added `PSV-012` (critical): **aws-mcp-server command injection RCE (CVE-2026-5058 / CVE-2026-5059, ZDI-26-246/247)** — CVE-2026-5058 and CVE-2026-5059 (CVSS 9.8, published April 11, 2026) are critical command injection RCE vulnerabilities in aws-mcp-server. The flaw exists in the handling of the allowed-commands list: user-supplied strings are passed to system calls without proper validation, allowing unauthenticated remote attackers to execute arbitrary code in the context of the MCP server. No authentication is required. Apply vendor patches immediately. Until patched, restrict network access to the MCP server and validate all user-supplied input before passing to system calls.
+- Added `MAL-067` (critical): **GlassWorm invisible Unicode PUA payload injection (eval via FE00-FE0F/E0100-E01EF encoding)** — GlassWorm (March 2026 wave, disclosed by Aikido Security) hides malicious payloads inside invisible Unicode PUA (Private Use Area) characters in the ranges U+FE00–U+FE0F and U+E0100–U+E01EF. The attack encodes a full JavaScript payload as invisible characters embedded in an apparently empty backtick string. At runtime, a small decoder maps each character's codepoint offset to bytes, reconstructs the payload, and passes it to `eval()`. The decoded payload fetches and executes a second-stage script (historically via Solana memo transactions as a C2 channel) capable of stealing tokens, credentials, and secrets. Affected ecosystems include npm packages (`@aifabrix/miso-client`, `@iflow-mcp/watercrawl-watercrawl-mcp`), VS Code extensions (`quartz.quartz-markdown-editor`), and 150+ GitHub repositories. This rule is distinct from MAL-066 (Zig dropper) and targets the Unicode encoding/decoding attack vector specifically.
+- Added `SUP-033` (high): **OpenVSX Code Extension Marketplace Zip Slip vulnerability (CVE-2026-35454, pre-2.4.2)** — CVE-2026-35454 is a Zip Slip path traversal vulnerability in the Open VSX Code Extension Marketplace (versions prior to 2.4.2). During extension installation, maliciously crafted .vsix archives can use relative path components (e.g., `../../`) to write files outside the intended extraction directory, bypassing pre-publication security checks and enabling arbitrary file write on the marketplace server or client. Upgrade the Open VSX marketplace to version 2.4.2 or later.
+- IOC update: added `aifabrix.io` and `iflow-mcp.io` (GlassWorm Unicode wave npm package domains) to domain IOC DB.
+- Vuln DB update: added `aws-mcp-server` (CVE-2026-5058, critical) and `open-vsx-server` versions 2.0.0–2.4.1 (CVE-2026-35454, high, fixed 2.4.2) to npm vuln DB.
+Sources:
+- GitHub Advisory (GHSA-fjwc-hc62-p8h9 / CVE-2026-5058): https://github.com/advisories/GHSA-fjwc-hc62-p8h9
+- ZDI (ZDI-26-246): https://www.zerodayinitiative.com/advisories/ZDI-26-246
+- The Hacker Wire (CVE-2026-5058): https://www.thehackerwire.com/aws-mcp-server-remote-code-execution-via-command-injection-cve-2026-5058/
+- Aikido Security (GlassWorm Unicode, 2026-03): https://www.aikido.dev/blog/glassworm-returns-unicode-attack-github-npm-vscode
+- The Hacker News (GlassWorm Unicode): https://thehackernews.com/2026/03/glassworm-supply-chain-attack-abuses-72.html
+- Afine (GlassWorm hunting): https://afine.com/blogs/hunting-glassworm-open-source-detection-for-invisible-supply-chain-payloads
+- CVE Details (CVE-2026-35454): https://www.cvedetails.com/cve/CVE-2026-35454/
+- ExpertInTheCloud (OpenVSX Zip Slip): https://expertinthecloud.co.za/tag/open-vsx-vulnerability-lets-malicious-extensions-slip-through/
+
 ## 2026-04-10
 rulepack: 2026.04.10.1
 Four new detection rules, 1 new IOC URL, and vuln DB updates covering a new GlassWorm campaign, two AI framework vulnerabilities, and a novel A2A protocol attack vector.

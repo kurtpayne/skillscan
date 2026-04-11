@@ -1247,6 +1247,52 @@
         "fixed": "REMOVE",
         "summary": "velora-dex/sdk 9.4.1 delivers minirat Go RAT via base64 payload in dist/index.js - remove immediately"
       }
+    },
+    "aws-mcp-server": {
+      "*": {
+        "id": "CVE-2026-5058",
+        "severity": "critical",
+        "fixed": "unknown",
+        "summary": "aws-mcp-server command injection RCE (CVE-2026-5058 / CVE-2026-5059, ZDI-26-246/247, CVSS 9.8). Unauthenticated remote code execution via improper validation of user-supplied strings in the allowed-commands list before system calls."
+      }
+    },
+    "open-vsx-server": {
+      "2.0.0": {
+        "id": "CVE-2026-35454",
+        "severity": "high",
+        "fixed": "2.4.2",
+        "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
+      },
+      "2.1.0": {
+        "id": "CVE-2026-35454",
+        "severity": "high",
+        "fixed": "2.4.2",
+        "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
+      },
+      "2.2.0": {
+        "id": "CVE-2026-35454",
+        "severity": "high",
+        "fixed": "2.4.2",
+        "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
+      },
+      "2.3.0": {
+        "id": "CVE-2026-35454",
+        "severity": "high",
+        "fixed": "2.4.2",
+        "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
+      },
+      "2.4.0": {
+        "id": "CVE-2026-35454",
+        "severity": "high",
+        "fixed": "2.4.2",
+        "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
+      },
+      "2.4.1": {
+        "id": "CVE-2026-35454",
+        "severity": "high",
+        "fixed": "2.4.2",
+        "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
+      }
     }
   },
   "pip": {
