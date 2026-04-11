@@ -32,7 +32,7 @@ class Finding(BaseModel):
     mitigation: str | None = None
     chain_actions: list[str] = Field(default_factory=list)
     # M10.8: attack-type hint from keyword post-processor (forward-compatible with
-    # future multi-class DeBERTa head).  Set only for PINJ-ML-001 findings.
+    # generative detector attack label).  Set only for PINJ-ML-001 findings.
     attack_hint: str | None = None
     # Section context: heading text of the markdown section where the rule fired,
     # e.g. "Security Notes" or "Installation Steps".  Empty for semantic/ML findings.

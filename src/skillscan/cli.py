@@ -1666,34 +1666,34 @@ def intel_lookup(
 @model_app.command("install")
 def model_install_cmd(
     repo_id: str = typer.Option(
-        "kurtpayne/skillscan-deberta-adapter",
+        "kurtpayne/skillscan-detector-v4",
         "--repo",
-        help="HuggingFace Hub repo ID for the LoRA adapter",
+        help="HuggingFace Hub repo ID for the detector model",
     ),
     force: bool = typer.Option(False, "--force", help="Re-download even if already up to date"),
 ) -> None:
-    """Download or reinstall the ML prompt-injection adapter from HuggingFace Hub.
+    """Download or reinstall the ML detector model from HuggingFace Hub.
 
-    The adapter is stored in ~/.skillscan/models/adapter/ (~350 MB).
+    The GGUF model is stored in ~/.skillscan/models/ (~935 MB).
     Use --repo to point at a private fine-tuned model.
     """
     from skillscan.model_sync import sync_model
 
-    console.print(f"[bold]Downloading ML adapter from[/bold] {repo_id}...")
+    console.print(f"[bold]Downloading ML detector from[/bold] {repo_id}...")
     result = sync_model(repo_id=repo_id, force=force, progress=True)
     if result.success:
         if result.downloaded:
             console.print(
-                f"[green]✓ Downloaded adapter v{result.version}[/green] "
-                f"({result.bytes_downloaded // 1024} KB)"
+                f"[green]✓ Downloaded model v{result.version}[/green] "
+                f"({result.bytes_downloaded // 1024 // 1024} MB)"
             )
             console.print()
             console.print("[bold]What this enables:[/bold]")
             console.print(
-                "  DeBERTa-v3-base LoRA adapter fine-tuned on 21,468 examples of "
-                "prompt injection, jailbreaks, social engineering, and supply chain attacks."
+                "  Qwen2.5-1.5B generative detector fine-tuned on 20,035 examples. "
+                "Classifies 7 attack types with human-readable reasoning."
             )
-            console.print("  Macro F1: [green]0.9752[/green] | FPR: [green]1.89%[/green]")
+            console.print("  Macro F1: [green]0.487[/green] | Verdict accuracy: [green]85.2%[/green]")
             console.print()
             console.print("[bold]To use:[/bold]")
             console.print("  skillscan scan <path> [bold cyan]--ml-detect[/bold cyan]")
@@ -1708,9 +1708,9 @@ def model_install_cmd(
 @model_app.command("status")
 def model_status_cmd(
     repo_id: str = typer.Option(
-        "kurtpayne/skillscan-deberta-adapter",
+        "kurtpayne/skillscan-detector-v4",
         "--repo",
-        help="HuggingFace Hub repo ID for the LoRA adapter",
+        help="HuggingFace Hub repo ID for the detector model",
     ),
     check_remote: bool = typer.Option(False, "--check-remote", help="Check HF Hub for updates"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON"),
