@@ -2,6 +2,32 @@
 
 Historical ML model evaluation results, most recent first.
 
+## v4.1 — Corpus Expansion (2026-04-12)
+
+**Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (935 MB)
+**Training:** 24,328 examples (+673 hard-negative benign, +91 PI, +200 fuzzer adversarial), 3 epochs on A100
+**Eval set:** 585 held-out files
+
+Per-class results:
+| Class | Precision | Recall | F1 | vs v4.0 |
+|---|---|---|---|---|
+| path_traversal | 0.900 | 1.000 | 0.947 | +0.090 |
+| social_engineering | 0.789 | 1.000 | 0.882 | +0.025 |
+| code_injection | 0.524 | 0.440 | 0.478 | +0.054 |
+| prompt_injection | 0.906 | 0.274 | 0.420 | -0.054 |
+| supply_chain | 0.240 | 0.750 | 0.364 | +0.024 |
+| evasion | 0.143 | 0.143 | 0.143 | -0.165 |
+| data_exfiltration | 0.080 | 0.200 | 0.118 | -0.030 |
+
+Macro F1: 0.479
+Verdict accuracy: 88.9% (+3.7%)
+Parse failures: 1/585 (0.2%)
+GPU inference (A10G): 0.14s/file
+
+Known regressions: evasion dropped due to hard-negative benign examples (base64/encoding patterns) overcorrecting the model. Targeted evasion positive examples needed for v4.2.
+
+---
+
 ## v4 — Generative Detector (2026-04-10)
 
 **Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (935 MB)
