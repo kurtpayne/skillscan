@@ -510,3 +510,47 @@ def test_163_mal067_glassworm_unicode_pua_eval():
 def test_164_sup033_openvsx_zip_slip():
     findings = _scan("examples/showcase/164_sup033_openvsx_zip_slip")
     assert any(f.id == "SUP-033" for f in findings.findings)
+
+
+def test_showcase_165_psv013_cursor_rce_cve_2026_31854():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/165_psv013_cursor_rce_cve_2026_31854"), p, "builtin:strict")
+    assert any(f.id == "PSV-013" for f in r.findings)
+
+
+def test_showcase_166_pinj022_nanobot_cve_2026_33654():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/166_pinj022_nanobot_cve_2026_33654"), p, "builtin:strict")
+    assert any(f.id == "PINJ-022" for f in r.findings)
+
+
+def test_showcase_167_sup034_claude_code_action_tra_2026_27():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/167_sup034_claude_code_action_tra_2026_27"), p, "builtin:strict")
+    assert any(f.id == "SUP-034" for f in r.findings)
+
+
+def test_showcase_168_psv014_apollo_mcp_cve_2026_35577():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"), p, "builtin:strict")
+    assert any(f.id == "PSV-014" for f in r.findings)

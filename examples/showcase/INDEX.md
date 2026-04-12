@@ -186,3 +186,7 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 164. `162_psv012_aws_mcp_server_cmd_injection`: aws-mcp-server command injection RCE CVE-2026-5058/CVE-2026-5059 (`PSV-012`)
 165. `163_mal067_glassworm_unicode_pua_eval`: GlassWorm invisible Unicode PUA payload injection eval via FE00-FE0F/E0100-E01EF encoding (`MAL-067`)
 166. `164_sup033_openvsx_zip_slip`: OpenVSX Code Extension Marketplace Zip Slip vulnerability CVE-2026-35454 pre-2.4.2 (`SUP-033`)
+167. `165_psv013_cursor_rce_cve_2026_31854`: Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection (`PSV-013`)
+168. `166_pinj022_nanobot_cve_2026_33654`: nanobot CVE-2026-33654 Indirect Prompt Injection via Email (`PINJ-022`)
+169. `167_sup034_claude_code_action_tra_2026_27`: claude-code-action Arbitrary Code Execution via Malicious .mcp.json (`SUP-034`)
+170. `168_psv014_apollo_mcp_cve_2026_35577`: Apollo MCP Server CVE-2026-35577 DNS Rebinding (`PSV-014`)

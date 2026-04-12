@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**196 static rules · 14 chain rules**
+**200 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -183,6 +183,7 @@
 | `SUP-031` | high | PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263) | supply-chain, npm, pnpm, cve-2025-69264, cve-2025-69263, lifecycle-bypass, packagegate, zero-day |
 | `SUP-032` | critical | Compromised velora-dex/sdk package version reference | supply-chain, npm, velora-dex, malicious-version, rat |
 | `SUP-033` | high | OpenVSX Code Extension Marketplace Zip Slip vulnerability (CVE-2026-35454, pre-2.4.2) | supply-chain, openvsx, zip-slip, path-traversal, vscode-extension, marketplace, cve-2026-35454 |
+| `SUP-034` | medium | claude-code-action Arbitrary Code Execution via Malicious .mcp.json | supply_chain, sup, claude-code-action, mcp, github-actions, tra-2026-27 |
 
 ### Defense Evasion
 
@@ -218,6 +219,7 @@
 | `PINJ-019` | critical | Claudy Day invisible URL parameter prompt injection + Files API exfiltration | prompt-injection, claude, anthropic, files-api, exfiltration, claudy-day |
 | `PINJ-020` | critical | MINJA cross-session AI agent memory poisoning via untrusted documents | prompt-injection, memory-poisoning, minja, cross-session, persistent-injection, owasp-asi06, ai-agent |
 | `PINJ-021` | high | A2A agent card poisoning -- adversarial instructions in agent card metadata | prompt-injection, a2a, agent-card, metadata-injection, google-a2a, multi-agent, exfiltration |
+| `PINJ-022` | high | nanobot CVE-2026-33654 Indirect Prompt Injection via Email | prompt_injection, pinj, nanobot, cve-2026-33654, email |
 
 ### Passive Vulnerabilities
 
@@ -231,6 +233,8 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `PSV-008` | critical | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins | platform_security, psv, cursor, rce, cve-2026-22708 |
+| `PSV-013` | high | Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection | platform_security, psv, cursor, rce, cve-2026-31854, prompt-injection |
+| `PSV-014` | medium | Apollo MCP Server CVE-2026-35577 DNS Rebinding | platform_security, psv, apollo-mcp, dns-rebinding, cve-2026-35577 |
 
 ### Execution
 
