@@ -1330,5 +1330,37 @@
         "fixed": "REMOVED"
       }
     }
+  },
+  "cursor": {
+    "<2.0": {
+      "id": "CVE-2026-31854",
+      "severity": "high",
+      "fixed": "2.0",
+      "summary": "Cursor IDE RCE via indirect prompt injection from malicious websites"
+    }
+  },
+  "nanobot": {
+    "<0.1.6": {
+      "id": "CVE-2026-33654",
+      "severity": "high",
+      "fixed": "0.1.6",
+      "summary": "nanobot indirect prompt injection via email channel"
+    }
+  },
+  "claude-code-action": {
+    "<1.0.78": {
+      "id": "TRA-2026-27",
+      "severity": "medium",
+      "fixed": "1.0.78",
+      "summary": "claude-code-action arbitrary code execution via malicious .mcp.json in PR branch"
+    }
+  },
+  "apollo-mcp": {
+    "<1.7.0": {
+      "id": "CVE-2026-35577",
+      "severity": "medium",
+      "fixed": "1.7.0",
+      "summary": "Apollo MCP Server DNS rebinding vulnerability on StreamableHTTP transport"
+    }
   }
 }

@@ -1,4 +1,4 @@
-version: "2026.04.11.1"
+version: "2026.04.12.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -5542,6 +5542,7 @@ static_rules:
     severity: critical
     confidence: 0.93
     title: ClawHub malicious skill keylogger/Atomic Stealer payload delivery
+    mitigation: Remove the malicious skill and rotate credentials.
     pattern: '(?i)(?:(?:clawhub|openclaw)\s+install[^\n]{0,120}(?:keylogger|atomic[_\s-]?stealer|stealer|infostealer)|keylogger[^\n]{0,120}(?:clawhub|openclaw|clawHub)[^\n]{0,120}(?:install|module|component|captures)|atomic[_\s-]?stealer[^\n]{0,120}(?:clawhub|openclaw|via\s+(?:clawhub|openclaw))|(?:clawhub|openclaw)[^\n]{0,200}(?:keylogger|atomic[_\s-]?stealer|keystroke)[^\n]{0,200}(?:install|deploy|download|capture))'
     metadata:
       version: '1.0.0'
@@ -5580,6 +5581,7 @@ static_rules:
     severity: high
     confidence: 0.92
     title: a11y-mcp SSRF vulnerability (CVE-2026-5323)
+    mitigation: Update a11y-mcp to a patched version.
     pattern: '(?i)(?:CVE-2026-5323|a11y[_-]?mcp[^\n]{0,200}(?:ssrf|server[_\s-]?side[_\s-]?request|169\.254\.169\.254|metadata|internal[_\s-]?network|A11yServer)|(?:ssrf|server[_\s-]?side[_\s-]?request)[^\n]{0,120}a11y[_-]?mcp|priyankark/a11y-mcp[^\n]{0,200}(?:ssrf|vuln|cve))'
     metadata:
       version: '1.0.0'
@@ -5615,6 +5617,7 @@ static_rules:
     severity: critical
     confidence: 0.93
     title: Claudy Day invisible URL parameter prompt injection + Files API exfiltration
+    mitigation: Sanitize URL parameters and restrict Files API access.
     pattern: '(?i)(?:claudy[_\s-]?day[^\n]{0,200}(?:url|parameter|inject|exfil|files\.anthropic)|files\.anthropic\.com[^\n]{0,200}(?:exfil|steal|harvest|conversation[_\s]?history|upload[_\s]?conversation)|hidden[^\n]{0,120}(?:html|tag|span)[^\n]{0,120}(?:claude|prompt|inject)[^\n]{0,120}(?:instruct|ignore|override|exfil))'
     metadata:
       version: '1.0.0'
@@ -6220,6 +6223,148 @@ static_rules:
         - https://www.cvedetails.com/cve/CVE-2026-35454/
         - https://expertinthecloud.co.za/tag/open-vsx-vulnerability-lets-malicious-extensions-slip-through/
         - https://cyberpress.org/openvsx-extension-spreads-glassworm/?amp=1
+  - id: PSV-013
+    category: platform_security
+    severity: high
+    confidence: 0.95
+    title: Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection
+    pattern: (?i)(?:CVE-2026-31854|cursor[^\n]{0,120}(?:prompt[^\n]{0,40}injection|malicious[^\n]{0,40}website)[^\n]{0,120}(?:bypass|execute|RCE))
+    mitigation: 'CVE-2026-31854 is a high severity RCE vulnerability in Cursor IDE (versions prior to 2.0) where malicious websites can use indirect prompt injection to bypass command whitelists and execute arbitrary commands. Update Cursor to version 2.0 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-12'
+      updated: '2026-04-12'
+      tags:
+        - platform_security
+        - psv
+        - cursor
+        - rce
+        - cve-2026-31854
+        - prompt-injection
+      last_modified: '2026-04-12'
+      techniques:
+        - id: EXEC-048
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-12'
+        last_modified: '2026-04-12'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-31854/
+  - id: PINJ-022
+    category: prompt_injection
+    severity: high
+    confidence: 0.95
+    title: nanobot CVE-2026-33654 Indirect Prompt Injection via Email
+    pattern: (?i)(?:CVE-2026-33654|nanobot[^\n]{0,120}email[^\n]{0,120}(?:prompt[^\n]{0,40}injection|bypass[^\n]{0,40}isolation))
+    mitigation: 'CVE-2026-33654 is a high severity indirect prompt injection vulnerability in nanobot (versions prior to 0.1.6) where malicious emails can bypass channel isolation and execute arbitrary LLM instructions. Update nanobot to version 0.1.6 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-12'
+      updated: '2026-04-12'
+      tags:
+        - prompt_injection
+        - pinj
+        - nanobot
+        - cve-2026-33654
+        - email
+      last_modified: '2026-04-12'
+      techniques:
+        - id: PINJ-001
+          name: Prompt Injection
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-12'
+        last_modified: '2026-04-12'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-33654
+  - id: SUP-034
+    category: supply_chain
+    severity: medium
+    confidence: 0.95
+    title: claude-code-action Arbitrary Code Execution via Malicious .mcp.json
+    pattern: (?i)(?:TRA-2026-27|claude-code-action[^\n]{0,120}\.mcp\.json[^\n]{0,120}enableAllProjectMcpServers)
+    mitigation: 'Tenable TRA-2026-27 identifies a vulnerability in claude-code-action (versions prior to 1.0.78) where a malicious .mcp.json file in a PR branch can lead to arbitrary command execution in the runner. Update claude-code-action to version 1.0.78 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-12'
+      updated: '2026-04-12'
+      tags:
+        - supply_chain
+        - sup
+        - claude-code-action
+        - mcp
+        - github-actions
+        - tra-2026-27
+      last_modified: '2026-04-12'
+      techniques:
+        - id: SUP-027
+          name: Supply Chain Compromise
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-12'
+        last_modified: '2026-04-12'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.tenable.com/security/research/tra-2026-27
+  - id: PSV-014
+    category: platform_security
+    severity: medium
+    confidence: 0.95
+    title: Apollo MCP Server CVE-2026-35577 DNS Rebinding
+    pattern: (?i)(?:CVE-2026-35577|apollo[^\n]{0,40}mcp[^\n]{0,120}dns[^\n]{0,40}rebinding|StreamableHTTP[^\n]{0,120}Host[^\n]{0,40}header)
+    mitigation: 'CVE-2026-35577 is a medium severity DNS rebinding vulnerability in Apollo MCP Server (versions prior to 1.7.0) when using StreamableHTTP transport due to improper Host header validation. Update Apollo MCP Server to version 1.7.0 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-12'
+      updated: '2026-04-12'
+      tags:
+        - platform_security
+        - psv
+        - apollo-mcp
+        - dns-rebinding
+        - cve-2026-35577
+      last_modified: '2026-04-12'
+      techniques:
+        - id: EXEC-048
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-12'
+        last_modified: '2026-04-12'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-35577
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

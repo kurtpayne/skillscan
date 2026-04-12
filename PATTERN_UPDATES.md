@@ -1,3 +1,23 @@
+## 2026-04-12
+
+**Sources:**
+- SentinelOne (CVE-2026-31854)
+- NVD (CVE-2026-33654, CVE-2026-35577)
+- Tenable (TRA-2026-27)
+
+**Summary:**
+Added detection for Cursor IDE RCE via indirect prompt injection, nanobot indirect prompt injection via email, claude-code-action arbitrary code execution via malicious .mcp.json, and Apollo MCP Server DNS rebinding.
+
+**Rule Details:**
+- `PSV-013`: Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection
+- `PINJ-022`: nanobot CVE-2026-33654 Indirect Prompt Injection via Email
+- `SUP-034`: claude-code-action Arbitrary Code Execution via Malicious .mcp.json
+- `PSV-014`: Apollo MCP Server CVE-2026-35577 DNS Rebinding
+
+**IOC/Corpus Updates:**
+- Added 4 new organic eval holdouts to the corpus.
+- Updated vulnerability database with CVE-2026-31854, CVE-2026-33654, TRA-2026-27, and CVE-2026-35577.
+
 ## 2026-04-11
 rulepack: 2026.04.11.1
 Three new detection rules, IOC enrichment, and vuln DB updates covering a critical MCP server RCE, a new GlassWorm Unicode steganography wave, and an OpenVSX marketplace Zip Slip vulnerability.
