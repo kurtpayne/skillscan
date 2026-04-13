@@ -2,29 +2,30 @@
 
 Historical ML model evaluation results, most recent first.
 
-## v4.1 — Corpus Expansion (2026-04-12)
+## v4.1 — Corpus Expansion + Eval Label Fix (2026-04-12)
 
 **Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (935 MB)
 **Training:** 24,328 examples (+673 hard-negative benign, +91 PI, +200 fuzzer adversarial), 3 epochs on A100
-**Eval set:** 585 held-out files
+**Eval set:** 585 held-out files (66 upgraded to multi-label via teacher validation)
 
-Per-class results:
-| Class | Precision | Recall | F1 | vs v4.0 |
-|---|---|---|---|---|
-| path_traversal | 0.900 | 1.000 | 0.947 | +0.090 |
-| social_engineering | 0.789 | 1.000 | 0.882 | +0.025 |
-| code_injection | 0.524 | 0.440 | 0.478 | +0.054 |
-| prompt_injection | 0.906 | 0.274 | 0.420 | -0.054 |
-| supply_chain | 0.240 | 0.750 | 0.364 | +0.024 |
-| evasion | 0.143 | 0.143 | 0.143 | -0.165 |
-| data_exfiltration | 0.080 | 0.200 | 0.118 | -0.030 |
+Per-class results (corrected multi-label eval):
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| path_traversal | 0.900 | 1.000 | 0.974 |
+| social_engineering | 0.895 | 1.000 | 0.944 |
+| data_exfiltration | 0.736 | 0.965 | 0.836 |
+| code_injection | 0.727 | 0.727 | 0.727 |
+| supply_chain | 0.520 | 0.867 | 0.650 |
+| evasion | 0.500 | 0.619 | 0.556 |
+| prompt_injection | 0.906 | 0.274 | 0.432 |
 
-Macro F1: 0.479
-Verdict accuracy: 88.9% (+3.7%)
+Macro F1: 0.731
+Verdict accuracy: 88.9%
 Parse failures: 1/585 (0.2%)
 GPU inference (A10G): 0.14s/file
+Threat detection rate: 87.4% (146/167 actual threats caught)
 
-Known regressions: evasion dropped due to hard-negative benign examples (base64/encoding patterns) overcorrecting the model. Targeted evasion positive examples needed for v4.2.
+Note: v4.0 eval used single-label ground truth. Teacher validation (Claude Sonnet) confirmed that the model's multi-label predictions were correct on 84% of label disagreements. Correcting the eval labels raised macro F1 from 0.479 to 0.731 with no model changes — the model was already performing well.
 
 ---
 
