@@ -1,3 +1,19 @@
+## 2026-04-13
+rulepack: 2026.04.13.1
+Three new detection rules and vuln DB updates covering two new MCP ecosystem DNS rebinding vulnerabilities and a critical OpenClaw WebSocket authorization bypass.
+- Added `PSV-015` (high): **MCP Go SDK DNS rebinding vulnerability (CVE-2026-34742, go-sdk < v1.4.0)** — CVE-2026-34742 (GHSA-xw59-hvm2-8pj6, disclosed March 31, 2026) is a DNS rebinding vulnerability in the Model Context Protocol Go SDK prior to version v1.4.0. HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication. A malicious website can exploit this flaw to bypass same-origin policy restrictions and send requests to the local MCP server, enabling arbitrary tool invocation or resource access. This is distinct from PSV-010 (Python SDK, CVE-2025-66416) and SUP-016 (CSRF variant CVE-2026-33252). Upgrade `github.com/modelcontextprotocol/go-sdk` to v1.4.0 or later.
+- Added `PSV-016` (high): **mobile-mcp arbitrary Android intent execution via unvalidated URL (CVE-2026-35394, < 0.0.50)** — CVE-2026-35394 (GHSA-5qhv-x9j4-c3vm, CVSS 8.3, disclosed April 4–6, 2026) is a vulnerability in mobilenexthq mobile-mcp prior to version 0.0.50. The `mobile_open_url` tool passes user-supplied URLs directly to Android's intent system without any scheme validation, enabling arbitrary intent execution including phone calls (`tel:`), SMS (`sms:`), USSD codes (`ussd:`), and content provider access. This allows prompt injection attacks to "phish the AI" and trigger unauthorized device actions. Upgrade mobile-mcp to 0.0.50 or later and restrict access to the `mobile_open_url` tool.
+- Added `PSV-017` (high): **OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12)** — CVE-2026-22172 (disclosed March 20, 2026) is a critical authorization bypass vulnerability in OpenClaw versions prior to 2026.3.12. The WebSocket connect path allows shared-token or password-authenticated connections to self-declare elevated scopes (e.g., `operator.admin`) without server-side binding validation. This enables attackers to perform admin-only gateway operations without proper authorization. Upgrade OpenClaw to version 2026.3.12 or later immediately.
+- Vuln DB update: added `github.com/modelcontextprotocol/go-sdk` versions v0.1.0–v1.3.0 as CVE-2026-34742 (high, fixed v1.4.0); added `mobile-mcp` versions 0.0.1–0.0.49 as CVE-2026-35394 (high, fixed 0.0.50); added `openclaw` versions 2026.1.1–2026.3.11 as CVE-2026-22172 (high, fixed 2026.3.12).
+Sources:
+- NVD (CVE-2026-34742): https://nvd.nist.gov/vuln/detail/CVE-2026-34742
+- GitHub Advisory (GHSA-xw59-hvm2-8pj6): https://github.com/modelcontextprotocol/go-sdk/security/advisories/GHSA-xw59-hvm2-8pj6
+- NVD (CVE-2026-35394): https://nvd.nist.gov/vuln/detail/CVE-2026-35394
+- Tenable (CVE-2026-35394): https://www.tenable.com/cve/CVE-2026-35394
+- GitHub Advisory (GHSA-5qhv-x9j4-c3vm): https://github.com/mobile-next/mobile-mcp/security/advisories/GHSA-5qhv-x9j4-c3vm
+- Tenable (CVE-2026-22172): https://www.tenable.com/cve/CVE-2026-22172
+- SentinelOne (CVE-2026-22172): https://www.sentinelone.com/vulnerability-database/cve-2026-22172/
+- The Hacker Wire (CVE-2026-22172): https://www.thehackerwire.com/openclaw-critical-websocket-authorization-bypass-cve-2026-22172/
 ## 2026-04-12
 
 **Sources:**

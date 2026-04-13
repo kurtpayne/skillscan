@@ -190,3 +190,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 168. `166_pinj022_nanobot_cve_2026_33654`: nanobot CVE-2026-33654 Indirect Prompt Injection via Email (`PINJ-022`)
 169. `167_sup034_claude_code_action_tra_2026_27`: claude-code-action Arbitrary Code Execution via Malicious .mcp.json (`SUP-034`)
 170. `168_psv014_apollo_mcp_cve_2026_35577`: Apollo MCP Server CVE-2026-35577 DNS Rebinding (`PSV-014`)
+169. `169_psv015_mcp_go_sdk_dns_rebinding`: MCP Go SDK DNS rebinding vulnerability CVE-2026-34742 (`PSV-015`)
+170. `170_psv016_mobile_mcp_android_intent_rce`: mobile-mcp arbitrary Android intent execution CVE-2026-35394 (`PSV-016`)
+171. `171_psv017_openclaw_websocket_scope_elevation`: OpenClaw WebSocket authorization bypass scope elevation CVE-2026-22172 (`PSV-017`)

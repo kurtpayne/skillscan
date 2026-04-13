@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**200 static rules · 14 chain rules**
+**203 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -235,6 +235,9 @@
 | `PSV-008` | critical | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins | platform_security, psv, cursor, rce, cve-2026-22708 |
 | `PSV-013` | high | Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection | platform_security, psv, cursor, rce, cve-2026-31854, prompt-injection |
 | `PSV-014` | medium | Apollo MCP Server CVE-2026-35577 DNS Rebinding | platform_security, psv, apollo-mcp, dns-rebinding, cve-2026-35577 |
+| `PSV-015` | high | MCP Go SDK DNS rebinding vulnerability (CVE-2026-34742, go-sdk < v1.4.0) | platform_security, psv, mcp, go-sdk, dns-rebinding, cve-2026-34742, localhost |
+| `PSV-016` | high | mobile-mcp arbitrary Android intent execution via unvalidated URL (CVE-2026-35394, < 0.0.50) | platform_security, psv, mobile-mcp, android, intent-injection, rce, cve-2026-35394 |
+| `PSV-017` | high | OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12) | platform_security, psv, openclaw, websocket, authorization-bypass, scope-elevation, cve-2026-22172 |
 
 ### Execution
 
