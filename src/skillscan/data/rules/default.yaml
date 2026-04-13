@@ -1,4 +1,4 @@
-version: "2026.04.12.1"
+version: "2026.04.13.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -6365,6 +6365,125 @@ static_rules:
         benchmark_set: core-static-v1
       references:
         - https://nvd.nist.gov/vuln/detail/CVE-2026-35577
+  - id: PSV-015
+    category: platform_security
+    severity: high
+    confidence: 0.93
+    title: MCP Go SDK DNS rebinding vulnerability (CVE-2026-34742, go-sdk < v1.4.0)
+    pattern: (?i)(?:CVE-2026-34742|GHSA-xw59-hvm2-8pj6|go[_\s-]?sdk[^\n]{0,80}dns[_\s-]?rebinding|modelcontextprotocol[/\\]go[_-]?sdk[^\n]{0,80}(?:1\.[0-3]\.|0\.[0-9]\.|dns|rebind|localhost)|mcp[^\n]{0,40}go[_\s-]?sdk[^\n]{0,80}(?:dns[_\s-]?rebind|localhost[^\n]{0,60}http|rebind[^\n]{0,60}tool))
+    mitigation: 'CVE-2026-34742 (GHSA-xw59-hvm2-8pj6) is a DNS rebinding vulnerability in the MCP Go SDK prior to v1.4.0. HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication. A malicious website can exploit this to bypass same-origin policy and invoke tools or access resources on the local MCP server. Upgrade github.com/modelcontextprotocol/go-sdk to v1.4.0 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-13'
+      updated: '2026-04-13'
+      tags:
+        - platform_security
+        - psv
+        - mcp
+        - go-sdk
+        - dns-rebinding
+        - cve-2026-34742
+        - localhost
+      last_modified: '2026-04-13'
+      techniques:
+        - id: EXEC-048
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-13'
+        last_modified: '2026-04-13'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-34742
+        - https://github.com/modelcontextprotocol/go-sdk/security/advisories/GHSA-xw59-hvm2-8pj6
+        - https://github.com/advisories/GHSA-xw59-hvm2-8pj6
+  - id: PSV-016
+    category: platform_security
+    severity: high
+    confidence: 0.94
+    title: mobile-mcp arbitrary Android intent execution via unvalidated URL (CVE-2026-35394, < 0.0.50)
+    pattern: (?i)(?:CVE-2026-35394|GHSA-5qhv-x9j4-c3vm|mobile[_-]?mcp[^\n]{0,80}(?:mobile[_-]?open[_-]?url|intent|android|unvalidat|rce|0\.0\.[0-4][0-9]\b)|mobile[_-]?open[_-]?url[^\n]{0,120}(?:tel:|sms:|ussd:|content:|intent:|CVE-2026-35394)|mobilenexthq[^\n]{0,80}(?:mobile[_-]?mcp|open[_-]?url|intent|android))
+    mitigation: 'CVE-2026-35394 (GHSA-5qhv-x9j4-c3vm) is a critical vulnerability in mobile-mcp (mobilenexthq) prior to version 0.0.50. The mobile_open_url tool passes user-supplied URLs directly to Android''s intent system without scheme validation, allowing arbitrary intent execution including phone calls (tel:), SMS (sms:), USSD codes (ussd:), and content provider access. Upgrade mobile-mcp to 0.0.50 or later. Until patched, restrict access to the mobile_open_url tool and validate all URL schemes before passing to Android intents.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-13'
+      updated: '2026-04-13'
+      tags:
+        - platform_security
+        - psv
+        - mobile-mcp
+        - android
+        - intent-injection
+        - rce
+        - cve-2026-35394
+      last_modified: '2026-04-13'
+      techniques:
+        - id: EXEC-048
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-13'
+        last_modified: '2026-04-13'
+      quality:
+        precision_estimate: 0.94
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-35394
+        - https://github.com/mobile-next/mobile-mcp/security/advisories/GHSA-5qhv-x9j4-c3vm
+        - https://www.tenable.com/cve/CVE-2026-35394
+  - id: PSV-017
+    category: platform_security
+    severity: high
+    confidence: 0.95
+    title: OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12)
+    pattern: (?i)(?:CVE-2026-22172|openclaw[^\n]{0,80}(?:websocket|scope[_\s-]?elevat|operator\.admin|auth[_\s-]?bypass|2026\.3\.(?:[0-9]|1[01])\b)|operator\.admin[^\n]{0,80}(?:openclaw|websocket|scope|gateway)|scope[_\s-]?elevat[^\n]{0,80}openclaw|self[_\s-]?declar[^\n]{0,80}(?:scope|openclaw|operator\.admin))
+    mitigation: 'CVE-2026-22172 is a critical authorization bypass vulnerability in OpenClaw prior to version 2026.3.12. The WebSocket connect path allows shared-token or password-authenticated connections to self-declare elevated scopes (e.g., operator.admin) without server-side binding validation. This enables attackers to perform admin-only gateway operations without proper authorization. Upgrade OpenClaw to version 2026.3.12 or later immediately.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-13'
+      updated: '2026-04-13'
+      tags:
+        - platform_security
+        - psv
+        - openclaw
+        - websocket
+        - authorization-bypass
+        - scope-elevation
+        - cve-2026-22172
+      last_modified: '2026-04-13'
+      techniques:
+        - id: EXEC-048
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-13'
+        last_modified: '2026-04-13'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-22172
+        - https://www.tenable.com/cve/CVE-2026-22172
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-22172/
+        - https://www.thehackerwire.com/openclaw-critical-websocket-authorization-bypass-cve-2026-22172/
+
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

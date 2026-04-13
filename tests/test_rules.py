@@ -2262,3 +2262,79 @@ def test_rule_psv_014():
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"), p, "builtin:strict")
     assert any(f.id == "PSV-014" for f in r.findings)
+
+
+def test_psv015_mcp_go_sdk_dns_rebinding() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-015"]
+    assert rules, "PSV-015 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-34742 mcp go-sdk dns rebinding") is not None
+    assert rule.pattern.search("GHSA-xw59-hvm2-8pj6 modelcontextprotocol go-sdk") is not None
+    assert rule.pattern.search("modelcontextprotocol/go-sdk 0.3.0 dns rebinding localhost") is not None
+    assert rule.pattern.search("MCP go sdk 1.2.0 dns rebinding tool execution bypass") is not None
+    assert rule.pattern.search("mcp go sdk dns rebind tool invocation") is not None
+    assert rule.pattern.search("go sdk dns rebinding localhost http server") is not None
+    assert rule.pattern.search("modelcontextprotocol/go-sdk v1.4.0 release notes") is None
+    assert rule.pattern.search("install github.com/modelcontextprotocol/go-sdk v1.5.0") is None
+
+
+def test_psv016_mobile_mcp_android_intent_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-016"]
+    assert rules, "PSV-016 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-35394 mobile-mcp android intent rce") is not None
+    assert rule.pattern.search("GHSA-5qhv-x9j4-c3vm mobile-mcp vulnerability") is not None
+    assert rule.pattern.search("mobile-mcp mobile_open_url android intent unvalidated") is not None
+    assert rule.pattern.search("mobilenexthq mobile-mcp 0.0.49 intent injection") is not None
+    assert rule.pattern.search("mobile_open_url tel: sms: ussd: intent CVE-2026-35394") is not None
+    assert rule.pattern.search("mobile-mcp 0.0.50 changelog release notes") is None
+    assert rule.pattern.search("use mobile-mcp 0.0.50 for device testing") is None
+
+
+def test_psv017_openclaw_websocket_scope_elevation() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-017"]
+    assert rules, "PSV-017 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-22172 openclaw websocket scope elevation") is not None
+    assert rule.pattern.search("openclaw 2026.3.11 websocket auth bypass operator.admin") is not None
+    assert rule.pattern.search("openclaw scope elevation operator.admin authorization bypass") is not None
+    assert rule.pattern.search("self-declare elevated scope openclaw websocket gateway") is not None
+    assert rule.pattern.search("operator.admin openclaw websocket scope self-declared") is not None
+    assert rule.pattern.search("openclaw 2026.3.12 release notes") is None
+    assert rule.pattern.search("openclaw gateway connection established") is None
+
+
+def test_rule_psv_015():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"), p, "builtin:strict")
+    assert any(f.id == "PSV-015" for f in r.findings)
+
+
+def test_rule_psv_016():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"), p, "builtin:strict")
+    assert any(f.id == "PSV-016" for f in r.findings)
+
+
+def test_rule_psv_017():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"), p, "builtin:strict")
+    assert any(f.id == "PSV-017" for f in r.findings)

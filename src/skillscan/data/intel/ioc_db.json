@@ -8,8 +8,8 @@
       "urlhaus_hosts"
     ],
     "note": "Bundled high-precision IOC DB. Hand-curated campaign IOCs are always included. Large feeds (URLhaus URLs, Hagezi TIF, Phishing Army, KADhosts) are runtime-only and merged at scan time via managed_sources.json.",
-    "updated": "2026-04-10",
-    "version": "2026.04.10.1"
+    "updated": "2026-04-13",
+    "version": "2026.04.13.1"
   },
   "domains": [
     "001.smallnode.net",

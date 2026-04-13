@@ -63,8 +63,8 @@
       "tough-cookie",
       "word-wrap"
     ],
-    "updated": "2026-04-10",
-    "version": "2026.04.10.1"
+    "updated": "2026-04-13",
+    "version": "2026.04.13.1"
   },
   "python": {
     "bittensor-wallet": {
@@ -1293,6 +1293,56 @@
         "fixed": "2.4.2",
         "summary": "Zip Slip path traversal vulnerability in Open VSX Code Extension Marketplace (CVE-2026-35454). Maliciously crafted .vsix archives can write files outside the intended extraction directory, bypassing pre-publication security checks."
       }
+    },
+    "mobile-mcp": {
+      "0.0.1": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.10": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.20": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.30": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.40": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.45": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.48": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      },
+      "0.0.49": {
+        "id": "CVE-2026-35394",
+        "severity": "high",
+        "fixed": "0.0.50",
+        "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
+      }
     }
   },
   "pip": {
@@ -1361,6 +1411,92 @@
       "severity": "medium",
       "fixed": "1.7.0",
       "summary": "Apollo MCP Server DNS rebinding vulnerability on StreamableHTTP transport"
+    }
+  },
+  "go": {
+    "github.com/modelcontextprotocol/go-sdk": {
+      "v0.1.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v0.2.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v0.3.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.0.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.1.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.2.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.3.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      }
+    }
+  },
+  "openclaw": {
+    "openclaw": {
+      "2026.1.1": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.2.1": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.1": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.5": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.10": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.11": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      }
     }
   }
 }

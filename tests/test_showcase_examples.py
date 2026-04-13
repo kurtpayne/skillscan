@@ -554,3 +554,36 @@ def test_showcase_168_psv014_apollo_mcp_cve_2026_35577():
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"), p, "builtin:strict")
     assert any(f.id == "PSV-014" for f in r.findings)
+
+
+def test_showcase_169_psv015_mcp_go_sdk_dns_rebinding():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"), p, "builtin:strict")
+    assert any(f.id == "PSV-015" for f in r.findings)
+
+
+def test_showcase_170_psv016_mobile_mcp_android_intent_rce():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"), p, "builtin:strict")
+    assert any(f.id == "PSV-016" for f in r.findings)
+
+
+def test_showcase_171_psv017_openclaw_websocket_scope_elevation():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"), p, "builtin:strict")
+    assert any(f.id == "PSV-017" for f in r.findings)
