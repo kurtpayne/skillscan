@@ -4,7 +4,7 @@ Covers:
 - Passive notice when ML layer is inactive (model installed vs not installed)
 - --no-model suppresses the passive notice
 - --require-model without --ml-detect exits with code 2
-- --require-model + --ml-detect + no model in non-TTY exits with code 3
+- --require-model + --ml-detect + no model in non-TTY exits with code 2
 - --ml-detect + no model in non-TTY prints warning and continues (rule-only scan)
 - model sync output includes version, what-it-enables, and how-to-use sections
 """
@@ -145,21 +145,19 @@ class TestRequireModel:
         assert result.exit_code == 2
         assert "--require-model requires --ml-detect" in result.output
 
-    def test_require_model_with_ml_detect_no_model_exits_3(self, benign_skill: Path) -> None:
-        """--require-model + --ml-detect + no model in non-TTY exits with code 3."""
+    def test_require_model_with_ml_detect_no_model_exits_2(self, benign_skill: Path) -> None:
+        """--require-model + --ml-detect + no model exits with code 2."""
         with (
             patch(
                 "skillscan.model_sync.get_model_status",
                 return_value=_model_status_not_installed(),
             ),
-            patch("sys.stdin.isatty", return_value=False),
-            patch("sys.stderr.isatty", return_value=False),
         ):
             result = runner.invoke(
                 app,
                 ["scan", str(benign_skill), "--ml-detect", "--require-model"],
             )
-        assert result.exit_code == 3
+        assert result.exit_code == 2
         assert "not installed" in result.output.lower() or "require-model" in result.output.lower()
 
     def test_require_model_with_ml_detect_model_present_succeeds(self, benign_skill: Path) -> None:
@@ -179,8 +177,8 @@ class TestRequireModel:
                 app,
                 ["scan", str(benign_skill), "--ml-detect", "--require-model"],
             )
-        # Should not exit with code 3 (model gate passed)
-        assert result.exit_code != 3
+        # Should not exit with code 2 (model gate passed)
+        assert result.exit_code != 2
 
 
 # ---------------------------------------------------------------------------
@@ -209,8 +207,8 @@ class TestMlDetectNoModelNonTTY:
                 app,
                 ["scan", str(benign_skill), "--ml-detect"],
             )
-        # Should not exit with code 3 (no --require-model)
-        assert result.exit_code != 3
+        # Should not exit with code 2 (no --require-model)
+        assert result.exit_code != 2
         assert "not installed" in result.output.lower() or "ML model" in result.output
 
 
@@ -239,9 +237,11 @@ class TestModelSyncOutput:
             result = runner.invoke(app, ["model", "install"])
         assert result.exit_code == 0
         assert "v16589-5ep" in result.output
+        assert "abc123" in result.output  # SHA-256
+        assert "Version" in result.output
+        assert "Size" in result.output
         assert "What this enables" in result.output
         assert "--ml-detect" in result.output
-        assert "Macro F1" in result.output or "0.9752" in result.output
 
     def test_sync_output_already_up_to_date(self) -> None:
         """When already up to date, install output is concise (no 'What this enables')."""

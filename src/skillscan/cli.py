@@ -489,7 +489,7 @@ def scan_cmd(
         False,
         "--require-model",
         envvar="SKILLSCAN_REQUIRE_MODEL",
-        help=("Exit with code 3 if --ml-detect is requested but the ML model is not installed."),
+        help=("Exit with code 2 if --ml-detect is requested but the ML model is not installed."),
     ),
     graph_scan: bool | None = typer.Option(
         None,
@@ -551,41 +551,48 @@ def scan_cmd(
 
         _model_status = get_model_status()
         if not _model_status.installed:
+            if require_model:
+                console.print(
+                    "[bold red]ML model not installed and --require-model is set.[/bold red]\n"
+                    "Model not installed. Run 'skillscan model install' to download (~935 MB)."
+                )
+                raise typer.Exit(2)
             if sys.stdin.isatty() and sys.stderr.isatty():
                 console.print(
-                    "[yellow]ML model not found.[/yellow] Download now (~350 MB)? [Y/n] ",
+                    "[yellow]Model not installed.[/yellow] "
+                    "Run 'skillscan model install' to download (~935 MB)."
+                )
+                console.print(
+                    "Download now? [Y/n] ",
                     end="",
                 )
                 _answer = input().strip().lower()
                 if _answer in {"", "y", "yes"}:
-                    console.print("[bold]Downloading ML adapter...[/bold]")
+                    console.print("[bold]Downloading ML model...[/bold]")
                     _sync_result = sync_model(progress=True)
                     if _sync_result.success and _sync_result.downloaded:
+                        _size_mb = _sync_result.bytes_downloaded // (1024 * 1024)
                         console.print(
-                            f"[green]✓ Downloaded adapter v{_sync_result.version}[/green] "
-                            f"({_sync_result.bytes_downloaded // 1024} KB). "
+                            f"[green]✓ Model installed[/green] "
+                            f"(version: {_sync_result.version}, "
+                            f"size: {_size_mb} MB, "
+                            f"SHA-256: {(_sync_result.sha256 or 'unknown')[:16]}...). "
                             "ML detection enabled."
                         )
                     elif not _sync_result.success:
                         console.print(f"[red]✗ Download failed:[/red] {_sync_result.message}")
-                        if require_model:
-                            raise typer.Exit(3)
+                        ml_detect = False
                 else:
-                    console.print("[dim]Skipping ML download. Running rule-only scan.[/dim]")
-                    if require_model:
-                        raise typer.Exit(3)
+                    console.print("[dim]Skipping ML download. Continuing without ML detection.[/dim]")
                     ml_detect = False
             else:
-                if require_model:
-                    console.print(
-                        "[bold red]ML model not installed and --require-model is set.[/bold red] "
-                        "Run: skillscan model install"
-                    )
-                    raise typer.Exit(3)
                 console.print(
-                    "[yellow]ML model not installed.[/yellow] Run: skillscan model install",
+                    "[yellow]Model not installed.[/yellow] "
+                    "Run 'skillscan model install' to download (~935 MB). "
+                    "Continuing without ML detection.",
                     highlight=False,
                 )
+                ml_detect = False
 
     # Passive notice when ML layer is inactive
     if not ml_detect and not no_model and format not in {"json", "sarif", "junit", "compact"}:
@@ -1837,10 +1844,12 @@ def model_install_cmd(
     result = sync_model(repo_id=repo_id, force=force, progress=True)
     if result.success:
         if result.downloaded:
-            console.print(
-                f"[green]✓ Downloaded model v{result.version}[/green] "
-                f"({result.bytes_downloaded // 1024 // 1024} MB)"
-            )
+            _size_mb = result.bytes_downloaded // (1024 * 1024)
+            console.print("[green]✓ Model installed successfully.[/green]")
+            console.print()
+            console.print(f"  Version: {result.version}")
+            console.print(f"  Size:    {_size_mb} MB")
+            console.print(f"  SHA-256: {result.sha256 or 'unknown'}")
             console.print()
             console.print("[bold]What this enables:[/bold]")
             console.print(
