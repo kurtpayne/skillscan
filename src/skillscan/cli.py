@@ -105,6 +105,8 @@ def _main_callback(
 
 
 # Register commands from submodules
+from datetime import UTC
+
 from skillscan.commands.online_trace import register as _register_online_trace  # noqa: E402
 
 _register_online_trace(app)
@@ -1171,6 +1173,8 @@ def rule_list(
 
     rp = load_builtin_rulepack(channel="stable")
     rows: list[dict[str, object]] = []
+
+    # Include static rules
     for r in rp.static_rules:
         md = getattr(r, "metadata", None)
         techniques = [t.id for t in (md.techniques if md else [])]
@@ -1187,10 +1191,32 @@ def rule_list(
                 "title": r.title,
                 "severity": r.severity.value,
                 "category": r.category,
+                "type": "static",
                 "techniques": techniques,
                 "tags": tags,
                 "status": (md.status if md else None),
                 "version": (md.version if md else None),
+            }
+        )
+
+    # Include chain rules
+    for cr in rp.chain_rules:
+        # Chain rules don't have technique/tag metadata — skip if filtering
+        if technique or tag:
+            continue
+
+        rows.append(
+            {
+                "id": cr.id,
+                "title": cr.title,
+                "severity": cr.severity.value,
+                "category": cr.category,
+                "type": "chain",
+                "techniques": [],
+                "tags": [],
+                "status": None,
+                "version": None,
+                "all_of": sorted(cr.all_of),
             }
         )
 
@@ -1207,8 +1233,27 @@ def rule_list(
         tags_row = cast(list[str], row["tags"])
         t = ",".join(techniques_row) if techniques_row else "-"
         g = ",".join(tags_row) if tags_row else "-"
-        console.print(f"{row['id']} [{row['severity']}] {row['title']}")
-        console.print(f"  category={row['category']} techniques={t} tags={g}")
+        rule_type = row.get("type", "static")
+        type_label = " [chain]" if rule_type == "chain" else ""
+        console.print(
+            f"{row['id']} [{row['severity']}] {row['title']}{type_label}",
+            soft_wrap=True,
+        )
+        if rule_type == "chain":
+            all_of = cast(list[str], row.get("all_of", []))
+            console.print(
+                f"  category={row['category']} actions={','.join(all_of)}",
+                soft_wrap=True,
+            )
+        else:
+            console.print(
+                f"  category={row['category']} techniques={t} tags={g}",
+                soft_wrap=True,
+            )
+
+    n_static = sum(1 for r in rows if r.get("type") == "static")
+    n_chain = sum(1 for r in rows if r.get("type") == "chain")
+    console.print(f"\nTotal: {len(rows)} rules ({n_static} static + {n_chain} chain)")
 
 
 @rule_app.command("status")
@@ -1543,10 +1588,16 @@ def intel_status() -> None:
     for source in store.sources:
         p = Path(source.path)
         mtime = p.stat().st_mtime if p.exists() else 0
+        if mtime:
+            from datetime import datetime
+
+            mtime_str = datetime.fromtimestamp(mtime, tz=UTC).astimezone().strftime("%Y-%m-%d %H:%M")
+        else:
+            mtime_str = "n/a"
         url_info = f" url={getattr(source, 'url', None)}" if getattr(source, "url", None) else ""
         console.print(
             f"- {source.name} ({source.kind}) "
-            f"enabled={source.enabled} path={source.path} mtime={mtime:.0f}{url_info}"
+            f"enabled={source.enabled} path={source.path} updated={mtime_str}{url_info}"
         )
 
 
@@ -1669,7 +1720,9 @@ def intel_remove(name: str = typer.Argument(...)) -> None:
 def intel_enable(name: str = typer.Argument(...)) -> None:
     """Enable a disabled intel source."""
     if not set_enabled(name, True):
-        console.print(f"[bold red]Source not found:[/] {name}")
+        console.print(
+            f"[bold red]Source not found:[/] {name}. Run 'skillscan intel list' to see available sources."
+        )
         raise typer.Exit(1)
     console.print(f"Enabled: {name}")
 
@@ -1678,7 +1731,9 @@ def intel_enable(name: str = typer.Argument(...)) -> None:
 def intel_disable(name: str = typer.Argument(...)) -> None:
     """Disable an intel source without removing it."""
     if not set_enabled(name, False):
-        console.print(f"[bold red]Source not found:[/] {name}")
+        console.print(
+            f"[bold red]Source not found:[/] {name}. Run 'skillscan intel list' to see available sources."
+        )
         raise typer.Exit(1)
     console.print(f"Disabled: {name}")
 
@@ -2015,7 +2070,7 @@ def corpus_record_finetune(
 @app.command("feedback")
 def feedback_cmd(
     kind: str = typer.Argument(
-        "fp",
+        None,
         help="Type of feedback: fp (false positive), fn (false negative), bug, or feature",
     ),
 ) -> None:
@@ -2028,6 +2083,16 @@ def feedback_cmd(
         "bug": "https://github.com/kurtpayne/skillscan-security/issues/new?template=bug-report.md",
         "feature": "https://github.com/kurtpayne/skillscan-security/issues/new?template=feature-request.md",
     }
+    if kind is None:
+        console.print(
+            "[bold]Usage:[/bold] skillscan feedback <type>\n\n"
+            "Available feedback types:\n"
+            "  [bold]fp[/bold]       Report a false positive\n"
+            "  [bold]fn[/bold]       Report a false negative\n"
+            "  [bold]bug[/bold]      Report a bug\n"
+            "  [bold]feature[/bold]  Request a feature"
+        )
+        raise typer.Exit(0)
     url = _FEEDBACK_URLS.get(kind)
     if url is None:
         console.print(
