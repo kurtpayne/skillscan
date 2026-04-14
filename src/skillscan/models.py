@@ -21,7 +21,7 @@ class Severity(StrEnum):
 
 
 class Finding(BaseModel):
-    id: str
+    id: str = Field(serialization_alias="rule_id")
     category: str
     severity: Severity
     confidence: float = Field(ge=0.0, le=1.0)
@@ -151,7 +151,11 @@ class ScanReport(BaseModel):
     triage_metadata: TriageMetadata = Field(default_factory=TriageMetadata)
 
     def to_json(self) -> str:
-        return self.model_dump_json(indent=2)
+        return self.model_dump_json(
+            indent=2,
+            by_alias=True,
+            exclude={"findings": {"__all__": {"mitigation"}}},
+        )
 
 
 class Policy(BaseModel):

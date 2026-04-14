@@ -17,7 +17,7 @@ SkillScan operates a layered, deterministic-first pipeline. Each layer runs inde
 | 5 | Multilang rules | Language-gated regex (.js/.ts/.rb/.go/.rs) | Always | Yes |
 | 6 | Python AST data-flow | Source-to-sink taint analysis (.py only) | Always | Yes |
 | 7 | Skill graph analysis | Graph-based PSV rules | `--graph` flag | No |
-| 8 | ML classifier (DeBERTa-v3 + LoRA) | ONNX FP32 inference | `--ml` flag (or `skillscan model install`) | No |
+| 8 | ML classifier (Qwen2.5-1.5B) | GGUF Q4_K_M inference | `--ml` flag (or `skillscan model install`) | No |
 | 9 | Stemmed feature scorer | Porter-stemmed axis scoring via NLTK | Always | Yes |
 | 10 | Vuln DB matching | Dependency scan (23 Python pkgs, 4 npm pkgs) | Always | Yes |
 | 11 | ClamAV malware scan | Signature-based AV | `--clamav` flag | No |
@@ -98,9 +98,9 @@ Rules are organized into channels (`stable`, `beta`, `experimental`) controlled 
 **Rule IDs:** `ML-PINJ-001`, `ML-UNAVAIL`
 **Enabled by:** `skillscan model install` (downloads model), then active by default when model is present
 
-The ML layer applies a fine-tuned DeBERTa-v3-base classifier to each text file in the skill bundle. The adapter (`kurtpayne/skillscan-deberta-adapter`) is downloaded explicitly via `skillscan model install` and is never auto-downloaded.
+The ML layer applies a fine-tuned Qwen2.5-1.5B classifier to each text file in the skill bundle. The model (`kurtpayne/skillscan-detector-v4`) is downloaded explicitly via `skillscan model install` and is never auto-downloaded.
 
-**Inference format:** ONNX FP32 (~350 MB). INT8 quantization was evaluated and caused F1 collapse; FP32 is the confirmed production format.
+**Inference format:** GGUF Q4_K_M (~935 MB). Inference is handled by `llama-cpp-python` (CPU). Install via `pip install 'skillscan-security[ml]'`.
 
 **Chunking strategy:** Files are chunked to 512 tokens with a 64-token stride. Each chunk is scored independently; the file verdict is the maximum injection probability across all chunks. This ensures a single malicious instruction buried deep in a large file is not diluted by surrounding benign content.
 
@@ -116,7 +116,7 @@ The ML layer applies a fine-tuned DeBERTa-v3-base classifier to each text file i
 
 Both SaaS quality thresholds are met. See `docs/MODEL_METRICS.md` for full version history.
 
-**Fine-tune pipeline:** LoRA adapter trained via `scripts/finetune_modal.py` on Modal (GPU: T4, 5 epochs, `r=64 alpha=128`). Pushed to HuggingFace Hub only when held-out eval Macro F1 ≥ 0.97 AND FPR ≤ 5%. Intermediate checkpoints saved every 500 steps (`save_total_limit=3`).
+**Fine-tune pipeline:** Full fine-tune via `scripts/finetune_modal.py` on Modal GPU. Pushed to HuggingFace Hub only when held-out eval Macro F1 >= 0.97 AND FPR <= 5%. The GGUF Q4_K_M quantization is produced post-training.
 
 ---
 

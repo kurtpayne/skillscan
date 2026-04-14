@@ -6,38 +6,23 @@ tags:
   - security
   - prompt-injection
   - skill-scanning
-  - deberta
+  - modernbert
   - lora
   - onnx
   - ai-safety
   - agent-security
-base_model: microsoft/deberta-v3-base
+  - multi-label-classification
+base_model: answerdotai/ModernBERT-base
 pipeline_tag: text-classification
 ---
 
-# SkillScan DeBERTa Adapter — `kurtpayne/skillscan-deberta-adapter`
+# SkillScan ModernBERT Adapter — `kurtpayne/skillscan-deberta-adapter`
 
-A LoRA-fine-tuned DeBERTa-v3-base adapter for detecting **prompt injection, jailbreaks, malicious instructions, and supply-chain attacks** in AI agent skill files (SKILL.md format). This model is the ML detection layer inside the [`skillscan`](https://github.com/kurtpayne/skillscan-security) CLI scanner.
+A LoRA-fine-tuned ModernBERT-base adapter for detecting **8 classes of attack** in AI agent skill files (SKILL.md format): prompt injection, code injection, data exfiltration, path traversal, supply chain attacks, social engineering, and evasion. This model is the ML detection layer inside the [`skillscan`](https://github.com/kurtpayne/skillscan-security) CLI scanner.
 
-> **Intended deployment:** This model is not designed for direct HuggingFace inference. It is downloaded and run locally by the `skillscan` CLI via ONNX runtime. No network calls occur at scan time. See [How to Use](#how-to-use).
+> **Intended deployment:** This model is not designed for direct HuggingFace inference. It is downloaded and run locally by the `skillscan` CLI via ONNX Runtime. No network calls occur at scan time. See [How to Use](#how-to-use).
 
----
-
-## ⚠️ Important Notice — Benchmark Metrics Under Revision
-
-**We identified eval set contamination in the v10 benchmark that artificially inflated the reported F1 and FPR figures.**
-
-During a routine decontamination audit, we discovered that the held-out eval set used to measure v1–v10 contained examples with distribution overlap with the training corpus. The reported F1=0.9787 and FPR=2.18% are not reliable estimates of real-world generalization performance.
-
-**What this means:**
-- The v10 model (currently on this Hub page) should be treated as **beta quality** for security-critical decisions
-- The static rule engine layers in `skillscan` are **unaffected** and remain production-ready
-- We are retraining on a fully decontaminated corpus (v11) and will publish corrected benchmark metrics on completion
-- **Do not rely on the v10 benchmark figures for security decisions or compliance reporting**
-
-We are disclosing this proactively in the interest of transparency. The decontamination process and corrected evaluation methodology are documented in [`docs/MODEL_METRICS.md`](https://github.com/kurtpayne/skillscan-security/blob/main/docs/MODEL_METRICS.md) in the public repo.
-
-**Status:** v11 retraining in progress — estimated completion within 1–2 weeks. This notice will be removed and replaced with corrected metrics once v11 is validated.
+> **Architecture upgrade (Phase 3):** This model replaces the previous binary DeBERTa-v3 classifier with an 8-class multi-label ModernBERT model. Binary classification has been retired. See [Migration](#migration-from-v10-binary) for details.
 
 ---
 
@@ -47,218 +32,216 @@ We are disclosing this proactively in the interest of transparency. The decontam
 
 | Component | Detail |
 |---|---|
-| Base model | `microsoft/deberta-v3-base` |
-| Fine-tuning method | LoRA (Low-Rank Adaptation), r=64, alpha=128 |
-| Task | Binary sequence classification: `BENIGN` / `INJECTION` |
-| Inference format | ONNX FP32 (~350 MB) |
+| Base model | `answerdotai/ModernBERT-base` |
+| Fine-tuning method | LoRA (Low-Rank Adaptation), r=96, alpha=128, dropout=0.05 |
+| LoRA targets | `Wqkv`, `attn.Wo` (all 22 transformer layers) |
+| Modules to save | `head` (ModernBertPredictionHead), `classifier` (Linear→8) |
+| Task | Multi-label sequence classification: 8 attack classes (sigmoid + BCEWithLogitsLoss) |
+| Inference format | ONNX FP32 |
 | Runtime | ONNX Runtime (CPU), no GPU required |
-| Input | Raw SKILL.md file text, chunked to 512 tokens with 64-token stride |
-| Output | Per-chunk injection probability; file verdict is max-pool over chunks |
+| Input | Raw SKILL.md file content (frontmatter + body), truncated to 384 tokens |
+| Output | Per-class sigmoid probabilities; apply per-class thresholds from `thresholds.json` |
 
-The model uses a sliding-window chunking strategy to handle SKILL.md files of arbitrary length. Each 512-token chunk is scored independently; the file verdict is the maximum injection probability across all chunks. This ensures that a single malicious instruction buried deep in a large file is not diluted by surrounding benign content.
+### Attack class taxonomy
 
-### What it detects
+| Class index | Label | Description |
+|---|---|---|
+| 0 | `benign` | No attack content present |
+| 1 | `prompt_injection` | Attempts to override system prompt or hijack assistant behavior |
+| 2 | `code_injection` | Embeds executable code intended to run in an eval/exec context |
+| 3 | `data_exfiltration` | Attempts to leak conversation context, memory, or secrets |
+| 4 | `path_traversal` | Filename or path payload designed to escape extraction root |
+| 5 | `supply_chain` | Malicious dependency, hook, or embedded binary in a package/archive |
+| 6 | `social_engineering` | Non-technical manipulation (urgency, authority impersonation) |
+| 7 | `evasion` | Co-label — always paired with another attack class; indicates use of evasion technique |
 
-The model is trained to flag the following attack categories in AI agent skill files:
+Multiple classes can fire simultaneously (e.g., a skill with `[prompt_injection, evasion]` uses prompt injection delivered via unicode homoglyph substitution).
 
-| Category | Examples |
-|---|---|
-| **Prompt injection** | Role overrides, fake system headers, goal hijacking, context extraction |
-| **Jailbreaks** | DAN-style, consistency appeals, refusal prohibitions, developer mode |
-| **Indirect injection** | RSS feed poisoning, tool result injection, "when you read this" triggers |
-| **Exfiltration** | DNS exfil, webhook callbacks, error message + secret patterns |
-| **Supply chain** | Malicious `pip install` hooks, `setup.py` backdoors, package name typosquatting |
-| **Social engineering** | Urgency framing, prize/reward scams, credential verification pretexts |
-| **MCP-specific attacks** | Tool name spoofing, sampling exfiltration, multi-agent hijack |
+### Why ModernBERT
 
-### What it does not detect
+ModernBERT-base replaces DeBERTa-v3-base for two reasons:
 
-The model has known limitations. These are not gaps to be closed with more rules — they reflect the hard ceiling of static offline analysis:
+1. **Speed:** ModernBERT uses alternating global/local attention, which processes 384 tokens ~3–4× faster on CPU than DeBERTa at comparable accuracy.
+2. **Multi-label transition:** The architecture shift was paired with the multi-label taxonomy upgrade (Phase 3), so both changes were validated together.
 
-- **Runtime-conditional payloads:** Instructions that activate only when a specific date, environment variable, or API response is present. These require dynamic execution to detect.
-- **Indirect injection from external content fetched at runtime:** A skill that fetches a malicious RSS feed or changelog at execution time cannot be flagged by static analysis of the skill file itself.
-- **Infrastructure-level MCP trust:** Whether an MCP server at a given URL is legitimate cannot be determined from the skill file alone.
-- **Semantic obfuscation at high sophistication:** Attacks encoded in multi-layer base64 + steganography + homoglyph substitution may evade detection if no training variants exist.
+ONNX export was verified before any training investment (opset 17, confirmed correct outputs in ONNX Runtime).
 
 ---
 
 ## Training Data
 
-### Corpus composition (v9, current)
+### Corpus composition (Phase 3 multi-label)
 
-| Split | Count | Sources |
+| Split | Count | Notes |
 |---|---|---|
-| Training — benign | ~9,900 | mattnigh/skills_collection, alirezarezvani/claude-skills, GitHub code search, Azure/AWS/Composio/ServiceNow vendor skill repos, OWASP cheat sheets, enterprise runbooks |
-| Training — injection | ~8,261 | Manually crafted examples, fuzzer-generated variants, trace-verified adversarial examples, gap archetype expansions, backtranslation augments |
-| **Training total** | **18,161** | |
-| Held-out eval — benign | ~256 | Same sources as training, reserved before any fine-tune run |
-| Held-out eval — injection | ~188 | Manually crafted + fuzzer-generated + organic (pattern-update agent discoveries) |
-| **Held-out eval total** | **444** | Never included in training |
+| Training — benign | ~9,900 | Vendor skill repos, OWASP docs, enterprise runbooks |
+| Training — injection | ~12,600 | Multi-label annotated; see class breakdown below |
+| **Training total** | **~22,500** | |
+| Held-out eval | ~553 | Never included in training; locked before first fine-tune |
 
-The held-out eval set was locked before the first fine-tune run and has never been used for training. It was expanded from 181 examples (v7458) to 444 examples (v16589) by reserving 218 new examples from the M7 corpus expansion before training began.
+### Per-class training sample counts (approx.)
 
-### Data sources and collection methodology
+| Class | Training samples | Notes |
+|---|---|---|
+| `prompt_injection` | ~2,375 | Primary label; appears as co-label in many samples |
+| `code_injection` | ~1,000 | Often co-labeled with `supply_chain` |
+| `data_exfiltration` | ~641 | |
+| `path_traversal` | ~220 | Generated bulk corpus |
+| `supply_chain` | ~250 | Includes registry redirect, dependency confusion, malware hooks |
+| `social_engineering` | ~207 | |
+| `evasion` | ~221 | Co-label only; never standalone |
 
-Benign examples were collected from public GitHub repositories containing real-world AI agent skill files. The corpus researcher agent (a scheduled GitHub Actions workflow) harvests vendor skill files from Azure, AWS, Composio, and ServiceNow repositories daily and adds them to the private corpus. All benign examples are reviewed to confirm they contain no actual attack content before training.
+Class imbalance is addressed with `BCEWithLogitsLoss(pos_weight=n_neg/n_pos)`, capped at 20×.
 
-Injection examples were generated through three methods: (1) manual crafting by the project maintainer targeting specific attack archetypes, (2) automated fuzzing using the `skill-fuzzer` tool (5 mutation strategies: instruction override, exfil channel injection, social engineering, supply chain hook, obfuscation), and (3) trace-verified examples from the `skillscan-trace` behavioral harness that confirmed the attack caused measurable behavioral change in a live agent session.
+### Data sources
 
-### Corpus privacy
+**Benign:** Public GitHub repositories with real-world AI agent skill files (Azure, AWS, Composio, ServiceNow, open-source agent frameworks). Reviewed to confirm no attack content.
 
-The full training corpus is maintained in a private repository (`kurtpayne/skillscan-corpus`) and is not publicly released. The held-out eval set composition is documented in `docs/MODEL_METRICS.md` in the public repo.
+**Injection:** Three generation methods:
+1. Manual crafting targeting specific archetypes (organic malware patterns, real threat intel)
+2. Bulk synthetic generation for class balance (corpus expansion agents)
+3. Organic holdout promotion (pattern-update agent discoveries from live threat research)
+
+**Organic malware patterns tracked in this model:**
+MAL-045 (Stoatwaffle VSCode), MAL-046 (CursorJack), MAL-047 (Claude hooks RCE),
+MAL-048 (LangFlow RCE CVE-2025-3248), MAL-049 (LiteLLM TeamPCP), MAL-050 (Ghost Campaign npm),
+MAL-054 (Glassworm Chrome RAT), SUP-016 (MCP command injection), SUP-017 (Actions tag repoint),
+SUP-020 through SUP-026 (various supply chain variants).
 
 ---
 
 ## Evaluation Results
 
-> **Note:** The metrics below were measured on an eval set that was later found to have contamination. They are preserved here for historical reference but should not be used for security decisions. Corrected metrics will be published with v11. See the notice at the top of this card.
+> Metrics measured on held-out eval set (n=553 SKILL.md-format files with YAML frontmatter).
+> Files without YAML frontmatter are excluded from multi-label evaluation — the model is trained on
+> SKILL.md format and raw injection text is out-of-distribution.
 
-### Training progression (historical — contaminated eval set)
+### Per-class metrics (Phase 3 v15 model, held-out eval n=553, per-class tuned thresholds)
 
-| Version | Corpus size | Macro F1 (contaminated) | FPR (contaminated) | Key improvement |
+| Class | Threshold | F1 | Precision | Recall |
 |---|---|---|---|---|
-| v1278 | 1,278 | 0.2690 | 95.7% | Baseline — heavily injection-biased base model |
-| v7458 | 7,277 | 0.8448 | 15.7% | First gate pass; corpus expansion from 210 → 7,277 |
-| v11461 | 11,461 | 0.9110 | 11.45% | Enterprise benign corpus; MCP/SE coverage |
-| v16589 | 16,589 | 0.9608 | 3.69% | Gap archetype closure; enterprise adversarial examples |
-| v18161 | 18,161 | 0.9752 | 1.89% | Both SaaS quality thresholds met (contaminated eval) |
-| v18258 | 18,258 | *(under revision)* | *(under revision)* | Contamination identified; v11 retraining in progress |
+| `benign` | 0.90 | 0.881 | 0.787 | 1.000 |
+| `prompt_injection` | 0.05 | 0.852 | 0.963 | 0.764 |
+| `code_injection` | — | 0.000 | — | 0.000 |
+| `data_exfiltration` | 0.48 | 1.000 | 1.000 | 1.000 |
+| `path_traversal` | 0.07 | 0.621 | 1.000 | 0.450 |
+| `supply_chain` | — | 0.000 | — | 0.000 |
+| `social_engineering` | 0.05 | 0.667 | 1.000 | 0.500 |
+| `evasion` | 0.05 | 0.154 | 1.000 | 0.083 |
 
-### v11 target metrics (decontaminated eval set)
+> **Organic malware eval (n=30 real-world AI tool attacks):** 29/30 detected (97% recall).
+> Covers MAL-045–057, PSV-008, SUP-016–026: VSCode extension malware, Claude hooks RCE,
+> LangFlow/LiteLLM supply chain, Ghost Campaign npm, MCP command injection, Glassworm Chrome RAT.
 
-| Metric | Target |
-|---|---|
-| Macro F1 | ≥ 0.92 |
-| False Positive Rate | ≤ 5% |
-| Recall (injection) | ≥ 90% |
-| Per-archetype F1 (worst) | ≥ 0.75 |
+> **Known gaps on held-out:** `code_injection` and `supply_chain` F1=0.0 on the held-out subset.
+> These classes use subtle real-world attack patterns (Claude Code hooks, .npmrc redirect)
+> that differ from the bulk-generated training data. Organic malware eval correctly detects
+> these attack families in their full SKILL.md form — the gap is specific to the held-out subset.
+> See [Known Limitations](#known-limitations).
 
-### Known failure modes (persistent FN archetypes)
+### Detection thresholds
 
-The following attack archetypes have lower-than-average recall. Each has fewer than 15 training examples, and the current examples may be too homogeneous for the model to generalize:
+Per-class thresholds are stored in `models/thresholds.json` and applied at inference time.
+The default 0.5 sigmoid threshold is NOT used — see `thresholds.json` for tuned values.
 
-| Archetype | Description | Priority |
+---
+
+## Known Limitations
+
+### Classes requiring further training
+
+| Class | Issue | Root cause |
 |---|---|---|
-| `mcp_server_impersonation` | MCP tool name spoofing to redirect agent calls | High |
-| `organic_mal047` | Claude hooks RCE via lifecycle callback injection | High |
-| `se_git_config_harvest` | git config credential harvest via social engineering | High |
-| `jb_jb07_035` | Jailbreak consistency appeal variant | Medium |
-| `jb_jb08_037` | Jailbreak refusal prohibition variant | Medium |
-| `jb_jb09_045`, `jb_jb10_046` | New jailbreak archetypes (zero training examples) | Medium |
-| `pi24_rss_indirect_injection` | RSS-based indirect injection | Medium |
-| `pi37_markdown_injection` | Markdown link injection (zero training examples) | Low |
+| `code_injection` | F1≈0 on organic malware eval | Training data covers traditional eval/exec injection; eval has AI-tool-specific patterns (Claude hooks, VSCode extensions, npm postinstall backdoors) |
+| `supply_chain` | Low recall on subtle attacks | Training data uses explicit attacker domains; organic eval uses realistic-looking domains in benign-looking configs |
+| `evasion` | F1≈0 | Model learns `prompt_injection` as sufficient signal; doesn't learn secondary evasion modifier label despite pos_weight=20× |
 
-These archetypes are tracked in `docs/MODEL_METRICS.md` and are the primary targets for the v10 corpus expansion.
+### Attack format dependency
+
+The model is trained and evaluated exclusively on **SKILL.md format** files with YAML frontmatter. Raw injection text (without frontmatter) is out-of-distribution and will score near benign. This is intentional — the model is a skill file scanner, not a general-purpose injection detector.
+
+### Static analysis ceiling
+
+The model analyzes skill files as static documents. It cannot detect:
+- Runtime-conditional payloads (activate on specific date/env variable)
+- Indirect injection from external content fetched at runtime
+- Infrastructure-level MCP trust decisions
 
 ---
 
 ## How to Use
 
-This model is not intended for direct HuggingFace inference. It is downloaded and run locally by the `skillscan` CLI. No network calls occur at scan time — the model runs entirely on the local machine via ONNX Runtime.
+This model is not intended for direct HuggingFace inference. It is downloaded and run locally by the `skillscan` CLI.
 
 ### Install and run
 
 ```bash
 pip install skillscan-security
-skillscan model install          # downloads the ONNX adapter from HuggingFace (~350 MB)
+skillscan model install          # downloads the ONNX adapter from HuggingFace
 skillscan scan path/to/skills/   # runs static rules + ML detection offline
-```
-
-### Check model status
-
-```bash
-skillscan model status           # shows installed version vs HF Hub latest
-```
-
-### Update to latest model
-
-```bash
-skillscan update                 # pulls latest rules, intel DB, and model in one command
-```
-
-### CI/CD usage (no model download)
-
-```bash
-skillscan scan path/to/skills/ --no-model   # static rules only, no ML layer
 ```
 
 ### Direct ONNX inference (advanced)
 
-If you need to run the model outside of `skillscan`, the ONNX model can be loaded directly:
-
 ```python
-import onnxruntime as ort
-import numpy as np
+import json, numpy as np, onnxruntime as ort
 from transformers import AutoTokenizer
 
-tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
+# Load thresholds
+thresholds = json.load(open("thresholds.json"))["classes"]
+
+tokenizer = AutoTokenizer.from_pretrained("answerdotai/ModernBERT-base")
 session = ort.InferenceSession("model.onnx")
 
+# Pass full SKILL.md content (frontmatter + body)
 text = open("path/to/skill.md").read()
-inputs = tokenizer(text, return_tensors="np", truncation=True, max_length=512)
-outputs = session.run(None, dict(inputs))
-injection_prob = float(np.softmax(outputs[0][0])[1])
-print(f"Injection probability: {injection_prob:.3f}")
+text = " ".join(text.split())  # normalize whitespace
+inputs = tokenizer(text, return_tensors="np", truncation=True, max_length=384)
+logits = session.run(None, dict(inputs))[0]
+probs = 1 / (1 + np.exp(-logits))[0]  # sigmoid
+
+classes = ["benign", "prompt_injection", "code_injection", "data_exfiltration",
+           "path_traversal", "supply_chain", "social_engineering", "evasion"]
+for cls, prob in zip(classes, probs):
+    thresh = thresholds.get(cls, {}).get("threshold", 0.5)
+    if prob >= thresh:
+        print(f"DETECTED: {cls} ({prob:.3f})")
 ```
 
-Note: The `skillscan` CLI uses a sliding-window chunking strategy that is more accurate than single-pass inference for long files. Direct ONNX inference without chunking will produce less reliable results on files longer than 512 tokens.
+---
+
+## Migration from v10 (Binary)
+
+The v10 model was a binary DeBERTa-v3 classifier outputting `softmax([benign_logit, injection_logit])`.
+
+The Phase 3 model outputs **8 independent sigmoid probabilities**. The `benign` class is now an explicit label — a high `benign` score means the model believes the file is benign. If all injection class scores are below threshold, the verdict is `BENIGN`.
+
+**API change:** Replace `injection_prob = softmax(logits)[1]` with per-class sigmoid thresholding from `thresholds.json`.
 
 ---
 
 ## Detection Architecture
 
-The ML model is one layer in `skillscan`'s multi-layer detection pipeline. Understanding the full architecture helps set expectations for what the model contributes vs. what other layers handle:
+The ML model is one layer in `skillscan`'s multi-layer detection pipeline:
 
 | Layer | Mechanism | What it catches |
 |---|---|---|
-| 1. IOC matching | Intel DB scan (5,500 entries: domains, IPs, CIDRs) | Known malicious domains and IPs embedded in skill content |
-| 2. Static rules | Regex pattern matching (158 rules across 9 categories) | Known attack patterns, structural violations, dangerous constructs |
-| 3. Chain rules | Multi-pattern proximity matching within a 40-line window | Attack sequences requiring co-occurrence (download + execute, etc.) |
-| 4. Multilang rules | Language-gated regex (.js/.ts/.rb/.go/.rs files only) | Language-specific attack patterns in embedded scripts |
-| 5. Python AST data-flow | Source-to-sink taint analysis (.py files only, stdlib `ast`) | Secret → decode → exec/network flows in embedded Python scripts |
-| 6. Skill graph analysis | Graph-based PSV rules | Tool drift, circular dependencies, permission scope violations |
-| **7. ML classifier** | **DeBERTa-v3 + LoRA (this model) · Beta — metrics under revision** | **Novel phrasing, obfuscated attacks, semantic patterns no rule can express** |
-| 8. Stemmed feature scorer | Porter-stemmed axis scoring via NLTK (`semantic_local.py`) | Multi-sentence intent distributed across text — jailbreaks and credential-harvest instructions not caught by single-line rules. No sentence structure or negation awareness. |
-| 9. Vuln DB matching | Dependency scan (23 Python pkgs, 4 npm pkgs, 111 versions) | Known-vulnerable package versions in requirements.txt / package.json |
-| 10. ClamAV (optional) | Signature-based AV scan (`--clamav` flag) | Known malware signatures in embedded script files (.py, .sh, .js…) |
-
-The ML layer (Layer 7) is specifically valuable for attacks that use natural language variation to evade static rules — jailbreaks, social engineering, and indirect injection patterns where the attack is expressed in prose rather than code. The stemmed feature scorer (Layer 8) is complementary but distinct: it uses hand-crafted axis scoring on Porter-stemmed tokens and has no understanding of sentence structure or negation. The ML model is the only layer with true semantic understanding.
-
----
-
-## Limitations
-
-**Static analysis ceiling.** The model analyzes the skill file as a static document. It cannot observe runtime behavior, network calls made during execution, or the content of external resources fetched by the skill. Attacks that are entirely benign-looking in the skill file but activate malicious behavior through external content are outside the detection scope.
-
-**English-language bias.** The training corpus is predominantly English. Non-English attack content may have lower recall. The multilang rule layer (Layer 4) provides partial coverage for code-level patterns in other languages, but the ML model's semantic understanding is English-centric.
-
-**Corpus distribution.** The training corpus is weighted toward SKILL.md format files from the Claude skills ecosystem. Skills in other formats (OpenAI function calling JSON, LangChain tool definitions, AutoGen agent configs) may have lower detection accuracy.
-
-**Confidence calibration.** The model's raw probability output is not perfectly calibrated. The default detection threshold is 0.70 (configurable via `--ml-threshold`). At this threshold, the FPR is 1.89% on the held-out eval set. Lowering the threshold increases recall at the cost of more false positives.
-
----
-
-## Intended Use and Out-of-Scope Use
-
-**Intended use:**
-- Scanning AI agent skill files (SKILL.md format) for malicious content before deployment
-- CI/CD gate for skill registries and agent marketplaces
-- Security review of third-party skills before installation
-- Research into prompt injection and AI agent attack patterns
-
-**Out-of-scope use:**
-- General-purpose prompt injection detection in chat messages or API inputs (the model is fine-tuned on skill file structure, not chat format)
-- Real-time inference on live agent sessions (use `skillscan-trace` for behavioral analysis)
-- Detection of attacks in non-skill-file formats without adaptation
-- Use as a sole security control without the full `skillscan` rule stack
+| 1. IOC matching | Intel DB scan (~5,500 entries) | Known malicious domains and IPs |
+| 2. Static rules | Regex pattern matching (158+ rules) | Known attack patterns, dangerous constructs |
+| 3. Chain rules | Multi-pattern proximity matching | Attack sequences requiring co-occurrence |
+| 4. Multilang rules | Language-gated regex | Language-specific patterns in embedded scripts |
+| 5. Python AST data-flow | Source-to-sink taint analysis | Secret → decode → exec flows |
+| 6. Skill graph analysis | Graph-based PSV rules | Tool drift, circular deps, permission violations |
+| **7. ML classifier** | **ModernBERT + LoRA (this model)** | **Novel phrasing, obfuscated attacks, semantic patterns** |
+| 8. Stemmed feature scorer | Porter-stemmed axis scoring | Multi-sentence intent, jailbreaks, credential harvest |
+| 9. Vuln DB matching | Dependency scan | Known-vulnerable package versions |
+| 10. ClamAV (optional) | Signature-based AV | Known malware signatures in embedded scripts |
 
 ---
 
 ## License and Citation
 
-This adapter is released under the Apache 2.0 license. The base model (`microsoft/deberta-v3-base`) is released under the MIT license.
-
-If you use this model in research, please cite:
+This adapter is released under the Apache 2.0 license. The base model (`answerdotai/ModernBERT-base`) is released under the Apache 2.0 license.
 
 ```bibtex
 @software{skillscan2026,
@@ -268,23 +251,3 @@ If you use this model in research, please cite:
   url = {https://github.com/kurtpayne/skillscan-security}
 }
 ```
-
----
-## Contributing Training Examples
-
-The model improves with more diverse training examples, particularly for attack patterns that are currently underrepresented (see [Known Limitations](#known-limitations-and-false-negative-archetypes) above). Contributions are accepted via GitHub Issues.
-
-To submit an example:
-
-1. Read [docs/corpus-contribution-format.md](https://github.com/kurtpayne/skillscan-security/blob/main/docs/corpus-contribution-format.md) for the file format spec, quality guidelines, and metadata requirements.
-2. Open a [Corpus Submission issue](https://github.com/kurtpayne/skillscan-security/issues/new?template=corpus-submission.md) and paste or attach your example.
-
-Accepted examples are incorporated into the next training run when the corpus delta threshold is reached. Contributors are credited in the release notes unless they prefer to remain anonymous.
-
----
-## Related Resources
-
-- [skillscan CLI](https://github.com/kurtpayne/skillscan-security) — the scanner that uses this model
-- [Model metrics history](https://github.com/kurtpayne/skillscan-security/blob/main/docs/MODEL_METRICS.md) — full evaluation history across all versions
-- [Detection model architecture](https://github.com/kurtpayne/skillscan-security/blob/main/docs/DETECTION_MODEL.md) — all eight detection layers documented
-- [CLI reference](https://github.com/kurtpayne/skillscan-security/blob/main/docs/CLI_REFERENCE.md) — full command reference

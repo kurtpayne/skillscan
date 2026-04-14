@@ -72,20 +72,37 @@ from skillscan.suppressions import (
 # App / sub-app declarations
 # ---------------------------------------------------------------------------
 
-app = typer.Typer(help="SkillScan: standalone AI skill security analyzer")
-policy_app = typer.Typer(help="Policy profile operations")
-intel_app = typer.Typer(help="Intel source management")
-rule_app = typer.Typer(help="Rule metadata and query operations")
+_help_names = {"help_option_names": ["-h", "--help"]}
+
+app = typer.Typer(help="SkillScan: standalone AI skill security analyzer", context_settings=_help_names)
+policy_app = typer.Typer(help="Policy profile operations", context_settings=_help_names)
+intel_app = typer.Typer(help="Intel source management", context_settings=_help_names)
+rule_app = typer.Typer(help="Rule metadata and query operations", context_settings=_help_names)
 # corpus_app is intentionally NOT registered with app — internal use only
-corpus_app = typer.Typer(help="Training corpus management (internal)")
-model_app = typer.Typer(help="ML model management")
-suppress_app = typer.Typer(help="Suppression file management")
+corpus_app = typer.Typer(help="Training corpus management (internal)", context_settings=_help_names)
+model_app = typer.Typer(help="ML model management", context_settings=_help_names)
+suppress_app = typer.Typer(help="Suppression file management", context_settings=_help_names)
 
 app.add_typer(policy_app, name="policy")
 app.add_typer(intel_app, name="intel")
 app.add_typer(rule_app, name="rule")
 app.add_typer(model_app, name="model")
 app.add_typer(suppress_app, name="suppress")
+
+
+@app.callback(invoke_without_command=True)
+def _main_callback(
+    ctx: typer.Context,
+    version: bool = typer.Option(False, "--version", "-V", help="Show version and exit"),
+) -> None:
+    """SkillScan: standalone AI skill security analyzer."""
+    if version:
+        typer.echo(f"skillscan {__version__}")
+        raise typer.Exit()
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+
 
 # Register commands from submodules
 from skillscan.commands.online_trace import register as _register_online_trace
@@ -169,7 +186,7 @@ def _load_dotenv(path: Path = Path(".env")) -> None:
 
 def _finding_key(finding: dict) -> tuple[str, str, int | None]:
     return (
-        finding.get("id", ""),
+        finding.get("rule_id", finding.get("id", "")),
         finding.get("evidence_path", ""),
         finding.get("line"),
     )
@@ -404,11 +421,6 @@ def scan_cmd(
         "--url-same-origin-only/--no-url-same-origin-only",
         help="Only follow links on same origin as root URL target",
     ),
-    rulepack_channel: str = typer.Option(
-        "stable",
-        "--rulepack-channel",
-        help="Rulepack channel: stable|preview|labs",
-    ),
     # Suppression options
     no_suppress: bool = typer.Option(
         False,
@@ -512,7 +524,7 @@ def scan_cmd(
         0,
         "--timeout",
         envvar="SKILLSCAN_TIMEOUT",
-        help="Abort the entire scan after this many seconds (0 = no timeout).",
+        help="Seconds before aborting (0 = no limit, default: 0).",
     ),
     debug: bool = typer.Option(
         False,
@@ -597,6 +609,15 @@ def scan_cmd(
         if age is not None and age > threshold:
             err_console.print(f"[yellow]⚠  Rules are {age:.0f} days old. Run: skillscan update[/yellow]")
 
+    # --- Mutual exclusivity: --policy vs --policy-profile ---
+    if policy_file and policy_profile != "strict":
+        # "strict" is the default, so a non-default value means the user explicitly set it
+        typer.echo(
+            "Cannot use both --policy (file) and --policy-profile. Use one or the other.",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+
     # --- Validation ---
     if policy_profile not in BUILTIN_PROFILES:
         console.print(
@@ -616,11 +637,14 @@ def scan_cmd(
     if url_max_links < 0:
         console.print("[bold red]Invalid --url-max-links:[/] expected >= 0")
         raise typer.Exit(2)
-    if rulepack_channel not in {"stable", "preview", "labs"}:
-        console.print("[bold red]Invalid --rulepack-channel:[/] expected stable, preview, or labs")
-        raise typer.Exit(2)
     if clamav_timeout_seconds < 1:
         console.print("[bold red]Invalid --clamav-timeout-seconds:[/] expected >= 1")
+        raise typer.Exit(2)
+    if timeout < 0:
+        console.print("[bold red]Invalid --timeout:[/] expected >= 0 (0 = no limit)")
+        raise typer.Exit(2)
+    if max_file_size < 0:
+        console.print("[bold red]Invalid --max-file-size:[/] expected >= 0 (0 = no limit)")
         raise typer.Exit(2)
     if delta_format not in {"text", "json"}:
         console.print("[bold red]Invalid --delta-format:[/] expected text or json")
@@ -670,6 +694,21 @@ def scan_cmd(
     if rules_result.updated and not _machine_format:
         console.print(f"[dim]rules refresh updated={len(rules_result.updated)}[/dim]")
 
+    # --- Warn when scanning non-skill files ---
+    if not target.startswith(("http://", "https://")):
+        _target_path = Path(target)
+        if _target_path.is_file() and _target_path.suffix == ".md" and _target_path.name != "SKILL.md":
+            try:
+                _first_line = _target_path.read_text(encoding="utf-8").lstrip()[:4]
+                if not _first_line.startswith("---"):
+                    typer.echo(
+                        f"Warning: {_target_path.name} does not appear to be a skill file "
+                        "(no YAML frontmatter). Scanning anyway.",
+                        err=True,
+                    )
+            except OSError:
+                pass
+
     # --- Graph scan auto-enable ---
     _resolved_target = Path(target) if not target.startswith(("http://", "https://")) else None
     effective_graph_scan: bool
@@ -693,7 +732,7 @@ def scan_cmd(
                     clamav=clamav,
                     clamav_timeout_seconds=clamav_timeout_seconds,
                     ml_detect=ml_detect,
-                    rulepack_channel=rulepack_channel,
+                    rulepack_channel="stable",
                     graph_scan=effective_graph_scan,
                     max_file_size_bytes=_max_file_size_bytes,
                     file_timeout_seconds=timeout,
@@ -721,7 +760,7 @@ def scan_cmd(
                 clamav=clamav,
                 clamav_timeout_seconds=clamav_timeout_seconds,
                 ml_detect=ml_detect,
-                rulepack_channel=rulepack_channel,
+                rulepack_channel="stable",
                 graph_scan=effective_graph_scan,
                 max_file_size_bytes=_max_file_size_bytes,
                 file_timeout_seconds=_file_timeout,
@@ -768,7 +807,11 @@ def scan_cmd(
             console.print(f"[dim]expired suppression ids: {expired_ids}[/dim]")
 
     # --- Baseline delta ---
-    report_dict = report.model_dump(mode="json")
+    report_dict = report.model_dump(
+        mode="json",
+        by_alias=True,
+        exclude={"findings": {"__all__": {"mitigation"}}},
+    )
     delta_payload: dict | None = None
     if baseline is not None:
         baseline_data = json.loads(baseline.read_text(encoding="utf-8"))
@@ -874,13 +917,21 @@ def scan_cmd(
 @app.command("explain")
 def explain_cmd(report: Path = typer.Argument(..., exists=True, readable=True)) -> None:
     """Show detailed explanation for findings in a scan report JSON."""
-    data = json.loads(report.read_text(encoding="utf-8"))
+    try:
+        data = json.loads(report.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        console.print("Invalid report file: expected JSON format.")
+        raise typer.Exit(1)
     # Strip provenance meta block if present (M10.7 format)
-    if "findings" not in data and "report" in data:
-        data = data["report"]
-    from skillscan.models import ScanReport
+    try:
+        if "findings" not in data and "report" in data:
+            data = data["report"]
+        from skillscan.models import ScanReport
 
-    render_report(ScanReport.model_validate(data), console=console)
+        render_report(ScanReport.model_validate(data), console=console)
+    except (KeyError, TypeError, ValueError) as exc:
+        console.print(f"Invalid report file: expected JSON format. ({exc})")
+        raise typer.Exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -1109,20 +1160,16 @@ def uninstall(
 
 @rule_app.command("list")
 def rule_list(
-    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
     format: str = typer.Option("text", "--format", help="Output format: text|json"),
     technique: str | None = typer.Option(None, "--technique", help="Filter by technique id"),
     tag: str | None = typer.Option(None, "--tag", help="Filter by rule metadata tag"),
 ) -> None:
     """List all loaded rules with ID, severity, and description."""
-    if channel not in {"stable", "preview", "labs"}:
-        console.print("[bold red]Invalid --channel:[/] expected stable, preview, or labs")
-        raise typer.Exit(2)
     if format not in {"text", "json"}:
         console.print("[bold red]Invalid --format:[/] expected text or json")
         raise typer.Exit(2)
 
-    rp = load_builtin_rulepack(channel=channel)
+    rp = load_builtin_rulepack(channel="stable")
     rows: list[dict[str, object]] = []
     for r in rp.static_rules:
         md = getattr(r, "metadata", None)
@@ -1177,27 +1224,50 @@ def rule_status() -> None:
         console.print(f"User-local version    : {user_version} ({USER_RULES_DIR})")
     else:
         console.print("User-local rules      : not synced (run 'skillscan update')")
-    total = len(rp.static_rules)
-    console.print(f"Total static rules    : {total}")
+    n_static = len(rp.static_rules)
+    n_chain = len(rp.chain_rules)
+    console.print(f"Total static rules    : {n_static}")
+    console.print(f"Total chain rules     : {n_chain}")
+    console.print(f"Total rules           : {n_static + n_chain}")
 
 
 @rule_app.command("show")
 def rule_show(
     rule_id: str = typer.Argument(..., help="Rule ID to show (e.g. PINJ-009)"),
-    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
     format: str = typer.Option("text", "--format", help="Output format: text|json"),
 ) -> None:
     """Show full metadata for a specific rule."""
-    if channel not in {"stable", "preview", "labs"}:
-        console.print("[bold red]Invalid --channel:[/] expected stable, preview, or labs")
-        raise typer.Exit(2)
-
-    rp = load_builtin_rulepack(channel=channel)
+    rp = load_builtin_rulepack(channel="stable")
     rule = next((r for r in rp.static_rules if r.id == rule_id), None)
-    if rule is None:
+    chain_rule = next((r for r in rp.chain_rules if r.id == rule_id), None)
+
+    if rule is None and chain_rule is None:
         console.print(f"[bold red]Rule not found:[/] {rule_id}")
         raise typer.Exit(2)
 
+    if chain_rule is not None and rule is None:
+        # Show chain rule
+        data = {
+            "id": chain_rule.id,
+            "title": chain_rule.title,
+            "severity": chain_rule.severity.value,
+            "category": chain_rule.category,
+            "type": "chain",
+            "all_of": sorted(chain_rule.all_of),
+            "window_lines": chain_rule.window_lines,
+        }
+        if format == "json":
+            console.print_json(json.dumps(data, indent=2))
+            return
+        console.print(f"[bold]{chain_rule.id}[/bold] [{chain_rule.severity.value}] {chain_rule.title}")
+        console.print("  Type       : chain")
+        console.print(f"  Category   : {chain_rule.category}")
+        console.print(f"  Actions    : {', '.join(sorted(chain_rule.all_of))}")
+        if chain_rule.window_lines is not None:
+            console.print(f"  Window     : {chain_rule.window_lines} lines")
+        return
+
+    assert rule is not None  # noqa: S101
     md = getattr(rule, "metadata", None)
     data = {
         "id": rule.id,
@@ -1282,7 +1352,6 @@ def rule_test(
 
 @rule_app.command("validate")
 def rule_validate(
-    channel: str = typer.Option("stable", "--channel", help="Rulepack channel: stable|preview|labs"),
     rule_file: Path | None = typer.Option(
         None,
         "--file",
@@ -1326,7 +1395,7 @@ def rule_validate(
         action_pattern_keys = set(rp.action_patterns.keys())
         action_pattern_values = rp.action_patterns
     else:
-        rp = load_builtin_rulepack(channel=channel)
+        rp = load_builtin_rulepack(channel="stable")
         all_static = rp.static_rules
         all_chain = rp.chain_rules
         action_pattern_keys = set(rp.action_patterns.keys())
@@ -1374,9 +1443,12 @@ def rule_validate(
             errors.append(f"Rule {r.id}: empty pattern (and not a graph rule)")
 
     # --- Report ---
-    total_rules = len(all_static) + len(all_chain)
+    n_static = len(all_static)
+    n_chain = len(all_chain)
+    total_rules = n_static + n_chain
+    breakdown = f"{total_rules} rules ({n_static} static + {n_chain} chain)"
     if errors:
-        console.print(f"[bold red]Validation FAILED[/] — {len(errors)} error(s) in {total_rules} rules:\n")
+        console.print(f"[bold red]Validation FAILED[/] — {len(errors)} error(s) in {breakdown}:\n")
         for e in errors:
             console.print(f"  [red]ERROR:[/] {e}")
         if warnings:
@@ -1385,13 +1457,11 @@ def rule_validate(
         raise typer.Exit(1)
 
     if warnings:
-        console.print(
-            f"[yellow]Validation passed with {len(warnings)} warning(s)[/] ({total_rules} rules):\n"
-        )
+        console.print(f"[yellow]Validation passed with {len(warnings)} warning(s)[/] ({breakdown}):\n")
         for w in warnings:
             console.print(f"  [yellow]WARN:[/] {w}")
     else:
-        console.print(f"[green]All {total_rules} rules valid.[/green] No errors, no warnings.")
+        console.print(f"[green]All {breakdown} valid.[/green] No errors, no warnings.")
 
 
 # ---------------------------------------------------------------------------
@@ -1446,7 +1516,16 @@ def show_default(profile: str = typer.Option("strict", "--profile")) -> None:
 @policy_app.command("validate")
 def validate(path: Path = typer.Argument(..., exists=True, readable=True)) -> None:
     """Validate a custom policy file."""
-    policy = load_policy_file(path)
+    import yaml
+
+    try:
+        policy = load_policy_file(path)
+    except yaml.YAMLError as exc:
+        typer.echo(f"Invalid YAML: {exc}", err=True)
+        raise typer.Exit(code=1)
+    except Exception as exc:
+        typer.echo(f"Invalid policy file: {exc}", err=True)
+        raise typer.Exit(code=1)
     console.print(f"[green]Valid policy:[/] {policy_summary(policy)}")
 
 
@@ -1590,6 +1669,7 @@ def intel_remove(name: str = typer.Argument(...)) -> None:
 def intel_enable(name: str = typer.Argument(...)) -> None:
     """Enable a disabled intel source."""
     if not set_enabled(name, True):
+        console.print(f"[bold red]Source not found:[/] {name}")
         raise typer.Exit(1)
     console.print(f"Enabled: {name}")
 
@@ -1598,8 +1678,26 @@ def intel_enable(name: str = typer.Argument(...)) -> None:
 def intel_disable(name: str = typer.Argument(...)) -> None:
     """Disable an intel source without removing it."""
     if not set_enabled(name, False):
+        console.print(f"[bold red]Source not found:[/] {name}")
         raise typer.Exit(1)
     console.print(f"Disabled: {name}")
+
+
+def _indicator_matches(query: str, entry_str: str) -> bool:
+    """Check if *query* matches *entry_str* (both already lowered).
+
+    - IP addresses (contains a digit and no alpha after last dot): exact match.
+    - Domains / everything else: suffix match — entry must equal query or end
+      with ".<query>" so that ``google.com`` matches ``evil.google.com`` but
+      NOT ``notgoogle.com``.
+    """
+    import re
+
+    _is_ip = bool(re.match(r"^[\d.:]+$", query))
+    if _is_ip:
+        return entry_str == query
+    # Suffix / domain match
+    return entry_str == query or entry_str.endswith("." + query)
 
 
 @intel_app.command("lookup")
@@ -1614,6 +1712,7 @@ def intel_lookup(
 
     store = load_store()
     found = False
+    query_lower = indicator.lower()
 
     for source in store.sources:
         if not source.enabled:
@@ -1633,7 +1732,7 @@ def intel_lookup(
                     continue
                 for entry in entries:
                     entry_str = str(entry).lower()
-                    if indicator.lower() in entry_str or entry_str in indicator.lower():
+                    if _indicator_matches(query_lower, entry_str):
                         console.print(
                             f"[green]Match found[/green] in [bold]{source.name}[/bold] "
                             f"({source.kind}) — category: {category}"
@@ -1645,7 +1744,7 @@ def intel_lookup(
         elif isinstance(data, list):
             for entry in data:
                 entry_str = str(entry).lower()
-                if indicator.lower() in entry_str or entry_str in indicator.lower():
+                if _indicator_matches(query_lower, entry_str):
                     console.print(f"[green]Match found[/green] in [bold]{source.name}[/bold] ({source.kind})")
                     console.print(f"  Indicator : {indicator}")
                     console.print(f"  Matched   : {entry}")
@@ -1969,7 +2068,10 @@ def lint_cmd(ctx: typer.Context) -> None:
             "Install it with: [bold]pip install skillscan-lint[/bold]"
         )
         raise typer.Exit(1)
-    result = subprocess.run([lint_bin] + ctx.args)
+    # skillscan-lint requires the 'scan' subcommand; insert it so
+    # `skillscan lint <path>` maps to `skillscan-lint scan <path>`.
+    args = ["scan"] + ctx.args
+    result = subprocess.run([lint_bin] + args)
     raise typer.Exit(result.returncode)
 
 
@@ -1978,7 +2080,12 @@ def lint_cmd(ctx: typer.Context) -> None:
 # ---------------------------------------------------------------------------
 @app.command(
     "trace",
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+    context_settings={
+        "allow_extra_args": True,
+        "ignore_unknown_options": True,
+        "allow_interspersed_args": False,
+    },
+    add_help_option=False,
 )
 def trace_cmd(ctx: typer.Context) -> None:
     """Behavioral tracer for AI agent skill files.
