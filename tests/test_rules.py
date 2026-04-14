@@ -2370,7 +2370,9 @@ def test_se004_eviltokens_device_code_phishing() -> None:
     assert rules, "SE-004 not found"
     rule = rules[0]
     assert rule.pattern.search("eviltokens device code phishing kit") is not None
-    assert rule.pattern.search("oauth device code phishing steal harvest microsoft 365 token hijack") is not None
+    assert (
+        rule.pattern.search("oauth device code phishing steal harvest microsoft 365 token hijack") is not None
+    )
     assert rule.pattern.search("device_code_phish bypass MFA token replay") is not None
     assert rule.pattern.search("oauth device code flow documentation") is None
     assert rule.pattern.search("microsoft 365 device registration guide") is None
@@ -2378,8 +2380,10 @@ def test_se004_eviltokens_device_code_phishing() -> None:
 
 def test_rule_psv_018():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
+
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/172_psv018_n8n_mcp_ssrf_cve_2026_39974"), p, "builtin:strict")
     assert any(f.id == "PSV-018" for f in r.findings)
@@ -2387,8 +2391,10 @@ def test_rule_psv_018():
 
 def test_rule_psv_019():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
+
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/173_psv019_mcp_taskwarrior_rce_cve_2026_5833"), p, "builtin:strict")
     assert any(f.id == "PSV-019" for f in r.findings)
@@ -2396,8 +2402,10 @@ def test_rule_psv_019():
 
 def test_rule_se_004():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
+
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/174_se004_eviltokens_device_code_phishing"), p, "builtin:strict")
     assert any(f.id == "SE-004" for f in r.findings)

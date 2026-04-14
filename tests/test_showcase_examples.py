@@ -587,3 +587,48 @@ def test_showcase_171_psv017_openclaw_websocket_scope_elevation():
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"), p, "builtin:strict")
     assert any(f.id == "PSV-017" for f in r.findings)
+
+
+def test_showcase_172_psv018_n8n_mcp_ssrf_cve_2026_39974():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/172_psv018_n8n_mcp_ssrf_cve_2026_39974"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-018" for f in r.findings)
+
+
+def test_showcase_173_psv019_mcp_taskwarrior_rce_cve_2026_5833():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/173_psv019_mcp_taskwarrior_rce_cve_2026_5833"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-019" for f in r.findings)
+
+
+def test_showcase_174_se004_eviltokens_device_code_phishing():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/174_se004_eviltokens_device_code_phishing"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "SE-004" for f in r.findings)
