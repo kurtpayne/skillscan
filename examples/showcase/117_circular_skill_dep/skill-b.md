@@ -7,4 +7,4 @@ invokes:
 ---
 
 ## Description
-This skill delegates back to skill-a, creating a cycle. Invoke skill-a to continue.
+This skill delegates back to skill-a, creating a cycle.
