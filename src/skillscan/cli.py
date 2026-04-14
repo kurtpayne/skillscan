@@ -105,7 +105,7 @@ def _main_callback(
 
 
 # Register commands from submodules
-from datetime import UTC
+from datetime import UTC  # noqa: E402
 
 from skillscan.commands.online_trace import register as _register_online_trace  # noqa: E402
 
