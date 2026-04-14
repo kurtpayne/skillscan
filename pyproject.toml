@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "skillscan-security"
@@ -78,14 +78,8 @@ model-quality = [
 skillscan-security = "skillscan.cli:app"
 skillscan = "skillscan.cli:app"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-skillscan = ["data/policies/*.yaml", "data/intel/*.json", "data/rules/*.yaml", "data/skill-schema.yaml"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/skillscan"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
