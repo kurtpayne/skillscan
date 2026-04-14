@@ -1,3 +1,20 @@
+## 2026-04-14
+rulepack: 2026.04.14.1
+Three new detection rules, IOC enrichment, and vuln DB updates covering an n8n-MCP SSRF vulnerability, a mcp-server-taskwarrior command injection RCE, and the EvilTokens OAuth device code phishing campaign.
+- Added `PSV-018` (high): **n8n-MCP Server SSRF via multi-tenant HTTP header (CVE-2026-39974, < 2.47.4)** — CVE-2026-39974 is a Server-Side Request Forgery (SSRF) vulnerability in the multi-tenant HTTP mode of n8n-MCP prior to version 2.47.4. An authenticated attacker holding a valid AUTH_TOKEN can inject arbitrary URLs through multi-tenant HTTP headers, causing the server to fetch and return those URLs via JSON-RPC. This enables cloud metadata harvesting (AWS IMDS, GCP, Azure), internal service discovery, and data exfiltration. Update n8n-MCP to version 2.47.4 or later.
+- Added `PSV-019` (critical): **mcp-server-taskwarrior command injection RCE (CVE-2026-5833, awwaiid <= 1.0.1)** — CVE-2026-5833 is a command injection vulnerability in awwaiid mcp-server-taskwarrior up to version 1.0.1 that enables remote code execution through local exploitation. Unsanitized input reaches shell command execution paths in the MCP server. Update to a patched version or remove the vulnerable MCP server from your configuration.
+- Added `SE-004` (high): **EvilTokens OAuth device code phishing (PhaaS, Microsoft 365 token hijack)** — EvilTokens is a widespread phishing-as-a-service (PhaaS) campaign that exploits the OAuth 2.0 device code authentication flow to compromise Microsoft 365 organizational accounts at scale. Attackers send hyper-personalized AI-generated lures (RFPs, invoices) directing victims to authenticate device codes for attacker-controlled devices. This bypasses MFA and standard access controls, yielding persistent refresh tokens. Disable device code flow in Entra ID Conditional Access policies unless strictly required.
+- IOC update: added `eviltokens.io`, `eviltokens.net`, and `eviltokens-phishing.com` to domain IOC DB.
+- Vuln DB update: added `n8n-mcp` (CVE-2026-39974, high, fixed 2.47.4) and `mcp-server-taskwarrior` (CVE-2026-5833, critical, fixed 1.0.2) to vuln DB.
+Sources:
+- NVD (CVE-2026-39974): https://nvd.nist.gov/vuln/detail/CVE-2026-39974
+- SentinelOne (CVE-2026-39974): https://www.sentinelone.com/vulnerability-database/cve-2026-39974/
+- NVD (CVE-2026-5833): https://nvd.nist.gov/vuln/detail/CVE-2026-5833
+- SentinelOne (CVE-2026-5833): https://www.sentinelone.com/vulnerability-database/cve-2026-5833/
+- Microsoft Security Blog (EvilTokens / device code phishing): https://www.microsoft.com/en-us/security/blog/2026/04/06/ai-enabled-device-code-phishing-campaign-april-2026/
+- Sekoia (EvilTokens): https://blog.sekoia.io/new-widespread-eviltokens-kit-device-code-phishing-as-a-service-part-1/
+- Abnormal Security (EvilTokens): https://abnormal.ai/blog/eviltokens-oauth-device-codes-bec-operations
+- The Hacker News (device code phishing): https://thehackernews.com/2026/03/device-code-phishing-hits-340-microsoft.html
 ## 2026-04-13
 rulepack: 2026.04.13.1
 Three new detection rules and vuln DB updates covering two new MCP ecosystem DNS rebinding vulnerabilities and a critical OpenClaw WebSocket authorization bypass.

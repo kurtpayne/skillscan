@@ -1498,5 +1498,27 @@
         "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
       }
     }
+  },
+  "n8n-mcp": {
+    "CVE-2026-39974": {
+      "id": "CVE-2026-39974",
+      "severity": "high",
+      "fixed": "2.47.4",
+      "summary": "Server-Side Request Forgery (SSRF) in n8n-MCP multi-tenant HTTP mode (CVE-2026-39974). Authenticated attackers can inject arbitrary URLs via multi-tenant HTTP headers, enabling cloud metadata harvesting (AWS IMDS, GCP, Azure) and internal service discovery.",
+      "source": "https://nvd.nist.gov/vuln/detail/CVE-2026-39974",
+      "added": "2026-04-14",
+      "rule_id": "PSV-018"
+    }
+  },
+  "mcp-server-taskwarrior": {
+    "CVE-2026-5833": {
+      "id": "CVE-2026-5833",
+      "severity": "critical",
+      "fixed": "1.0.2",
+      "summary": "Command injection vulnerability in awwaiid mcp-server-taskwarrior up to version 1.0.1 enabling remote code execution through local exploitation.",
+      "source": "https://nvd.nist.gov/vuln/detail/CVE-2026-5833",
+      "added": "2026-04-14",
+      "rule_id": "PSV-019"
+    }
   }
 }

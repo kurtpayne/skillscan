@@ -1,4 +1,4 @@
-version: "2026.04.13.1"
+version: "2026.04.14.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -6483,6 +6483,126 @@ static_rules:
         - https://www.tenable.com/cve/CVE-2026-22172
         - https://www.sentinelone.com/vulnerability-database/cve-2026-22172/
         - https://www.thehackerwire.com/openclaw-critical-websocket-authorization-bypass-cve-2026-22172/
+
+  - id: PSV-018
+    category: platform_security
+    severity: high
+    confidence: 0.93
+    title: n8n-MCP Server SSRF via multi-tenant HTTP header (CVE-2026-39974)
+    pattern: (?i)(?:CVE-2026-39974|n8n[_\s-]?mcp[^\n]{0,120}(?:ssrf|server[_\s-]?side[_\s-]?request[_\s-]?forgery|multi[_\s-]?tenant|auth[_\s-]?token[_\s-]?inject)|n8n[_\s-]?nodes[_\s-]?mcp[^\n]{0,80}(?:ssrf|request[_\s-]?forgery|imds|169\.254\.169\.254))
+    mitigation: 'CVE-2026-39974 is a Server-Side Request Forgery (SSRF) vulnerability in the multi-tenant HTTP mode of n8n-MCP prior to version 2.47.4. An authenticated attacker holding a valid AUTH_TOKEN can inject arbitrary URLs through multi-tenant HTTP headers, causing the server to fetch and return those URLs via JSON-RPC. This enables cloud metadata harvesting (AWS IMDS, GCP, Azure), internal service discovery, and data exfiltration. Update n8n-MCP to version 2.47.4 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-14'
+      updated: '2026-04-14'
+      tags:
+        - platform_security
+        - psv
+        - mcp_server
+        - ssrf
+        - n8n
+        - cve-2026-39974
+      last_modified: '2026-04-14'
+      techniques:
+        - id: EXEC-051
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-14'
+        last_modified: '2026-04-14'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-39974
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-39974/
+
+  - id: PSV-019
+    category: platform_security
+    severity: critical
+    confidence: 0.95
+    title: mcp-server-taskwarrior command injection RCE (CVE-2026-5833, <= 1.0.1)
+    pattern: (?i)(?:CVE-2026-5833|mcp[_\s-]?server[_\s-]?taskwarrior[^\n]{0,120}(?:command[_\s-]?inject|rce|remote[_\s-]?code[_\s-]?execut|awwaiid|1\.0\.[01])|awwaiid[^\n]{0,80}taskwarrior[^\n]{0,80}(?:inject|rce|command))
+    mitigation: 'CVE-2026-5833 is a command injection vulnerability in awwaiid mcp-server-taskwarrior up to version 1.0.1 that enables remote code execution through local exploitation. The flaw allows unsanitized input to reach shell command execution paths in the MCP server. Update to a patched version or remove the vulnerable MCP server from your configuration.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-14'
+      updated: '2026-04-14'
+      tags:
+        - platform_security
+        - psv
+        - mcp_server
+        - command_injection
+        - rce
+        - cve-2026-5833
+      last_modified: '2026-04-14'
+      techniques:
+        - id: EXEC-052
+          name: Execution or malware behavior
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-14'
+        last_modified: '2026-04-14'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-5833
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-5833/
+
+  - id: SE-004
+    category: social_engineering
+    severity: high
+    confidence: 0.9
+    title: EvilTokens OAuth device code phishing (PhaaS, Microsoft 365 token hijack)
+    pattern: (?i)(?:eviltokens|device[_\s-]?code[_\s-]?(?:phish|hijack|steal|harvest|abuse)|oauth[_\s-]?device[_\s-]?code[^\n]{0,120}(?:phish|steal|harvest|hijack|bypass|token[_\s-]?replay)|microsoft[^\n]{0,60}device[_\s-]?code[^\n]{0,60}(?:phish|steal|harvest)|login\.microsoftonline\.com[^\n]{0,80}deviceauth[^\n]{0,60}(?:phish|steal|harvest|token))
+    mitigation: 'EvilTokens is a widespread phishing-as-a-service (PhaaS) campaign that exploits the OAuth 2.0 device code authentication flow to compromise Microsoft 365 organizational accounts at scale. Attackers send hyper-personalized lures (RFPs, invoices) generated with AI, directing victims to complete device code authentication for attacker-controlled devices. This bypasses MFA and standard access controls, yielding persistent refresh tokens. Disable device code flow in Entra ID Conditional Access policies unless strictly required, and train users to recognize device code phishing.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-14'
+      updated: '2026-04-14'
+      tags:
+        - social_engineering
+        - se
+        - phishing
+        - credential_harvest
+        - oauth
+        - eviltokens
+        - device_code
+      last_modified: '2026-04-14'
+      techniques:
+        - id: SE-004
+          name: Social engineering / OAuth device code phishing
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - prompt
+      lifecycle:
+        introduced: '2026-04-14'
+        last_modified: '2026-04-14'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://www.microsoft.com/en-us/security/blog/2026/04/06/ai-enabled-device-code-phishing-campaign-april-2026/
+        - https://blog.sekoia.io/new-widespread-eviltokens-kit-device-code-phishing-as-a-service-part-1/
+        - https://abnormal.ai/blog/eviltokens-oauth-device-codes-bec-operations
+        - https://thehackernews.com/2026/03/device-code-phishing-hits-340-microsoft.html
 
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
