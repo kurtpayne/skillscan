@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_HF_REPO = "kurtpayne/skillscan-detector-v4"
 HF_MANIFEST_URL = "https://huggingface.co/{repo}/resolve/main/adapter_manifest.json"
+HF_API_URL = "https://huggingface.co/api/models/{repo}"
 HF_FILE_URL = "https://huggingface.co/{repo}/resolve/main/{filename}"
 
 GGUF_MODEL_FILE = "skillscan-detector-v4-q4_k_m.gguf"
@@ -146,10 +147,20 @@ def get_model_status(repo_id: str = DEFAULT_HF_REPO, check_remote: bool = False)
         except Exception:
             pass
 
-    installed = bool(manifest_data.get("installed"))
-    version = manifest_data.get("version")
-    sha256 = manifest_data.get("sha256")
-    downloaded_at_str = manifest_data.get("downloaded_at")
+    # BUG-012 fix: check that the cached manifest matches the requested repo_id.
+    # If the manifest was downloaded for a different repo, treat as not installed.
+    cached_repo = manifest_data.get("repo_id")
+    if cached_repo and cached_repo != repo_id:
+        # The cached model is for a different repo — report as not installed for this repo.
+        installed = False
+        version = None
+        sha256 = None
+        downloaded_at_str = None
+    else:
+        installed = bool(manifest_data.get("installed"))
+        version = manifest_data.get("version")
+        sha256 = manifest_data.get("sha256")
+        downloaded_at_str = manifest_data.get("downloaded_at")
 
     downloaded_at: datetime | None = None
     age_days: float | None = None
@@ -166,13 +177,22 @@ def get_model_status(repo_id: str = DEFAULT_HF_REPO, check_remote: bool = False)
     remote_version: str | None = None
     update_available = False
 
-    if check_remote and installed:
+    if check_remote:
+        # BUG-011 fix: try the adapter manifest first, then fall back to
+        # the HuggingFace API to get the latest commit SHA.
         manifest_url = HF_MANIFEST_URL.format(repo=repo_id)
         remote = _fetch_json(manifest_url)
         if remote:
             remote_version = str(remote.get("version", "")) or None
-            if remote_version and remote_version != version:
-                update_available = True
+        else:
+            # Fall back to the HuggingFace model API
+            api_url = HF_API_URL.format(repo=repo_id)
+            api_data = _fetch_json(api_url)
+            if api_data:
+                remote_version = str(api_data.get("sha", "")) or None
+
+        if remote_version and installed and remote_version != version:
+            update_available = True
 
     return ModelStatus(
         installed=installed,
