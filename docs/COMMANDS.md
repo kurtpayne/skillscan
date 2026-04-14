@@ -2,105 +2,318 @@
 
 > **See also:** [SCAN_OVERVIEW.md](SCAN_OVERVIEW.md) for how the scan pipeline works · [EXAMPLES.md](EXAMPLES.md) for the full rule catalogue · [POLICY.md](POLICY.md) for policy options
 
-## `skillscan scan <path>`
+---
+
+## Top-Level Commands
+
+### `skillscan scan <target>`
 
 Run a scan on a folder, file, archive, or URL.
 
-Options:
-- `--policy-profile, --profile`: `strict|balanced|permissive` (default `strict`)
-- `--policy`: custom policy YAML file
-- `--format`: `text|json` (default `text`)
-- `--out`: write JSON report to file
-- `--fail-on`: `warn|block|never` (default `block`)
-- `--auto-intel/--no-auto-intel`: enable/disable managed intel auto-refresh (default enabled)
-- `--intel-max-age-minutes`: staleness threshold before refresh (default 60)
-- `--url-max-links`: max followed links for URL targets (default 25)
-- `--url-same-origin-only/--no-url-same-origin-only`: link-following origin policy (default same-origin only)
-- `--ml-detect/--no-ml-detect`: enable offline ML-based prompt injection detection (default disabled; requires `skillscan model sync` first; no API key or network call needed)
-- `--graph/--no-graph`: enable skill graph analysis — detects remote instruction loads (PINJ-GRAPH-001), unsafe tool grants (PINJ-GRAPH-002), memory poisoning chains (PINJ-GRAPH-003), and cross-skill tool escalation (PINJ-GRAPH-004) across all SKILL.md, CLAUDE.md, and gpt_actions.json files in the scan root. **Auto-enabled for directory targets; disabled for single files.** Use `--no-graph` to disable explicitly. Override with `SKILLSCAN_GRAPH=1` env var.
+**Arguments:**
+- `TARGET` (required): local path or URL to scan
 
-Examples:
+**Options:**
+- `--policy-profile, --profile`: built-in policy profile (default `strict`)
+- `--policy`: custom policy YAML file path
+- `--format`: output format: `text|json|sarif|junit|compact` (default `text`)
+- `--out`: write report to file
+- `--fail-on`: exit non-zero threshold: `warn|block|never` (default `block`)
+- `--auto-intel / --no-auto-intel`: enable/disable managed intel auto-refresh (default enabled)
+- `--intel-max-age-minutes`: auto-intel refresh max age in minutes (default 60)
+- `--url-max-links`: maximum links to follow for URL targets (default 25)
+- `--url-same-origin-only / --no-url-same-origin-only`: only follow links on same origin as root URL target (default same-origin only)
+- `--no-suppress`: disable auto-discovery of `.skillscan-suppress` from the scan target
+- `--suppress, --suppress-file`: explicit suppression file (stacks with auto-discovered file unless `--no-suppress`)
+- `--strict-suppressions / --no-strict-suppressions`: fail scan when suppression file contains expired entries (default off)
+- `--no-provenance`: omit provenance meta block from JSON output
+- `--include-policy`: embed the full policy blob in provenance meta block
+- `--clamav / --no-clamav`: enable optional ClamAV artifact scanning (env: `SKILLSCAN_CLAMAV`, default off)
+- `--clamav-timeout-seconds`: ClamAV scan timeout in seconds (default 30)
+- `--ml-detect / --no-ml-detect`: enable offline ML prompt-injection detection (env: `SKILLSCAN_ML_DETECT`, default off). Requires `pip install 'skillscan-security[ml]'`.
+- `--no-model`: explicitly opt out of ML detection and suppress the "ML layer inactive" notice (env: `SKILLSCAN_NO_MODEL`)
+- `--require-model`: exit with code 3 if `--ml-detect` is requested but model is not installed (env: `SKILLSCAN_REQUIRE_MODEL`)
+- `--graph / --no-graph`: enable skill graph analysis (env: `SKILLSCAN_GRAPH`, default: on for directory targets, off for single files)
+- `--baseline, --baseline-report`: only report findings not present in a prior scan report JSON
+- `--delta-format`: baseline delta output format: `text|json` (default `text`)
+- `--no-progress`: suppress progress bar (useful in CI)
+- `--max-file-size`: skip files larger than this size in KB (default 1024 = 1 MB, 0 to disable)
+- `--timeout`: seconds before aborting, 0 = no limit (env: `SKILLSCAN_TIMEOUT`, default 0)
+- `--debug`: enable debug logging (env: `SKILLSCAN_DEBUG`)
+
+**Examples:**
 
 ```bash
 skillscan scan ./examples/suspicious_skill
 skillscan scan ./artifact.zip --format json --out report.json
 skillscan scan ./artifact --profile balanced --fail-on never
 skillscan scan "https://github.com/blader/humanizer/blob/main/SKILL.md?plain=1"
-skillscan scan ./examples/showcase/20_social_engineering_credential_harvest --fail-on never
 skillscan scan ./skills/ --ml-detect --graph --format json --out report.json
 ```
 
-## `skillscan explain <report.json>`
+---
 
-Render a previously generated JSON report in pretty terminal format.
+### `skillscan explain <report>`
+
+Show detailed explanation for findings in a scan report JSON.
+
+**Arguments:**
+- `REPORT` (required): path to a JSON report file
 
 ```bash
 skillscan explain ./report.json
 ```
 
-## `skillscan policy show-default`
+---
 
-Print a built-in policy profile.
+### `skillscan version`
 
-```bash
-skillscan policy show-default --profile strict
-```
+Show installed version and component status.
 
-## `skillscan policy validate <policy.yaml>`
+**Options:**
+- `--json`: output as JSON
+
+---
+
+### `skillscan update`
+
+Update rules, IOC/vuln intel, and ML model to latest versions. Always pulls fresh -- no TTL, no cache check.
+
+**Options:**
+- `--no-model`: skip ML model update (useful in CI where the ~935 MB download is excluded)
+
+---
+
+### `skillscan benchmark <manifest>`
+
+Run a benchmark against a labeled manifest and report precision/recall.
+
+**Arguments:**
+- `MANIFEST` (required): path to benchmark manifest JSON
+
+**Options:**
+- `--policy-profile, --profile`: built-in policy profile (default `strict`)
+- `--format`: output format: `text|json` (default `text`)
+- `--min-precision`: fail if precision falls below value (default 0.0)
+- `--min-recall`: fail if recall falls below value (default 0.0)
+- `--verbose`: print per-case results
+
+---
+
+### `skillscan uninstall`
+
+Remove all locally cached data.
+
+**Options:**
+- `--keep-data`: keep `~/.skillscan` data on disk
+
+---
+
+### `skillscan feedback [kind]`
+
+Open the GitHub Issues page to report a false positive, false negative, bug, or feature request.
+
+**Arguments:**
+- `KIND` (optional): type of feedback: `fp` (false positive), `fn` (false negative), `bug`, or `feature` (default `fp`)
+
+---
+
+### `skillscan online-trace <skill>`
+
+Submit a skill to the hosted trace service at trace.skillscan.sh. This is a thin HTTP client -- it does NOT run the trace engine locally.
+
+**Arguments:**
+- `SKILL` (required): path to SKILL.md file or directory
+
+**Options:**
+- `--provider, -p`: LLM provider: `openrouter|openai|anthropic` (default `openrouter`)
+- `--model, -m`: model name (default `anthropic/claude-3.5-haiku`)
+- `--variants, -n`: fuzz variant count (default 3)
+- `--max-turns`: max turns per input (default 10)
+- `--scan`: include static scan
+- `--lint`: include lint
+- `--judge-model`: model for the judge
+- `--output-file, -o`: save full report JSON to file
+- `--format`: output format: `text|json|md` (default `text`)
+- `--remote-host`: override API endpoint (default `https://trace.skillscan.sh`)
+- `--user-messages`: comma-separated list of custom user messages instead of LLM-generated
+
+---
+
+### `skillscan lint`
+
+Quality linter for AI agent skill files (requires `skillscan-lint`).
+
+---
+
+### `skillscan trace`
+
+Behavioral tracer for AI agent skill files.
+
+---
+
+## Subcommand Groups
+
+### `skillscan policy`
+
+Policy profile operations.
+
+#### `skillscan policy list`
+
+List all built-in policy profiles.
+
+#### `skillscan policy show [profile]`
+
+Show the full YAML of a built-in policy profile.
+
+**Arguments:**
+- `PROFILE` (optional): profile name to show (default `strict`)
+
+#### `skillscan policy show-default`
+
+Show the default policy (alias for `policy show strict`).
+
+**Options:**
+- `--profile`: profile name (default `strict`)
+
+#### `skillscan policy validate <path>`
 
 Validate a custom policy file.
 
-```bash
-skillscan policy validate ./examples/policies/strict_custom.yaml
-```
+**Arguments:**
+- `PATH` (required): path to the custom policy YAML file
 
-## `skillscan intel ...`
+---
 
-Manage local intel sources.
+### `skillscan intel`
 
-Commands:
-- `status`
-- `list`
-- `add <path> --type ioc|vuln|rules --name <name>`
-- `remove <name>`
-- `enable <name>`
-- `disable <name>`
-- `rebuild`
-- `sync [--force] [--max-age-minutes N]`
+Intel source management.
 
-## `skillscan model`
+#### `skillscan intel status`
 
-Manage the local ML model used by `--ml-detect`.
+Show status of all intel sources (bundled + custom).
 
-Subcommands:
-- `sync [--force]`: download or update the ONNX INT8 model from HuggingFace. Safe to run repeatedly — skips if already current.
-- `status`: show installed model version, download date, and staleness. The scanner emits `PINJ-ML-STALE` when the model is older than 30 days.
+#### `skillscan intel list`
 
-```bash
-skillscan model sync
-skillscan model status
-```
+List all intel sources.
 
-## `skillscan rule`
+#### `skillscan intel add`
 
-Manage the local rulepack.
+Add a custom intel feed by URL. The feed is fetched immediately and stored locally. It will be re-fetched automatically on every `skillscan update`.
 
-Subcommands:
-- `sync [--force]`: pull the latest rulepack from the managed channel.
-- `status`: show current rulepack version, rule count, and age.
+**Options:**
+- `--url` (required): URL of the intel feed
+- `--name` (required): human-readable name for this feed
+- `--type`: feed type: `ioc|vuln` (default `ioc`)
 
-```bash
-skillscan rule sync
-skillscan rule status
-```
+#### `skillscan intel remove <name>`
 
-## `skillscan uninstall`
+Remove a custom intel feed.
 
-Uninstall local runtime artifacts.
+**Arguments:**
+- `NAME` (required): name of the feed to remove
 
-Options:
-- `--keep-data`: preserve `~/.skillscan` data files.
+#### `skillscan intel enable <name>`
 
-## `skillscan version`
+Enable a disabled intel source.
 
-Print installed version.
+**Arguments:**
+- `NAME` (required): name of the source to enable
+
+#### `skillscan intel disable <name>`
+
+Disable an intel source without removing it.
+
+**Arguments:**
+- `NAME` (required): name of the source to disable
+
+#### `skillscan intel lookup <indicator>`
+
+Look up an indicator against the merged intel DB. Searches IOC and vulnerability databases for a match.
+
+**Arguments:**
+- `INDICATOR` (required): IP address, domain, URL, or package name to look up
+
+---
+
+### `skillscan rule`
+
+Rule metadata and query operations.
+
+#### `skillscan rule list`
+
+List all loaded rules with ID, severity, and description.
+
+**Options:**
+- `--format`: output format: `text|json` (default `text`)
+- `--technique`: filter by technique ID
+- `--tag`: filter by rule metadata tag
+
+#### `skillscan rule status`
+
+Show the current rule signature versions (bundled vs. user-local).
+
+#### `skillscan rule show <rule_id>`
+
+Show full metadata for a specific rule.
+
+**Arguments:**
+- `RULE_ID` (required): rule ID to show (e.g. `PINJ-009`)
+
+**Options:**
+- `--format`: output format: `text|json` (default `text`)
+
+#### `skillscan rule test <rule_file> <skill_file>`
+
+Test a custom rule file against a skill file. Use this to validate a custom rule before deploying it.
+
+**Arguments:**
+- `RULE_FILE` (required): custom rule YAML file
+- `SKILL_FILE` (required): SKILL.md to test against
+
+#### `skillscan rule validate`
+
+Validate rules for duplicate IDs, broken regex patterns, and schema errors. By default validates the entire built-in rulepack.
+
+**Options:**
+- `--file`: validate a single rule file instead of the full rulepack
+
+---
+
+### `skillscan model`
+
+ML model management.
+
+#### `skillscan model install`
+
+Download or reinstall the ML detector model from HuggingFace Hub. The GGUF model is stored in `~/.skillscan/models/` (~935 MB).
+
+**Options:**
+- `--repo`: HuggingFace Hub repo ID for the detector model (default `kurtpayne/skillscan-detector-v4`)
+- `--force`: re-download even if already up to date
+
+#### `skillscan model status`
+
+Show the status of the locally cached ML model.
+
+**Options:**
+- `--repo`: HuggingFace Hub repo ID for the detector model (default `kurtpayne/skillscan-detector-v4`)
+- `--check-remote`: check HF Hub for updates
+- `--json`: output as JSON
+
+---
+
+### `skillscan suppress`
+
+Suppression file management.
+
+#### `skillscan suppress check <suppressions>`
+
+Check a suppression file for expired or soon-to-expire entries. Exits non-zero when any active suppression expires within `--warn-days`. Useful as a CI gate to prevent forgotten suppressions from silently accumulating.
+
+**Arguments:**
+- `SUPPRESSIONS` (required): path to suppression YAML file
+
+**Options:**
+- `--warn-days`: warn when a suppression expires within this many days (default 30)
+- `--json`: output as JSON

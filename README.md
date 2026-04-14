@@ -4,7 +4,7 @@
 [![PyPI](https://img.shields.io/pypi/v/skillscan-security.svg)](https://pypi.org/project/skillscan-security/)
 [![Docker Hub](https://img.shields.io/docker/v/kurtpayne/skillscan-security?label=docker)](https://hub.docker.com/r/kurtpayne/skillscan-security)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.12%2B-blue.svg)](pyproject.toml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
 **Free. Private. Offline. No API key required.**
 
@@ -46,7 +46,7 @@ If SkillScan blocks it, you don't need to spend tokens on it. If it passes, you 
 3. Binary artifact classification and flagging (executables, libraries, bytecode, blobs).
 4. Malware and instruction-abuse pattern detection (121 static rules + 17 multilang rules, 15 chain rules).
 5. Instruction hardening pipeline (Unicode normalization, zero-width stripping, bounded base64 decode, action-chain checks).
-6. IOC extraction with local intel matching (163 domains, 1,310 IPs, 2 CIDRs — updated twice daily).
+6. IOC extraction with local intel matching (updated regularly).
 7. Dependency vulnerability checks (23 Python + 4 npm packages via OSV.dev).
 8. Social engineering and credential-harvest instruction detection (SE-001, SE-SEM-001).
 9. Policy profiles (`strict`, `balanced`, `permissive`) + custom policies.
@@ -55,7 +55,7 @@ If SkillScan blocks it, you don't need to spend tokens on it. If it passes, you 
 12. Versioned YAML rulepack for flexible detection updates.
 13. Adversarial regression corpus with expected verdicts.
 14. Default-on local semantic prompt-injection classifier (NLTK/classical features, no external API).
-15. Optional offline ML detection (`--ml-detect`) using a fine-tuned DeBERTa adapter — no API key, no cloud.
+15. Optional offline ML detection (`--ml-detect`) using a fine-tuned Qwen2.5-1.5B model (GGUF Q4_K_M) — no API key, no cloud.
 
 ---
 
@@ -90,12 +90,11 @@ pip install skillscan-security
 **Base install is ~25 MB.** No torch, no transformers, no heavy ML stack. The `--ml-detect` flag requires an optional extra:
 
 ```bash
-# CPU-only ONNX inference (~200 MB) — recommended for most users
-pip install 'skillscan-security[ml-onnx]'
-
-# Full PyTorch backend (~500 MB) — for GPU environments
+# llama-cpp-python backend (~935 MB model download) — recommended
 pip install 'skillscan-security[ml]'
 ```
+
+> **Note:** The `[ml-onnx]` extra is deprecated. Use `[ml]` (backed by `llama-cpp-python`) instead.
 
 ### Option C: local/dev install
 
@@ -138,13 +137,13 @@ Render a saved report:
 skillscan explain ./report.json
 ```
 
-Optional offline ML detection (requires `[ml-onnx]` or `[ml]` extra):
+Optional offline ML detection (requires `[ml]` extra):
 
 ```bash
 skillscan scan ./target --ml-detect
 ```
 
-The ML detector uses a fine-tuned DeBERTa adapter. It runs entirely on your machine — no API calls, no tokens, no cloud. It is the right tool for subtle semantic attacks that the static rules don't catch. For nuanced intent analysis that requires reasoning about context, see the [integration bridges](#integration-bridges) below.
+The ML detector uses a fine-tuned Qwen2.5-1.5B model (GGUF Q4_K_M, ~935 MB). It runs entirely on your machine — no API calls, no tokens, no cloud. It is the right tool for subtle semantic attacks that the static rules don't catch. For nuanced intent analysis that requires reasoning about context, see the [integration bridges](#integration-bridges) below.
 
 ---
 
@@ -231,13 +230,13 @@ Top Findings:
 
 - `skillscan scan <path>`
 - `skillscan explain <report.json>`
-- `skillscan policy show-default --profile strict|balanced|permissive`
-- `skillscan policy validate <policy.yaml>`
-- `skillscan intel status|list|add|remove|enable|disable|rebuild`
-- `skillscan intel sync [--force]`
-- `skillscan rule list [--format json]`
+- `skillscan policy list|show|show-default|validate`
+- `skillscan intel status|list|add|remove|enable|disable|lookup`
+- `skillscan rule list|status|show|test|validate`
+- `skillscan model install|status`
+- `skillscan suppress check`
 - `skillscan uninstall [--keep-data]`
-- `skillscan-security version`
+- `skillscan version`
 
 See full command docs: `docs/COMMANDS.md`.
 
@@ -245,13 +244,22 @@ See full command docs: `docs/COMMANDS.md`.
 
 ## Policies
 
-Built-ins:
+Built-in profiles:
 
-1. `strict` (default)
-2. `balanced`
-3. `permissive`
+1. `strict` (default) — maximum coverage, blocks on score >= 70
+2. `balanced` — blocks on score >= 50, HIGH+ severity
+3. `permissive` — trusted environments, blocks on score >= 90, CRITICAL only
+4. `ci` — PR gates, blocks on CRITICAL + HIGH only
+5. `enterprise` — formal security gate, ML required
+6. `observe` — day-one adoption, exit 0 always
 
-Use a custom policy:
+Use a built-in profile:
+
+```bash
+skillscan scan ./target --profile balanced
+```
+
+Use a custom policy file:
 
 ```bash
 skillscan scan ./target --policy ./examples/policies/strict_custom.yaml
@@ -264,7 +272,7 @@ skillscan scan ./target --policy ./examples/policies/strict_custom.yaml
 Add a local IOC source:
 
 ```bash
-skillscan intel add ./examples/intel/custom_iocs.json --type ioc --name team-iocs
+skillscan intel add --url https://example.com/feeds/iocs.json --type ioc --name team-iocs
 ```
 
 View sources:
@@ -279,7 +287,6 @@ Managed intel auto-refresh runs by default on `scan`. You can tune or disable it
 ```bash
 skillscan scan ./target --intel-max-age-minutes 60
 skillscan scan ./target --no-auto-intel
-skillscan intel sync --force
 ```
 
 ---
@@ -415,11 +422,11 @@ See `docs/GITHUB_ACTIONS.md` for full documentation and examples.
 
 ## Extend SkillScan
 
-Every detection layer except the ML classifier is configurable. The ML model is a frozen ONNX artifact — a tamper-resistant trust anchor that cannot be overridden by local configuration.
+Every detection layer except the ML classifier is configurable. The ML model is a frozen GGUF artifact — a tamper-resistant trust anchor that cannot be overridden by local configuration.
 
 ### Add custom rules
 
-Write a YAML file using the same schema as the built-in rules and pass it with `--rules`. Custom rules are additive — they run alongside the built-in set.
+Write a YAML file using the same schema as the built-in rules and place it in `~/.skillscan/rules/`. Custom rules are additive — they run alongside the built-in set.
 
 ```yaml
 # my-rules.yaml
@@ -440,11 +447,8 @@ static_rules:
 ```
 
 ```bash
-# Test a rule against a fixture file
-skillscan rule test --rules my-rules.yaml --fixture test.md
-
-# Scan with custom rules alongside built-ins
-skillscan scan ./skills/ --rules my-rules.yaml
+# Test a rule against a fixture file (positional args)
+skillscan rule test my-rules.yaml test.md
 ```
 
 See [`docs/custom-rules-format.md`](docs/custom-rules-format.md) for the full schema including chain rules, multilang rules, and AST flow rules.
@@ -469,18 +473,19 @@ EXF-003  skills/analytics.md    Intentional telemetry, reviewed 2026-03-01
 
 ### Policy profiles
 
-Five built-in profiles cover the most common deployment contexts:
+Six built-in profiles cover the most common deployment contexts:
 
 | Profile | Fails on | Use case |
 |---|---|---|
-| `strict` | warn+ | Local dev, high-assurance pipelines |
-| `ci` | block only | Default for CI/CD |
-| `paranoid` | info+, stricter ML threshold | Security-critical environments |
-| `audit` | never | Full reporting without blocking |
-| `minimal` | block only, no ML | Fast pre-screen, air-gapped envs |
+| `strict` (default) | score >= 70 | Local dev, high-assurance pipelines |
+| `balanced` | score >= 50, HIGH+ | Developer and team use |
+| `permissive` | score >= 90, CRITICAL only | Trusted internal registries |
+| `ci` | CRITICAL + HIGH only | PR gates, CI/CD pipelines |
+| `enterprise` | score >= 70, ML required | Formal security gate |
+| `observe` | never (exit 0 always) | Day-one adoption, reporting only |
 
 ```bash
-skillscan scan ./skills/ --policy paranoid
+skillscan scan ./skills/ --profile ci
 ```
 
 ### Contribute a rule

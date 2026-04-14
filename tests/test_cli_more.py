@@ -45,10 +45,6 @@ def test_rule_list_text_and_json() -> None:
 
 
 def test_rule_list_invalid_options() -> None:
-    invalid_channel = runner.invoke(app, ["rule", "list", "--channel", "beta"])
-    assert invalid_channel.exit_code == 2
-    assert "Invalid --channel" in invalid_channel.stdout
-
     invalid_format = runner.invoke(app, ["rule", "list", "--format", "yaml"])
     assert invalid_format.exit_code == 2
     assert "Invalid --format" in invalid_format.stdout
@@ -301,49 +297,6 @@ def test_scan_passes_url_flags(monkeypatch) -> None:
     kwargs = calls["kwargs"]
     assert kwargs["url_max_links"] == 50
     assert kwargs["url_same_origin_only"] is False
-
-
-def test_scan_passes_rulepack_channel(monkeypatch) -> None:
-    calls: dict[str, object] = {}
-
-    def fake_scan(target, policy, policy_source, **kwargs):
-        calls["kwargs"] = kwargs
-        return __import__("skillscan.models", fromlist=["ScanReport"]).ScanReport.model_validate(
-            {
-                "metadata": {
-                    "scanner_version": "0.1.0",
-                    "target": str(target),
-                    "target_type": "directory",
-                    "ecosystem_hints": ["generic"],
-                    "rulepack_version": "x",
-                    "policy_profile": "strict",
-                    "policy_source": policy_source,
-                    "intel_sources": [],
-                },
-                "verdict": "allow",
-                "score": 0,
-                "findings": [],
-                "iocs": [],
-                "dependency_findings": [],
-                "capabilities": [],
-            }
-        )
-
-    monkeypatch.setattr("skillscan.cli.scan", fake_scan)
-    result = runner.invoke(
-        app,
-        [
-            "scan",
-            "tests/fixtures/benign/basic_skill",
-            "--rulepack-channel",
-            "preview",
-            "--fail-on",
-            "never",
-            "--no-auto-intel",
-        ],
-    )
-    assert result.exit_code == 0
-    assert calls["kwargs"]["rulepack_channel"] == "preview"
 
 
 def test_scan_policy_file_sarif_stdout_and_outfile_and_scan_error(monkeypatch, tmp_path: Path) -> None:
