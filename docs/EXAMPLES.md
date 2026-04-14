@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**203 static rules · 14 chain rules**
+**206 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -238,6 +238,8 @@
 | `PSV-015` | high | MCP Go SDK DNS rebinding vulnerability (CVE-2026-34742, go-sdk < v1.4.0) | platform_security, psv, mcp, go-sdk, dns-rebinding, cve-2026-34742, localhost |
 | `PSV-016` | high | mobile-mcp arbitrary Android intent execution via unvalidated URL (CVE-2026-35394, < 0.0.50) | platform_security, psv, mobile-mcp, android, intent-injection, rce, cve-2026-35394 |
 | `PSV-017` | high | OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12) | platform_security, psv, openclaw, websocket, authorization-bypass, scope-elevation, cve-2026-22172 |
+| `PSV-018` | high | n8n-MCP Server SSRF via multi-tenant HTTP header (CVE-2026-39974) | platform_security, psv, mcp_server, ssrf, n8n, cve-2026-39974 |
+| `PSV-019` | critical | mcp-server-taskwarrior command injection RCE (CVE-2026-5833, <= 1.0.1) | platform_security, psv, mcp_server, command_injection, rce, cve-2026-5833 |
 
 ### Execution
 
@@ -250,6 +252,15 @@
 | ID | Severity | Title | Tags |
 |---|---|---|---|
 | `MAL-061` | critical | NomShub cursor-tunnel sandbox escape and persistence via shell builtins | malware, cursor, ide, sandbox-escape, persistence, remote-tunnel, nomshub, prompt-injection |
+
+### Social Engineering
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `SE-001` | high | Social engineering credential harvest instruction | social_engineering, credential_harvest, instruction_abuse |
+| `SE-002` | high | Git credential file harvest combined with send or upload instruction | social-engineering, credential-harvest, git-credentials, exfiltration |
+| `SE-003` | critical | Prize or reward scam with credential or account request | social-engineering, prize-scam, credential-harvest, phishing, reward-fraud |
+| `SE-004` | high | EvilTokens OAuth device code phishing (PhaaS, Microsoft 365 token hijack) | social_engineering, se, phishing, credential_harvest, oauth, eviltokens, device_code |
 
 ## Chain Rules
 

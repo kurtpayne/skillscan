@@ -44,6 +44,7 @@ cat_labels = {
     "platform_security": "Platform Security",
     "execution": "Execution",
     "malware": "Malware",
+    "social_engineering": "Social Engineering",
 }
 
 lines = [

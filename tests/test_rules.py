@@ -2338,3 +2338,66 @@ def test_rule_psv_017():
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"), p, "builtin:strict")
     assert any(f.id == "PSV-017" for f in r.findings)
+
+
+def test_psv018_n8n_mcp_ssrf() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-018"]
+    assert rules, "PSV-018 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-39974") is not None
+    assert rule.pattern.search("n8n-mcp multi-tenant HTTP header SSRF auth_token inject") is not None
+    assert rule.pattern.search("n8n-nodes-mcp server-side request forgery imds 169.254.169.254") is not None
+    assert rule.pattern.search("n8n workflow automation documentation") is None
+    assert rule.pattern.search("n8n-mcp version 2.47.4 release notes") is None
+
+
+def test_psv019_mcp_taskwarrior_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-019"]
+    assert rules, "PSV-019 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-5833") is not None
+    assert rule.pattern.search("mcp-server-taskwarrior command inject rce awwaiid 1.0.1") is not None
+    assert rule.pattern.search("awwaiid taskwarrior mcp command injection remote code execution") is not None
+    assert rule.pattern.search("taskwarrior task management productivity") is None
+    assert rule.pattern.search("mcp-server-taskwarrior version 1.0.2 changelog") is None
+
+
+def test_se004_eviltokens_device_code_phishing() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SE-004"]
+    assert rules, "SE-004 not found"
+    rule = rules[0]
+    assert rule.pattern.search("eviltokens device code phishing kit") is not None
+    assert rule.pattern.search("oauth device code phishing steal harvest microsoft 365 token hijack") is not None
+    assert rule.pattern.search("device_code_phish bypass MFA token replay") is not None
+    assert rule.pattern.search("oauth device code flow documentation") is None
+    assert rule.pattern.search("microsoft 365 device registration guide") is None
+
+
+def test_rule_psv_018():
+    from pathlib import Path
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/172_psv018_n8n_mcp_ssrf_cve_2026_39974"), p, "builtin:strict")
+    assert any(f.id == "PSV-018" for f in r.findings)
+
+
+def test_rule_psv_019():
+    from pathlib import Path
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/173_psv019_mcp_taskwarrior_rce_cve_2026_5833"), p, "builtin:strict")
+    assert any(f.id == "PSV-019" for f in r.findings)
+
+
+def test_rule_se_004():
+    from pathlib import Path
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+    p = load_builtin_policy("strict")
+    r = scan(Path("examples/showcase/174_se004_eviltokens_device_code_phishing"), p, "builtin:strict")
+    assert any(f.id == "SE-004" for f in r.findings)
