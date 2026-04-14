@@ -1450,7 +1450,7 @@ def rule_validate(
     seen_ids: dict[str, int] = {}
     for r in all_static:
         seen_ids[r.id] = seen_ids.get(r.id, 0) + 1
-    for r in all_chain:
+    for r in all_chain:  # type: ignore[assignment]
         seen_ids[r.id] = seen_ids.get(r.id, 0) + 1
     for rid, count in seen_ids.items():
         if count > 1:
