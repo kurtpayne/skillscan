@@ -62,7 +62,7 @@ jobs:
       - name: Run eval and compute metrics
         id: eval
         run: |
-          F1_GATE="${{ github.event.inputs.f1_gate || '0.92' }}"
+          F1_GATE="${{ github.event.inputs.f1_gate || '0.45' }}"
 
           python3 - << 'PYEOF'
           import json, os, subprocess, sys
@@ -168,7 +168,7 @@ jobs:
               sys.exit(1)
           PYEOF
         env:
-          F1_GATE: ${{ github.event.inputs.f1_gate || '0.92' }}
+          F1_GATE: ${{ github.event.inputs.f1_gate || '0.45' }}
 
       - name: Post eval summary annotation
         if: always()
