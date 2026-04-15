@@ -3993,7 +3993,11 @@
     "zycdjz.com",
     "eviltokens.io",
     "eviltokens.net",
-    "eviltokens-phishing.com"
+    "eviltokens-phishing.com",
+    "api-sub.jrodacooker.dev",
+    "jrodacooker.dev",
+    "xienztiavkygvacpqzgr.supabase.co",
+    "ndfcioahsbgsjmulpjgt.supabase.co"
   ],
   "ips": [
     "142.11.206.73",
@@ -4006,7 +4010,8 @@
     "70.34.242.255",
     "83.142.209.203",
     "91.92.242.30",
-    "83.142.209.0/24"
+    "83.142.209.0/24",
+    "195.201.194.107"
   ],
   "cidrs": [
     "1.10.16.0/20",

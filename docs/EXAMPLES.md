@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**206 static rules · 14 chain rules**
+**215 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -88,6 +88,7 @@
 | `MAL-065` | critical | hermes-px PyPI AI conversation stealer (prompt exfiltration via Supabase) | malware, pypi, supply-chain, exfiltration, prompt-theft, ai-proxy, supabase, hermes-px, jfrog |
 | `MAL-066` | critical | GlassWorm Zig dropper via fake WakaTime OpenVSX extension (specstudio/code-wakatime-activity-tracker) | malware, glassworm, vscode-extension, openvsx, zig-dropper, supply-chain, wakatime-fake, rat, multi-ide |
 | `MAL-067` | critical | GlassWorm invisible Unicode PUA payload injection (eval via FE00-FE0F/E0100-E01EF encoding) | malware, glassworm, unicode-injection, invisible-unicode, pua-unicode, supply-chain, npm, vscode-extension, github, eval-injection, solana-c2 |
+| `MAL-068` | critical | js-logger-pack npm multi-platform WebSocket stealer (postinstall C2 agent) | malware_pattern, mal, npm, postinstall, websocket-stealer, ssh-backdoor, credential-theft, keylogger, supply-chain |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -184,6 +185,7 @@
 | `SUP-032` | critical | Compromised velora-dex/sdk package version reference | supply-chain, npm, velora-dex, malicious-version, rat |
 | `SUP-033` | high | OpenVSX Code Extension Marketplace Zip Slip vulnerability (CVE-2026-35454, pre-2.4.2) | supply-chain, openvsx, zip-slip, path-traversal, vscode-extension, marketplace, cve-2026-35454 |
 | `SUP-034` | medium | claude-code-action Arbitrary Code Execution via Malicious .mcp.json | supply_chain, sup, claude-code-action, mcp, github-actions, tra-2026-27 |
+| `SUP-035` | critical | dom-utils-lite / centralogger npm SSH backdoor via Supabase C2 | supply_chain, sup, npm, postinstall, ssh-backdoor, supabase, authorized-keys, credential-theft |
 
 ### Defense Evasion
 
@@ -220,6 +222,10 @@
 | `PINJ-020` | critical | MINJA cross-session AI agent memory poisoning via untrusted documents | prompt-injection, memory-poisoning, minja, cross-session, persistent-injection, owasp-asi06, ai-agent |
 | `PINJ-021` | high | A2A agent card poisoning -- adversarial instructions in agent card metadata | prompt-injection, a2a, agent-card, metadata-injection, google-a2a, multi-agent, exfiltration |
 | `PINJ-022` | high | nanobot CVE-2026-33654 Indirect Prompt Injection via Email | prompt_injection, pinj, nanobot, cve-2026-33654, email |
+| `PINJ-GRAPH-001` | high | Skill loads remote Markdown at runtime | prompt-injection, remote-load, graph-rule |
+| `PINJ-GRAPH-002` | medium | High-risk tool granted without declared purpose | prompt-injection, tool-grant, graph-rule |
+| `PINJ-GRAPH-003` | critical | Skill instructs agent to write a memory/config file | prompt-injection, memory-poisoning, persistence, graph-rule |
+| `PINJ-GRAPH-004` | high | Cross-skill tool escalation detected | prompt-injection, tool-escalation, cross-skill, graph-rule |
 
 ### Passive Vulnerabilities
 
@@ -240,6 +246,9 @@
 | `PSV-017` | high | OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12) | platform_security, psv, openclaw, websocket, authorization-bypass, scope-elevation, cve-2026-22172 |
 | `PSV-018` | high | n8n-MCP Server SSRF via multi-tenant HTTP header (CVE-2026-39974) | platform_security, psv, mcp_server, ssrf, n8n, cve-2026-39974 |
 | `PSV-019` | critical | mcp-server-taskwarrior command injection RCE (CVE-2026-5833, <= 1.0.1) | platform_security, psv, mcp_server, command_injection, rce, cve-2026-5833 |
+| `PSV-020` | critical | MCP STDIO arbitrary command injection via unsanitized adapter configuration (CVE-2026-30623/30624/30616/30617/30618/33224) | platform_security, psv, mcp_server, command_injection, rce, stdio, cve-2026-30623, cve-2026-30624, cve-2026-30616, cve-2026-30617, cve-2026-30618, cve-2026-33224, litellm, agent-zero, langchain, langflow |
+| `PSV-021` | critical | Marimo reactive notebook pre-auth RCE via unauthenticated WebSocket terminal (CVE-2026-39987, < 0.23.0) | platform_security, psv, marimo, pre-auth-rce, websocket, missing-authentication, cve-2026-39987, notebook, python |
+| `PSV-022` | medium | docker-mcp-server OS command injection RCE (CVE-2026-5741, <= 0.1.0) | platform_security, psv, docker, mcp_server, command_injection, rce, cve-2026-5741 |
 
 ### Execution
 
