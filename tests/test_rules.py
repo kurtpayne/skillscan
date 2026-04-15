@@ -2409,3 +2409,75 @@ def test_rule_se_004():
     p = load_builtin_policy("strict")
     r = scan(Path("examples/showcase/174_se004_eviltokens_device_code_phishing"), p, "builtin:strict")
     assert any(f.id == "SE-004" for f in r.findings)
+
+
+def test_psv020_mcp_stdio_command_injection() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-020"]
+    assert rules, "PSV-020 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-30623") is not None
+    assert rule.pattern.search("CVE-2026-30624") is not None
+    assert rule.pattern.search("StdioServerParameters command args arbitrary inject") is not None
+    assert rule.pattern.search("litellm mcp stdio command injection rce") is not None
+    assert rule.pattern.search("agent-zero mcp stdio arbitrary command exec") is not None
+    assert rule.pattern.search("langchain-chatchat mcp stdio rce unauthenticated") is not None
+    assert rule.pattern.search("add mcp server stdio command args arbitrary shell") is not None
+    assert rule.pattern.search("litellm proxy configuration guide") is None
+    assert rule.pattern.search("mcp server stdio transport documentation") is None
+
+
+def test_psv021_marimo_pre_auth_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-021"]
+    assert rules, "PSV-021 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-39987") is not None
+    assert rule.pattern.search("marimo pre-auth rce unauthenticated terminal websocket") is not None
+    assert rule.pattern.search("marimo /terminal/ws auth bypass rce") is not None
+    assert rule.pattern.search("marimo GHSA-2679-6mx9-h9xc notebook") is not None
+    assert rule.pattern.search("marimo reactive notebook documentation") is None
+    assert rule.pattern.search("marimo 0.23.0 release notes") is None
+
+
+def test_psv022_docker_mcp_server_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-022"]
+    assert rules, "PSV-022 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-5741") is not None
+    assert rule.pattern.search("docker-mcp-server command inject rce suvarchal 0.1.0") is not None
+    assert rule.pattern.search("suvarchal docker mcp command injection stop_container") is not None
+    assert rule.pattern.search("docker container management guide") is None
+    assert rule.pattern.search("docker-mcp-server version 0.2.0 release") is None
+
+
+def test_mal068_js_logger_pack_websocket_stealer() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-068"]
+    assert rules, "MAL-068 not found"
+    rule = rules[0]
+    assert rule.pattern.search("js-logger-pack postinstall stealer websocket c2") is not None
+    assert rule.pattern.search("jrodacooker dev c2 stealer api") is not None
+    assert rule.pattern.search("195.201.194.107 8010 websocket c2 agent") is not None
+    assert rule.pattern.search("api-sub.jrodacooker.dev c2 api stealer") is not None
+    assert rule.pattern.search("AgentHelloSchema websocket c2 stealer agent") is not None
+    assert rule.pattern.search("bink@DESKTOP-N8JGD6T ssh key rsa backdoor stealer") is not None
+    assert rule.pattern.search("javascript logging utility documentation") is None
+    assert rule.pattern.search("npm logger package readme") is None
+
+
+def test_sup035_dom_utils_lite_ssh_backdoor() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-035"]
+    assert rules, "SUP-035 not found"
+    rule = rules[0]
+    assert rule.pattern.search("dom-utils-lite postinstall ssh backdoor supabase authorized_keys") is not None
+    assert rule.pattern.search("centralogger postinstall ssh backdoor supabase") is not None
+    assert rule.pattern.search("xienztiavkygvacpqzgr supabase ssh backdoor") is not None
+    assert rule.pattern.search("ndfcioahsbgsjmulpjgt supabase centralogger") is not None
+    assert rule.pattern.search("tanvisoul9 gmail npm package backdoor ssh") is not None
+    assert rule.pattern.search("public_keys/main.pem.pub ssh authorized_keys supabase backdoor") is not None
+    assert rule.pattern.search("ssh-key-auto-sync authorized_keys supabase backdoor inject") is not None
+    assert rule.pattern.search("dom manipulation utilities documentation") is None
+    assert rule.pattern.search("supabase storage documentation") is None

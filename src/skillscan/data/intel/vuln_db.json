@@ -1343,6 +1343,69 @@
         "fixed": "0.0.50",
         "summary": "Arbitrary Android intent execution via unvalidated URL in mobile_open_url tool (CVE-2026-35394, GHSA-5qhv-x9j4-c3vm). Allows tel:, sms:, ussd:, content: scheme injection."
       }
+    },
+    "docker-mcp-server": {
+      "0.1.0": {
+        "id": "CVE-2026-5741",
+        "severity": "medium",
+        "fixed": null
+      }
+    },
+    "js-logger-pack": {
+      "1.0.0": {
+        "id": "MALICIOUS-NPM-2026-0415-JS-LOGGER-PACK",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.1.5": {
+        "id": "MALICIOUS-NPM-2026-0415-JS-LOGGER-PACK",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.1.6": {
+        "id": "MALICIOUS-NPM-2026-0415-JS-LOGGER-PACK",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.1.20": {
+        "id": "MALICIOUS-NPM-2026-0415-JS-LOGGER-PACK",
+        "severity": "critical",
+        "fixed": null
+      }
+    },
+    "dom-utils-lite": {
+      "1.0.0": {
+        "id": "MALICIOUS-NPM-2026-0414-DOM-UTILS-LITE",
+        "severity": "critical",
+        "fixed": null
+      }
+    },
+    "centralogger": {
+      "1.0.5": {
+        "id": "MALICIOUS-NPM-2026-0414-CENTRALOGGER",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.0.6": {
+        "id": "MALICIOUS-NPM-2026-0414-CENTRALOGGER",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.0.7": {
+        "id": "MALICIOUS-NPM-2026-0414-CENTRALOGGER",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.0.8": {
+        "id": "MALICIOUS-NPM-2026-0414-CENTRALOGGER",
+        "severity": "critical",
+        "fixed": null
+      },
+      "1.0.9": {
+        "id": "MALICIOUS-NPM-2026-0414-CENTRALOGGER",
+        "severity": "critical",
+        "fixed": null
+      }
     }
   },
   "pip": {
@@ -1378,6 +1441,63 @@
         "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
         "severity": "critical",
         "fixed": "REMOVED"
+      }
+    },
+    "marimo": {
+      "0.22.9": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.8": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.7": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.6": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.5": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.21.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.20.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.19.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.18.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "<0.23.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
       }
     }
   },

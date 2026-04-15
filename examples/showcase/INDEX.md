@@ -196,3 +196,8 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 172. `172_psv018_n8n_mcp_ssrf_cve_2026_39974`: n8n-MCP Server SSRF via multi-tenant HTTP header CVE-2026-39974 pre-2.47.4 (`PSV-018`)
 173. `173_psv019_mcp_taskwarrior_rce_cve_2026_5833`: mcp-server-taskwarrior command injection RCE CVE-2026-5833 awwaiid <= 1.0.1 (`PSV-019`)
 174. `174_se004_eviltokens_device_code_phishing`: EvilTokens OAuth device code phishing PhaaS Microsoft 365 token hijack (`SE-004`)
+175. `175_psv020_mcp_stdio_command_injection`: MCP STDIO arbitrary command injection via unsanitized adapter configuration CVE-2026-30623/30624/30616/30617/30618/33224 (`PSV-020`)
+176. `176_psv021_marimo_pre_auth_rce`: Marimo reactive notebook pre-auth RCE via unauthenticated WebSocket terminal CVE-2026-39987 (`PSV-021`)
+177. `177_psv022_docker_mcp_server_rce`: docker-mcp-server OS command injection RCE CVE-2026-5741 (`PSV-022`)
+178. `178_mal068_js_logger_pack_websocket_stealer`: js-logger-pack npm multi-platform WebSocket stealer postinstall C2 agent (`MAL-068`)
+179. `179_sup035_dom_utils_lite_ssh_backdoor`: dom-utils-lite centralogger npm SSH backdoor via Supabase C2 (`SUP-035`)

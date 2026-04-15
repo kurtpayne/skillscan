@@ -632,3 +632,78 @@ def test_showcase_174_se004_eviltokens_device_code_phishing():
         "builtin:strict",
     )
     assert any(f.id == "SE-004" for f in r.findings)
+
+
+def test_showcase_175_psv020_mcp_stdio_command_injection():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/175_psv020_mcp_stdio_command_injection"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-020" for f in r.findings)
+
+
+def test_showcase_176_psv021_marimo_pre_auth_rce():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/176_psv021_marimo_pre_auth_rce"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-021" for f in r.findings)
+
+
+def test_showcase_177_psv022_docker_mcp_server_rce():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/177_psv022_docker_mcp_server_rce"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-022" for f in r.findings)
+
+
+def test_showcase_178_mal068_js_logger_pack_websocket_stealer():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/178_mal068_js_logger_pack_websocket_stealer"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "MAL-068" for f in r.findings)
+
+
+def test_showcase_179_sup035_dom_utils_lite_ssh_backdoor():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/179_sup035_dom_utils_lite_ssh_backdoor"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "SUP-035" for f in r.findings)
