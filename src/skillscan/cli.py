@@ -61,6 +61,7 @@ from skillscan.policies import BUILTIN_PROFILES, load_builtin_policy, load_polic
 from skillscan.render import render_report
 from skillscan.rules import load_builtin_rulepack
 from skillscan.sarif import report_to_sarif
+from skillscan.skill_diff import SkillDiffResult
 from skillscan.suppressions import (
     ExpiryEntry,  # noqa: F401 – used as type annotation target by mypy
     SuppressionEntry,  # noqa: F401 – used as type annotation target by mypy
@@ -534,6 +535,15 @@ def scan_cmd(
         envvar="SKILLSCAN_DEBUG",
         help="Enable debug logging (shows which rule files are loaded, merge stats, etc.).",
     ),
+    yara_rules: Path | None = typer.Option(
+        None,
+        "--yara-rules",
+        envvar="SKILLSCAN_YARA_RULES",
+        help=(
+            "Directory containing .yar/.yara rule files to run against skill files. "
+            "Requires: pip install 'skillscan-security[yara]'"
+        ),
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
@@ -745,6 +755,7 @@ def scan_cmd(
                     graph_scan=effective_graph_scan,
                     max_file_size_bytes=_max_file_size_bytes,
                     file_timeout_seconds=timeout,
+                    yara_rules_dir=yara_rules,
                 )
                 try:
                     report = _future.result(timeout=timeout)
@@ -773,6 +784,7 @@ def scan_cmd(
                 graph_scan=effective_graph_scan,
                 max_file_size_bytes=_max_file_size_bytes,
                 file_timeout_seconds=_file_timeout,
+                yara_rules_dir=yara_rules,
             )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
@@ -2114,6 +2126,143 @@ def feedback_cmd(
         console.print(f"[green]Opened browser:[/green] {url}")
     else:
         console.print(f"[cyan]Report it here:[/cyan] {url}")
+
+
+# ---------------------------------------------------------------------------
+# delta — security-focused skill version comparison
+# ---------------------------------------------------------------------------
+
+_SEVERITY_STYLE = {
+    "critical": "bold red",
+    "high": "red",
+    "medium": "yellow",
+    "low": "cyan",
+    "info": "dim",
+}
+
+
+def _render_delta_text(result: SkillDiffResult, con: Console) -> None:
+    """Rich-formatted text output for a SkillDiffResult."""
+    from rich.table import Table
+
+    con.print()
+    con.print(
+        Panel(
+            f"[bold]Baseline:[/bold] {result.baseline_path}\n[bold]Current:[/bold]  {result.current_path}",
+            title="Skill Delta",
+            border_style="blue",
+        )
+    )
+
+    if not result.changes:
+        con.print("\n[green]No security-relevant changes detected.[/green]\n")
+        return
+
+    table = Table(title="Security-Relevant Changes", show_lines=True)
+    table.add_column("Severity", style="bold", width=10)
+    table.add_column("Type", width=22)
+    table.add_column("Category", width=18)
+    table.add_column("Description")
+    table.add_column("Snippet", max_width=60)
+
+    for change in result.changes:
+        sev_style = _SEVERITY_STYLE.get(change.severity, "")
+        table.add_row(
+            f"[{sev_style}]{change.severity.upper()}[/{sev_style}]",
+            change.change_type,
+            change.category,
+            change.description,
+            change.snippet or "",
+        )
+
+    con.print(table)
+
+    # Summary line
+    parts: list[str] = []
+    for sev in ("critical", "high", "medium", "low", "info"):
+        count = getattr(result, f"{sev}_count", 0)
+        if count:
+            style = _SEVERITY_STYLE.get(sev, "")
+            parts.append(f"[{style}]{count} {sev}[/{style}]")
+    con.print(
+        f"\n[bold]{result.total_changes} security-relevant change(s) detected:[/bold] "
+        + ", ".join(parts)
+        + "\n"
+    )
+
+
+@app.command("delta")
+def delta_cmd(
+    old_path: Path = typer.Argument(..., exists=True, readable=True, help="Path to old/baseline skill file"),
+    new_path: Path = typer.Argument(..., exists=True, readable=True, help="Path to new/updated skill file"),
+    suppress: Path | None = typer.Option(
+        None,
+        "--suppress",
+        help="Suppression YAML file — filter out changes matching suppressed IDs",
+    ),
+    format: str = typer.Option("text", "--format", help="Output format: text|json"),
+    fail_on_drift: bool = typer.Option(
+        False,
+        "--fail-on-drift",
+        help="Exit non-zero if any security-relevant changes are detected (for CI gates)",
+    ),
+) -> None:
+    """Compare two skill file versions and show security-relevant changes.
+
+    Uses the skill_diff engine to detect added tools, security-pattern
+    additions, frontmatter changes, and other security-relevant diffs.
+    """
+    from dataclasses import asdict
+
+    from skillscan.skill_diff import diff_skills
+    from skillscan.suppressions import _load_entries, _parse_date_utc  # noqa: F811
+
+    if format not in {"text", "json"}:
+        console.print("[bold red]Invalid --format:[/] expected text or json")
+        raise typer.Exit(2)
+
+    result: SkillDiffResult = diff_skills(old_path, new_path)
+
+    # Apply suppression filtering if requested
+    if suppress is not None:
+        if not suppress.exists():
+            console.print(f"[bold red]Suppression file not found:[/] {suppress}")
+            raise typer.Exit(2)
+        try:
+            entries = _load_entries(suppress)
+        except ValueError as exc:
+            console.print(f"[bold red]Invalid suppression file:[/] {exc}")
+            raise typer.Exit(2)
+
+        from datetime import datetime
+
+        now = datetime.now(UTC)
+        active_ids: set[str] = set()
+        for entry in entries:
+            if _parse_date_utc(entry.expires) >= now:
+                active_ids.add(entry.id)
+
+        # Filter changes whose category matches a suppressed ID
+        filtered = [c for c in result.changes if c.category not in active_ids]
+        # Recompute severity counts
+        from skillscan.skill_diff import _count_by_severity
+
+        counts = _count_by_severity(filtered)
+        result.changes = filtered
+        result.critical_count = counts["critical"]
+        result.high_count = counts["high"]
+        result.medium_count = counts["medium"]
+        result.low_count = counts["low"]
+        result.info_count = counts["info"]
+
+    if format == "json":
+        payload = asdict(result)
+        console.print_json(json.dumps(payload, default=str))
+    else:
+        _render_delta_text(result, console)
+
+    if fail_on_drift and result.has_security_changes:
+        raise typer.Exit(1)
 
 
 # ---------------------------------------------------------------------------

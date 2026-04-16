@@ -158,6 +158,7 @@ def scan(
     graph_scan: bool = False,
     max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
     file_timeout_seconds: int = 30,  # per-file rule-matching timeout
+    yara_rules_dir: Path | None = None,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -699,6 +700,12 @@ def scan(
             from skillscan.detectors.skill_graph import skill_graph_findings
 
             findings.extend(skill_graph_findings(prepared.root))
+
+        if yara_rules_dir is not None:
+            from skillscan.detectors.yara_scanner import scan_with_yara
+
+            for file_path in files:
+                findings.extend(scan_with_yara(file_path, yara_rules_dir))
 
         findings = _deduplicate_findings(findings)
 

@@ -53,6 +53,10 @@ ml-onnx = [
   "transformers>=4.40.0",
   "optimum[onnxruntime]>=1.19.0",
 ]
+# YARA rule integration — run custom .yar/.yara rules against skill files
+yara = [
+  "yara-python>=4.5.0",
+]
 # Quality linter — delegates to skillscan-lint when installed
 lint = [
   "skillscan-lint>=0.1.0",
