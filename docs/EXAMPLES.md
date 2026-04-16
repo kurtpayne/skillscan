@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**215 static rules · 14 chain rules**
+**220 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -89,6 +89,7 @@
 | `MAL-066` | critical | GlassWorm Zig dropper via fake WakaTime OpenVSX extension (specstudio/code-wakatime-activity-tracker) | malware, glassworm, vscode-extension, openvsx, zig-dropper, supply-chain, wakatime-fake, rat, multi-ide |
 | `MAL-067` | critical | GlassWorm invisible Unicode PUA payload injection (eval via FE00-FE0F/E0100-E01EF encoding) | malware, glassworm, unicode-injection, invisible-unicode, pua-unicode, supply-chain, npm, vscode-extension, github, eval-injection, solana-c2 |
 | `MAL-068` | critical | js-logger-pack npm multi-platform WebSocket stealer (postinstall C2 agent) | malware_pattern, mal, npm, postinstall, websocket-stealer, ssh-backdoor, credential-theft, keylogger, supply-chain |
+| `MAL-069` | critical | PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse (REF6598) | malware_pattern, mal, obsidian, plugin-abuse, rat, blockchain-c2, social-engineering, cross-platform, ref6598 |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -180,6 +181,7 @@
 | `SUP-028` | critical | UNC1069 social engineering lure domain (teams.onlivemeet.com) | supply_chain, unc1069, sapphire-sleet, north-korea, social-engineering, npm, axios |
 | `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
 | `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
+| `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
 | `SUP-030` | high | a11y-mcp SSRF vulnerability (CVE-2026-5323) | supply-chain, mcp, ssrf, cve-2026-5323, a11y |
 | `SUP-031` | high | PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263) | supply-chain, npm, pnpm, cve-2025-69264, cve-2025-69263, lifecycle-bypass, packagegate, zero-day |
 | `SUP-032` | critical | Compromised velora-dex/sdk package version reference | supply-chain, npm, velora-dex, malicious-version, rat |
@@ -197,6 +199,7 @@
 
 | ID | Severity | Title | Tags |
 |---|---|---|---|
+| `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
 | `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
 | `PSV-010` | high | MCP Python SDK DNS rebinding vulnerability (CVE-2025-66416, mcp < 1.23.0) | vulnerability, mcp, dns-rebinding, cve-2025-66416, python-sdk, localhost |
 | `PSV-011` | critical | CrewAI prompt injection to RCE/SSRF chain (VU#221883, CVE-2026-2275/2285/2286/2287) | vulnerability, crewai, rce, ssrf, prompt-injection, sandbox-escape, cve-2026-2275, cve-2026-2285, cve-2026-2286, cve-2026-2287, vu-221883 |
@@ -249,6 +252,7 @@
 | `PSV-020` | critical | MCP STDIO arbitrary command injection via unsanitized adapter configuration (CVE-2026-30623/30624/30616/30617/30618/33224) | platform_security, psv, mcp_server, command_injection, rce, stdio, cve-2026-30623, cve-2026-30624, cve-2026-30616, cve-2026-30617, cve-2026-30618, cve-2026-33224, litellm, agent-zero, langchain, langflow |
 | `PSV-021` | critical | Marimo reactive notebook pre-auth RCE via unauthenticated WebSocket terminal (CVE-2026-39987, < 0.23.0) | platform_security, psv, marimo, pre-auth-rce, websocket, missing-authentication, cve-2026-39987, notebook, python |
 | `PSV-022` | medium | docker-mcp-server OS command injection RCE (CVE-2026-5741, <= 0.1.0) | platform_security, psv, docker, mcp_server, command_injection, rce, cve-2026-5741 |
+| `PSV-023` | critical | nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5) | platform_security, psv, nginx, mcp_server, auth_bypass, actively_exploited, cve-2026-33032 |
 
 ### Execution
 
@@ -270,6 +274,7 @@
 | `SE-002` | high | Git credential file harvest combined with send or upload instruction | social-engineering, credential-harvest, git-credentials, exfiltration |
 | `SE-003` | critical | Prize or reward scam with credential or account request | social-engineering, prize-scam, credential-harvest, phishing, reward-fraud |
 | `SE-004` | high | EvilTokens OAuth device code phishing (PhaaS, Microsoft 365 token hijack) | social_engineering, se, phishing, credential_harvest, oauth, eviltokens, device_code |
+| `SE-005` | high | Obsidian shared vault social engineering lure (REF6598 / PHANTOMPULSE delivery) | social_engineering, se, obsidian, vault-abuse, plugin-abuse, linkedin, telegram, crypto, ref6598 |
 
 ## Chain Rules
 

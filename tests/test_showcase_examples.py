@@ -313,7 +313,9 @@ def test_showcase_133_mal055_postmark_mcp_bcc_harvest() -> None:
 def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
     """MAL-056 fires on the Nx/s1ngularity AI CLI weaponization showcase."""
     report = scan(
-        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"), STRICT, "builtin:strict"
+        Path("examples/showcase/134_mal056_nx_s1ngularity_ai_weaponization"),
+        STRICT,
+        "builtin:strict",
     )
     finding_ids = {f.id for f in report.findings}
     assert "MAL-056" in finding_ids, f"Expected MAL-056, got: {sorted(finding_ids)}"
@@ -322,7 +324,9 @@ def test_showcase_134_mal056_nx_s1ngularity_ai_weaponization() -> None:
 def test_showcase_135_sup023_mcp_remote_oauth_cmd_injection() -> None:
     """SUP-023 fires on the mcp-remote OAuth command injection showcase."""
     report = scan(
-        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"), STRICT, "builtin:strict"
+        Path("examples/showcase/135_sup023_mcp_remote_oauth_cmd_injection"),
+        STRICT,
+        "builtin:strict",
     )
     finding_ids = {f.id for f in report.findings}
     assert "SUP-023" in finding_ids, f"Expected SUP-023, got: {sorted(finding_ids)}"
@@ -362,7 +366,11 @@ def test_showcase_139_pinj018_hidden_prompt_injection() -> None:
 
 def test_showcase_140_psv006_langflow_rce() -> None:
     """PSV-006 fires on the Langflow CVE-2026-33017 showcase."""
-    report = scan(Path("examples/showcase/140_psv006_langflow_rce_cve_2026_33017"), STRICT, "builtin:strict")
+    report = scan(
+        Path("examples/showcase/140_psv006_langflow_rce_cve_2026_33017"),
+        STRICT,
+        "builtin:strict",
+    )
     finding_ids = {f.id for f in report.findings}
     assert "PSV-006" in finding_ids, f"Expected PSV-006, got: {sorted(finding_ids)}"
 
@@ -370,7 +378,9 @@ def test_showcase_140_psv006_langflow_rce() -> None:
 def test_showcase_141_psv007_openclaw_privesc() -> None:
     """PSV-007 fires on the OpenClaw CVE-2026-32922 showcase."""
     report = scan(
-        Path("examples/showcase/141_psv007_openclaw_privesc_cve_2026_32922"), STRICT, "builtin:strict"
+        Path("examples/showcase/141_psv007_openclaw_privesc_cve_2026_32922"),
+        STRICT,
+        "builtin:strict",
     )
     finding_ids = {f.id for f in report.findings}
     assert "PSV-007" in finding_ids, f"Expected PSV-007, got: {sorted(finding_ids)}"
@@ -519,7 +529,11 @@ def test_showcase_165_psv013_cursor_rce_cve_2026_31854():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/165_psv013_cursor_rce_cve_2026_31854"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/165_psv013_cursor_rce_cve_2026_31854"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-013" for f in r.findings)
 
 
@@ -530,7 +544,11 @@ def test_showcase_166_pinj022_nanobot_cve_2026_33654():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/166_pinj022_nanobot_cve_2026_33654"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/166_pinj022_nanobot_cve_2026_33654"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PINJ-022" for f in r.findings)
 
 
@@ -541,7 +559,11 @@ def test_showcase_167_sup034_claude_code_action_tra_2026_27():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/167_sup034_claude_code_action_tra_2026_27"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/167_sup034_claude_code_action_tra_2026_27"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "SUP-034" for f in r.findings)
 
 
@@ -552,7 +574,11 @@ def test_showcase_168_psv014_apollo_mcp_cve_2026_35577():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-014" for f in r.findings)
 
 
@@ -563,7 +589,11 @@ def test_showcase_169_psv015_mcp_go_sdk_dns_rebinding():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-015" for f in r.findings)
 
 
@@ -574,7 +604,11 @@ def test_showcase_170_psv016_mobile_mcp_android_intent_rce():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-016" for f in r.findings)
 
 
@@ -585,7 +619,11 @@ def test_showcase_171_psv017_openclaw_websocket_scope_elevation():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-017" for f in r.findings)
 
 
@@ -707,3 +745,48 @@ def test_showcase_179_sup035_dom_utils_lite_ssh_backdoor():
         "builtin:strict",
     )
     assert any(f.id == "SUP-035" for f in r.findings)
+
+
+def test_showcase_180_mal069_phantompulse_obsidian_rat():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/180_mal069_phantompulse_obsidian_rat"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "MAL-069" for f in r.findings)
+
+
+def test_showcase_181_psv023_nginx_ui_mcp_auth_bypass():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/181_psv023_nginx_ui_mcp_auth_bypass"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-023" for f in r.findings)
+
+
+def test_showcase_182_se005_obsidian_vault_lure():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/182_se005_obsidian_vault_lure"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "SE-005" for f in r.findings)

@@ -2227,7 +2227,11 @@ def test_rule_psv_013():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/165_psv013_cursor_rce_cve_2026_31854"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/165_psv013_cursor_rce_cve_2026_31854"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-013" for f in r.findings)
 
 
@@ -2238,7 +2242,11 @@ def test_rule_pinj_022():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/166_pinj022_nanobot_cve_2026_33654"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/166_pinj022_nanobot_cve_2026_33654"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PINJ-022" for f in r.findings)
 
 
@@ -2249,7 +2257,11 @@ def test_rule_sup_034():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/167_sup034_claude_code_action_tra_2026_27"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/167_sup034_claude_code_action_tra_2026_27"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "SUP-034" for f in r.findings)
 
 
@@ -2260,7 +2272,11 @@ def test_rule_psv_014():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-014" for f in r.findings)
 
 
@@ -2314,7 +2330,11 @@ def test_rule_psv_015():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-015" for f in r.findings)
 
 
@@ -2325,7 +2345,11 @@ def test_rule_psv_016():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-016" for f in r.findings)
 
 
@@ -2336,7 +2360,11 @@ def test_rule_psv_017():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-017" for f in r.findings)
 
 
@@ -2385,7 +2413,11 @@ def test_rule_psv_018():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/172_psv018_n8n_mcp_ssrf_cve_2026_39974"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/172_psv018_n8n_mcp_ssrf_cve_2026_39974"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-018" for f in r.findings)
 
 
@@ -2396,7 +2428,11 @@ def test_rule_psv_019():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/173_psv019_mcp_taskwarrior_rce_cve_2026_5833"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/173_psv019_mcp_taskwarrior_rce_cve_2026_5833"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "PSV-019" for f in r.findings)
 
 
@@ -2407,7 +2443,11 @@ def test_rule_se_004():
     from skillscan.policies import load_builtin_policy
 
     p = load_builtin_policy("strict")
-    r = scan(Path("examples/showcase/174_se004_eviltokens_device_code_phishing"), p, "builtin:strict")
+    r = scan(
+        Path("examples/showcase/174_se004_eviltokens_device_code_phishing"),
+        p,
+        "builtin:strict",
+    )
     assert any(f.id == "SE-004" for f in r.findings)
 
 
@@ -2481,3 +2521,52 @@ def test_sup035_dom_utils_lite_ssh_backdoor() -> None:
     assert rule.pattern.search("ssh-key-auto-sync authorized_keys supabase backdoor inject") is not None
     assert rule.pattern.search("dom manipulation utilities documentation") is None
     assert rule.pattern.search("supabase storage documentation") is None
+
+
+def test_mal069_phantompulse_obsidian_rat() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-069"]
+    assert rules, "MAL-069 not found"
+    rule = rules[0]
+    assert rule.pattern.search("phantompulse obsidian shellcommands plugin c2 malware") is not None
+    assert rule.pattern.search("REF6598 obsidian vault plugin abuse") is not None
+    assert rule.pattern.search("fefea22134.net c2 panel obsidian rat") is not None
+    assert rule.pattern.search("0x666.info macos c2 obsidian dropper") is not None
+    assert rule.pattern.search("195.3.222.251 obsidian script1.ps1 download") is not None
+    assert rule.pattern.search("syncobs.exe obsidian download bitsTransfer phantompull c2") is not None
+    assert rule.pattern.search("stuk-phase GLAUNCH RLAUNCH obsidian tag") is not None
+    assert rule.pattern.search("0xc117688c530b660e15085bF3A2B664117d8672aA blockchain c2 wallet") is not None
+    assert (
+        rule.pattern.search("obsidian shellcommand iwr invoke-expression base64 powershell download c2")
+        is not None
+    )
+    assert rule.pattern.search("obsidian note taking application documentation") is None
+    assert rule.pattern.search("shell commands plugin obsidian productivity") is None
+
+
+def test_psv023_nginx_ui_mcp_auth_bypass() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-023"]
+    assert rules, "PSV-023 not found"
+    rule = rules[0]
+    assert rule.pattern.search("CVE-2026-33032") is not None
+    assert rule.pattern.search("GHSA-h6c2-x2m2-mwhf") is not None
+    assert rule.pattern.search("nginx-ui mcp endpoint auth bypass unauthenticated takeover") is not None
+    assert rule.pattern.search("nginx-ui 2.3.5 mcp auth bypass vuln cve") is not None
+    assert rule.pattern.search("nginx configuration management guide") is None
+    assert rule.pattern.search("nginx-ui 2.4.0 release notes") is None
+
+
+def test_se005_obsidian_vault_lure() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SE-005"]
+    assert rules, "SE-005 not found"
+    rule = rules[0]
+    assert (
+        rule.pattern.search("obsidian shared vault community plugin sync linkedin credential login")
+        is not None
+    )
+    assert rule.pattern.search("linkedin obsidian vault plugin sync credential") is not None
+    assert rule.pattern.search("obsidian vault plugin credential login enable sync community") is not None
+    assert rule.pattern.search("obsidian note taking productivity guide") is None
+    assert rule.pattern.search("community plugin documentation obsidian") is None

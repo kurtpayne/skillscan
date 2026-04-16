@@ -201,3 +201,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 177. `177_psv022_docker_mcp_server_rce`: docker-mcp-server OS command injection RCE CVE-2026-5741 (`PSV-022`)
 178. `178_mal068_js_logger_pack_websocket_stealer`: js-logger-pack npm multi-platform WebSocket stealer postinstall C2 agent (`MAL-068`)
 179. `179_sup035_dom_utils_lite_ssh_backdoor`: dom-utils-lite centralogger npm SSH backdoor via Supabase C2 (`SUP-035`)
+180. `180_mal069_phantompulse_obsidian_rat`: PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse REF6598 (`MAL-069`)
+181. `181_psv023_nginx_ui_mcp_auth_bypass`: nginx-ui MCP endpoint authentication bypass unauthenticated nginx takeover CVE-2026-33032 (`PSV-023`)
+182. `182_se005_obsidian_vault_lure`: Obsidian shared vault social engineering lure REF6598 PHANTOMPULSE delivery (`SE-005`)
