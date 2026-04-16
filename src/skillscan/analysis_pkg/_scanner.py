@@ -159,6 +159,7 @@ def scan(
     max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
     file_timeout_seconds: int = 30,  # per-file rule-matching timeout
     yara_rules_dir: Path | None = None,
+    live_vuln_check: bool = False,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -435,6 +436,7 @@ def scan(
             lower = path.name.lower()
             if lower == "requirements.txt":
                 for name, version in _parse_requirements(text):
+                    flagged_by_static = False
                     if name in vuln_db.get("python", {}) and version in vuln_db["python"][name]:
                         entry = vuln_db["python"][name][version]
                         _deps.append(
@@ -447,6 +449,25 @@ def scan(
                                 fixed_version=entry.get("fixed"),
                             )
                         )
+                        flagged_by_static = True
+                    if live_vuln_check and not flagged_by_static:
+                        from skillscan.detectors.osv_live import query_osv
+
+                        for vuln in query_osv(name, version, ecosystem="PyPI"):
+                            try:
+                                sev = Severity(vuln.get("severity", "medium"))
+                            except ValueError:
+                                sev = Severity.MEDIUM
+                            _deps.append(
+                                DependencyFinding(
+                                    ecosystem="python",
+                                    name=name,
+                                    version=version,
+                                    vulnerability_id=f"OSV-LIVE-{vuln['id']}",
+                                    severity=sev,
+                                    fixed_version=vuln.get("fixed"),
+                                )
+                            )
                 for name, spec in _find_unpinned_requirements(text):
                     _f.append(
                         Finding(
@@ -466,6 +487,7 @@ def scan(
             if lower == "package.json":
                 for name, version in _parse_package_json(text):
                     version_norm = version.lstrip("^~>=< ")
+                    flagged_by_static = False
                     if name in vuln_db.get("npm", {}) and version_norm in vuln_db["npm"][name]:
                         entry = vuln_db["npm"][name][version_norm]
                         _deps.append(
@@ -478,6 +500,32 @@ def scan(
                                 fixed_version=entry.get("fixed"),
                             )
                         )
+                        flagged_by_static = True
+                    if (
+                        live_vuln_check
+                        and not flagged_by_static
+                        # Skip live queries for unpinned/loose version specs —
+                        # OSV needs an exact version to return a useful answer.
+                        and version_norm
+                        and not _is_unpinned_npm(version)
+                    ):
+                        from skillscan.detectors.osv_live import query_osv
+
+                        for vuln in query_osv(name, version_norm, ecosystem="npm"):
+                            try:
+                                sev = Severity(vuln.get("severity", "medium"))
+                            except ValueError:
+                                sev = Severity.MEDIUM
+                            _deps.append(
+                                DependencyFinding(
+                                    ecosystem="npm",
+                                    name=name,
+                                    version=version,
+                                    vulnerability_id=f"OSV-LIVE-{vuln['id']}",
+                                    severity=sev,
+                                    fixed_version=vuln.get("fixed"),
+                                )
+                            )
                     if _is_unpinned_npm(version):
                         _f.append(
                             Finding(
@@ -609,13 +657,15 @@ def scan(
                 )
 
         for dep in dependency_findings:
+            is_live = dep.vulnerability_id.startswith("OSV-LIVE-")
             findings.append(
                 Finding(
-                    id="DEP-001",
+                    id="DEP-OSV-LIVE" if is_live else "DEP-001",
                     category="dependency_vulnerability",
                     severity=dep.severity,
                     confidence=0.9,
-                    title=f"Vulnerable dependency: {dep.name}@{dep.version}",
+                    title=f"Vulnerable dependency: {dep.name}@{dep.version}"
+                    + (" (OSV.dev live)" if is_live else ""),
                     evidence_path=dep.name,
                     snippet=dep.vulnerability_id,
                     mitigation="Upgrade to a non-vulnerable dependency version and refresh lockfiles.",

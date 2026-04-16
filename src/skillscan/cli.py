@@ -544,6 +544,17 @@ def scan_cmd(
             "Requires: pip install 'skillscan-security[yara]'"
         ),
     ),
+    live_vuln_check: bool = typer.Option(
+        False,
+        "--live-vuln-check",
+        envvar="SKILLSCAN_LIVE_VULN_CHECK",
+        help=(
+            "Query OSV.dev in real time for dependencies parsed from requirements.txt "
+            "and package.json that are not already flagged by the bundled static vuln "
+            "DB. Augments the static DB; requires network access. Degrades gracefully "
+            "on network failure."
+        ),
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
@@ -756,6 +767,7 @@ def scan_cmd(
                     max_file_size_bytes=_max_file_size_bytes,
                     file_timeout_seconds=timeout,
                     yara_rules_dir=yara_rules,
+                    live_vuln_check=live_vuln_check,
                 )
                 try:
                     report = _future.result(timeout=timeout)
@@ -785,6 +797,7 @@ def scan_cmd(
                 max_file_size_bytes=_max_file_size_bytes,
                 file_timeout_seconds=_file_timeout,
                 yara_rules_dir=yara_rules,
+                live_vuln_check=live_vuln_check,
             )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
