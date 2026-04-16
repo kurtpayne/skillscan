@@ -707,3 +707,36 @@ def test_showcase_179_sup035_dom_utils_lite_ssh_backdoor():
         "builtin:strict",
     )
     assert any(f.id == "SUP-035" for f in r.findings)
+def test_showcase_180_mal069_phantompulse_obsidian_rat():
+    from pathlib import Path
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/180_mal069_phantompulse_obsidian_rat"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "MAL-069" for f in r.findings)
+def test_showcase_181_psv023_nginx_ui_mcp_auth_bypass():
+    from pathlib import Path
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/181_psv023_nginx_ui_mcp_auth_bypass"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-023" for f in r.findings)
+def test_showcase_182_se005_obsidian_vault_lure():
+    from pathlib import Path
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/182_se005_obsidian_vault_lure"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "SE-005" for f in r.findings)

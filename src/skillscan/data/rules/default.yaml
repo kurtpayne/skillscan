@@ -1,4 +1,4 @@
-version: "2026.04.15.1"
+version: "2026.04.16.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -6957,6 +6957,202 @@ static_rules:
         benchmark_set: core-static-v1
       references:
         - https://safedep.io/malicious-dom-utils-lite-npm-ssh-backdoor/
+  - id: SUP-029
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: Malicious Strapi npm packages (Redis RCE / Credential Harvesting)
+    pattern: (?i)(?:strapi-plugin-(?:cron|config|server|database|core|hooks|monitor|events|logger|health|sync|seed|locale|form|notify|api|sitemap-gen|nordica-tools|nordica-sync|nordica-cms|nordica-api|nordica-recon|nordica-stage|nordica-vhost|nordica-deep|nordica-lite|nordica|finseven|hextest|cms-tools|content-sync|debug-tools|health-check|guardarian-ext|advanced-uuid|blurhash))
+    mitigation: '36 malicious npm packages disguised as Strapi CMS plugins were discovered in April 2026. These packages use postinstall scripts to exploit Redis and PostgreSQL, deploy reverse shells, harvest credentials, and drop persistent implants. Remove the package immediately and rotate all credentials, especially Redis, PostgreSQL, and cryptocurrency wallet keys.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-06'
+      updated: '2026-04-06'
+      tags:
+        - supply_chain
+        - npm
+        - strapi
+        - redis
+        - rce
+        - credential-harvesting
+      last_modified: '2026-04-06'
+      techniques:
+        - id: SUP-029
+          name: Supply Chain Compromise
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-06'
+        last_modified: '2026-04-06'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://thehackernews.com/2026/04/36-malicious-npm-packages-exploited.html
+        - https://gbhackers.com/36-malicious-strapi-npm/
+  - id: PSV-009
+    category: vulnerability
+    severity: critical
+    confidence: 0.95
+    title: Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873)
+    pattern: '(?i)(?:CVE-2026-33873|langflow[^\n]{0,200}agentic[^\n]{0,200}rce)'
+    mitigation: 'A remote code execution flaw in Langflow Agentic Assistant (CVE-2026-33873) allows attackers to execute LLM-generated Python code server-side, potentially leading to system compromise. Update Langflow to a patched version.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-06'
+      updated: '2026-04-06'
+      tags:
+        - vulnerability
+        - langflow
+        - rce
+        - cve-2026-33873
+      last_modified: '2026-04-06'
+      techniques:
+        - id: PSV-009
+          name: Vulnerability Exploitation
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-06'
+        last_modified: '2026-04-06'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-33873/
+  - id: MAL-069
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse (REF6598)
+    pattern: '(?i)(?:phantompulse|phantompull|REF6598|fefea22134[.]net|0x666[.]info|195[.]3[.]222[.]251[^\n]{0,80}(?:obsidian|script1[.]ps1|syncobs|stuk[_-]phase)|syncobs[.]exe[^\n]{0,80}(?:obsidian|download|bitsTransfer|phantompull|c2)|stuk[_-]phase[^\n]{0,80}(?:GLAUNCH|RLAUNCH|GSESSION|GFILE|RDOWNLOAD|obsidian|tag)|obsidian[_s-]?shellcommands[^\n]{0,200}(?:iwr|invoke[_-]expression|base64|powershell|curl|wget|download|c2|malware|malicious|inject)|obsidian[^\n]{0,80}(?:shell[_-]?command|shellcommand)[^\n]{0,80}(?:iwr|invoke[_-]expression|base64|powershell|download|c2|malicious)|0xc117688c530b660e15085bF3A2B664117d8672aA|PhantomInject[^\n]{0,80}(?:host|PID|shellcode|inject|phantom)|UNINSTALL[^\n]{0,80}Removing[^\n]{0,80}Scheduled[^\n]{0,80}Task[^\n]{0,80}PhantomPulse)'
+    mitigation: 'PHANTOMPULSE (REF6598, Elastic Security Labs, April 14 2026) is a novel AI-assisted Windows RAT delivered via Obsidian''s Shell Commands community plugin. Threat actors (posing as a VC firm) social-engineer targets on LinkedIn and Telegram into opening an attacker-controlled Obsidian vault and enabling community plugin sync. The trojanized Shell Commands plugin (data.json) executes Base64-encoded PowerShell on vault open, downloading a loader (syncobs.exe / PHANTOMPULL) from 195.3.222.251. PHANTOMPULL AES-256-CBC-decrypts and reflectively loads PHANTOMPULSE, a full-featured backdoor with blockchain-based C2 resolution via Ethereum transaction data (wallet 0xc117688c530b660e15085bF3A2B664117d8672aA on Blockscout), process injection via module stomping, keylogging, screen capture, and UAC bypass. macOS variant uses an obfuscated AppleScript dropper with Telegram fallback C2 (0x666.info). C2 panel: panel.fefea22134.net. Remove the obsidian-shellcommands plugin, revoke all credentials, and check for syncobs.exe in %TEMP%.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-16'
+      updated: '2026-04-16'
+      tags:
+        - malware_pattern
+        - mal
+        - obsidian
+        - plugin-abuse
+        - rat
+        - blockchain-c2
+        - social-engineering
+        - cross-platform
+        - ref6598
+      last_modified: '2026-04-16'
+      techniques:
+        - id: MAL-069
+          name: Malware or malicious behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - prompt
+      lifecycle:
+        introduced: '2026-04-16'
+        last_modified: '2026-04-16'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.elastic.co/security-labs/phantom-in-the-vault
+        - https://thehackernews.com/2026/04/obsidian-plugin-abuse-delivers.html
+        - https://socprime.com/active-threats/vault-obsidian-abused-to-deliver-phantompulse-rat/
+  - id: PSV-023
+    category: platform_security
+    severity: critical
+    confidence: 0.95
+    title: nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5)
+    pattern: '(?i)(?:CVE-2026-33032|GHSA-h6c2-x2m2-mwhf|nginx[_\s-]?ui[^\n]{0,200}(?:mcp[_\s-]?(?:endpoint|message|auth|bypass|unauthenticat|takeover|exploit)|/mcp[_\s-]?message[^\n]{0,80}(?:auth|bypass|unauthenticat|exploit|takeover))|/mcp[_\s-]?message[^\n]{0,80}(?:nginx[_\s-]?ui|nginx[_\s-]?config|restart|reload|delete|create|modify)[^\n]{0,80}(?:unauthenticat|bypass|exploit|takeover|no[_\s-]?auth)|nginx[_\s-]?ui[^\n]{0,80}(?:2\.3\.[0-5]|<[_\s=]*2\.3\.6|<=\s*2\.3\.5)[^\n]{0,200}(?:mcp|auth|bypass|vuln|cve))'
+    mitigation: 'CVE-2026-33032 (CVSS 9.8, CWE-306, GHSA-h6c2-x2m2-mwhf) is a critical authentication bypass in nginx-ui versions 2.3.5 and prior. The nginx-ui MCP integration exposes two HTTP endpoints: /mcp (requires IP whitelisting + authentication) and /mcp_message (only IP whitelisting, default empty = allow all). Any network attacker can invoke all MCP tools via /mcp_message without authentication, including restarting nginx, creating/modifying/deleting nginx configuration files, and triggering automatic config reloads — achieving complete nginx service takeover. Actively exploited in the wild against 2,600+ exposed instances since March 2026. No official patch available at time of publication. Disable the MCP integration endpoint or restrict /mcp_message to trusted IPs via firewall rules immediately.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-16'
+      updated: '2026-04-16'
+      tags:
+        - platform_security
+        - psv
+        - nginx
+        - mcp_server
+        - auth_bypass
+        - actively_exploited
+        - cve-2026-33032
+      last_modified: '2026-04-16'
+      techniques:
+        - id: PSV-023
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-16'
+        last_modified: '2026-04-16'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-33032
+        - https://github.com/0xJacky/nginx-ui/security/advisories/GHSA-h6c2-x2m2-mwhf
+        - https://thehackernews.com/2026/04/critical-nginx-ui-vulnerability-cve.html
+        - https://fieldeffect.com/blog/critical-nginx-ui-vulnerability
+        - https://pluto.security/blog/mcp-bug-nginx-security-vulnerability-cvss-9-8/
+  - id: SE-005
+    category: social_engineering
+    severity: high
+    confidence: 0.88
+    title: Obsidian shared vault social engineering lure (REF6598 / PHANTOMPULSE delivery)
+    pattern: '(?i)(?:obsidian[^\n]{0,120}(?:shared[_\s-]?vault|community[_\s-]?plugin[_\s-]?sync|enable[_\s-]?plugin[_\s-]?sync|vault[_\s-]?sync|management[_\s-]?database)[^\n]{0,200}(?:linkedin|telegram|credential|login|email|password|vc[_\s-]?firm|venture[_\s-]?capital|crypto|finance|dashboard|partner)|(?:linkedin|telegram)[^\n]{0,120}obsidian[^\n]{0,120}(?:vault|plugin|sync|credential|login|dashboard)|obsidian[^\n]{0,80}(?:vault|plugin)[^\n]{0,80}(?:credential|login|password|email)[^\n]{0,200}(?:enable|sync|install|community))'
+    mitigation: 'REF6598 (Elastic Security Labs, April 14 2026) is a targeted social engineering campaign delivering PHANTOMPULSE RAT via Obsidian shared vault abuse. Threat actors pose as venture capital firm representatives on LinkedIn, move targets to Telegram, and provide Obsidian account credentials to a pre-staged vault. Victims are instructed to enable community plugin sync, which pulls down a trojanized Shell Commands plugin (data.json) that executes attacker-controlled PowerShell/AppleScript on vault open. Targets are primarily in the financial and cryptocurrency sectors. Never accept Obsidian vault credentials from unknown parties, disable community plugin sync for untrusted vaults, and monitor for anomalous child process creation from Obsidian.exe.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-16'
+      updated: '2026-04-16'
+      tags:
+        - social_engineering
+        - se
+        - obsidian
+        - vault-abuse
+        - plugin-abuse
+        - linkedin
+        - telegram
+        - crypto
+        - ref6598
+      last_modified: '2026-04-16'
+      techniques:
+        - id: SE-005
+          name: Social engineering / lure
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - prompt
+      lifecycle:
+        introduced: '2026-04-16'
+        last_modified: '2026-04-16'
+      quality:
+        precision_estimate: 0.88
+        benchmark_set: core-static-v1
+      references:
+        - https://www.elastic.co/security-labs/phantom-in-the-vault
+        - https://thehackernews.com/2026/04/obsidian-plugin-abuse-delivers.html
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

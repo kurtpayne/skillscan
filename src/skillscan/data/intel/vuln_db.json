@@ -1640,5 +1640,63 @@
       "added": "2026-04-14",
       "rule_id": "PSV-019"
     }
+  },
+  "nginx-ui": {
+    "nginx-ui": {
+      "2.0.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.1.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.2.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.3.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.3.1": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.2": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.3": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.4": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.5": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      }
+    }
   }
 }

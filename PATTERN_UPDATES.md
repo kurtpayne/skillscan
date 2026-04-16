@@ -1,3 +1,20 @@
+## 2026-04-16
+rulepack: 2026.04.16.1
+Three new detection rules, IOC enrichment, and vuln DB updates covering the PHANTOMPULSE RAT campaign (REF6598) delivered via Obsidian plugin abuse and a critical nginx-ui MCP authentication bypass (CVE-2026-33032).
+- Added `MAL-069` (critical): **PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse (REF6598)** — PHANTOMPULSE (Elastic Security Labs, April 14 2026) is a novel AI-assisted Windows RAT delivered via Obsidian's Shell Commands community plugin. Threat actors (posing as a VC firm) social-engineer targets on LinkedIn and Telegram into opening an attacker-controlled Obsidian vault and enabling community plugin sync. The trojanized Shell Commands plugin (data.json) executes Base64-encoded PowerShell on vault open, downloading a loader (syncobs.exe / PHANTOMPULL) from 195.3.222.251. PHANTOMPULL AES-256-CBC-decrypts and reflectively loads PHANTOMPULSE, a full-featured backdoor with blockchain-based C2 resolution via Ethereum wallet (0xc117688c530b660e15085bF3A2B664117d8672aA on Blockscout), process injection via module stomping, keylogging, screen capture, and UAC bypass. macOS variant uses an obfuscated AppleScript dropper with Telegram fallback C2 (0x666.info). C2 panel: panel.fefea22134.net. Remove the obsidian-shellcommands plugin, revoke all credentials, and check for syncobs.exe in %TEMP%.
+- Added `PSV-023` (critical): **nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5)** — CVE-2026-33032 (CVSS 9.8, CWE-306, GHSA-h6c2-x2m2-mwhf) is a critical authentication bypass in nginx-ui versions 2.3.5 and prior. The /mcp_message HTTP endpoint only applies IP whitelisting (default empty = allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files — achieving complete nginx service takeover. Actively exploited in the wild against 2,600+ exposed instances since March 2026. No official patch available. Disable the MCP integration endpoint or restrict /mcp_message to trusted IPs via firewall rules immediately.
+- Added `SE-005` (high): **Obsidian shared vault social engineering lure (REF6598 / PHANTOMPULSE delivery)** — The REF6598 campaign uses LinkedIn and Telegram to lure financial/crypto sector targets into opening an attacker-controlled Obsidian vault and enabling community plugin sync, which silently delivers the PHANTOMPULSE RAT loader. Never accept Obsidian vault credentials from unknown parties, disable community plugin sync for untrusted vaults, and monitor for anomalous child process creation from Obsidian.exe.
+- IOC update: added `fefea22134.net`, `panel.fefea22134.net`, `0x666.info` to domain IOC DB; added `195.3.222.251` to IP IOC DB.
+- Vuln DB update: added `nginx-ui` versions 2.0.0–2.3.5 as CVE-2026-33032 (critical, no patch available).
+Sources:
+- Elastic Security Labs (REF6598 / PHANTOMPULSE): https://www.elastic.co/security-labs/phantom-in-the-vault
+- The Hacker News (PHANTOMPULSE): https://thehackernews.com/2026/04/obsidian-plugin-abuse-delivers.html
+- SOC Prime (PHANTOMPULSE): https://socprime.com/active-threats/vault-obsidian-abused-to-deliver-phantompulse-rat/
+- NVD (CVE-2026-33032): https://nvd.nist.gov/vuln/detail/CVE-2026-33032
+- GitHub Advisory (GHSA-h6c2-x2m2-mwhf): https://github.com/0xJacky/nginx-ui/security/advisories/GHSA-h6c2-x2m2-mwhf
+- The Hacker News (CVE-2026-33032): https://thehackernews.com/2026/04/critical-nginx-ui-vulnerability-cve.html
+- Field Effect (CVE-2026-33032): https://fieldeffect.com/blog/critical-nginx-ui-vulnerability
+- Pluto Security (CVE-2026-33032): https://pluto.security/blog/mcp-bug-nginx-security-vulnerability-cvss-9-8/
 ## 2026-04-15
 rulepack: 2026.04.15.1
 Five new detection rules, IOC enrichment, and vuln DB updates covering a systemic MCP STDIO command injection advisory, a Marimo pre-auth RCE, a docker-mcp-server OS command injection, and two malicious npm supply chain packages.
