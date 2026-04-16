@@ -226,10 +226,10 @@ def scan(
     max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
     file_timeout_seconds: int = 30,  # per-file rule-matching timeout
     yara_rules_dir: Path | None = None,
-    semgrep_rules_dir: Path | None = None,
     live_vuln_check: bool = False,
     virustotal: bool = False,
     virustotal_api_key: str | None = None,
+    vuln_report_path: Path | None = None,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -252,6 +252,10 @@ def scan(
         iocs: list[IOC] = []
         capabilities: list[Capability] = []
         dependency_findings: list[DependencyFinding] = []
+        # Discovered dependencies — used for external vuln-report cross-reference.
+        # Each entry: (name, version, ecosystem, manifest_path).  Populated by
+        # the per-file scanner when it parses requirements.txt / package.json.
+        discovered_deps: list[tuple[str, str, str, str]] = []
         # Triage score accumulators — track max across all files
         _triage_sem_inj: float = 0.0
         _triage_se: float = 0.0
@@ -514,6 +518,7 @@ def scan(
             lower = path.name.lower()
             if lower == "requirements.txt":
                 for name, version in _parse_requirements(text):
+                    discovered_deps.append((name, version, "pypi", str(path)))
                     flagged_by_static = False
                     if name in vuln_db.get("python", {}) and version in vuln_db["python"][name]:
                         entry = vuln_db["python"][name][version]
@@ -565,6 +570,7 @@ def scan(
             if lower == "package.json":
                 for name, version in _parse_package_json(text):
                     version_norm = version.lstrip("^~>=< ")
+                    discovered_deps.append((name, version_norm or version, "npm", str(path)))
                     flagged_by_static = False
                     if name in vuln_db.get("npm", {}) and version_norm in vuln_db["npm"][name]:
                         entry = vuln_db["npm"][name][version_norm]
@@ -678,6 +684,76 @@ def scan(
                         )
                     )
 
+        # External vuln-report cross-reference (Snyk / Dependabot / Grype).
+        # Users who already run a SCA tool in CI can pipe its JSON output into
+        # SkillScan to get EXT-VULN findings on every dependency that their
+        # existing SCA tool flagged.  This augments (does not replace) the
+        # bundled static vuln DB and --live-vuln-check.
+        if vuln_report_path is not None:
+            from skillscan.detectors.vuln_report import parse_vuln_report
+
+            external_vulns = parse_vuln_report(vuln_report_path)
+            external_lookup: dict[tuple[str, str], list[dict]] = {}
+            for vuln in external_vulns:
+                key = (str(vuln.get("package", "")).lower(), str(vuln.get("ecosystem", "")).lower())
+                external_lookup.setdefault(key, []).append(vuln)
+
+            # Track which (ext_id, package) combos already fired so a multi-
+            # file skill with the same requirements.txt in several subdirs
+            # doesn't double-count.
+            _seen_ext: set[tuple[str, str, str]] = set()
+            for dep_name, dep_version, dep_ecosystem, dep_manifest in discovered_deps:
+                key = (dep_name.lower(), dep_ecosystem.lower())
+                for vuln in external_lookup.get(key, []):
+                    # Optional version gate: if the report's record has an
+                    # explicit version and it does not match the installed
+                    # version, skip.  When the report's version is absent
+                    # (e.g. Dependabot), we always match on package name.
+                    vuln_version = vuln.get("version")
+                    if vuln_version and dep_version and vuln_version != dep_version:
+                        continue
+                    ext_id = str(vuln.get("id", ""))
+                    dedup_key = (ext_id, dep_name.lower(), dep_manifest)
+                    if dedup_key in _seen_ext:
+                        continue
+                    _seen_ext.add(dedup_key)
+                    try:
+                        sev = Severity(vuln.get("severity", "medium"))
+                    except ValueError:
+                        sev = Severity.MEDIUM
+                    # Normalise severity name for the finding ID — keep it
+                    # short & URL-safe (first 16 chars of the advisory ID).
+                    short_id = ext_id[:16] if ext_id else "UNKNOWN"
+                    title_prefix = f"[{ext_id}] " if ext_id else ""
+                    findings.append(
+                        Finding(
+                            id=f"EXT-VULN-{short_id}",
+                            category="dependency_vulnerability",
+                            severity=sev,
+                            confidence=0.95,
+                            title=f"{title_prefix}{vuln.get('title', 'External vulnerability report')}"[:220],
+                            evidence_path=dep_manifest,
+                            snippet=(f"{dep_name}@{dep_version} flagged by external vuln report ({ext_id})")[
+                                :240
+                            ],
+                            mitigation=(
+                                "An external SCA tool (Snyk/Dependabot/Grype) flagged this "
+                                "dependency. Upgrade to a non-vulnerable version per the "
+                                "referenced advisory."
+                            ),
+                        )
+                    )
+                    dependency_findings.append(
+                        DependencyFinding(
+                            ecosystem=dep_ecosystem,
+                            name=dep_name,
+                            version=dep_version,
+                            vulnerability_id=f"EXT-{ext_id}" if ext_id else "EXT-UNKNOWN",
+                            severity=sev,
+                            fixed_version=None,
+                        )
+                    )
+
         dedup_iocs: dict[tuple[str, str, str], IOC] = {}
         allow_domains = {d.lower() for d in policy.allow_domains}
         for ioc in iocs:
@@ -735,6 +811,11 @@ def scan(
                 )
 
         for dep in dependency_findings:
+            # EXT-* dependency findings already had an EXT-VULN-* Finding
+            # emitted during the external-report cross-reference loop — skip
+            # to avoid double-counting.
+            if dep.vulnerability_id.startswith("EXT-"):
+                continue
             is_live = dep.vulnerability_id.startswith("OSV-LIVE-")
             findings.append(
                 Finding(
@@ -834,12 +915,6 @@ def scan(
 
             for file_path in files:
                 findings.extend(scan_with_yara(file_path, yara_rules_dir))
-
-        if semgrep_rules_dir is not None:
-            from skillscan.detectors.semgrep_scanner import scan_with_semgrep
-
-            for file_path in files:
-                findings.extend(scan_with_semgrep(file_path, semgrep_rules_dir))
 
         findings = _deduplicate_findings(findings)
 

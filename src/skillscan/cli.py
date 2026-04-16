@@ -583,17 +583,6 @@ def scan_cmd(
             "Requires: pip install 'skillscan-security[yara]'"
         ),
     ),
-    semgrep_rules: Path | None = typer.Option(
-        None,
-        "--semgrep-rules",
-        envvar="SKILLSCAN_SEMGREP_RULES",
-        help=(
-            "Directory containing Semgrep rule YAML files to run against embedded "
-            "code in skill bundles. Only code files (.py/.js/.ts/.sh/.rb/.go/.rs) "
-            "are inspected. Requires the semgrep CLI — install with: "
-            "pip install 'skillscan-security[semgrep]'"
-        ),
-    ),
     live_vuln_check: bool = typer.Option(
         False,
         "--live-vuln-check",
@@ -603,6 +592,18 @@ def scan_cmd(
             "and package.json that are not already flagged by the bundled static vuln "
             "DB. Augments the static DB; requires network access. Degrades gracefully "
             "on network failure."
+        ),
+    ),
+    vuln_report: Path | None = typer.Option(
+        None,
+        "--vuln-report",
+        envvar="SKILLSCAN_VULN_REPORT",
+        help=(
+            "Cross-reference a Snyk, Dependabot, or Grype JSON vulnerability report "
+            "against the skill's discovered dependencies. Format is auto-detected. "
+            "Each match emits an EXT-VULN-* finding with the external advisory ID. "
+            "Generate e.g. with: snyk test --json > snyk.json  or  "
+            "gh api /repos/{owner}/{repo}/dependabot/alerts > dependabot.json"
         ),
     ),
 ) -> None:
@@ -817,10 +818,10 @@ def scan_cmd(
                     max_file_size_bytes=_max_file_size_bytes,
                     file_timeout_seconds=timeout,
                     yara_rules_dir=yara_rules,
-                    semgrep_rules_dir=semgrep_rules,
                     live_vuln_check=live_vuln_check,
                     virustotal=virustotal,
                     virustotal_api_key=virustotal_api_key,
+                    vuln_report_path=vuln_report,
                 )
                 try:
                     report = _future.result(timeout=timeout)
@@ -850,10 +851,10 @@ def scan_cmd(
                 max_file_size_bytes=_max_file_size_bytes,
                 file_timeout_seconds=_file_timeout,
                 yara_rules_dir=yara_rules,
-                semgrep_rules_dir=semgrep_rules,
                 live_vuln_check=live_vuln_check,
                 virustotal=virustotal,
                 virustotal_api_key=virustotal_api_key,
+                vuln_report_path=vuln_report,
             )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
