@@ -37,6 +37,7 @@ from skillscan.analysis_pkg._text import (
 )
 from skillscan.clamav import scan_paths as clamav_scan_paths
 from skillscan.detectors.ast_flows import detect_python_ast_flows
+from skillscan.detectors.virustotal import compute_sha256, lookup_hash
 from skillscan.ecosystems import detect_ecosystems
 from skillscan.ml_detector import ml_prompt_injection_findings
 from skillscan.models import (
@@ -143,6 +144,72 @@ def _deduplicate_findings(findings: list[Finding]) -> list[Finding]:
     return result
 
 
+def _virustotal_findings(
+    binary_artifacts: list,  # type: ignore[type-arg]
+    api_key: str | None,
+) -> list[Finding]:
+    """Query VirusTotal for each binary artifact's SHA-256 and emit findings.
+
+    Emits VT-UNAVAILABLE (LOW) if the API key is missing.  For each hash with
+    at least one malicious detection, emits a VT-* finding with severity
+    scaled by the detection count (>=5 → CRITICAL, else HIGH).
+    """
+    findings: list[Finding] = []
+    if not api_key:
+        findings.append(
+            Finding(
+                id="VT-UNAVAILABLE",
+                category="virustotal",
+                severity=Severity.LOW,
+                confidence=1.0,
+                title="VirusTotal API key not provided",
+                evidence_path="",
+                snippet=(
+                    "Set VIRUSTOTAL_API_KEY env var or pass --virustotal-api-key "
+                    "to enable VirusTotal hash lookups."
+                ),
+                mitigation=(
+                    "Obtain a free API key from https://www.virustotal.com/ and "
+                    "provide it via env var or --virustotal-api-key."
+                ),
+            )
+        )
+        return findings
+
+    for artifact in binary_artifacts:
+        path = artifact.path
+        sha256 = compute_sha256(path)
+        if not sha256:
+            continue
+        result = lookup_hash(sha256, api_key)
+        if not result:
+            continue
+        malicious = int(result.get("malicious", 0))
+        if malicious <= 0:
+            continue
+        total = int(result.get("total_engines", 0))
+        top = result.get("top_detections", []) or []
+        severity = Severity.CRITICAL if malicious >= 5 else Severity.HIGH
+        top_str = ", ".join(top[:3]) if top else "(none reported)"
+        findings.append(
+            Finding(
+                id=f"VT-{sha256[:8]}",
+                category="virustotal_malware",
+                severity=severity,
+                confidence=0.95,
+                title=f"VirusTotal: {malicious}/{total} engines flagged as malicious",
+                evidence_path=str(path),
+                snippet=f"SHA-256: {sha256} | Top detections: {top_str}",
+                mitigation=(
+                    "Treat this artifact as malicious: remove it from the skill bundle "
+                    "or quarantine before execution.  Inspect VirusTotal report for "
+                    "full engine coverage."
+                ),
+            )
+        )
+    return findings
+
+
 def scan(
     target: Path | str,
     policy: Policy,
@@ -160,6 +227,8 @@ def scan(
     file_timeout_seconds: int = 30,  # per-file rule-matching timeout
     yara_rules_dir: Path | None = None,
     live_vuln_check: bool = False,
+    virustotal: bool = False,
+    virustotal_api_key: str | None = None,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -190,6 +259,14 @@ def scan(
         ioc_db = _load_builtin_ioc_db()
         ioc_db, vuln_db, intel_sources = _merge_user_intel(ioc_db, vuln_db)
         findings.extend(_binary_artifact_findings(inventory.binary_artifacts))
+
+        if virustotal:
+            findings.extend(
+                _virustotal_findings(
+                    inventory.binary_artifacts,
+                    virustotal_api_key,
+                )
+            )
 
         if clamav:
             clamav_result = clamav_scan_paths(prepared.root, timeout_seconds=clamav_timeout_seconds)

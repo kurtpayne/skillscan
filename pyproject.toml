@@ -69,6 +69,12 @@ trace = [
 fuzzer = [
   "skillscan-fuzzer>=0.1.0",
 ]
+# VirusTotal cloud AV hash lookups (BYOK) — .env auto-loading helper
+# The core --virustotal flag works without this; python-dotenv is only needed
+# if you prefer its implementation over the built-in .env walker.
+virustotal = [
+  "python-dotenv>=1.0",
+]
 # ONNX export verification and INT8 quantization scripts (scripts/verify_onnx_export.py, scripts/quantize_onnx.py)
 model-quality = [
   "transformers>=4.40.0",

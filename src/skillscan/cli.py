@@ -172,19 +172,41 @@ def _rules_age_days() -> float | None:
 
 
 def _load_dotenv(path: Path = Path(".env")) -> None:
+    """Load environment variables from *path* (or a parent directory's .env).
+
+    Walks up from the current directory looking for the first ``.env`` file so
+    that `skillscan scan` works whether invoked from the repo root or from a
+    subdirectory.  Values already present in ``os.environ`` are not
+    overwritten.
+    """
     import os as _os
 
-    if not path.exists():
-        return
-    for line in path.read_text(encoding="utf-8").splitlines():
-        raw = line.strip()
-        if not raw or raw.startswith("#") or "=" not in raw:
+    candidates: list[Path] = [path]
+    if path == Path(".env"):
+        cwd = Path.cwd()
+        for parent in [cwd, *cwd.parents]:
+            candidates.append(parent / ".env")
+
+    seen: set[Path] = set()
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
             continue
-        key, value = raw.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if key and key not in _os.environ:
-            _os.environ[key] = value
+        if resolved in seen or not resolved.exists():
+            continue
+        seen.add(resolved)
+        for line in resolved.read_text(encoding="utf-8").splitlines():
+            raw = line.strip()
+            if not raw or raw.startswith("#") or "=" not in raw:
+                continue
+            key, value = raw.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in _os.environ:
+                _os.environ[key] = value
+        # Stop at the first .env found (walking up from cwd).
+        return
 
 
 def _finding_key(finding: dict) -> tuple[str, str, int | None]:
@@ -463,6 +485,23 @@ def scan_cmd(
         30,
         "--clamav-timeout-seconds",
         help="ClamAV scan timeout in seconds",
+    ),
+    # VirusTotal (cloud AV, BYOK)
+    virustotal: bool = typer.Option(
+        False,
+        "--virustotal/--no-virustotal",
+        envvar="SKILLSCAN_VIRUSTOTAL",
+        help=(
+            "Submit SHA-256 hashes of embedded binary artifacts to VirusTotal v3 "
+            "(BYOK — requires VIRUSTOTAL_API_KEY or --virustotal-api-key). "
+            "Free-tier rate limit: 4 requests/minute."
+        ),
+    ),
+    virustotal_api_key: str | None = typer.Option(
+        None,
+        "--virustotal-api-key",
+        envvar="VIRUSTOTAL_API_KEY",
+        help="VirusTotal API key (reads VIRUSTOTAL_API_KEY env var by default).",
     ),
     # ML
     ml_detect: bool = typer.Option(
@@ -768,6 +807,8 @@ def scan_cmd(
                     file_timeout_seconds=timeout,
                     yara_rules_dir=yara_rules,
                     live_vuln_check=live_vuln_check,
+                    virustotal=virustotal,
+                    virustotal_api_key=virustotal_api_key,
                 )
                 try:
                     report = _future.result(timeout=timeout)
@@ -798,6 +839,8 @@ def scan_cmd(
                 file_timeout_seconds=_file_timeout,
                 yara_rules_dir=yara_rules,
                 live_vuln_check=live_vuln_check,
+                virustotal=virustotal,
+                virustotal_api_key=virustotal_api_key,
             )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
