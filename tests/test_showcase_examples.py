@@ -894,6 +894,7 @@ def test_showcase_179_sup035_dom_utils_lite_ssh_backdoor():
 
 def test_showcase_180_mal069_phantompulse_obsidian_rat():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
 
@@ -908,6 +909,7 @@ def test_showcase_180_mal069_phantompulse_obsidian_rat():
 
 def test_showcase_181_psv023_nginx_ui_mcp_auth_bypass():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
 
@@ -922,6 +924,7 @@ def test_showcase_181_psv023_nginx_ui_mcp_auth_bypass():
 
 def test_showcase_182_se005_obsidian_vault_lure():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
 
