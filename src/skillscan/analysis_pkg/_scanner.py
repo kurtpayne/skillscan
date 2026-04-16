@@ -226,6 +226,7 @@ def scan(
     max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
     file_timeout_seconds: int = 30,  # per-file rule-matching timeout
     yara_rules_dir: Path | None = None,
+    semgrep_rules_dir: Path | None = None,
     live_vuln_check: bool = False,
     virustotal: bool = False,
     virustotal_api_key: str | None = None,
@@ -833,6 +834,12 @@ def scan(
 
             for file_path in files:
                 findings.extend(scan_with_yara(file_path, yara_rules_dir))
+
+        if semgrep_rules_dir is not None:
+            from skillscan.detectors.semgrep_scanner import scan_with_semgrep
+
+            for file_path in files:
+                findings.extend(scan_with_semgrep(file_path, semgrep_rules_dir))
 
         findings = _deduplicate_findings(findings)
 

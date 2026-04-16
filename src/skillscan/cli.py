@@ -583,6 +583,17 @@ def scan_cmd(
             "Requires: pip install 'skillscan-security[yara]'"
         ),
     ),
+    semgrep_rules: Path | None = typer.Option(
+        None,
+        "--semgrep-rules",
+        envvar="SKILLSCAN_SEMGREP_RULES",
+        help=(
+            "Directory containing Semgrep rule YAML files to run against embedded "
+            "code in skill bundles. Only code files (.py/.js/.ts/.sh/.rb/.go/.rs) "
+            "are inspected. Requires the semgrep CLI — install with: "
+            "pip install 'skillscan-security[semgrep]'"
+        ),
+    ),
     live_vuln_check: bool = typer.Option(
         False,
         "--live-vuln-check",
@@ -806,6 +817,7 @@ def scan_cmd(
                     max_file_size_bytes=_max_file_size_bytes,
                     file_timeout_seconds=timeout,
                     yara_rules_dir=yara_rules,
+                    semgrep_rules_dir=semgrep_rules,
                     live_vuln_check=live_vuln_check,
                     virustotal=virustotal,
                     virustotal_api_key=virustotal_api_key,
@@ -838,6 +850,7 @@ def scan_cmd(
                 max_file_size_bytes=_max_file_size_bytes,
                 file_timeout_seconds=_file_timeout,
                 yara_rules_dir=yara_rules,
+                semgrep_rules_dir=semgrep_rules,
                 live_vuln_check=live_vuln_check,
                 virustotal=virustotal,
                 virustotal_api_key=virustotal_api_key,

@@ -57,6 +57,10 @@ ml-onnx = [
 yara = [
   "yara-python>=4.5.0",
 ]
+# Semgrep custom rules — AST-level analysis over embedded code (JS/TS/Py/etc.)
+semgrep = [
+  "semgrep>=1.80",
+]
 # Quality linter — delegates to skillscan-lint when installed
 lint = [
   "skillscan-lint>=0.1.0",

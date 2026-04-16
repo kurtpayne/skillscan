@@ -8,6 +8,18 @@ Historical ML model evaluation results, most recent first.
 **Training:** 24,328 examples (+673 hard-negative benign, +91 PI, +200 fuzzer adversarial), 3 epochs on A100
 **Eval set:** 585 held-out files (66 upgraded to multi-label via teacher validation)
 
+**Headline metrics (user-facing):**
+
+| Metric | Value | What it measures |
+|---|---|---|
+| Verdict accuracy | 88.9% | Share of files where the malicious/benign verdict matches the gold label |
+| Threat detection rate | 87.4% (146/167) | Share of actual threats the model flagged |
+| Parse failures | 0.2% (1/585) | Runs where the model produced non-JSON output |
+
+**Categorization metric (technical):**
+
+Macro F1: 0.731 — measures how precisely the model picks the specific attack type among 7 labels. A file correctly flagged as malicious but labeled `path_traversal` when the gold label is `code_injection` counts as a partial miss on this metric, even though the verdict is correct.
+
 Per-class results (corrected multi-label eval):
 | Class | Precision | Recall | F1 |
 |---|---|---|---|
@@ -19,11 +31,7 @@ Per-class results (corrected multi-label eval):
 | evasion | 0.500 | 0.619 | 0.556 |
 | prompt_injection | 0.906 | 0.274 | 0.432 |
 
-Macro F1: 0.731
-Verdict accuracy: 88.9%
-Parse failures: 1/585 (0.2%)
 GPU inference (A10G): 0.14s/file
-Threat detection rate: 87.4% (146/167 actual threats caught)
 
 Note: v4.0 eval used single-label ground truth. Teacher validation (Claude Sonnet) confirmed that the model's multi-label predictions were correct on 84% of label disagreements. Correcting the eval labels raised macro F1 from 0.479 to 0.731 with no model changes — the model was already performing well.
 
