@@ -12,7 +12,7 @@ SkillScan operates a layered, deterministic-first pipeline. Each layer runs inde
 |---|-------|-----------|---------|------------|
 | 1 | Binary artifact detection | Magic-byte classification | Always | Yes |
 | 2 | IOC matching | Intel DB scan (5,500 entries) | Always | Yes |
-| 3 | Static regex rules | 158 rules across 9 categories | Always | Yes |
+| 3 | Static regex rules | 220+ rules across 10+ categories | Always | Yes |
 | 4 | Chain rules (co-occurrence) | Multi-pattern proximity matching | Always | Yes |
 | 5 | Multilang rules | Language-gated regex (.js/.ts/.rb/.go/.rs) | Always | Yes |
 | 6 | Python AST data-flow | Source-to-sink taint analysis (.py only) | Always | Yes |
@@ -88,7 +88,7 @@ static_rules:
       tags: [execution, remote_code]
 ```
 
-Rules are organized into channels (`stable`, `beta`, `experimental`) controlled by the `--channel` flag. The `stable` channel is the default and contains only rules with a false-positive rate below 5% on the benchmark corpus.
+Rules carry a `status` field (`stable`, `beta`, `experimental`) in their metadata. The `stable` set is the default and contains only rules with a false-positive rate below 5% on the benchmark corpus. Future releases may expose an explicit channel selector; today the bundled rulepack ships the stable set.
 
 ---
 
@@ -299,7 +299,7 @@ Extracted IOCs (domains, IPs, URLs) are matched against the bundled IOC database
 - Active C2 IPs from Feodo Tracker
 - Hijacked IP blocks from Spamhaus DROP
 
-Large feeds (Hagezi TIF, Phishing Army, KADhosts) are not bundled; they are downloaded at runtime via `skillscan intel sync` and merged at scan time. This keeps the installed package small (~50 KB for the bundled DB) while allowing users who run `intel sync` to benefit from broader coverage.
+Large feeds (Hagezi TIF, Phishing Army, KADhosts) are not bundled; they are downloaded at runtime by the auto-intel refresh (or on-demand via `skillscan update`) and merged at scan time. This keeps the installed package small (~50 KB for the bundled DB) while allowing users to benefit from broader coverage.
 
 ### Vulnerability Database (`vuln_db.json`)
 
@@ -329,9 +329,9 @@ The score is normalized by the total number of files scanned and capped at 1.0. 
 
 ## False Positive Management
 
-SkillScan supports per-finding suppressions via `skillscan suppress` and a `.skillscan-suppressions.yaml` file in the skill bundle. Suppressions are scoped to a specific rule ID and optionally a file path and expiry date. Suppressions with no expiry date are flagged by CI as a warning (Issue H2).
+SkillScan supports per-finding suppressions via the `skillscan suppress` group and a `.skillscan-suppressions.yaml` file (auto-discovered from the scan target). See [suppression-format.md](suppression-format.md) for the full schema. Suppressions are scoped to a specific rule ID and optionally a file path and expiry date. Suppressions with no expiry date are flagged by CI as a warning.
 
-The `--channel` flag controls which rules are active. The `experimental` channel includes rules with higher false-positive rates that are not yet validated against the benchmark corpus. Contributors should not promote rules from `experimental` to `stable` without benchmark evidence.
+Rules carry a `status` field in their metadata (`stable` / `beta` / `experimental`). The `experimental` set includes rules with higher false-positive rates that are not yet validated against the benchmark corpus. Contributors should not promote rules from `experimental` to `stable` without benchmark evidence.
 
 ---
 

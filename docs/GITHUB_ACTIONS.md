@@ -46,7 +46,7 @@ All inputs are optional except `scan-path`.
 |---|---|---|---|
 | `scan-path` | string | *(required)* | Path relative to the repo root to scan. Can be a directory, file, or glob. |
 | `python-version` | string | `3.12` | Python version for the scanner runtime. |
-| `policy-profile` | string | `strict` | Built-in policy: `strict`, `moderate`, or `permissive`. |
+| `policy-profile` | string | `strict` | Built-in policy: `strict`, `balanced`, `permissive`, `ci`, `enterprise`, or `observe`. |
 | `policy-file` | string | `""` | Path to a custom policy YAML. Overrides `policy-profile` when set. |
 | `fail-on` | string | `block` | Fail threshold: `block`, `warn`, or `never`. |
 | `rulepack-channel` | string | `stable` | Rulepack channel: `stable`, `preview`, or `labs`. |

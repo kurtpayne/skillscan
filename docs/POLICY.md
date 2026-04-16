@@ -1,14 +1,34 @@
 # Policy Guide
 
-SkillScan ships with built-in profiles:
+SkillScan ships with six built-in profiles:
 
-1. `strict` (default)
-2. `balanced`
-3. `permissive`
+| Profile | Blocks on | ML required | Use case |
+|---|---|---|---|
+| `strict` (default) | score ≥ 70, all categories | No | Local dev, high-assurance pipelines |
+| `balanced` | score ≥ 50, HIGH+ severity | No | Developer and team use |
+| `permissive` | score ≥ 90, CRITICAL only | No | Trusted internal registries |
+| `ci` | CRITICAL + HIGH only | No | PR gates, CI/CD pipelines |
+| `enterprise` | score ≥ 70, all categories | Yes (use with `--require-model`) | Formal security gate |
+| `observe` | nothing (exit 0 always) | No | Day-one adoption, reporting only |
 
-Custom policy files can override thresholds, rule weights, and local domain allow/block controls.
+List or inspect profiles:
 
-Minimal custom policy example:
+```bash
+skillscan policy list
+skillscan policy show strict
+skillscan policy show-default
+```
+
+Select a built-in profile at scan time:
+
+```bash
+skillscan scan ./target --profile balanced
+```
+
+## Custom policies
+
+Custom policy files can override thresholds, rule weights, and local domain
+allow/block controls. Minimal example:
 
 ```yaml
 name: strict-custom
@@ -37,8 +57,11 @@ limits:
   timeout_seconds: 60
 ```
 
-Use a custom policy:
+Validate and apply:
 
 ```bash
+skillscan policy validate ./my_policy.yaml
 skillscan scan ./target --policy ./my_policy.yaml
 ```
+
+See [custom-policy-format.md](custom-policy-format.md) for the complete policy YAML schema.

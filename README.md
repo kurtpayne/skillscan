@@ -383,7 +383,7 @@ Starter bundles for OpenClaw/ClawHub, Claude-style skills, and OpenAI Actions ar
 - `integrations/claude/`
 - `integrations/openai/`
 
-See the [Platform Bundles](docs/DISTRIBUTION.md#platform-bundles) section of the Distribution Guide for setup and rollout guidance.
+Each `integrations/` directory has a README describing the starter bundle and how to adopt it.
 
 ---
 
@@ -462,14 +462,22 @@ Inline — suppress a specific rule on a specific line:
 export ADMIN_TOKEN="placeholder-replaced-at-runtime"
 ```
 
-Project-level — suppress rules across a whole project via `.skillscan-suppress` at the repo root:
+Project-level — suppress rules across a whole project via `.skillscan-suppressions.yaml` at the repo root:
 
+```yaml
+# .skillscan-suppressions.yaml
+suppressions:
+  - id: MAL-001
+    evidence_path: skills/legacy-tool.md
+    reason: Known false positive — token is a placeholder
+    expires: "2026-12-31"
+  - id: EXF-003
+    evidence_path: skills/analytics.md
+    reason: Intentional telemetry, reviewed 2026-03-01
+    expires: "2026-12-31"
 ```
-# .skillscan-suppress
-# Format: RULE-ID  path/to/file.md  optional reason
-MAL-001  skills/legacy-tool.md  Known false positive — token is a placeholder
-EXF-003  skills/analytics.md    Intentional telemetry, reviewed 2026-03-01
-```
+
+See [`docs/suppression-format.md`](docs/suppression-format.md) for the full schema.
 
 ### Policy profiles
 
@@ -510,19 +518,23 @@ Shell script uninstall: `scripts/uninstall.sh`.
 
 ## Documentation
 
+- Command reference: `docs/COMMANDS.md`
 - Detection model: `docs/DETECTION_MODEL.md`
 - Scan overview: `docs/SCAN_OVERVIEW.md`
 - Architecture: `docs/ARCHITECTURE.md`
-- Threat model: `docs/THREAT_MODEL.md`
 - Policy guide: `docs/POLICY.md`
 - Intel guide: `docs/INTEL.md`
 - Testing guide: `docs/TESTING.md`
 - Rules and scoring: `docs/RULES.md`
-- Comprehensive examples: `docs/EXAMPLES.md`
+- Rule catalogue: `docs/EXAMPLES.md`
 - GitHub Actions integration: `docs/GITHUB_ACTIONS.md`
-- Distribution: `docs/DISTRIBUTION.md`
+- Custom rule format: `docs/custom-rules-format.md`
+- Custom policy format: `docs/custom-policy-format.md`
+- Custom intel format: `docs/custom-intel-format.md`
+- Suppression format: `docs/suppression-format.md`
+- ML model metrics: `docs/MODEL_METRICS.md`
 - Release checklist: `docs/RELEASE_CHECKLIST.md`
-- PRD: `docs/PRD.md`
+- Pattern update changelog: `PATTERN_UPDATES.md`
 
 ---
 

@@ -1,6 +1,6 @@
 # Intel Guide
 
-Intel sources are local files registered with SkillScan.
+Intel sources are local files and URL-based feeds registered with SkillScan.
 
 SkillScan also includes managed intel feeds that auto-refresh on scan by default.
 Default refresh behavior:
@@ -37,16 +37,27 @@ Current managed feed set includes:
 ## Commands
 
 ```bash
+# Inspect intel sources
 skillscan intel status
 skillscan intel list
-skillscan intel add ./my_iocs.json --type ioc --name team-iocs
-skillscan intel sync
-skillscan intel sync --force
+
+# Add a custom URL-based feed (re-fetched on every `skillscan update`)
+skillscan intel add --url https://example.com/iocs.json --type ioc --name team-iocs
+
+# Enable / disable / remove a custom feed
 skillscan intel disable team-iocs
 skillscan intel enable team-iocs
 skillscan intel remove team-iocs
-skillscan intel rebuild
+
+# Look up an indicator in the merged intel DB
+skillscan intel lookup example.com
+
+# Refresh all rules, intel, and the ML model (no TTL, no cache)
+skillscan update
 ```
+
+> `skillscan update` replaces the earlier `intel sync` / `intel rebuild` /
+> `rule sync` / `model sync` commands. There is a single refresh entry point.
 
 ## Scan-time auto refresh controls
 

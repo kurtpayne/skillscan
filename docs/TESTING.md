@@ -1,20 +1,37 @@
 # Testing
 
-Run local checks:
+Run the local test suite (unit + rule + adversarial):
 
 ```bash
-pytest -q
+SKILLSCAN_NO_USER_RULES=1 pytest -q
 ruff check src tests
 mypy src
+```
+
+`SKILLSCAN_NO_USER_RULES=1` forces the scanner to ignore `~/.skillscan/rules/`
+so local test runs behave identically to CI.
+
+Or run everything through the wrapper script:
+
+```bash
+./scripts/run_tests.sh check   # ruff + mypy + pytest
+./scripts/run_tests.sh test
+./scripts/run_tests.sh lint
+./scripts/run_tests.sh type
+```
+
+Or via Makefile:
+
+```bash
+make check
 ```
 
 Recommended CI gates:
 
 1. Unit tests and fixture regression tests
-2. Lint and typing checks
-3. Minimum coverage threshold for scanner core
-
-The malicious fixtures include OpenClaw-style compromised plugin patterns reproduced in safe test data.
+2. Lint and typing checks (`ruff check`, `mypy`)
+3. Schema/signature lint (`signature-lint.yml`)
+4. Pattern-update guard for rule PRs (`pattern-update-guard.yml`)
 
 ## Regression fixtures
 
@@ -35,5 +52,5 @@ SkillScan includes a red-team style adversarial suite with expected verdicts and
 Run all tests:
 
 ```bash
-pytest -q
+SKILLSCAN_NO_USER_RULES=1 pytest -q
 ```

@@ -22,7 +22,7 @@
 - `src/skillscan/rules.py`: YAML rulepack loading, validation, and regex compilation
 - `src/skillscan/intel.py`: local intel source management
 - `src/skillscan/semantic_local.py`: offline semantic classifiers (prompt injection, social engineering)
-- `src/skillscan/ml_detector.py`: optional offline ML inference via ONNX/torch (`--ml-detect`)
+- `src/skillscan/ml_detector.py`: optional offline ML inference via `llama-cpp-python` using a fine-tuned Qwen2.5-1.5B GGUF model (`--ml-detect`)
 - `src/skillscan/ecosystems.py`: ecosystem hint detection
 - `src/skillscan/models.py`: report/policy data models
 - `src/skillscan/render.py`: formatted terminal rendering

@@ -20,7 +20,7 @@ Use this checklist before creating a `vX.Y.Z` tag.
   - [ ] `pytest -q`
   - [ ] `ruff check src tests`
   - [ ] `mypy src`
-- [ ] `README.md` and `docs/DISTRIBUTION.md` reflect current release reality
+- [ ] `README.md` reflects current release reality
 - [ ] Rollback note prepared (last known-good version/tag)
 
 ## Tag and publish

@@ -47,16 +47,18 @@ Top Findings:
 
 **Supply chain:** unpinned dependency versions, binary artifacts, executable blobs, compromised package patterns.
 
-**ML detection (`--ml-detect`):** DeBERTa-based classifier fine-tuned on 100+ real injection examples. Downloads the model on first use (~45MB).
+**ML detection (`--ml-detect`):** Fine-tuned Qwen2.5-1.5B detector (GGUF Q4_K_M, ~935 MB) running locally via `llama-cpp-python`. Run `skillscan model install` once to download the model.
 
 ## Policy Profiles
 
-```bash
-# Strict (default) — block on any HIGH or CRITICAL finding
-docker run --rm -v "$PWD:/work" kurtpayne/skillscan-security scan /work --policy strict
+Six built-in profiles: `strict` (default), `balanced`, `permissive`, `ci`, `enterprise`, `observe`.
 
-# Balanced — block on CRITICAL only
-docker run --rm -v "$PWD:/work" kurtpayne/skillscan-security scan /work --policy balanced
+```bash
+# Strict (default) — maximum coverage
+docker run --rm -v "$PWD:/work" kurtpayne/skillscan-security scan /work --profile strict
+
+# Balanced — block on score >= 50, HIGH+ severity
+docker run --rm -v "$PWD:/work" kurtpayne/skillscan-security scan /work --profile balanced
 
 # Custom policy file
 docker run --rm -v "$PWD:/work" kurtpayne/skillscan-security scan /work \
@@ -95,20 +97,20 @@ jobs:
 
 ## Intel Management
 
-The scanner ships with a built-in threat intel feed covering 100+ rules and 10+ IOCs, updated automatically. You can also add custom intel sources:
-
-```bash
-docker run --rm -v "$PWD:/work" -v "$HOME/.skillscan:/root/.skillscan" \
-  kurtpayne/skillscan-security intel sync
-```
-
-## Model Sync
-
-The ML classifier model is downloaded on first use. To pre-pull it:
+The scanner ships with a built-in threat intel feed covering 200+ rules and thousands of IOCs, auto-refreshed at scan time. You can also add custom intel sources and refresh everything (rules + intel + ML model) with one command:
 
 ```bash
 docker run --rm -v "$HOME/.skillscan:/root/.skillscan" \
-  kurtpayne/skillscan-security model sync
+  kurtpayne/skillscan-security update
+```
+
+## ML Model Install
+
+The ML classifier model is not downloaded automatically. To install it (~935 MB):
+
+```bash
+docker run --rm -v "$HOME/.skillscan:/root/.skillscan" \
+  kurtpayne/skillscan-security model install
 ```
 
 ## Related

@@ -53,10 +53,10 @@ This guide explains what SkillScan checks, why each check is useful, and how saf
 - Fully offline — no model download, no API key, no network call.
 
 8. Optional offline ML detection (`--ml-detect`):
-- Runs `protectai/deberta-v3-base-prompt-injection-v2` via ONNX or torch.
+- Runs a fine-tuned Qwen2.5-1.5B detector model (GGUF Q4_K_M, ~935 MB) via `llama-cpp-python`.
 - Catches nuanced instruction-intent risks not captured by string patterns.
-- Requires `pip install skillscan-security[ml-onnx]` and `skillscan model sync` first.
-- Fully offline once the model is synced — no API key, no network call during scan.
+- Requires `pip install 'skillscan-security[ml]'` and `skillscan model install` first.
+- Fully offline once the model is installed — no API key, no network call during scan.
 
 9. Scoring and verdict:
 - Applies policy weights/thresholds.
@@ -86,7 +86,7 @@ This guide explains what SkillScan checks, why each check is useful, and how saf
 ## Recommended usage
 
 1. Default: run strict local scan first. This is free, fast, and catches the obvious stuff.
-2. For deeper semantic coverage: add `--ml-detect` (requires one-time model sync).
+2. For deeper semantic coverage: add `--ml-detect` (requires one-time `skillscan model install`).
 3. In CI: use `--fail-on block` and store JSON artifacts.
 4. As a pre-filter: run SkillScan before sending skills to online scanners (Invariant,
    Lakera Guard, etc.) to eliminate easy wins and reduce token spend.
