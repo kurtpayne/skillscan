@@ -41,6 +41,7 @@ from typing import cast
 import typer
 from rich.console import Console
 from rich.panel import Panel
+from rich.table import Table
 
 from skillscan import __version__
 from skillscan._constants import DEFAULT_STALE_WARN_DAYS
@@ -108,9 +109,13 @@ def _main_callback(
 # Register commands from submodules
 from datetime import UTC  # noqa: E402
 
+from skillscan.commands.alert import register as _register_alert  # noqa: E402
 from skillscan.commands.online_trace import register as _register_online_trace  # noqa: E402
+from skillscan.commands.watch import register as _register_watch  # noqa: E402
 
+_register_alert(app)
 _register_online_trace(app)
+_register_watch(app)
 
 console = Console()
 err_console = Console(stderr=True)
@@ -169,6 +174,95 @@ def _rules_age_days() -> float | None:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _discover_skill_dirs(root: Path) -> list[Path]:
+    """Discover sub-skill directories under *root*.
+
+    Returns a list of directories containing a SKILL.md file, or standalone
+    .md files with YAML frontmatter (``---`` on the first line).  If the root
+    itself is a single skill directory (contains SKILL.md but no sub-skill
+    dirs), returns a list with just the root.
+    """
+    skill_dirs: list[Path] = []
+    for skill_md in sorted(root.rglob("SKILL.md")):
+        skill_dirs.append(skill_md.parent)
+    if not skill_dirs:
+        # Fallback: look for .md files with frontmatter directly in root
+        for md_file in sorted(root.glob("*.md")):
+            try:
+                first_line = md_file.read_text(encoding="utf-8").lstrip()[:4]
+                if first_line.startswith("---"):
+                    skill_dirs.append(md_file)
+            except OSError:
+                continue
+    return skill_dirs
+
+
+def _extract_skill_name(skill_path: Path) -> str:
+    """Extract skill name from YAML frontmatter ``name`` field, or use directory/file name."""
+    target_file = skill_path / "SKILL.md" if skill_path.is_dir() else skill_path
+    if target_file.is_file():
+        try:
+            text = target_file.read_text(encoding="utf-8")
+            if text.lstrip().startswith("---"):
+                # Simple YAML frontmatter extraction (no yaml dependency needed)
+                parts = text.split("---", 2)
+                if len(parts) >= 3:
+                    for line in parts[1].splitlines():
+                        stripped = line.strip()
+                        if stripped.startswith("name:"):
+                            val = stripped[5:].strip().strip("'\"")
+                            if val:
+                                return val
+        except OSError:
+            pass
+    return skill_path.stem if skill_path.is_file() else skill_path.name
+
+
+def _render_summary_table(
+    skill_results: list[dict],
+    console: Console,
+) -> None:
+    """Render a Rich summary table of per-skill scan results."""
+    total = len(skill_results)
+    allow_count = sum(1 for s in skill_results if s["verdict"] == "allow")
+    warn_count = sum(1 for s in skill_results if s["verdict"] == "warn")
+    block_count = sum(1 for s in skill_results if s["verdict"] == "block")
+
+    table = Table(
+        title=f"Scan Summary ({total} skill{'s' if total != 1 else ''})",
+        show_lines=True,
+        border_style="blue",
+    )
+    table.add_column("Skill", style="bold")
+    table.add_column("Verdict", justify="center")
+    table.add_column("Score", justify="right")
+    table.add_column("Findings", justify="right")
+    table.add_column("Top Finding", justify="left")
+
+    _VERDICT_STYLE = {"block": "bold red", "warn": "bold yellow", "allow": "bold green"}
+
+    for entry in skill_results:
+        verdict_str = entry["verdict"].upper()
+        style = _VERDICT_STYLE.get(entry["verdict"], "")
+        top_finding = entry.get("top_finding") or "\u2014"
+        table.add_row(
+            entry["name"],
+            f"[{style}]{verdict_str}[/{style}]",
+            str(entry["score"]),
+            str(entry["findings"]),
+            top_finding,
+        )
+
+    table.caption = (
+        f"Total: {total} skill{'s' if total != 1 else ''} | "
+        f"[bold green]{allow_count} ALLOW[/bold green] | "
+        f"[bold yellow]{warn_count} WARN[/bold yellow] | "
+        f"[bold red]{block_count} BLOCK[/bold red]"
+    )
+    console.print()
+    console.print(table)
 
 
 def _load_dotenv(path: Path = Path(".env")) -> None:
@@ -617,6 +711,11 @@ def scan_cmd(
             "gh api /repos/{owner}/{repo}/dependabot/alerts > dependabot.json"
         ),
     ),
+    summary: bool = typer.Option(
+        False,
+        "--summary",
+        help="Print a roll-up summary table when scanning directories with multiple skills.",
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
@@ -808,6 +907,103 @@ def scan_cmd(
         effective_graph_scan = bool(_resolved_target and _resolved_target.is_dir())
     else:
         effective_graph_scan = graph_scan
+
+    # --- Summary mode: scan each sub-skill separately ---
+    if summary and _resolved_target is not None and _resolved_target.is_dir():
+        skill_targets = _discover_skill_dirs(_resolved_target)
+        if len(skill_targets) > 1:
+            _max_file_size_bytes = max_file_size * 1024 if max_file_size > 0 else 2**63
+            _file_timeout = timeout if timeout > 0 else 30
+            skill_results: list[dict] = []
+            all_reports: list = []
+            exit_code = 0
+            for skill_target in skill_targets:
+                skill_name = _extract_skill_name(skill_target)
+                try:
+                    sub_report = scan(
+                        skill_target,
+                        policy,
+                        policy_source,
+                        url_max_links=url_max_links,
+                        url_same_origin_only=url_same_origin_only,
+                        clamav=clamav,
+                        clamav_timeout_seconds=clamav_timeout_seconds,
+                        ml_detect=ml_detect,
+                        rulepack_channel="stable",
+                        graph_scan=effective_graph_scan,
+                        max_file_size_bytes=_max_file_size_bytes,
+                        file_timeout_seconds=_file_timeout,
+                        yara_rules_dir=yara_rules,
+                        semgrep_rules_dir=semgrep_rules,
+                        live_vuln_check=live_vuln_check,
+                        virustotal=virustotal,
+                        virustotal_api_key=virustotal_api_key,
+                        vuln_report_path=vuln_report,
+                    )
+                except (ScanError, ValueError) as exc:
+                    console.print(f"[bold red]Scan failed for {skill_name}:[/] {exc}")
+                    continue
+
+                all_reports.append(sub_report)
+                # Determine top finding (highest severity rule ID)
+                top_finding: str | None = None
+                if sub_report.findings:
+                    _severity_order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
+                    best = max(
+                        sub_report.findings,
+                        key=lambda f: _severity_order.get(f.severity.value, 0),
+                    )
+                    top_finding = best.id
+
+                skill_results.append(
+                    {
+                        "name": skill_name,
+                        "path": str(skill_target),
+                        "verdict": sub_report.verdict.value,
+                        "score": sub_report.score,
+                        "findings": len(sub_report.findings),
+                        "top_finding": top_finding,
+                    }
+                )
+
+                # Track exit code
+                if fail_on == "warn" and sub_report.verdict.value in {"warn", "block"}:
+                    exit_code = 1
+                if fail_on == "block" and sub_report.verdict.value == "block":
+                    exit_code = 1
+
+            # --- Output summary ---
+            if format == "json":
+                allow_count = sum(1 for s in skill_results if s["verdict"] == "allow")
+                warn_count = sum(1 for s in skill_results if s["verdict"] == "warn")
+                block_count = sum(1 for s in skill_results if s["verdict"] == "block")
+                summary_payload = {
+                    "summary": {
+                        "total_skills": len(skill_results),
+                        "allow": allow_count,
+                        "warn": warn_count,
+                        "block": block_count,
+                        "skills": skill_results,
+                    }
+                }
+                payload = json.dumps(summary_payload, indent=2)
+                if out:
+                    out.write_text(payload, encoding="utf-8")
+                    console.print(f"Wrote summary report to {out}")
+                else:
+                    typer.echo(payload)
+            else:
+                # Render individual reports in text mode, then summary table
+                for sub_report in all_reports:
+                    render_report(sub_report, console=console)
+                    console.print()
+                _render_summary_table(skill_results, console)
+
+            if policy_profile == "observe":
+                return
+            if exit_code != 0:
+                raise typer.Exit(exit_code)
+            return
 
     # --- Run scan ---
     _max_file_size_bytes = max_file_size * 1024 if max_file_size > 0 else 2**63
