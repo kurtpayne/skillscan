@@ -1406,6 +1406,30 @@
         "severity": "critical",
         "fixed": null
       }
+    },
+    "cppplayground": {
+      "1.0.0": {
+        "id": "MALICIOUS-NPM-2025-1014-TIGERJACK-CPPPLAYGROUND",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "TigerJack malicious VS Code extension cppplayground fetches and executes arbitrary JavaScript from ab498.pythonanywhere.com/static/in4.js every 20 minutes, enabling dynamic payload delivery including credential theft, ransomware, and backdoor injection."
+      }
+    },
+    "httpformat": {
+      "1.0.0": {
+        "id": "MALICIOUS-NPM-2025-1014-TIGERJACK-HTTPFORMAT",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "TigerJack malicious VS Code extension httpformat runs a CoinIMP cryptocurrency miner with hardcoded credentials and fetches arbitrary JavaScript from ab498.pythonanywhere.com."
+      }
+    },
+    "pythonformat": {
+      "1.0.0": {
+        "id": "MALICIOUS-NPM-2025-1014-TIGERJACK-PYTHONFORMAT",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "TigerJack malicious VS Code extension pythonformat fetches and executes arbitrary JavaScript from ab498.pythonanywhere.com/static/in4.js every 20 minutes, enabling dynamic payload delivery."
+      }
     }
   },
   "pip": {

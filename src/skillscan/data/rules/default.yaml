@@ -1,4 +1,4 @@
-version: "2026.04.16.1"
+version: "2026.04.17.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -7153,6 +7153,130 @@ static_rules:
       references:
         - https://www.elastic.co/security-labs/phantom-in-the-vault
         - https://thehackernews.com/2026/04/obsidian-plugin-abuse-delivers.html
+  - id: PINJ-023
+    category: prompt_injection
+    severity: critical
+    confidence: 0.95
+    title: EchoLeak M365 Copilot zero-click indirect prompt injection (CVE-2025-32711)
+    pattern: '(?i)(?:CVE-2025-32711|EchoLeak|(?:copilot|m365[_\s-]?copilot|microsoft[_\s-]?365[_\s-]?copilot)[^\n]{0,200}(?:hidden[_\s-]?(?:text|instruction|prompt|command)|speaker[_\s-]?note[^\n]{0,80}(?:inject|malicious|attacker|exfil)|comment[^\n]{0,80}(?:inject|malicious|hidden[_\s-]?instruction)|zero[_\s-]?click[^\n]{0,80}(?:inject|exfil|steal)|indirect[_\s-]?prompt[_\s-]?inject|exfiltrat[^\n]{0,80}(?:copilot|ai[_\s-]?assistant))|(?:hidden[_\s-]?text|speaker[_\s-]?note|document[_\s-]?comment)[^\n]{0,120}(?:ignore[_\s-]?prior[_\s-]?instruction|output[_\s-]?(?:email|credential|secret|draft)|system[_\s-]?prompt[^\n]{0,40}(?:always|override|inject))[^\n]{0,200}(?:copilot|ai[_\s-]?assistant|summarize|365))'
+    mitigation: 'CVE-2025-32711 (EchoLeak, disclosed June 2025) is a zero-click indirect prompt injection vulnerability in Microsoft 365 Copilot. An attacker embeds hidden instructions in Word documents, PowerPoint speaker notes, or Outlook email comments. When a target user asks Copilot to summarize or process the file, Copilot executes the attacker''s hidden instructions and leaks internal data (emails, drafts, credentials) in its response. No user click is required beyond opening the file and interacting with Copilot. Microsoft patched server-side. Audit Copilot usage, disable AI in critical workflows, and train users to recognize AI prompt hygiene issues.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-17'
+      updated: '2026-04-17'
+      tags:
+        - prompt_injection
+        - pinj
+        - copilot
+        - m365
+        - zero-click
+        - indirect-prompt-injection
+        - cve-2025-32711
+        - echoleak
+      last_modified: '2026-04-17'
+      techniques:
+        - id: PINJ-001
+          name: Prompt Injection
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - prompt
+      lifecycle:
+        introduced: '2026-04-17'
+        last_modified: '2026-04-17'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://thehackernews.com/2025/06/zero-click-ai-vulnerability-exposes.html
+        - https://arxiv.org/abs/2509.10540
+        - https://www.hackthebox.com/blog/cve-2025-32711-echoleak-copilot-vulnerability
+  - id: EXF-022
+    category: exfiltration
+    severity: critical
+    confidence: 0.93
+    title: GeminiJack Google Gemini Enterprise RAG data exfiltration via image URL (zero-click)
+    pattern: '(?i)(?:GeminiJack|(?:gemini[_\s-]?enterprise|vertex[_\s-]?ai[_\s-]?search|google[_\s-]?workspace[_\s-]?(?:gemini|ai))[^\n]{0,200}(?:indirect[_\s-]?prompt[_\s-]?inject|rag[_\s-]?(?:poison|inject|exfil)|image[_\s-]?(?:url|tag|src)[^\n]{0,80}(?:exfil|steal|attacker)|hidden[_\s-]?instruction[^\n]{0,80}(?:google[_\s-]?doc|calendar|gmail|workspace)|trust[_\s-]?boundary[^\n]{0,80}(?:rag|retriev|gemini))|(?:google[_\s-]?doc|calendar[_\s-]?event|gmail[_\s-]?email)[^\n]{0,120}(?:hidden[_\s-]?instruction|malicious[_\s-]?prompt)[^\n]{0,200}(?:gemini|vertex[_\s-]?ai|workspace[_\s-]?ai)[^\n]{0,200}(?:exfil|image[_\s-]?(?:url|tag)|sensitive[_\s-]?(?:data|term)))'
+    mitigation: 'GeminiJack (disclosed December 2025, discovered June 2025) is a zero-click indirect prompt injection vulnerability in Google Gemini Enterprise and Vertex AI Search. An attacker embeds hidden instructions in a Google Doc, Calendar event, or Gmail email. When a legitimate employee performs a routine Gemini search, the RAG system retrieves the poisoned document and executes the attacker''s instructions, scanning authorized Workspace data for sensitive terms. The AI then includes a malicious image tag in its response; when loaded, the victim''s browser sends stolen data to the attacker''s server via HTTP. Google patched by separating Vertex AI Search from Gemini Enterprise RAG workflows. Audit Gemini Enterprise data source access, monitor for anomalous image URL requests in AI responses, and restrict RAG data source scope to minimum necessary.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-17'
+      updated: '2026-04-17'
+      tags:
+        - exfiltration
+        - exf
+        - gemini
+        - google-workspace
+        - rag-poisoning
+        - indirect-prompt-injection
+        - zero-click
+        - geminijack
+      last_modified: '2026-04-17'
+      techniques:
+        - id: EXF-001
+          name: Data exfiltration via AI assistant
+      applies_to:
+        contexts:
+          - source
+          - workflow
+          - prompt
+      lifecycle:
+        introduced: '2026-04-17'
+        last_modified: '2026-04-17'
+      quality:
+        precision_estimate: 0.93
+        benchmark_set: core-static-v1
+      references:
+        - https://www.infosecurity-magazine.com/news/google-fixes-gemini-enterprise-flaw/
+        - https://noma.security/noma-labs/geminijack/
+  - id: SUP-036
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: TigerJack malicious VS Code extensions — keylogger, CoinIMP miner, and dynamic backdoor (ab498)
+    pattern: '(?i)(?:TigerJack|ab498[.]pythonanywhere[.]com|ab498[^\n]{0,80}(?:pythonanywhere|in4[.]js|vscode|extension|payload)|(?:cppplayground|httpformat|pythonformat|c\+\+[_\s-]?playground|http[_\s-]?format|python[_\s-]?format)[^\n]{0,200}(?:malicious|backdoor|stealer|miner|coinimp|keylog|exfil|ab498|tigerjack)|coinimp[^\n]{0,120}(?:vscode|extension|miner|hardcoded|credential)|(?:onDidChangeTextDocument)[^\n]{0,200}(?:exfil|steal|source[_\s-]?code|endpoint|upload|c\+\+|cpp)|vscode[_\s-]?extension[^\n]{0,120}(?:ab498|pythonanywhere|in4[.]js|fetch[^\n]{0,40}20[_\s-]?min|dynamic[_\s-]?payload[^\n]{0,40}(?:backdoor|stealer|miner)))'
+    mitigation: 'TigerJack is a coordinated multi-account threat actor (discovered October 2025) that published at least 11 malicious VS Code extensions to the VSCode Marketplace and OpenVSX registry, accumulating 17,000+ downloads. Three attack patterns: (1) C++ Playground registers onDidChangeTextDocument to exfiltrate C++ source code to external endpoints in near-real-time (500ms delay); (2) HTTP Format runs a CoinIMP cryptocurrency miner with hardcoded credentials; (3) cppplayground/httpformat/pythonformat fetch and execute arbitrary JavaScript from ab498.pythonanywhere.com/static/in4.js every 20 minutes, enabling dynamic payload delivery (credential theft, ransomware, backdoor injection). Remove all TigerJack extensions immediately, rotate credentials, and audit for unauthorized network connections. Only install extensions from verified publishers.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-17'
+      updated: '2026-04-17'
+      tags:
+        - supply_chain
+        - sup
+        - vscode
+        - extension
+        - keylogger
+        - cryptominer
+        - backdoor
+        - tigerjack
+        - coinimp
+        - openvsx
+      last_modified: '2026-04-17'
+      techniques:
+        - id: SUP-001
+          name: Supply Chain Compromise via IDE Extension
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-17'
+        last_modified: '2026-04-17'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.bleepingcomputer.com/news/security/malicious-crypto-stealing-vscode-extensions-resurface-on-openvsx/
+        - https://www.koi.ai/blog/tiger-jack-malicious-vscode-extensions-stealing-code
+        - https://www.esecurityplanet.com/news/malicious-vs-code-extension/
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

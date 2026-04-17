@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**220 static rules · 14 chain rules**
+**223 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -133,6 +133,7 @@
 | `EXF-019` | high | Logging or audit endpoint collecting conversation history or environment metadata | exfiltration, logging-abuse, telemetry-exfil, conversation-harvest |
 | `EXF-020` | critical | TeamPCP sysmon backdoor Kubernetes lateral movement | exfiltration, teampcp, kubernetes, lateral-movement |
 | `EXF-021` | high | VSCode Live Preview and SARIF viewer local file exfiltration | exfiltration, exf, vscode, local-file-exfil, sarif |
+| `EXF-022` | critical | GeminiJack Google Gemini Enterprise RAG data exfiltration via image URL (zero-click) | exfiltration, exf, gemini, google-workspace, rag-poisoning, indirect-prompt-injection, zero-click, geminijack |
 
 ### Instruction Abuse & Jailbreak
 
@@ -188,6 +189,7 @@
 | `SUP-033` | high | OpenVSX Code Extension Marketplace Zip Slip vulnerability (CVE-2026-35454, pre-2.4.2) | supply-chain, openvsx, zip-slip, path-traversal, vscode-extension, marketplace, cve-2026-35454 |
 | `SUP-034` | medium | claude-code-action Arbitrary Code Execution via Malicious .mcp.json | supply_chain, sup, claude-code-action, mcp, github-actions, tra-2026-27 |
 | `SUP-035` | critical | dom-utils-lite / centralogger npm SSH backdoor via Supabase C2 | supply_chain, sup, npm, postinstall, ssh-backdoor, supabase, authorized-keys, credential-theft |
+| `SUP-036` | critical | TigerJack malicious VS Code extensions — keylogger, CoinIMP miner, and dynamic backdoor (ab498) | supply_chain, sup, vscode, extension, keylogger, cryptominer, backdoor, tigerjack, coinimp, openvsx |
 
 ### Defense Evasion
 
@@ -225,6 +227,7 @@
 | `PINJ-020` | critical | MINJA cross-session AI agent memory poisoning via untrusted documents | prompt-injection, memory-poisoning, minja, cross-session, persistent-injection, owasp-asi06, ai-agent |
 | `PINJ-021` | high | A2A agent card poisoning -- adversarial instructions in agent card metadata | prompt-injection, a2a, agent-card, metadata-injection, google-a2a, multi-agent, exfiltration |
 | `PINJ-022` | high | nanobot CVE-2026-33654 Indirect Prompt Injection via Email | prompt_injection, pinj, nanobot, cve-2026-33654, email |
+| `PINJ-023` | critical | EchoLeak M365 Copilot zero-click indirect prompt injection (CVE-2025-32711) | prompt_injection, pinj, copilot, m365, zero-click, indirect-prompt-injection, cve-2025-32711, echoleak |
 | `PINJ-GRAPH-001` | high | Skill loads remote Markdown at runtime | prompt-injection, remote-load, graph-rule |
 | `PINJ-GRAPH-002` | medium | High-risk tool granted without declared purpose | prompt-injection, tool-grant, graph-rule |
 | `PINJ-GRAPH-003` | critical | Skill instructs agent to write a memory/config file | prompt-injection, memory-poisoning, persistence, graph-rule |
