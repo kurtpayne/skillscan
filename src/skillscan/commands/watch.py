@@ -1,4 +1,5 @@
 """skillscan watch — real-time skill file watcher (stub, not yet implemented)."""
+
 from __future__ import annotations
 
 import typer

@@ -2613,8 +2613,7 @@ def test_exf022_geminijack_gemini_enterprise_rag_exfil() -> None:
         is not None
     )
     assert (
-        rule.pattern.search("calendar event hidden instruction gemini vertex ai sensitive data")
-        is not None
+        rule.pattern.search("calendar event hidden instruction gemini vertex ai sensitive data") is not None
     )
     assert rule.pattern.search("gmail email malicious prompt workspace ai image tag exfil") is not None
     # True negatives
