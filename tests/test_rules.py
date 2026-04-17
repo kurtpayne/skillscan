@@ -2570,3 +2570,82 @@ def test_se005_obsidian_vault_lure() -> None:
     assert rule.pattern.search("obsidian vault plugin credential login enable sync community") is not None
     assert rule.pattern.search("obsidian note taking productivity guide") is None
     assert rule.pattern.search("community plugin documentation obsidian") is None
+
+
+def test_pinj023_echoleak_m365_copilot_zero_click() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PINJ-023"]
+    assert rules, "PINJ-023 not found"
+    rule = rules[0]
+    # CVE and name anchors
+    assert rule.pattern.search("CVE-2025-32711 echoleak copilot prompt injection") is not None
+    assert rule.pattern.search("EchoLeak microsoft 365 copilot zero-click exploit") is not None
+    # Copilot + hidden instruction patterns
+    assert rule.pattern.search("copilot hidden text instruction exfil email") is not None
+    assert rule.pattern.search("m365 copilot speaker note inject malicious attacker") is not None
+    assert rule.pattern.search("microsoft 365 copilot zero click inject steal") is not None
+    assert rule.pattern.search("copilot indirect prompt inject exfiltrat ai assistant") is not None
+    # Hidden text + instruction override patterns
+    assert rule.pattern.search("hidden text ignore prior instruction output email copilot") is not None
+    assert rule.pattern.search("speaker note system prompt always override inject summarize") is not None
+    assert rule.pattern.search("document comment output credential draft ai assistant 365") is not None
+    # True negatives
+    assert rule.pattern.search("microsoft 365 copilot productivity features overview") is None
+    assert rule.pattern.search("speaker notes presentation design tips") is None
+    assert rule.pattern.search("hidden text formatting word document tutorial") is None
+
+
+def test_exf022_geminijack_gemini_enterprise_rag_exfil() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "EXF-022"]
+    assert rules, "EXF-022 not found"
+    rule = rules[0]
+    # Name anchor
+    assert rule.pattern.search("GeminiJack google gemini enterprise rag exfil") is not None
+    # Gemini Enterprise + attack patterns
+    assert rule.pattern.search("gemini enterprise indirect prompt inject rag poison") is not None
+    assert rule.pattern.search("vertex ai search rag exfil image url attacker") is not None
+    assert rule.pattern.search("google workspace gemini ai hidden instruction gmail") is not None
+    assert rule.pattern.search("gemini enterprise trust boundary rag retriev") is not None
+    # Google doc + hidden instruction chain
+    assert (
+        rule.pattern.search("google doc hidden instruction malicious prompt gemini exfil image url")
+        is not None
+    )
+    assert (
+        rule.pattern.search("calendar event hidden instruction gemini vertex ai sensitive data") is not None
+    )
+    assert rule.pattern.search("gmail email malicious prompt workspace ai image tag exfil") is not None
+    # True negatives
+    assert rule.pattern.search("google gemini enterprise productivity features") is None
+    assert rule.pattern.search("vertex ai search documentation tutorial") is None
+    assert rule.pattern.search("google workspace collaboration guide") is None
+
+
+def test_sup036_tigerjack_vscode_keylogger_miner_backdoor() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-036"]
+    assert rules, "SUP-036 not found"
+    rule = rules[0]
+    # Name and C2 anchors
+    assert rule.pattern.search("TigerJack malicious vscode extension keylogger") is not None
+    assert rule.pattern.search("ab498.pythonanywhere.com vscode extension payload") is not None
+    assert rule.pattern.search("ab498 pythonanywhere in4.js vscode extension") is not None
+    # Extension name + attack patterns
+    assert rule.pattern.search("cppplayground malicious backdoor stealer coinimp tigerjack") is not None
+    assert rule.pattern.search("httpformat vscode extension miner coinimp hardcoded credential") is not None
+    assert rule.pattern.search("pythonformat malicious exfil ab498 tigerjack") is not None
+    assert rule.pattern.search("c++ playground vscode extension keylog exfil") is not None
+    # CoinIMP miner pattern
+    assert rule.pattern.search("coinimp vscode extension miner hardcoded credential") is not None
+    # onDidChangeTextDocument exfil pattern
+    assert rule.pattern.search("onDidChangeTextDocument exfil steal source code endpoint cpp") is not None
+    # Dynamic payload pattern
+    assert (
+        rule.pattern.search("vscode extension ab498 pythonanywhere fetch 20 min dynamic payload backdoor")
+        is not None
+    )
+    # True negatives
+    assert rule.pattern.search("c++ playground vscode extension documentation") is None
+    assert rule.pattern.search("python format code style guide vscode") is None
+    assert rule.pattern.search("http format extension vscode productivity") is None

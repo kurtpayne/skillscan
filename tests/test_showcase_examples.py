@@ -790,3 +790,48 @@ def test_showcase_182_se005_obsidian_vault_lure():
         "builtin:strict",
     )
     assert any(f.id == "SE-005" for f in r.findings)
+
+
+def test_showcase_183_pinj023_echoleak_m365_copilot_zero_click():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/183_pinj023_echoleak_m365_copilot_zero_click"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PINJ-023" for f in r.findings)
+
+
+def test_showcase_184_exf022_geminijack_gemini_enterprise_rag_exfil():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/184_exf022_geminijack_gemini_enterprise_rag_exfil"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "EXF-022" for f in r.findings)
+
+
+def test_showcase_185_sup036_tigerjack_vscode_keylogger_miner_backdoor():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/185_sup036_tigerjack_vscode_keylogger_miner_backdoor"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "SUP-036" for f in r.findings)
