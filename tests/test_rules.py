@@ -2608,8 +2608,14 @@ def test_exf022_geminijack_gemini_enterprise_rag_exfil() -> None:
     assert rule.pattern.search("google workspace gemini ai hidden instruction gmail") is not None
     assert rule.pattern.search("gemini enterprise trust boundary rag retriev") is not None
     # Google doc + hidden instruction chain
-    assert rule.pattern.search("google doc hidden instruction malicious prompt gemini exfil image url") is not None
-    assert rule.pattern.search("calendar event hidden instruction gemini vertex ai sensitive data") is not None
+    assert (
+        rule.pattern.search("google doc hidden instruction malicious prompt gemini exfil image url")
+        is not None
+    )
+    assert (
+        rule.pattern.search("calendar event hidden instruction gemini vertex ai sensitive data")
+        is not None
+    )
     assert rule.pattern.search("gmail email malicious prompt workspace ai image tag exfil") is not None
     # True negatives
     assert rule.pattern.search("google gemini enterprise productivity features") is None
@@ -2636,7 +2642,10 @@ def test_sup036_tigerjack_vscode_keylogger_miner_backdoor() -> None:
     # onDidChangeTextDocument exfil pattern
     assert rule.pattern.search("onDidChangeTextDocument exfil steal source code endpoint cpp") is not None
     # Dynamic payload pattern
-    assert rule.pattern.search("vscode extension ab498 pythonanywhere fetch 20 min dynamic payload backdoor") is not None
+    assert (
+        rule.pattern.search("vscode extension ab498 pythonanywhere fetch 20 min dynamic payload backdoor")
+        is not None
+    )
     # True negatives
     assert rule.pattern.search("c++ playground vscode extension documentation") is None
     assert rule.pattern.search("python format code style guide vscode") is None

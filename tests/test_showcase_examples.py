@@ -793,6 +793,7 @@ def test_showcase_182_se005_obsidian_vault_lure():
 
 def test_showcase_183_pinj023_echoleak_m365_copilot_zero_click():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
     p = load_builtin_policy("strict")
@@ -805,6 +806,7 @@ def test_showcase_183_pinj023_echoleak_m365_copilot_zero_click():
 
 def test_showcase_184_exf022_geminijack_gemini_enterprise_rag_exfil():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
     p = load_builtin_policy("strict")
@@ -817,6 +819,7 @@ def test_showcase_184_exf022_geminijack_gemini_enterprise_rag_exfil():
 
 def test_showcase_185_sup036_tigerjack_vscode_keylogger_miner_backdoor():
     from pathlib import Path
+
     from skillscan.analysis import scan
     from skillscan.policies import load_builtin_policy
     p = load_builtin_policy("strict")
