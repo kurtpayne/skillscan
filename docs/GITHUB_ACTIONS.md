@@ -144,6 +144,69 @@ After the workflow runs, findings appear in three places:
 3. **Job summary** — A compact text summary is written to the GitHub Actions step summary for quick review without leaving the Actions tab.
 4. **Build artifact** — The raw SARIF file is archived as `skillscan-sarif` for 30 days.
 
+## Attesting Scan Reports (SLSA Provenance)
+
+For enterprises that need cryptographic proof that a scan report is authentic and was produced in a trusted CI environment, use GitHub's built-in artifact attestation. This uses Sigstore under the hood — no key management needed.
+
+Add the attestation step after the scan:
+
+```yaml
+name: SkillScan with Attestation
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write        # Required for Sigstore OIDC
+  attestations: write    # Required for artifact attestation
+
+jobs:
+  skillscan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install SkillScan
+        run: pip install skillscan-security
+
+      - name: Scan
+        run: |
+          skillscan scan ./skills/ --format json --out skillscan-report.json || true
+          skillscan scan ./skills/ --format sarif --out skillscan-results.sarif || true
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: skillscan-results.sarif
+
+      - name: Attest scan report
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: skillscan-report.json
+```
+
+The attestation proves:
+- **Who**: which GitHub workflow in which repository produced the report
+- **When**: timestamp of the CI run
+- **What**: the exact content hash of the report (SHA-256)
+- **Where**: which runner, which commit, which branch
+- **How**: SLSA provenance with full build metadata
+
+Consumers verify the attestation offline:
+
+```bash
+gh attestation verify skillscan-report.json --owner kurtpayne
+```
+
+This answers the enterprise question "can you prove this scan report is real?" without any SkillScan-managed keys or hosted signing infrastructure.
+
+---
+
 ## Troubleshooting
 
 **"Advanced Security must be enabled"** — SARIF upload requires GitHub Code Security. Set `upload-sarif: false` to skip the upload and use the workflow purely for CI pass/fail.
