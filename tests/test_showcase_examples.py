@@ -835,3 +835,48 @@ def test_showcase_185_sup036_tigerjack_vscode_keylogger_miner_backdoor():
         "builtin:strict",
     )
     assert any(f.id == "SUP-036" for f in r.findings)
+
+
+def test_showcase_186_sup037_gemini_ai_checker_npm_ai_token_stealer():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/186_sup037_gemini_ai_checker_npm_ai_token_stealer"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "SUP-037" for f in r.findings)
+
+
+def test_showcase_187_psv024_apache_skywalking_mcp_ssrf():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/187_psv024_apache_skywalking_mcp_ssrf"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-024" for f in r.findings)
+
+
+def test_showcase_188_psv025_open_vsx_scan_bypass():
+    from pathlib import Path
+
+    from skillscan.analysis import scan
+    from skillscan.policies import load_builtin_policy
+
+    p = load_builtin_policy("strict")
+    r = scan(
+        Path("examples/showcase/188_psv025_open_vsx_scan_bypass"),
+        p,
+        "builtin:strict",
+    )
+    assert any(f.id == "PSV-025" for f in r.findings)

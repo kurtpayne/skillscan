@@ -2649,3 +2649,52 @@ def test_sup036_tigerjack_vscode_keylogger_miner_backdoor() -> None:
     assert rule.pattern.search("c++ playground vscode extension documentation") is None
     assert rule.pattern.search("python format code style guide vscode") is None
     assert rule.pattern.search("http format extension vscode productivity") is None
+
+
+def test_sup037_gemini_ai_checker_npm_ai_token_stealer() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-037"]
+    assert rules, "SUP-037 not found"
+    rule = rules[0]
+    # Package name anchors
+    assert rule.pattern.search("gemini-ai-checker npm package malicious") is not None
+    assert rule.pattern.search("gemini_ai_checker token stealer") is not None
+    # C2 domain
+    assert rule.pattern.search("server-check-genimi.vercel.app payload download") is not None
+    # Companion packages
+    assert rule.pattern.search("express-flowlimit npm malicious") is not None
+    assert rule.pattern.search("chai-extensions-extras npm malicious") is not None
+    # OtterCookie reference
+    assert rule.pattern.search("ottercookie javascript backdoor") is not None
+    # npm install reference
+    assert rule.pattern.search("npm install gemini-ai-checker") is not None
+    # Negative: benign gemini usage
+    assert rule.pattern.search("google gemini api documentation") is None
+
+
+def test_psv024_apache_skywalking_mcp_ssrf() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-024"]
+    assert rules, "PSV-024 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-34476 apache skywalking mcp vulnerability") is not None
+    # Pattern anchors
+    assert rule.pattern.search("apache skywalking mcp ssrf vulnerability") is not None
+    assert rule.pattern.search("skywalking mcp sw url header ssrf") is not None
+    assert rule.pattern.search("sw url header ssrf forge skywalking") is not None
+    # Negative: benign skywalking usage
+    assert rule.pattern.search("skywalking observability metrics dashboard") is None
+
+
+def test_psv025_open_vsx_scan_bypass() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-025"]
+    assert rules, "PSV-025 not found"
+    rule = rules[0]
+    # Pattern anchors
+    assert rule.pattern.search("open vsx bypass scan publish vulnerability") is not None
+    assert rule.pattern.search("open sesame open vsx bypass scan") is not None
+    assert rule.pattern.search("vsx scan job fail open connection pool exhaust") is not None
+    # Negative: benign open vsx usage
+    assert rule.pattern.search("install extension from open vsx registry") is None

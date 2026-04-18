@@ -207,3 +207,6 @@ skillscan scan examples/showcase/29_claude_sed_path_bypass --fail-on never
 183. `183_pinj023_echoleak_m365_copilot_zero_click`: EchoLeak zero-click indirect prompt injection Microsoft 365 Copilot CVE-2025-32711 (`PINJ-023`)
 184. `184_exf022_geminijack_gemini_enterprise_rag_exfil`: GeminiJack Google Gemini Enterprise zero-click RAG data exfiltration via image URL (`EXF-022`)
 185. `185_sup036_tigerjack_vscode_keylogger_miner_backdoor`: TigerJack malicious VS Code extensions keylogger CoinIMP miner dynamic backdoor ab498.pythonanywhere.com (`SUP-036`)
+186. `186_sup037_gemini_ai_checker_npm_ai_token_stealer`: Fake Gemini npm package gemini-ai-checker AI tool token stealer OtterCookie Contagious Interview (`SUP-037`)
+187. `187_psv024_apache_skywalking_mcp_ssrf`: Apache SkyWalking MCP SSRF via SW-URL Header CVE-2026-34476 (`PSV-024`)
+188. `188_psv025_open_vsx_scan_bypass`: Open VSX Pre-Publish Scanning Bypass Open Sesame fail-open scan bypass (`PSV-025`)

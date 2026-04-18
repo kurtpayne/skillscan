@@ -1,3 +1,17 @@
+## 2026-04-18
+rulepack: 2026.04.18.1
+Three new detection rules, IOC enrichment, and vuln DB updates covering the gemini-ai-checker malicious npm package (OtterCookie/Contagious Interview AI tool token stealer), Apache SkyWalking MCP SSRF (CVE-2026-34476), and the Open VSX pre-publish scanning bypass (Open Sesame).
+- Added `SUP-037` (critical): **Fake Gemini npm package (gemini-ai-checker) — AI tool token stealer** — The gemini-ai-checker npm package (published March 20, 2026) is a DPRK-linked supply chain attack targeting AI developers. It downloads an OtterCookie payload from server-check-genimi.vercel.app (C2: 216.126.237.71), which steals credentials, crypto wallets, and specifically targets AI tool directories (.cursor, .claude, Windsurf, PearAI) to exfiltrate API keys and source code. Companion packages: express-flowlimit, chai-extensions-extras. Remove the package immediately, rotate all credentials and API keys, and audit for unauthorized access.
+- Added `PSV-024` (high): **Apache SkyWalking MCP SSRF via SW-URL Header (CVE-2026-34476)** — CVE-2026-34476 is an SSRF vulnerability in Apache SkyWalking MCP version 0.1.0. Attackers can forge requests to internal resources by manipulating the SW-URL header. A companion vulnerability CVE-2026-34884 also covers SSRF via the set_skywalking_url MCP tool and GraphQL expression injection. Upgrade to Apache SkyWalking MCP version 0.2.0 or later.
+- Added `PSV-025` (high): **Open VSX Pre-Publish Scanning Bypass (Open Sesame)** — A vulnerability in Open VSX (versions prior to 0.32.0) allows malicious VS Code extensions to bypass pre-publish security checks. The Java-based service misinterprets scanner job failures (caused by connection pool exhaustion from a flood of publish requests) as "no scanners are configured," leading to extensions being marked as passed (fail-open). Upgrade Open VSX to version 0.32.0 or later.
+- IOC update: added `server-check-genimi.vercel.app` to domain IOC DB; added `216.126.237.71` to IP IOC DB.
+- Vuln DB update: added `apache-skywalking-mcp` version 0.1.0 as CVE-2026-34476 (high, fixed in 0.2.0).
+Sources:
+- CyberSecurityNews (gemini-ai-checker): https://cybersecuritynews.com/hackers-use-fake-gemini-npm-package/
+- LetsDatScience (gemini-ai-checker): https://letsdatascience.com/news/fake-gemini-npm-package-steals-ai-tool-tokens-5c4bf379
+- SentinelOne (CVE-2026-34476): https://www.sentinelone.com/vulnerability-database/cve-2026-34476/
+- OSS-Sec (CVE-2026-34476): https://seclists.org/oss-sec/2026/q2/116
+- The Hacker News (Open Sesame): https://thehackernews.com/2026/03/open-vsx-bug-let-malicious-vs-code.html
 ## 2026-04-17
 rulepack: 2026.04.17.1
 Three new detection rules, IOC enrichment, and vuln DB updates covering EchoLeak (zero-click indirect prompt injection in Microsoft 365 Copilot, CVE-2025-32711), GeminiJack (zero-click RAG data exfiltration via Google Gemini Enterprise), and the TigerJack malicious VS Code extension campaign (keylogger, CoinIMP miner, and dynamic backdoor).
