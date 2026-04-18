@@ -33,9 +33,9 @@ logger = logging.getLogger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-GITHUB_RAW_BASE = (
-    "https://raw.githubusercontent.com/kurtpayne/skillscan-security/main/src/skillscan/data/rules"
-)
+GITHUB_RAW_BASE = "https://raw.githubusercontent.com/kurtpayne/skillscan-rules/main/rules"
+
+GITHUB_RAW_INTEL = "https://raw.githubusercontent.com/kurtpayne/skillscan-rules/main/intel"
 
 # Rule files to sync (order matters for merge)
 RULE_FILES = [
@@ -44,7 +44,10 @@ RULE_FILES = [
     "multilang.yaml",
 ]
 
+INTEL_FILES = ["ioc_db.json", "vuln_db.json", "managed_sources.json"]
+
 USER_RULES_DIR = Path.home() / ".skillscan" / "rules"
+USER_INTEL_DIR = Path.home() / ".skillscan" / "intel"
 SYNC_STATE_FILE = USER_RULES_DIR / ".sync_state.json"
 
 ENV_TTL_VAR = "SKILLSCAN_RULES_TTL_SECONDS"
@@ -201,6 +204,72 @@ def sync_rules(
             }
             result.updated.append(filename)
             logger.info("Updated rule file: %s", filename)
+        else:
+            # Hash unchanged — update timestamp only
+            state[filename] = dict(entry)
+            state[filename]["last_sync"] = time.time()
+            result.skipped.append(filename)
+
+    _save_sync_state(state)
+    return result
+
+
+def sync_intel(
+    force: bool = False,
+    ttl: int | None = None,
+    files: list[str] | None = None,
+) -> RuleSyncResult:
+    """
+    Pull the latest intel JSON files from GitHub into ~/.skillscan/intel/.
+
+    Args:
+        force: Bypass TTL and always download.
+        ttl: Cache TTL in seconds. Defaults to SKILLSCAN_RULES_TTL_SECONDS env
+             var or 3600.
+        files: Specific intel files to sync. Defaults to all INTEL_FILES.
+
+    Returns:
+        RuleSyncResult with per-file outcome.
+    """
+    effective_ttl = ttl if ttl is not None else _get_ttl()
+    target_files = files or INTEL_FILES
+    result = RuleSyncResult()
+
+    USER_INTEL_DIR.mkdir(parents=True, exist_ok=True)
+    raw_state = _load_sync_state()
+    state: dict[str, dict[str, object]] = {
+        k: dict(v) if isinstance(v, dict) else {} for k, v in raw_state.items()
+    }
+
+    for filename in target_files:
+        local_path = USER_INTEL_DIR / filename
+
+        # Check TTL unless forced
+        if not force and _is_fresh(filename, effective_ttl):
+            result.skipped.append(filename)
+            result.from_cache = True
+            continue
+
+        url = f"{GITHUB_RAW_INTEL}/{filename}"
+        data = _fetch_url(url)
+
+        if data is None:
+            result.errors.append(filename)
+            logger.warning("Could not fetch intel file: %s", filename)
+            continue
+
+        new_hash = _sha256(data)
+        entry = state.get(filename, {})
+        old_hash = str(entry.get("sha256", ""))
+        if new_hash != old_hash or not local_path.exists():
+            local_path.write_bytes(data)
+            state[filename] = {
+                "sha256": new_hash,
+                "last_sync": time.time(),
+                "url": url,
+            }
+            result.updated.append(filename)
+            logger.info("Updated intel file: %s", filename)
         else:
             # Hash unchanged — update timestamp only
             state[filename] = dict(entry)

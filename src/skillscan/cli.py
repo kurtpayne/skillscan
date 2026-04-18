@@ -461,14 +461,21 @@ def update_cmd(
         "--no-model",
         help="Skip ML model update (useful in CI where the ~350 MB download is excluded)",
     ),
+    rules_only: bool = typer.Option(
+        False,
+        "--rules-only",
+        help="Only update rules and intel (skip ML model download and custom feed refetch).",
+    ),
 ) -> None:
     """Update rules, IOC/vuln intel, and ML model to latest versions.
 
     Always pulls fresh — no TTL, no cache check. Use --no-model to skip
     the model download (recommended for lightweight CI pipelines).
+    Use --rules-only to only update rules and intel from the rules repo
+    (fastest option).
     """
     from skillscan.model_sync import sync_model
-    from skillscan.rules_sync import sync_rules
+    from skillscan.rules_sync import sync_intel, sync_rules
 
     # 1. Rules
     console.print("[bold]Updating rules...[/bold]", end="  ")
@@ -480,8 +487,24 @@ def update_cmd(
     else:
         console.print("[dim]✓ no changes[/dim]")
 
-    # 2. Intel
+    # 2. Intel from rules repo
     console.print("[bold]Updating intel...[/bold]  ", end="")
+    intel_result = sync_intel(force=True)
+    if intel_result.errors:
+        console.print(f"[red]✗ errors: {', '.join(intel_result.errors)}[/red]")
+    elif intel_result.updated:
+        console.print(f"[green]✓[/green] {len(intel_result.updated)} file(s) updated")
+    else:
+        console.print("[dim]✓ no changes[/dim]")
+
+    if rules_only:
+        console.print("[dim]Skipping managed intel, custom feeds, and model (--rules-only).[/dim]")
+        console.print()
+        console.print("[green]Rules and intel up to date.[/green]")
+        return
+
+    # 3. Managed intel sources
+    console.print("[bold]Updating managed intel...[/bold]  ", end="")
     stats = sync_managed(max_age_seconds=0, force=True)
     if stats["errors"] > 0:
         console.print(f"[red]✗ {stats['errors']} error(s)[/red]")
@@ -490,10 +513,10 @@ def update_cmd(
     else:
         console.print("[dim]✓ no changes[/dim]")
 
-    # 3. Custom intel feeds (URL-based, re-fetch)
+    # 4. Custom intel feeds (URL-based, re-fetch)
     _refetch_custom_feeds()
 
-    # 4. Model
+    # 5. Model
     if no_model:
         console.print("[dim]Model update skipped (--no-model).[/dim]")
     else:

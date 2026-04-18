@@ -1,0 +1,35 @@
+name: Sync Bundled Rules
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Weekly Monday 6am UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fetch latest rules from skillscan-rules
+        run: |
+          for f in default.yaml ast_flows.yaml multilang.yaml; do
+            curl -sL "https://raw.githubusercontent.com/kurtpayne/skillscan-rules/main/rules/$f" \
+              -o "src/skillscan/data/rules/$f"
+          done
+          for f in ioc_db.json vuln_db.json managed_sources.json; do
+            curl -sL "https://raw.githubusercontent.com/kurtpayne/skillscan-rules/main/intel/$f" \
+              -o "src/skillscan/data/intel/$f"
+          done
+
+      - name: Create PR if changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          title: "chore: sync bundled rules from skillscan-rules"
+          branch: sync-bundled-rules
+          commit-message: "chore: sync bundled rules snapshot"
+          body: "Automated weekly sync of detection rules from [skillscan-rules](https://github.com/kurtpayne/skillscan-rules)."
