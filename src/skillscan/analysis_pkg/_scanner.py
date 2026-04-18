@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import concurrent.futures
+import fnmatch
+import logging
 import os
 import re as _re
 from pathlib import Path
@@ -11,6 +13,7 @@ from skillscan._constants import NEGATION_CONFIDENCE_REDUCTION as _NEGATION_CONF
 from skillscan._constants import NEGATION_WINDOW as _NEGATION_WINDOW
 from skillscan.analysis_pkg._archive import (
     SCRIPT_SUFFIXES,
+    FileInventory,
     prepare_target,
 )
 from skillscan.analysis_pkg._sections import build_section_map
@@ -231,6 +234,7 @@ def scan(
     virustotal: bool = False,
     virustotal_api_key: str | None = None,
     vuln_report_path: Path | None = None,
+    exclude_patterns: list[str] | None = None,
 ) -> ScanReport:
     prepared = prepare_target(
         target,
@@ -249,6 +253,40 @@ def scan(
             policy.limits.get("max_binary_bytes", 100_000_000),
         )
         files = inventory.text_files
+
+        # --- Exclude filtering (directory scans only) ---
+        if exclude_patterns and prepared.target_type == "directory":
+            _log = logging.getLogger("skillscan")
+
+            def _is_excluded(path: Path) -> str | None:
+                rel = str(path.relative_to(prepared.root))
+                for pat in exclude_patterns:  # type: ignore[union-attr]
+                    if fnmatch.fnmatch(rel, pat):
+                        return pat
+                return None
+
+            filtered: list[Path] = []
+            for f in files:
+                pat = _is_excluded(f)
+                if pat:
+                    _log.debug("[exclude] Skipping %s (matched %r)", f.relative_to(prepared.root), pat)
+                else:
+                    filtered.append(f)
+            files = filtered
+
+            filtered_bin = []
+            for ba in inventory.binary_artifacts:
+                pat = _is_excluded(ba.path)
+                if pat:
+                    _log.debug(
+                        "[exclude] Skipping binary %s (matched %r)",
+                        ba.path.relative_to(prepared.root),
+                        pat,
+                    )
+                else:
+                    filtered_bin.append(ba)
+            inventory = FileInventory(text_files=files, binary_artifacts=filtered_bin)
+
         findings: list[Finding] = []
         iocs: list[IOC] = []
         capabilities: list[Capability] = []

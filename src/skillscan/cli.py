@@ -30,6 +30,7 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import logging
+import os
 import shutil
 import sys
 import time
@@ -69,6 +70,26 @@ from skillscan.suppressions import (
     apply_suppressions,
     check_suppressions_expiry,
 )
+
+# ---------------------------------------------------------------------------
+# Default file exclusion patterns for directory scans
+# ---------------------------------------------------------------------------
+
+DEFAULT_EXCLUDES: list[str] = [
+    "tests/*",
+    "test_*",
+    "*_test.*",
+    "*_spec.*",
+    "node_modules/*",
+    "__pycache__/*",
+    ".git/*",
+    ".venv/*",
+    "venv/*",
+    "*.pyc",
+    "*.pyo",
+    ".claude/*",
+    ".github/*",
+]
 
 # ---------------------------------------------------------------------------
 # App / sub-app declarations
@@ -721,12 +742,38 @@ def scan_cmd(
         "--badge-out",
         help="Write a shields.io-compatible badge JSON file after scanning.",
     ),
+    exclude: list[str] | None = typer.Option(
+        None,
+        "--exclude",
+        help=(
+            "Glob pattern to exclude files from scanning (repeatable). "
+            "E.g., --exclude 'tests/**' --exclude '*.pyc'. "
+            "Also accepts SKILLSCAN_EXCLUDE env var (comma-separated)."
+        ),
+    ),
+    no_default_excludes: bool = typer.Option(
+        False,
+        "--no-default-excludes",
+        help="Disable default exclusion patterns (tests, node_modules, __pycache__, .git, etc.).",
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
     if debug:
         logging.basicConfig(level=logging.DEBUG, format="%(name)s %(levelname)s %(message)s")
         logging.getLogger("skillscan").setLevel(logging.DEBUG)
+
+    # --- Build effective exclude patterns ---
+    effective_excludes: list[str] = []
+    if not no_default_excludes:
+        effective_excludes.extend(DEFAULT_EXCLUDES)
+    if exclude:
+        effective_excludes.extend(exclude)
+    # Also honour SKILLSCAN_EXCLUDE env var (comma-separated)
+    _env_exclude = os.environ.get("SKILLSCAN_EXCLUDE", "")
+    if _env_exclude:
+        effective_excludes.extend(p.strip() for p in _env_exclude.split(",") if p.strip())
+    _exclude_patterns: list[str] | None = effective_excludes or None
 
     # --- Model UX: missing-model detection and guided download ---
     if require_model and not ml_detect:
@@ -944,6 +991,7 @@ def scan_cmd(
                         virustotal=virustotal,
                         virustotal_api_key=virustotal_api_key,
                         vuln_report_path=vuln_report,
+                        exclude_patterns=_exclude_patterns,
                     )
                 except (ScanError, ValueError) as exc:
                     console.print(f"[bold red]Scan failed for {skill_name}:[/] {exc}")
@@ -1035,6 +1083,7 @@ def scan_cmd(
                     virustotal=virustotal,
                     virustotal_api_key=virustotal_api_key,
                     vuln_report_path=vuln_report,
+                    exclude_patterns=_exclude_patterns,
                 )
                 try:
                     report = _future.result(timeout=timeout)
@@ -1069,6 +1118,7 @@ def scan_cmd(
                 virustotal=virustotal,
                 virustotal_api_key=virustotal_api_key,
                 vuln_report_path=vuln_report,
+                exclude_patterns=_exclude_patterns,
             )
     except (ScanError, ValueError) as exc:
         console.print(f"[bold red]Scan failed:[/] {exc}")
