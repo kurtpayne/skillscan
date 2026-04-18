@@ -2,6 +2,57 @@
 
 Historical ML model evaluation results, most recent first.
 
+## v4.2 — Rich Structured Output + Expanded Eval (2026-04-16)
+
+**Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (940 MB)
+**Training:** 20k+ examples, teacher-distilled (Claude Sonnet + GPT-4o + DeepSeek), 3 epochs on A100
+**Eval set:** 208 held-out files
+
+**Headline metrics (user-facing):**
+
+| Metric | Value | What it measures |
+|---|---|---|
+| Verdict accuracy | 98.6% (205/208) | Share of files where the malicious/benign verdict matches the gold label |
+| Threat detection rate | 99.4% (163/164) | Share of actual threats the model flagged — zero false negatives |
+| False positives | 2 | Both on hard-benign enterprise eval files |
+| Parse failures | 0.5% (1/208) | Runs where the model produced non-JSON output |
+
+**Categorization metric (technical):**
+
+Macro F1: 0.620 — measures how precisely the model picks the specific attack type among 7 labels, not whether it correctly flags malicious skills. Still the weakest metric and appropriately framed: fine-grained categorization is harder than the malicious/benign call.
+
+Per-class results:
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| path_traversal | 0.905 | 0.905 | 0.905 |
+| social_engineering | 0.654 | 1.000 | 0.791 |
+| data_exfiltration | 0.632 | 0.935 | 0.754 |
+| supply_chain | 0.404 | 0.767 | 0.529 |
+| evasion | 0.346 | 0.818 | 0.486 |
+| code_injection | 0.448 | 0.520 | 0.481 |
+| prompt_injection | 0.800 | 0.262 | 0.394 |
+
+**Inference:**
+
+- CPU: ~2s/file
+- GPU: 0.6s/file
+
+**Rich structured output:** v4.2 adds severity (critical/high/medium/low/none), sub_classes (15+ finer-grained types like `exfil_credentials`, `se_phishing`, `pi_role_override`), and affected_lines (specific line numbers to inspect) to the existing verdict/labels/reasoning fields.
+
+Example:
+```json
+{
+  "verdict": "malicious",
+  "labels": ["data_exfiltration", "social_engineering"],
+  "severity": "high",
+  "sub_classes": ["exfil_credentials", "se_phishing"],
+  "affected_lines": [10, 12, 14, 15],
+  "reasoning": "..."
+}
+```
+
+---
+
 ## v4.1 — Corpus Expansion + Eval Label Fix (2026-04-12)
 
 **Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (935 MB)

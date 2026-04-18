@@ -57,6 +57,10 @@ def report_to_sarif(report: ScanReport) -> dict:
                 "mitigation": finding.mitigation,
                 # M10.8: attack-type hint (only present for PINJ-ML-001 findings)
                 **({"attackHint": finding.attack_hint} if finding.attack_hint else {}),
+                # v4.2 ML enrichment fields — only present when populated.
+                **({"mlSeverity": finding.ml_severity} if finding.ml_severity else {}),
+                **({"subClasses": finding.sub_classes} if finding.sub_classes else {}),
+                **({"affectedLines": finding.affected_lines} if finding.affected_lines else {}),
             },
         }
         if finding.chain_actions:

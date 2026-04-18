@@ -82,6 +82,14 @@ def render_report(report: ScanReport, console: Console | None = None) -> None:
             if finding.mitigation:
                 # Reasoning from the generative model
                 console.print(f"    {finding.mitigation}")
+            # v4.2 enrichment fields — only show if populated.
+            if finding.ml_severity:
+                console.print(f"    [dim]Model severity:[/dim] {finding.ml_severity}")
+            if finding.sub_classes:
+                console.print(f"    [dim]Sub-classes:[/dim] {', '.join(finding.sub_classes)}")
+            if finding.affected_lines:
+                lines_str = ", ".join(str(n) for n in finding.affected_lines)
+                console.print(f"    [dim]Affected lines:[/dim] {lines_str}")
 
     findings = Table(title="Top Findings", show_lines=True)
     findings.add_column("ID", style="cyan")

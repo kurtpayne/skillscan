@@ -37,6 +37,17 @@ class Finding(BaseModel):
     # Section context: heading text of the markdown section where the rule fired,
     # e.g. "Security Notes" or "Installation Steps".  Empty for semantic/ML findings.
     section_context: str = ""
+    # v4.2 generative detector enrichments — populated only for PINJ-ML-001
+    # findings emitted by the v4.2+ GGUF model. Older v4.1 models return None/[]
+    # and these remain empty.
+    # ml_severity: model-emitted severity hint (critical/high/medium/low/none).
+    # Kept separate from `severity` to preserve static severity mapping.
+    ml_severity: str | None = None
+    # sub_classes: finer-grained attack sub-types (e.g. "base64_exfil",
+    # "curl_to_shell", "obfuscated_import").
+    sub_classes: list[str] = Field(default_factory=list)
+    # affected_lines: line numbers in the skill file the model flagged.
+    affected_lines: list[int] = Field(default_factory=list)
 
 
 class ConfidenceLabel(StrEnum):

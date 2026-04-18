@@ -29,11 +29,15 @@ logger = logging.getLogger(__name__)
 _MODEL_PATH = Path.home() / ".skillscan" / "models" / "skillscan-detector-v4-q4_k_m.gguf"
 
 _SYSTEM_PROMPT = (
-    "You are a security analyst. Analyze the given AI agent skill file for "
-    "security threats. Output a JSON object with: verdict (benign/malicious), "
-    "labels (array of attack types), confidence (0-1), and reasoning (1-3 "
-    "sentences citing specific evidence)."
+    "You are a security analyst. Analyze the given AI agent skill file "
+    "for security threats. Output a JSON object with: verdict (benign/malicious), "
+    "labels (array of attack types), confidence (0-1), reasoning (1-3 sentences "
+    "citing specific evidence), severity (critical/high/medium/low/none), "
+    "sub_classes (array of finer-grained attack sub-types), and "
+    "affected_lines (array of line numbers in the skill file)."
 )
+
+_VALID_ML_SEVERITIES: frozenset[str] = frozenset({"critical", "high", "medium", "low", "none"})
 
 _VALID_LABELS: frozenset[str] = frozenset(
     {
@@ -107,16 +111,25 @@ _LABEL_TITLES: dict[str, str] = {
 
 # This grammar ensures the model always outputs valid JSON matching our schema.
 # Eliminates parse failures (~1.2% without grammar → ~0% with grammar).
+# v4.2: adds severity, sub_classes, and affected_lines fields.
 _GBNF_GRAMMAR = (  # noqa: E501 — GBNF grammar rules are intentionally long
     'root ::= "{" ws "\\"verdict\\"" ws ":" ws verdict "," ws '
     '"\\"labels\\"" ws ":" ws labels "," ws '
     '"\\"confidence\\"" ws ":" ws number "," ws '
-    '"\\"reasoning\\"" ws ":" ws string ws "}"\n'
+    '"\\"reasoning\\"" ws ":" ws string "," ws '
+    '"\\"severity\\"" ws ":" ws severity "," ws '
+    '"\\"sub_classes\\"" ws ":" ws subclasses "," ws '
+    '"\\"affected_lines\\"" ws ":" ws intarray ws "}"\n'
     'verdict ::= "\\"benign\\"" | "\\"malicious\\""\n'
     'labels ::= "[]" | "[" ws label (ws "," ws label)* ws "]"\n'
     'label ::= "\\"prompt_injection\\"" | "\\"code_injection\\"" '
     '| "\\"data_exfiltration\\"" | "\\"path_traversal\\"" '
     '| "\\"supply_chain\\"" | "\\"social_engineering\\"" | "\\"evasion\\""\n'
+    'severity ::= "\\"critical\\"" | "\\"high\\"" | "\\"medium\\"" '
+    '| "\\"low\\"" | "\\"none\\""\n'
+    'subclasses ::= "[]" | "[" ws string (ws "," ws string)* ws "]"\n'
+    'intarray ::= "[]" | "[" ws integer (ws "," ws integer)* ws "]"\n'
+    "integer ::= [0-9]+\n"
     'number ::= "0" ("." [0-9]+)? | "1" (".0")?\n'
     'string ::= "\\"" ([^\\"\\\\] | "\\\\" .)* "\\""\n'
     "ws ::= [ \\t\\n]*\n"
@@ -444,7 +457,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user", "content": cleaned_text},
             ],
-            max_tokens=300,
+            max_tokens=500,
             temperature=0.0,
             **grammar_kwargs,
         )
@@ -476,6 +489,32 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     confidence = float(parsed.get("confidence", 0.0))
     reasoning = str(parsed.get("reasoning", ""))
 
+    # --- v4.2 enrichment fields (backward-compatible: older models omit these) ---
+    raw_ml_severity = parsed.get("severity")
+    ml_severity: str | None = None
+    if isinstance(raw_ml_severity, str):
+        candidate = raw_ml_severity.strip().lower()
+        if candidate in _VALID_ML_SEVERITIES:
+            ml_severity = candidate
+
+    raw_sub_classes = parsed.get("sub_classes", [])
+    sub_classes: list[str] = (
+        [s.strip() for s in raw_sub_classes if isinstance(s, str) and s.strip()]
+        if isinstance(raw_sub_classes, list)
+        else []
+    )
+
+    raw_affected_lines = parsed.get("affected_lines", [])
+    affected_lines: list[int] = []
+    if isinstance(raw_affected_lines, list):
+        for item in raw_affected_lines:
+            try:
+                ln_val = int(item)
+            except (TypeError, ValueError):
+                continue
+            if ln_val >= 0:
+                affected_lines.append(ln_val)
+
     # Clamp confidence to [0, 1]
     confidence = max(0.0, min(1.0, confidence))
 
@@ -497,6 +536,9 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     raw_lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
     snippet = " | ".join(raw_lines[:3])[:300]
 
+    # Use the first affected line as the primary Finding.line when available.
+    primary_line = affected_lines[0] if affected_lines else None
+
     for label in labels:
         severity = _map_severity(confidence, label)
         human_label = _LABEL_TITLES.get(label, label.replace("_", " "))
@@ -509,9 +551,13 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 confidence=round(confidence, 3),
                 title=f"ML-detected {human_label} (v4 generative detector)",
                 evidence_path=str(path),
+                line=primary_line,
                 snippet=snippet,
                 mitigation=reasoning,
                 attack_hint=label,
+                ml_severity=ml_severity,
+                sub_classes=list(sub_classes),
+                affected_lines=list(affected_lines),
             )
         )
 
