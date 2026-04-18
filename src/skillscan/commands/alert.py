@@ -138,7 +138,7 @@ def _extract_scanned_at(report: dict) -> str:
     """Extract scanned_at timestamp from report metadata."""
     meta = report.get("metadata", {})
     if isinstance(meta, dict):
-        return meta.get("scanned_at", "unknown")
+        return str(meta.get("scanned_at", "unknown"))
     return "unknown"
 
 

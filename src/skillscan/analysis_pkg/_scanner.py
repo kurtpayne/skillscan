@@ -758,7 +758,7 @@ def scan(
         dedup_iocs: dict[tuple[str, str, str], IOC] = {}
         allow_domains = {d.lower() for d in policy.allow_domains}
         for ioc in iocs:
-            key = (ioc.kind, ioc.value.lower(), ioc.source_path)
+            ioc_key: tuple[str, str, str] = (ioc.kind, ioc.value.lower(), ioc.source_path)
             listed = False
             if ioc.kind == "domain" and ioc.value.lower() in ioc_db.get("domains", []):
                 listed = True
@@ -771,7 +771,7 @@ def scan(
             if ioc.kind == "domain" and ioc.value.lower() in allow_domains:
                 listed = False
             ioc.listed = listed
-            dedup_iocs[key] = ioc
+            dedup_iocs[ioc_key] = ioc
         iocs = list(dedup_iocs.values())
 
         block_domains = {d.lower() for d in policy.block_domains}
