@@ -716,6 +716,11 @@ def scan_cmd(
         "--summary",
         help="Print a roll-up summary table when scanning directories with multiple skills.",
     ),
+    badge_out: str | None = typer.Option(
+        None,
+        "--badge-out",
+        help="Write a shields.io-compatible badge JSON file after scanning.",
+    ),
 ) -> None:
     """Scan one or more SKILL.md files for security issues."""
     _load_dotenv()
@@ -1194,6 +1199,22 @@ def scan_cmd(
             else:
                 out.write_text(report.to_json(), encoding="utf-8")
                 console.print(f"[cyan]Saved JSON report:[/] {out}")
+
+    # --- Badge output ---
+    if badge_out:
+        import json as _json
+
+        verdict = report.verdict.value
+        color = {"block": "red", "warn": "yellow", "allow": "brightgreen"}.get(verdict, "lightgrey")
+        msg = {"block": "BLOCK", "warn": "WARN", "allow": "PASS"}.get(verdict, "UNKNOWN")
+        badge = {
+            "schemaVersion": 1,
+            "label": f"SkillScan v{__version__}",
+            "message": msg,
+            "color": color,
+        }
+        Path(badge_out).write_text(_json.dumps(badge))
+        console.print(f"Badge written to {badge_out}")
 
     # --- Observe policy: always exit 0 ---
     if policy_profile == "observe":
