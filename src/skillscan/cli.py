@@ -742,6 +742,11 @@ def scan_cmd(
         "--badge-out",
         help="Write a shields.io-compatible badge JSON file after scanning.",
     ),
+    badge_dir: str | None = typer.Option(
+        None,
+        "--badge-dir",
+        help="Write per-skill badge JSON files to this directory (for multi-skill repos).",
+    ),
     exclude: list[str] | None = typer.Option(
         None,
         "--exclude",
@@ -1051,6 +1056,75 @@ def scan_cmd(
                     render_report(sub_report, console=console)
                     console.print()
                 _render_summary_table(skill_results, console)
+
+            # --- Per-skill badges (--badge-dir) ---
+            if badge_dir:
+                import json as _json
+
+                badge_base = Path(badge_dir)
+                badge_base.mkdir(parents=True, exist_ok=True)
+                for sr, st in zip(skill_results, skill_targets):
+                    v = sr["verdict"]
+                    color = {"block": "red", "warn": "yellow", "allow": "brightgreen"}.get(v, "lightgrey")
+                    msg = {"block": "BLOCK", "warn": "WARN", "allow": "PASS"}.get(v, "UNKNOWN")
+                    skill_badge = {
+                        "schemaVersion": 1,
+                        "label": "SkillScan",
+                        "message": msg,
+                        "color": color,
+                    }
+                    # Write badge into the skill's own directory
+                    skill_dir_path = st if st.is_dir() else st.parent
+                    badge_path = skill_dir_path / "skillscan-badge.json"
+                    badge_path.write_text(_json.dumps(skill_badge, indent=2))
+                    console.print(f"Badge written to {badge_path}")
+
+                # Summary badge
+                total = len(skill_results)
+                pass_count = sum(1 for s in skill_results if s["verdict"] == "allow")
+                has_block = any(s["verdict"] == "block" for s in skill_results)
+                has_warn = any(s["verdict"] == "warn" for s in skill_results)
+                if has_block:
+                    summary_color = "red"
+                elif has_warn:
+                    summary_color = "yellow"
+                else:
+                    summary_color = "brightgreen"
+                summary_badge = {
+                    "schemaVersion": 1,
+                    "label": "SkillScan",
+                    "message": f"{pass_count}/{total} PASS",
+                    "color": summary_color,
+                }
+                summary_badge_path = badge_base / "skillscan-badge.json"
+                summary_badge_path.write_text(_json.dumps(summary_badge, indent=2))
+                console.print(f"Summary badge written to {summary_badge_path}")
+
+            # --- Single badge (--badge-out) in summary mode ---
+            if badge_out and not badge_dir:
+                import json as _json
+
+                has_block = any(s["verdict"] == "block" for s in skill_results)
+                has_warn = any(s["verdict"] == "warn" for s in skill_results)
+                total = len(skill_results)
+                pass_count = sum(1 for s in skill_results if s["verdict"] == "allow")
+                if has_block:
+                    color = "red"
+                    msg = "BLOCK"
+                elif has_warn:
+                    color = "yellow"
+                    msg = "WARN"
+                else:
+                    color = "brightgreen"
+                    msg = "PASS"
+                badge = {
+                    "schemaVersion": 1,
+                    "label": f"SkillScan v{__version__}",
+                    "message": f"{pass_count}/{total} {msg}",
+                    "color": color,
+                }
+                Path(badge_out).write_text(_json.dumps(badge))
+                console.print(f"Badge written to {badge_out}")
 
             if policy_profile == "observe":
                 return
