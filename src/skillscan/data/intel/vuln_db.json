@@ -1722,5 +1722,13 @@
         "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
       }
     }
+  },
+  "apache-skywalking-mcp": {
+    "0.1.0": {
+      "id": "CVE-2026-34476",
+      "severity": "high",
+      "fixed": "0.2.0",
+      "summary": "Apache SkyWalking MCP 0.1.0 SSRF via SW-URL Header (CVE-2026-34476). Attackers can forge server-side requests to internal resources by manipulating the SW-URL header. Upgrade to 0.2.0 or later."
+    }
   }
 }

@@ -134,11 +134,13 @@ def scan_with_semgrep(file_path: Path, rules_dir: Path) -> list[Finding]:
         # Use the trailing component of the dotted rule ID for a compact finding ID.
         rule_short = check_id.rsplit(".", 1)[-1] if check_id else "unknown"
 
-        extra = result.get("extra") if isinstance(result.get("extra"), dict) else {}
+        extra_raw = result.get("extra")
+        extra: dict = extra_raw if isinstance(extra_raw, dict) else {}
         raw_severity = str(extra.get("severity", "WARNING")).upper()
         severity = _SEVERITY_MAP.get(raw_severity, Severity.MEDIUM)
 
-        start = result.get("start") if isinstance(result.get("start"), dict) else {}
+        start_raw = result.get("start")
+        start: dict = start_raw if isinstance(start_raw, dict) else {}
         try:
             line_no = int(start.get("line", 0))
         except (TypeError, ValueError):

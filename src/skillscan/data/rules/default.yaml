@@ -1,4 +1,4 @@
-version: "2026.04.17.1"
+version: "2026.04.18.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -7277,6 +7277,117 @@ static_rules:
         - https://www.bleepingcomputer.com/news/security/malicious-crypto-stealing-vscode-extensions-resurface-on-openvsx/
         - https://www.koi.ai/blog/tiger-jack-malicious-vscode-extensions-stealing-code
         - https://www.esecurityplanet.com/news/malicious-vs-code-extension/
+  - id: SUP-037
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: Fake Gemini npm package (gemini-ai-checker) — AI tool token stealer
+    pattern: '(?i)(?:gemini[_\s-]?ai[_\s-]?checker|gemini[_\s-]?check|server[_\s-]?check[_\s-]?genimi[.]vercel[.]app|express[_\s-]?flowlimit|chai[_\s-]?extensions[_\s-]?extras|ottercookie|contagious[_\s-]?interview[^\n]{0,80}(?:gemini|npm|vercel)|(?:npm\s+install|yarn\s+add|pnpm\s+add)[^\n]{0,80}(?:gemini[_\s-]?ai[_\s-]?checker|express[_\s-]?flowlimit|chai[_\s-]?extensions[_\s-]?extras))'
+    mitigation: 'The gemini-ai-checker npm package (published March 20, 2026) is a malicious token stealer targeting AI developers. It downloads an OtterCookie payload from server-check-genimi.vercel.app, which steals credentials, crypto wallets, and specifically targets AI tool directories (.cursor, .claude, Windsurf, PearAI) to exfiltrate API keys and source code. Remove the package immediately, rotate all credentials and API keys, and audit for unauthorized access.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-18'
+      updated: '2026-04-18'
+      tags:
+        - supply_chain
+        - sup
+        - npm
+        - gemini
+        - token-stealer
+        - ottercookie
+        - contagious-interview
+      last_modified: '2026-04-18'
+      techniques:
+        - id: SUP-001
+          name: Supply Chain Compromise via Package Manager
+      applies_to:
+        contexts:
+          - source
+          - dependency
+      lifecycle:
+        introduced: '2026-04-18'
+        last_modified: '2026-04-18'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://cybersecuritynews.com/hackers-use-fake-gemini-npm-package/
+        - https://letsdatascience.com/news/fake-gemini-npm-package-steals-ai-tool-tokens-5c4bf379
+  - id: PSV-024
+    category: platform_security
+    severity: high
+    confidence: 0.90
+    title: Apache SkyWalking MCP SSRF via SW-URL Header (CVE-2026-34476)
+    pattern: '(?i)(?:CVE-2026-34476|apache[_\s-]?skywalking[^\n]{0,120}(?:mcp|ssrf|sw[_\s-]?url)|skywalking[_\s-]?mcp[^\n]{0,120}(?:ssrf|sw[_\s-]?url|cve-2026-34476)|sw[_\s-]?url[^\n]{0,80}(?:header|ssrf|forge|skywalking))'
+    mitigation: 'CVE-2026-34476 is a Server-Side Request Forgery (SSRF) vulnerability in Apache SkyWalking MCP version 0.1.0. Attackers can forge requests to internal resources by manipulating the SW-URL header. Upgrade to Apache SkyWalking MCP version 0.2.0 or later, which fixes this issue.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-18'
+      updated: '2026-04-18'
+      tags:
+        - platform_security
+        - psv
+        - apache
+        - skywalking
+        - mcp_server
+        - ssrf
+        - cve-2026-34476
+      last_modified: '2026-04-18'
+      techniques:
+        - id: PSV-024
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-18'
+        last_modified: '2026-04-18'
+      quality:
+        precision_estimate: 0.90
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-34476/
+        - https://seclists.org/oss-sec/2026/q2/116
+  - id: PSV-025
+    category: platform_security
+    severity: high
+    confidence: 0.90
+    title: Open VSX Pre-Publish Scanning Bypass (Open Sesame)
+    pattern: '(?i)(?:open[_\s-]?vsx[^\n]{0,120}(?:bypass|scan|publish|exhaust|connection[_\s-]?pool)|open[_\s-]?sesame[^\n]{0,80}(?:open[_\s-]?vsx|bypass|scan)|vsx[^\n]{0,80}(?:scan[_\s-]?job|fail[_\s-]?open|connection[_\s-]?pool[_\s-]?exhaust))'
+    mitigation: 'A vulnerability in Open VSX (versions prior to 0.32.0) allows malicious VS Code extensions to bypass pre-publish security checks. The Java-based service misinterprets scanner job failures (e.g., due to database connection pool exhaustion from a flood of publish requests) as "no scanners are configured," leading to extensions being marked as passed (fail-open). Upgrade Open VSX to version 0.32.0 or later, which fixes this fail-open behavior.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-18'
+      updated: '2026-04-18'
+      tags:
+        - platform_security
+        - psv
+        - openvsx
+        - scan_bypass
+        - fail_open
+      last_modified: '2026-04-18'
+      techniques:
+        - id: PSV-025
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-18'
+        last_modified: '2026-04-18'
+      quality:
+        precision_estimate: 0.90
+        benchmark_set: core-static-v1
+      references:
+        - https://thehackernews.com/2026/03/open-vsx-bug-let-malicious-vs-code.html
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
   network_access: \b(requests\.|fetch\(|axios|http[s]?://|socket)\b

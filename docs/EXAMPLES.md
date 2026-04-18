@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**223 static rules · 14 chain rules**
+**226 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -190,6 +190,7 @@
 | `SUP-034` | medium | claude-code-action Arbitrary Code Execution via Malicious .mcp.json | supply_chain, sup, claude-code-action, mcp, github-actions, tra-2026-27 |
 | `SUP-035` | critical | dom-utils-lite / centralogger npm SSH backdoor via Supabase C2 | supply_chain, sup, npm, postinstall, ssh-backdoor, supabase, authorized-keys, credential-theft |
 | `SUP-036` | critical | TigerJack malicious VS Code extensions — keylogger, CoinIMP miner, and dynamic backdoor (ab498) | supply_chain, sup, vscode, extension, keylogger, cryptominer, backdoor, tigerjack, coinimp, openvsx |
+| `SUP-037` | critical | Fake Gemini npm package (gemini-ai-checker) — AI tool token stealer | supply_chain, sup, npm, gemini, token-stealer, ottercookie, contagious-interview |
 
 ### Defense Evasion
 
@@ -256,6 +257,8 @@
 | `PSV-021` | critical | Marimo reactive notebook pre-auth RCE via unauthenticated WebSocket terminal (CVE-2026-39987, < 0.23.0) | platform_security, psv, marimo, pre-auth-rce, websocket, missing-authentication, cve-2026-39987, notebook, python |
 | `PSV-022` | medium | docker-mcp-server OS command injection RCE (CVE-2026-5741, <= 0.1.0) | platform_security, psv, docker, mcp_server, command_injection, rce, cve-2026-5741 |
 | `PSV-023` | critical | nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5) | platform_security, psv, nginx, mcp_server, auth_bypass, actively_exploited, cve-2026-33032 |
+| `PSV-024` | high | Apache SkyWalking MCP SSRF via SW-URL Header (CVE-2026-34476) | platform_security, psv, apache, skywalking, mcp_server, ssrf, cve-2026-34476 |
+| `PSV-025` | high | Open VSX Pre-Publish Scanning Bypass (Open Sesame) | platform_security, psv, openvsx, scan_bypass, fail_open |
 
 ### Execution
 
