@@ -457,7 +457,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 {"role": "system", "content": _SYSTEM_PROMPT},
                 {"role": "user", "content": cleaned_text},
             ],
-            max_tokens=500,
+            max_tokens=800,
             temperature=0.0,
             **grammar_kwargs,
         )
