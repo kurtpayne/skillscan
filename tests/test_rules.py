@@ -2220,64 +2220,8 @@ def test_sup033_openvsx_zip_slip() -> None:
     assert rule.pattern.search("openvsx 2.4.2 release notes") is None
 
 
-def test_rule_psv_013():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/165_psv013_cursor_rce_cve_2026_31854"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-013" for f in r.findings)
-
-
-def test_rule_pinj_022():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/166_pinj022_nanobot_cve_2026_33654"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PINJ-022" for f in r.findings)
-
-
-def test_rule_sup_034():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/167_sup034_claude_code_action_tra_2026_27"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "SUP-034" for f in r.findings)
-
-
-def test_rule_psv_014():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/168_psv014_apollo_mcp_cve_2026_35577"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-014" for f in r.findings)
+# NOTE: PSV-013, PINJ-022, SUP-034, PSV-014 scan tests removed.
+# These rules are now verified by test_rule_inputs.py via inline test_input in default.yaml.
 
 
 def test_psv015_mcp_go_sdk_dns_rebinding() -> None:
@@ -2323,49 +2267,8 @@ def test_psv017_openclaw_websocket_scope_elevation() -> None:
     assert rule.pattern.search("openclaw gateway connection established") is None
 
 
-def test_rule_psv_015():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/169_psv015_mcp_go_sdk_dns_rebinding"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-015" for f in r.findings)
-
-
-def test_rule_psv_016():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/170_psv016_mobile_mcp_android_intent_rce"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-016" for f in r.findings)
-
-
-def test_rule_psv_017():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/171_psv017_openclaw_websocket_scope_elevation"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-017" for f in r.findings)
+# NOTE: PSV-015, PSV-016, PSV-017 scan tests removed.
+# These rules are now verified by test_rule_inputs.py via inline test_input in default.yaml.
 
 
 def test_psv018_n8n_mcp_ssrf() -> None:
@@ -2406,49 +2309,8 @@ def test_se004_eviltokens_device_code_phishing() -> None:
     assert rule.pattern.search("microsoft 365 device registration guide") is None
 
 
-def test_rule_psv_018():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/172_psv018_n8n_mcp_ssrf_cve_2026_39974"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-018" for f in r.findings)
-
-
-def test_rule_psv_019():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/173_psv019_mcp_taskwarrior_rce_cve_2026_5833"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "PSV-019" for f in r.findings)
-
-
-def test_rule_se_004():
-    from pathlib import Path
-
-    from skillscan.analysis import scan
-    from skillscan.policies import load_builtin_policy
-
-    p = load_builtin_policy("strict")
-    r = scan(
-        Path("examples/showcase/174_se004_eviltokens_device_code_phishing"),
-        p,
-        "builtin:strict",
-    )
-    assert any(f.id == "SE-004" for f in r.findings)
+# NOTE: PSV-018, PSV-019, SE-004 scan tests removed.
+# These rules are now verified by test_rule_inputs.py via inline test_input in default.yaml.
 
 
 def test_psv020_mcp_stdio_command_injection() -> None:

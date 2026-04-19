@@ -66,26 +66,19 @@ def main() -> int:
     added_rule_ids = sorted(head_ids - base_ids)
 
     # If no new rule IDs were added, treat this as an enrichment/tuning change and skip
-    # new-pattern showcase/doc requirements that are intended for fresh detections.
+    # new-pattern doc requirements that are intended for fresh detections.
     if not added_rule_ids:
-        print("ℹ️ No new rule IDs detected; skipping new-pattern showcase/doc requirements.")
+        print("ℹ️ No new rule IDs detected; skipping new-pattern doc requirements.")
         print("✅ Pattern-update guard checks passed")
         return 0
 
     required = {
         "docs/EXAMPLES.md": "docs/EXAMPLES.md should be updated when rules change",
-        "examples/showcase/INDEX.md": "examples/showcase/INDEX.md should be updated",
         "tests/test_rules.py": "tests/test_rules.py must include coverage for new rule(s)",
-        "tests/test_showcase_examples.py": (
-            "tests/test_showcase_examples.py should validate showcase detections"
-        ),
     }
     for path, msg in required.items():
         if path not in files:
             fail(msg)
-
-    if not any(p.startswith("examples/showcase/") and p != "examples/showcase/INDEX.md" for p in files):
-        fail("At least one showcase fixture under examples/showcase/* must be added/updated")
 
     if not any(p in files for p in ("docs/RULE_UPDATES.md", "PATTERN_UPDATES.md")):
         fail("Update docs/RULE_UPDATES.md or PATTERN_UPDATES.md with source-backed rationale")
