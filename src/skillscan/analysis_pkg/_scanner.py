@@ -8,6 +8,8 @@ import os
 import re as _re
 from pathlib import Path
 
+import yaml  # type: ignore[import-untyped]
+
 from skillscan import __version__
 from skillscan._constants import NEGATION_CONFIDENCE_REDUCTION as _NEGATION_CONFIDENCE_REDUCTION
 from skillscan._constants import NEGATION_WINDOW as _NEGATION_WINDOW
@@ -45,6 +47,7 @@ from skillscan.ecosystems import detect_ecosystems
 from skillscan.ml_detector import ml_prompt_injection_findings
 from skillscan.models import (
     IOC,
+    BoundaryInfo,
     Capability,
     DependencyFinding,
     Finding,
@@ -145,6 +148,106 @@ def _deduplicate_findings(findings: list[Finding]) -> list[Finding]:
             )
         )
     return result
+
+
+def _parse_skill_frontmatter(root: Path) -> dict:
+    """Parse YAML frontmatter from SKILL.md (or CLAUDE.md) in the given root directory.
+
+    Returns the parsed frontmatter dict, or an empty dict if no skill file or
+    frontmatter is found.
+    """
+    for candidate in ("SKILL.md", "skill.md", "CLAUDE.md", "claude.md"):
+        skill_path = root / candidate
+        if skill_path.is_file():
+            try:
+                raw = skill_path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                return {}
+            raw = raw.lstrip("\ufeff").lstrip()
+            if raw.startswith("---"):
+                end = raw.find("\n---", 3)
+                if end != -1:
+                    fm_text = raw[3:end].strip()
+                    try:
+                        parsed = yaml.safe_load(fm_text)
+                        if isinstance(parsed, dict):
+                            return parsed
+                    except yaml.YAMLError:
+                        pass
+            return {}
+    return {}
+
+
+def _apply_frontmatter_boundary(
+    files: list[Path],
+    binary_artifacts: list,
+    root: Path,
+    fm_includes: list[str] | None,
+    fm_excludes: list[str] | None,
+) -> tuple[list[Path], list, int]:
+    """Apply frontmatter includes/excludes to filter files and binary artifacts.
+
+    Returns (filtered_files, filtered_binary_artifacts, excluded_count).
+    SKILL.md is always included regardless of patterns.
+    """
+    _log = logging.getLogger("skillscan")
+    excluded_count = 0
+    skill_names = {"skill.md", "claude.md"}
+
+    def _is_skill_md(path: Path) -> bool:
+        return path.name.lower() in skill_names
+
+    # Apply includes first
+    if fm_includes is not None:
+        included: list[Path] = []
+        for f in files:
+            if _is_skill_md(f):
+                included.append(f)
+                continue
+            rel = str(f.relative_to(root))
+            if any(fnmatch.fnmatch(rel, pat) for pat in fm_includes):
+                included.append(f)
+            else:
+                excluded_count += 1
+                _log.debug("[boundary:includes] Skipping %s", rel)
+        files = included
+
+        included_bin = []
+        for ba in binary_artifacts:
+            rel = str(ba.path.relative_to(root))
+            if any(fnmatch.fnmatch(rel, pat) for pat in fm_includes):
+                included_bin.append(ba)
+            else:
+                excluded_count += 1
+                _log.debug("[boundary:includes] Skipping binary %s", rel)
+        binary_artifacts = included_bin
+
+    # Apply excludes on top
+    if fm_excludes is not None:
+        filtered: list[Path] = []
+        for f in files:
+            if _is_skill_md(f):
+                filtered.append(f)
+                continue
+            rel = str(f.relative_to(root))
+            if any(fnmatch.fnmatch(rel, pat) for pat in fm_excludes):
+                excluded_count += 1
+                _log.debug("[boundary:excludes] Skipping %s", rel)
+            else:
+                filtered.append(f)
+        files = filtered
+
+        filtered_bin = []
+        for ba in binary_artifacts:
+            rel = str(ba.path.relative_to(root))
+            if any(fnmatch.fnmatch(rel, pat) for pat in fm_excludes):
+                excluded_count += 1
+                _log.debug("[boundary:excludes] Skipping binary %s", rel)
+            else:
+                filtered_bin.append(ba)
+        binary_artifacts = filtered_bin
+
+    return files, binary_artifacts, excluded_count
 
 
 def _virustotal_findings(
@@ -286,6 +389,52 @@ def scan(
                 else:
                     filtered_bin.append(ba)
             inventory = FileInventory(text_files=files, binary_artifacts=filtered_bin)
+
+        # --- Frontmatter boundary filtering (directory scans only) ---
+        boundary_info = BoundaryInfo()
+        files_before_boundary = len(inventory.text_files) + len(inventory.binary_artifacts)
+        if prepared.target_type == "directory":
+            frontmatter = _parse_skill_frontmatter(prepared.root)
+            fm_includes = frontmatter.get("includes")
+            fm_excludes = frontmatter.get("excludes")
+            # Normalise to list[str] | None
+            if isinstance(fm_includes, list):
+                fm_includes = [str(p) for p in fm_includes]
+            else:
+                fm_includes = None
+            if isinstance(fm_excludes, list):
+                fm_excludes = [str(p) for p in fm_excludes]
+            else:
+                fm_excludes = None
+
+            if fm_includes is not None or fm_excludes is not None:
+                files = inventory.text_files
+                bin_arts = inventory.binary_artifacts
+                files, bin_arts, boundary_excluded = _apply_frontmatter_boundary(
+                    files, bin_arts, prepared.root, fm_includes, fm_excludes
+                )
+                inventory = FileInventory(text_files=files, binary_artifacts=bin_arts)
+                boundary_info = BoundaryInfo(
+                    source="frontmatter",
+                    includes=fm_includes,
+                    excludes=fm_excludes,
+                    files_scanned=len(inventory.text_files) + len(inventory.binary_artifacts),
+                    files_excluded=boundary_excluded,
+                )
+            elif exclude_patterns:
+                boundary_info = BoundaryInfo(
+                    source="cli",
+                    files_scanned=len(inventory.text_files) + len(inventory.binary_artifacts),
+                    files_excluded=files_before_boundary
+                    - len(inventory.text_files)
+                    - len(inventory.binary_artifacts),
+                )
+            else:
+                boundary_info = BoundaryInfo(
+                    source="default",
+                    files_scanned=len(inventory.text_files) + len(inventory.binary_artifacts),
+                    files_excluded=0,
+                )
 
         findings: list[Finding] = []
         iocs: list[IOC] = []
@@ -998,6 +1147,7 @@ def scan(
             policy_profile=policy.name,
             policy_source=policy_source,
             intel_sources=intel_sources,
+            boundary=boundary_info,
         )
 
         # Build triage metadata — compute has_sub_threshold_signal

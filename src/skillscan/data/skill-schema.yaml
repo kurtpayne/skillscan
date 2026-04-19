@@ -53,6 +53,9 @@ standard_frontmatter_keys:
   - sub_skills
   # Context / memory
   - context
+  # Boundary declarations (which files are part of this skill)
+  - includes
+  - excludes
 
 # ---------------------------------------------------------------------------
 # High-risk unknown keys

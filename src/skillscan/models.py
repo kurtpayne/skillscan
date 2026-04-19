@@ -90,6 +90,25 @@ class Capability(BaseModel):
     detail: str
 
 
+class BoundaryInfo(BaseModel):
+    """Describes which files were included/excluded during a scan and why."""
+
+    source: str = Field(
+        default="default",
+        description="Origin of the boundary: 'frontmatter', 'cli', or 'default'.",
+    )
+    includes: list[str] | None = Field(
+        default=None,
+        description="Glob patterns from frontmatter `includes` key.",
+    )
+    excludes: list[str] | None = Field(
+        default=None,
+        description="Glob patterns from frontmatter `excludes` key.",
+    )
+    files_scanned: int = Field(default=0, description="Number of files included in the scan.")
+    files_excluded: int = Field(default=0, description="Number of files excluded by boundary rules.")
+
+
 class ScanMetadata(BaseModel):
     scanner_version: str
     scanned_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
@@ -100,6 +119,7 @@ class ScanMetadata(BaseModel):
     policy_profile: str
     policy_source: str
     intel_sources: list[str]
+    boundary: BoundaryInfo = Field(default_factory=BoundaryInfo)
 
 
 class TriageMetadata(BaseModel):
