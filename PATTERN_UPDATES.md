@@ -1,3 +1,17 @@
+## 2026-04-19
+rulepack: 2026.04.19.1
+Six new platform security rules covering mcp-neo4j command injection RCE, AAP MCP server log injection, and four OpenClaw privilege escalation and access control vulnerabilities.
+- Added `PSV-026` (high): **mcp-neo4j SSE command injection RCE (CVE-2025-56406)** — CVE-2025-56406 is a command injection vulnerability in mcp-neo4j version 0.3.0. The unauthenticated SSE (Server-Sent Events) service endpoint allows attackers to execute arbitrary commands or exfiltrate Neo4j database contents. Bind the mcp-neo4j service exclusively to localhost, deploy behind a reverse proxy with authentication, or restrict access via firewall rules.
+- Added `PSV-027` (medium): **AAP MCP Server log injection via unsanitized toolsetroute (CVE-2026-6494)** — CVE-2026-6494 is a log injection vulnerability in the Red Hat AAP MCP server (CVSS 5.3). An unauthenticated remote attacker can inject ANSI escape sequences and newlines via the unsanitized toolsetroute parameter, forging log entries to facilitate social engineering attacks that trick operators into executing dangerous commands or visiting malicious URLs.
+- Added `PSV-028` (high): **OpenClaw privilege escalation via device.pair.approve scope validation bypass (CVE-2026-35639)** — CVE-2026-35639 (CVSS 8.7, CWE-648) is a privilege escalation vulnerability in OpenClaw prior to version 2026.3.22. Improper scope validation in the device.pair.approve flow allows attackers to escalate privileges during device pairing approval.
+- Added `PSV-029` (high): **OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625)** — CVE-2026-35625 (CVSS 8.5, CWE-648) is a privilege escalation vulnerability in OpenClaw prior to version 2026.3.25. The silent local shared-auth reconnect mechanism allows attackers to silently re-establish authenticated sessions with elevated privileges.
+- Added `PSV-030` (high): **OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512)** — CVE-2026-34512 (CVSS 7.2, CWE-863) is an improper access control vulnerability in OpenClaw prior to version 2026.3.25. The /sessions/:sessionKey/kill endpoint does not properly validate authorization, allowing unauthorized users to terminate active sessions.
+- Added `PSV-031` (high): **OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621)** — CVE-2026-35621 (CVSS 7.1, CWE-862) is a privilege escalation vulnerability in OpenClaw prior to version 2026.3.24. Attackers can use the chat.send endpoint to persist entries in the allowlist, achieving persistent privilege escalation.
+- Vuln DB: added mcp-neo4j (CVE-2025-56406), aap-mcp-server (CVE-2026-6494), and four new OpenClaw CVE entries (CVE-2026-35639, CVE-2026-35625, CVE-2026-34512, CVE-2026-35621).
+Sources:
+- SentinelOne Vulnerability Database: https://www.sentinelone.com/vulnerability-database/cve-2025-56406/
+- Red Hat Security Advisory: https://access.redhat.com/security/cve/cve-2026-6494
+- OpenClaw CVE Tracker: https://github.com/jgamblin/OpenClawCVEs
 ## 2026-04-18
 rulepack: 2026.04.18.1
 Three new detection rules, IOC enrichment, and vuln DB updates covering the gemini-ai-checker malicious npm package (OtterCookie/Contagious Interview AI tool token stealer), Apache SkyWalking MCP SSRF (CVE-2026-34476), and the Open VSX pre-publish scanning bypass (Open Sesame).

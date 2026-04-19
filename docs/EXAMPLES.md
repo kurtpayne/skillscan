@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**226 static rules · 14 chain rules**
+**232 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -259,6 +259,12 @@
 | `PSV-023` | critical | nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5) | platform_security, psv, nginx, mcp_server, auth_bypass, actively_exploited, cve-2026-33032 |
 | `PSV-024` | high | Apache SkyWalking MCP SSRF via SW-URL Header (CVE-2026-34476) | platform_security, psv, apache, skywalking, mcp_server, ssrf, cve-2026-34476 |
 | `PSV-025` | high | Open VSX Pre-Publish Scanning Bypass (Open Sesame) | platform_security, psv, openvsx, scan_bypass, fail_open |
+| `PSV-026` | high | mcp-neo4j SSE command injection RCE (CVE-2025-56406, mcp-neo4j 0.3.0) | platform_security, psv, mcp, neo4j, command_injection, rce |
+| `PSV-027` | medium | AAP MCP Server log injection via unsanitized toolsetroute (CVE-2026-6494) | platform_security, psv, mcp, aap, log_injection, social_engineering |
+| `PSV-028` | high | OpenClaw privilege escalation via device.pair.approve scope validation bypass (CVE-2026-35639, < 2026.3.22) | platform_security, psv, openclaw, privilege_escalation, device_pairing |
+| `PSV-029` | high | OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625, < 2026.3.25) | platform_security, psv, openclaw, privilege_escalation, authentication_bypass |
+| `PSV-030` | high | OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512, < 2026.3.25) | platform_security, psv, openclaw, access_control, session_management |
+| `PSV-031` | high | OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621, < 2026.3.24) | platform_security, psv, openclaw, privilege_escalation, allowlist_bypass |
 
 ### Execution
 
