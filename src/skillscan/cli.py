@@ -367,6 +367,8 @@ def _build_provenance(
     ml_detect: bool,
     include_policy_blob: bool = False,
     policy_obj: object = None,
+    integrations: dict | None = None,
+    boundary: dict | None = None,
 ) -> dict:
     """Build the provenance meta block for scan JSON output."""
     from skillscan.model_sync import get_model_status
@@ -390,6 +392,10 @@ def _build_provenance(
             )
         except Exception:
             pass
+    if integrations:
+        meta["integrations"] = integrations
+    if boundary:
+        meta["boundary"] = boundary
     return meta
 
 
@@ -1288,6 +1294,38 @@ def scan_cmd(
             baseline_label=str(baseline),
         )
 
+    # --- Build active integrations dict ---
+    active_integrations: dict = {}
+    if virustotal:
+        active_integrations["virustotal"] = {
+            "enabled": True,
+            "api_key_present": bool(virustotal_api_key),
+        }
+    if yara_rules:
+        active_integrations["yara"] = {"enabled": True, "rules_dir": str(yara_rules)}
+    if semgrep_rules:
+        active_integrations["semgrep"] = {"enabled": True, "rules_dir": str(semgrep_rules)}
+    if live_vuln_check:
+        active_integrations["osv_live"] = {"enabled": True}
+    if clamav:
+        active_integrations["clamav"] = {"enabled": True}
+    if vuln_report:
+        active_integrations["vuln_report"] = {"enabled": True, "path": str(vuln_report)}
+
+    # --- Build boundary dict ---
+    boundary_dict: dict | None = None
+    if report.metadata and report.metadata.boundary:
+        b = report.metadata.boundary
+        boundary_dict = {
+            "source": b.source,
+            "files_scanned": b.files_scanned,
+            "files_excluded": b.files_excluded,
+        }
+        if b.includes:
+            boundary_dict["includes"] = b.includes
+        if b.excludes:
+            boundary_dict["excludes"] = b.excludes
+
     # --- Provenance meta block ---
     provenance: dict | None = None
     if not no_provenance:
@@ -1297,6 +1335,8 @@ def scan_cmd(
             ml_detect=ml_detect,
             include_policy_blob=include_policy,
             policy_obj=policy,
+            integrations=active_integrations if active_integrations else None,
+            boundary=boundary_dict,
         )
 
     # --- Output ---
