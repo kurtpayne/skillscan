@@ -2560,3 +2560,88 @@ def test_psv025_open_vsx_scan_bypass() -> None:
     assert rule.pattern.search("vsx scan job fail open connection pool exhaust") is not None
     # Negative: benign open vsx usage
     assert rule.pattern.search("install extension from open vsx registry") is None
+
+
+def test_psv026_mcp_neo4j_sse_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-026"]
+    assert rules, "PSV-026 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2025-56406 mcp-neo4j vulnerability") is not None
+    # Pattern anchors
+    assert rule.pattern.search("mcp-neo4j command injection RCE vulnerability") is not None
+    assert rule.pattern.search("mcp neo4j SSE service unauthenticated endpoint exploit") is not None
+    assert rule.pattern.search("neo4j mcp SSE inject RCE") is not None
+    # Negative: benign neo4j usage
+    assert rule.pattern.search("neo4j graph database tutorial") is None
+
+
+def test_psv027_aap_mcp_log_injection() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-027"]
+    assert rules, "PSV-027 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-6494 aap mcp server vulnerability") is not None
+    # Pattern anchors
+    assert rule.pattern.search("aap-mcp-server log injection toolsetroute") is not None
+    assert rule.pattern.search("toolsetroute inject ANSI escape sequence") is not None
+    # Negative: benign AAP usage
+    assert rule.pattern.search("ansible automation platform deployment guide") is None
+
+
+def test_psv028_openclaw_pair_approve_scope() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-028"]
+    assert rules, "PSV-028 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-35639 openclaw privilege escalation") is not None
+    # Pattern anchors
+    assert rule.pattern.search("openclaw device.pair.approve scope validation bypass") is not None
+    assert rule.pattern.search("device.pair.approve scope bypass escalation") is not None
+    # Negative: benign openclaw usage
+    assert rule.pattern.search("openclaw getting started tutorial") is None
+
+
+def test_psv029_openclaw_shared_auth_reconnect() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-029"]
+    assert rules, "PSV-029 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-35625 openclaw shared auth reconnect") is not None
+    # Pattern anchors
+    assert rule.pattern.search("openclaw shared-auth reconnect privilege escalation") is not None
+    assert rule.pattern.search("shared-auth reconnect silent escalation openclaw") is not None
+    # Negative: benign auth usage
+    assert rule.pattern.search("oauth2 shared authentication flow") is None
+
+
+def test_psv030_openclaw_session_kill_access_control() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-030"]
+    assert rules, "PSV-030 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-34512 openclaw session kill vulnerability") is not None
+    # Pattern anchors
+    assert rule.pattern.search("openclaw /sessions/:sessionKey/kill access control") is not None
+    assert rule.pattern.search("/sessions/:sessionKey/kill unauthorized openclaw") is not None
+    # Negative: benign session management
+    assert rule.pattern.search("session management best practices") is None
+
+
+def test_psv031_openclaw_chat_send_allowlist() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-031"]
+    assert rules, "PSV-031 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-35621 openclaw chat.send allowlist") is not None
+    # Pattern anchors
+    assert rule.pattern.search("openclaw chat.send allowlist persistence privilege escalation") is not None
+    assert rule.pattern.search("chat.send allowlist persist escalation openclaw") is not None
+    # Negative: benign chat usage
+    assert rule.pattern.search("slack chat api send message") is None

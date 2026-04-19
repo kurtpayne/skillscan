@@ -63,8 +63,8 @@
       "tough-cookie",
       "word-wrap"
     ],
-    "updated": "2026-04-13",
-    "version": "2026.04.13.1"
+    "updated": "2026-04-19",
+    "version": "2026.04.19.1"
   },
   "python": {
     "bittensor-wallet": {
@@ -1641,6 +1641,30 @@
         "fixed": "2026.3.12",
         "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
       }
+    },
+    "< 2026.3.22 (CVE-2026-35639)": {
+      "id": "CVE-2026-35639",
+      "severity": "high",
+      "fixed": "2026.3.22",
+      "description": "Privilege escalation via device.pair.approve scope validation bypass"
+    },
+    "< 2026.3.25 (CVE-2026-35625)": {
+      "id": "CVE-2026-35625",
+      "severity": "high",
+      "fixed": "2026.3.25",
+      "description": "Privilege escalation via silent local shared-auth reconnect"
+    },
+    "< 2026.3.25 (CVE-2026-34512)": {
+      "id": "CVE-2026-34512",
+      "severity": "high",
+      "fixed": "2026.3.25",
+      "description": "Improper access control in /sessions/:sessionKey/kill endpoint"
+    },
+    "< 2026.3.24 (CVE-2026-35621)": {
+      "id": "CVE-2026-35621",
+      "severity": "high",
+      "fixed": "2026.3.24",
+      "description": "Privilege escalation via chat.send to allowlist persistence"
     }
   },
   "n8n-mcp": {
@@ -1729,6 +1753,22 @@
       "severity": "high",
       "fixed": "0.2.0",
       "summary": "Apache SkyWalking MCP 0.1.0 SSRF via SW-URL Header (CVE-2026-34476). Attackers can forge server-side requests to internal resources by manipulating the SW-URL header. Upgrade to 0.2.0 or later."
+    }
+  },
+  "mcp-neo4j": {
+    "0.3.0": {
+      "id": "CVE-2025-56406",
+      "severity": "high",
+      "fixed": "N/A",
+      "description": "Command injection via unauthenticated SSE service endpoint allows RCE"
+    }
+  },
+  "aap-mcp-server": {
+    "all": {
+      "id": "CVE-2026-6494",
+      "severity": "medium",
+      "fixed": "N/A",
+      "description": "Log injection via unsanitized toolsetroute parameter enables social engineering"
     }
   }
 }

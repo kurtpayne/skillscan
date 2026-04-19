@@ -1,4 +1,4 @@
-version: "2026.04.18.1"
+version: "2026.04.19.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -12064,6 +12064,346 @@ static_rules:
       ## References
 
       - The Hacker News: https://thehackernews.com/2026/03/open-vsx-bug-let-malicious-vs-code.html
+    test_expect: fires
+  - id: PSV-026
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: mcp-neo4j SSE command injection RCE (CVE-2025-56406, mcp-neo4j 0.3.0)
+    pattern: (?i)(?:CVE-2025-56406|mcp[_\s-]?neo4j[^\n]{0,120}(?:command[_\s-]?inject|RCE|SSE[_\s-]?(?:service|endpoint)|unauthenticat|arbitrary[_\s-]?command)|neo4j[^\n]{0,80}(?:mcp|SSE)[^\n]{0,80}(?:inject|RCE|exploit|unauthenticat))
+    mitigation: 'CVE-2025-56406 is a command injection vulnerability in mcp-neo4j version 0.3.0. The unauthenticated SSE (Server-Sent Events) service endpoint allows attackers to execute arbitrary commands or exfiltrate Neo4j database contents. Bind the mcp-neo4j service exclusively to localhost, deploy behind a reverse proxy with authentication, or restrict access via firewall rules.'
+    metadata:
+      version: 1.0.0
+      status: active
+      techniques:
+        - id: PSV-026
+          name: Platform security vulnerability
+      tags:
+        - platform_security
+        - psv
+        - mcp
+        - neo4j
+        - command_injection
+        - rce
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-19'
+        last_modified: '2026-04-19'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2025-56406/
+        - https://nvd.nist.gov/vuln/detail/CVE-2025-56406
+      author: skillscan
+      created: '2026-04-19'
+      last_modified: '2026-04-19'
+      updated: '2026-04-19'
+    test_input: |
+      ---
+      name: neo4j-analytics-mcp
+      description: MCP server for Neo4j graph database analytics
+      ---
+
+      # Neo4j Analytics MCP Server
+
+      This MCP server provides graph analytics capabilities via Neo4j.
+
+      ## Security Advisory
+
+      CVE-2025-56406 affects mcp-neo4j version 0.3.0. The unauthenticated SSE
+      endpoint allows command injection and arbitrary command execution. An attacker
+      with network access to the mcp-neo4j SSE service can execute arbitrary
+      commands on the host system.
+
+      ## Deployment
+
+      Bind to 0.0.0.0:8080 for network access:
+
+      ```yaml
+      server:
+        host: 0.0.0.0
+        port: 8080
+        sse_enabled: true
+      ```
+    test_expect: fires
+  - id: PSV-027
+    category: platform_security
+    severity: medium
+    confidence: 0.85
+    title: AAP MCP Server log injection via unsanitized toolsetroute (CVE-2026-6494)
+    pattern: (?i)(?:CVE-2026-6494|aap[_\s-]?mcp[_\s-]?server[^\n]{0,120}(?:log[_\s-]?inject|toolsetroute|ANSI[_\s-]?escape|social[_\s-]?engineer|unsanitiz)|toolsetroute[^\n]{0,80}(?:inject|sanitiz|ANSI|escape[_\s-]?sequence|log[_\s-]?forg))
+    mitigation: 'CVE-2026-6494 is a log injection vulnerability in the Red Hat AAP MCP server. An unauthenticated remote attacker can inject ANSI escape sequences and newlines via the unsanitized toolsetroute parameter, forging log entries to facilitate social engineering attacks that trick operators into executing dangerous commands or visiting malicious URLs. Apply the Red Hat security patch when available and sanitize all log inputs.'
+    metadata:
+      version: 1.0.0
+      status: active
+      techniques:
+        - id: PSV-027
+          name: Platform security vulnerability
+      tags:
+        - platform_security
+        - psv
+        - mcp
+        - aap
+        - log_injection
+        - social_engineering
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-19'
+        last_modified: '2026-04-19'
+      quality:
+        precision_estimate: 0.85
+        benchmark_set: core-static-v1
+      references:
+        - https://access.redhat.com/security/cve/cve-2026-6494
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-6494
+      author: skillscan
+      created: '2026-04-19'
+      last_modified: '2026-04-19'
+      updated: '2026-04-19'
+    test_input: |
+      ---
+      name: aap-automation-skill
+      description: Ansible Automation Platform MCP integration
+      ---
+
+      # AAP MCP Server Integration
+
+      This skill integrates with the Red Hat AAP MCP server.
+
+      ## Security Advisory
+
+      CVE-2026-6494 affects the AAP MCP server. An unauthenticated remote attacker
+      can exploit a log injection vulnerability by sending specially crafted input
+      to the toolsetroute parameter. This parameter is not properly sanitized before
+      being written to logs, allowing the attacker to inject ANSI escape sequences
+      and newlines to forge log entries for social engineering attacks.
+    test_expect: fires
+  - id: PSV-028
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: OpenClaw privilege escalation via device.pair.approve scope validation bypass (CVE-2026-35639, < 2026.3.22)
+    pattern: (?i)(?:CVE-2026-35639|openclaw[^\n]{0,80}(?:device\.pair\.approve|pair[_\s-]?approve[_\s-]?scope|scope[_\s-]?validat[^\n]{0,40}pair|2026\.3\.(?:1[0-9]|2[01])\b[^\n]{0,40}(?:priv|escal|scope))|device\.pair\.approve[^\n]{0,80}(?:scope|validat|bypass|escal|openclaw))
+    mitigation: 'CVE-2026-35639 (CVSS 8.7, CWE-648) is a privilege escalation vulnerability in OpenClaw prior to version 2026.3.22. Improper scope validation in the device.pair.approve flow allows attackers to escalate privileges during device pairing approval. Upgrade OpenClaw to version 2026.3.22 or later immediately.'
+    metadata:
+      version: 1.0.0
+      status: active
+      techniques:
+        - id: PSV-028
+          name: Platform security vulnerability
+      tags:
+        - platform_security
+        - psv
+        - openclaw
+        - privilege_escalation
+        - device_pairing
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-19'
+        last_modified: '2026-04-19'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://github.com/jgamblin/OpenClawCVEs
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-35639
+      author: skillscan
+      created: '2026-04-19'
+      last_modified: '2026-04-19'
+      updated: '2026-04-19'
+    test_input: |
+      ---
+      name: openclaw-device-manager
+      description: Manage OpenClaw device pairing and authentication
+      ---
+
+      # OpenClaw Device Manager
+
+      This skill manages device pairing for OpenClaw instances.
+
+      ## Security Notice
+
+      CVE-2026-35639 affects OpenClaw versions prior to 2026.3.22. A privilege
+      escalation vulnerability exists in the device.pair.approve scope validation
+      flow. Attackers can bypass scope validation during device pairing approval
+      to escalate their privileges beyond intended authorization levels.
+
+      ## Affected Versions
+
+      OpenClaw < 2026.3.22 is vulnerable. The device.pair.approve endpoint does
+      not properly validate the requested scope against the caller's actual
+      permissions, allowing scope elevation.
+    test_expect: fires
+  - id: PSV-029
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625, < 2026.3.25)
+    pattern: (?i)(?:CVE-2026-35625|openclaw[^\n]{0,80}(?:shared[_\s-]?auth[_\s-]?reconnect|silent[_\s-]?(?:local[_\s-]?)?(?:shared[_\s-]?)?auth[_\s-]?reconnect|2026\.3\.(?:1[0-9]|2[0-4])\b[^\n]{0,40}(?:priv|escal|shared[_\s-]?auth))|shared[_\s-]?auth[_\s-]?reconnect[^\n]{0,80}(?:priv|escal|bypass|openclaw|silent))
+    mitigation: 'CVE-2026-35625 (CVSS 8.5, CWE-648) is a privilege escalation vulnerability in OpenClaw prior to version 2026.3.25. The silent local shared-auth reconnect mechanism allows attackers to silently re-establish authenticated sessions with elevated privileges. Upgrade OpenClaw to version 2026.3.25 or later immediately.'
+    metadata:
+      version: 1.0.0
+      status: active
+      techniques:
+        - id: PSV-029
+          name: Platform security vulnerability
+      tags:
+        - platform_security
+        - psv
+        - openclaw
+        - privilege_escalation
+        - authentication_bypass
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-19'
+        last_modified: '2026-04-19'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://github.com/jgamblin/OpenClawCVEs
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-35625
+      author: skillscan
+      created: '2026-04-19'
+      last_modified: '2026-04-19'
+      updated: '2026-04-19'
+    test_input: |
+      ---
+      name: openclaw-auth-manager
+      description: OpenClaw authentication and session management
+      ---
+
+      # OpenClaw Auth Manager
+
+      Manages authentication flows for OpenClaw deployments.
+
+      ## Security Advisory
+
+      CVE-2026-35625 affects OpenClaw versions prior to 2026.3.25. A privilege
+      escalation vulnerability exists in the silent local shared-auth reconnect
+      mechanism. When a local client reconnects using shared authentication tokens,
+      the server does not properly re-validate the session's privilege level,
+      allowing attackers to silently escalate privileges.
+    test_expect: fires
+  - id: PSV-030
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512, < 2026.3.25)
+    pattern: (?i)(?:CVE-2026-34512|openclaw[^\n]{0,80}(?:/sessions/[^\n]{0,40}(?:kill|terminat)|session[_\s-]?key[_\s-]?kill|2026\.3\.(?:1[0-9]|2[0-4])\b[^\n]{0,40}(?:session|kill|access[_\s-]?control))|/sessions/[^\n]{0,20}(?:sessionKey|:sessionKey)[^\n]{0,20}/kill[^\n]{0,80}(?:access[_\s-]?control|unauthoriz|openclaw))
+    mitigation: 'CVE-2026-34512 (CVSS 7.2, CWE-863) is an improper access control vulnerability in OpenClaw prior to version 2026.3.25. The /sessions/:sessionKey/kill endpoint does not properly validate authorization, allowing unauthorized users to terminate active sessions. Upgrade OpenClaw to version 2026.3.25 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      techniques:
+        - id: PSV-030
+          name: Platform security vulnerability
+      tags:
+        - platform_security
+        - psv
+        - openclaw
+        - access_control
+        - session_management
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-19'
+        last_modified: '2026-04-19'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://github.com/jgamblin/OpenClawCVEs
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-34512
+      author: skillscan
+      created: '2026-04-19'
+      last_modified: '2026-04-19'
+      updated: '2026-04-19'
+    test_input: |
+      ---
+      name: openclaw-session-admin
+      description: OpenClaw session administration tool
+      ---
+
+      # OpenClaw Session Admin
+
+      Administrative tool for managing OpenClaw sessions.
+
+      ## Security Notice
+
+      CVE-2026-34512 affects OpenClaw versions prior to 2026.3.25. The
+      /sessions/:sessionKey/kill endpoint has improper access control that
+      allows unauthorized users to terminate active sessions belonging to
+      other users without proper authorization checks.
+    test_expect: fires
+  - id: PSV-031
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621, < 2026.3.24)
+    pattern: (?i)(?:CVE-2026-35621|openclaw[^\n]{0,80}(?:chat\.send[^\n]{0,40}allowlist|allowlist[_\s-]?persist|2026\.3\.(?:1[0-9]|2[0-3])\b[^\n]{0,40}(?:priv|escal|allowlist|chat\.send))|chat\.send[^\n]{0,80}(?:allowlist|persist|priv|escal|openclaw))
+    mitigation: 'CVE-2026-35621 (CVSS 7.1, CWE-862) is a privilege escalation vulnerability in OpenClaw prior to version 2026.3.24. Attackers can use the chat.send endpoint to persist entries in the allowlist, achieving persistent privilege escalation. Upgrade OpenClaw to version 2026.3.24 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      techniques:
+        - id: PSV-031
+          name: Platform security vulnerability
+      tags:
+        - platform_security
+        - psv
+        - openclaw
+        - privilege_escalation
+        - allowlist_bypass
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-19'
+        last_modified: '2026-04-19'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://github.com/jgamblin/OpenClawCVEs
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-35621
+      author: skillscan
+      created: '2026-04-19'
+      last_modified: '2026-04-19'
+      updated: '2026-04-19'
+    test_input: |
+      ---
+      name: openclaw-chat-integration
+      description: OpenClaw chat and messaging integration
+      ---
+
+      # OpenClaw Chat Integration
+
+      This skill provides chat messaging capabilities for OpenClaw.
+
+      ## Security Advisory
+
+      CVE-2026-35621 affects OpenClaw versions prior to 2026.3.24. A privilege
+      escalation vulnerability exists where the chat.send endpoint can be abused
+      to persist entries in the allowlist. This allows attackers to achieve
+      persistent privilege escalation by adding unauthorized entries to the
+      command allowlist through the chat interface.
     test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
