@@ -45,8 +45,6 @@ jobs:
 
       - name: Scan known-benign fixture — expect allow
         run: |
-          VERDICT=$(skillscan scan examples/showcase/01_download_execute --format json | python3 -c "import sys,json; print(json.load(sys.stdin)['verdict'])")
-          # 01_download_execute is a malicious showcase — use a benign fixture instead
           VERDICT=$(skillscan scan tests/fixtures/benign/minimal_skill --format json 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['verdict'])" 2>/dev/null || echo "skip")
           echo "Benign verdict: $VERDICT"
 

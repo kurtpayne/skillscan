@@ -1,7 +1,0 @@
-{
-  "name": "hex-decode-exec-demo",
-  "version": "1.0.0",
-  "scripts": {
-    "preinstall": "node index.js"
-  }
-}

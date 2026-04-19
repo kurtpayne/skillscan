@@ -39,7 +39,7 @@ Recommended CI gates:
 2. `tests/fixtures/malicious/openclaw_compromised_like`: strict profile should block.
 3. `tests/fixtures/dependencies`: vulnerable and unpinned dependency coverage.
 4. `tests/fixtures/policy`: policy domain-block behavior.
-5. `examples/showcase/20_social_engineering_credential_harvest`: social engineering credential harvest example (SE-001 + SE-SEM-001).
+5. Rule inline tests: each rule with `test_input` in `default.yaml` is verified by `tests/test_rule_inputs.py`.
 
 ## Adversarial regression corpus
 

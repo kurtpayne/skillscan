@@ -92,11 +92,11 @@ Examples:
 ## Adding new detection rules
 
 1. Add the rule entry to `src/skillscan/data/rules/default.yaml` inside `static_rules`
-2. Add a showcase example in `examples/showcase/<N>_<rule_id>_<slug>/SKILL.md`
-3. Add a test assertion in `tests/test_showcase_examples.py`
+2. Include a `test_input: |` block with sample content that triggers the rule
+3. Include `test_expect: fires` after the test_input
 4. Run `python3 scripts/sync-website-rules.py` to update the website TSX files
-5. Append the showcase to `examples/showcase/INDEX.md`
-6. Open a PR — CI will validate the YAML parses and the showcase fires the rule
+5. Run `SKILLSCAN_NO_USER_RULES=1 pytest tests/test_rule_inputs.py -q` to verify
+6. Open a PR — CI will validate the YAML parses and the rule fires on its test_input
 
 ---
 

@@ -82,9 +82,8 @@ The following rules apply to all automated pattern-update runs (see `.github/wor
 
 - Version bump present in `default.yaml`
 - At least one new rule ID in the diff
-- Tests updated (`tests/test_rules.py`, `tests/test_showcase_examples.py`)
-- Showcase fixture updated under `examples/showcase/*`
-- Docs index updated (`docs/EXAMPLES.md`, `examples/showcase/INDEX.md`)
+- Tests updated (`tests/test_rules.py`, `tests/test_rule_inputs.py`)
+- Each new rule has `test_input` and `test_expect: fires` in `default.yaml`
 - Rationale entry added (`docs/RULE_UPDATES.md` or `PATTERN_UPDATES.md`)
 
 ### Operational notes

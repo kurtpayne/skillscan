@@ -8,7 +8,7 @@ def _base_report(findings: list[Finding]) -> ScanReport:
     return ScanReport(
         metadata=ScanMetadata(
             scanner_version="0.1.0",
-            target="examples/showcase/01_download_execute",
+            target="tests/fixtures/malicious/download_execute",
             target_type="directory",
             ecosystem_hints=["generic"],
             rulepack_version="test-rulepack",
@@ -34,7 +34,7 @@ def test_report_to_sarif_basic() -> None:
                 severity=Severity.HIGH,
                 confidence=0.9,
                 title="Download and execute pattern",
-                evidence_path="examples/showcase/01_download_execute/SKILL.md",
+                evidence_path="tests/fixtures/malicious/download_execute/SKILL.md",
                 line=3,
                 snippet="curl ... | bash",
                 mitigation="Do not execute remote scripts directly",
@@ -53,7 +53,7 @@ def test_report_to_sarif_basic() -> None:
     assert result["properties"]["confidenceLabel"] == "critical"
     assert "confidence=critical" in result["message"]["text"]
     assert result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"] == (
-        "examples/showcase/01_download_execute/SKILL.md"
+        "tests/fixtures/malicious/download_execute/SKILL.md"
     )
     assert result["locations"][0]["physicalLocation"]["region"]["startLine"] == 3
 

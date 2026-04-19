@@ -149,79 +149,23 @@ The ML detector uses a fine-tuned Qwen2.5-1.5B model (GGUF Q4_K_M, ~935 MB). It 
 
 ## Highlighted Examples
 
-### 1. Download-and-execute chain (critical)
+### 1. Scan a suspicious skill
 
 ```console
-$ skillscan scan examples/showcase/01_download_execute --fail-on never
-╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
-│ Target: examples/showcase/01_download_execute                                │
-│ Policy: strict                                                               │
-│ Score: 360                                                                   │
-│ Findings: 2                                                                  │
-╰──────────────────────────────────────────────────────────────────────────────╯
-Top Findings:
-- MAL-001 (critical) Download-and-execute chain
-- CHN-001 (critical) Dangerous action chain: download plus execute
+$ skillscan scan examples/suspicious_skill --fail-on never
 ```
 
-### 2. Secret exfiltration chain (critical)
+### 2. Scan a benign skill
 
 ```console
-$ skillscan scan examples/showcase/15_secret_network_chain --fail-on never
-╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
-│ Target: examples/showcase/15_secret_network_chain                            │
-│ Policy: strict                                                               │
-│ Score: 285                                                                   │
-│ Findings: 2                                                                  │
-╰──────────────────────────────────────────────────────────────────────────────╯
-Top Findings:
-- EXF-001 (high) Sensitive credential file access
-- CHN-002 (critical) Potential secret exfiltration chain
+$ skillscan scan examples/benign_skill --fail-on never
 ```
 
-### 3. Social engineering credential harvest (critical)
+Every static rule includes an inline `test_input` field in `default.yaml` that
+documents which text triggers the rule. Run all rule tests with:
 
 ```console
-$ skillscan scan examples/showcase/20_social_engineering_credential_harvest --fail-on never
-╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
-│ Target: examples/showcase/20_social_engineering_credential_harvest           │
-│ Policy: strict                                                               │
-│ Score: 95                                                                    │
-│ Findings: 2                                                                  │
-╰──────────────────────────────────────────────────────────────────────────────╯
-Top Findings:
-- SE-001 (high) Social engineering credential harvest
-- PINJ-SEM-001 (medium) Semantic prompt injection signal
-```
-
-### 4. npm lifecycle supply-chain abuse
-
-```console
-$ skillscan scan examples/showcase/21_npm_lifecycle_abuse --fail-on never
-╭─────────────────────────────── Verdict: BLOCK ───────────────────────────────╮
-│ Target: examples/showcase/21_npm_lifecycle_abuse                             │
-│ Policy: strict                                                               │
-│ Score: 465                                                                   │
-│ Findings: 3                                                                  │
-╰──────────────────────────────────────────────────────────────────────────────╯
-Top Findings:
-- MAL-001 (critical) Download-and-execute chain
-- CHN-001 (critical) Dangerous action chain: download plus execute
-- SUP-001 (high) Risky npm lifecycle script: preinstall
-```
-
-### 5. Executable binary artifact detection
-
-```console
-$ skillscan scan examples/showcase/24_binary_artifact --fail-on never
-╭─────────────────────────────── Verdict: WARN ────────────────────────────────╮
-│ Target: examples/showcase/24_binary_artifact                                 │
-│ Policy: strict                                                               │
-│ Score: 35                                                                    │
-│ Findings: 1                                                                  │
-╰──────────────────────────────────────────────────────────────────────────────╯
-Top Findings:
-- BIN-001 (high) Executable binary artifact present
+SKILLSCAN_NO_USER_RULES=1 pytest tests/test_rule_inputs.py -q
 ```
 
 ---
@@ -369,8 +313,7 @@ repos:
 2. Suspicious sample: `examples/suspicious_skill`
 3. OpenAI-style sample: `examples/openai_style_tool`
 4. Claude-style sample: `examples/claude_style_skill`
-5. Comprehensive detection showcase: `examples/showcase/INDEX.md`
-6. Social engineering sample: `examples/showcase/20_social_engineering_credential_harvest`
+5. Rule test inputs: inline `test_input` fields in `src/skillscan/data/rules/default.yaml`
 7. OpenClaw-compromised-style sample: `tests/fixtures/malicious/openclaw_compromised_like`
 
 ---
