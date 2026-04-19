@@ -105,12 +105,14 @@ rule_app = typer.Typer(help="Rule metadata and query operations", context_settin
 corpus_app = typer.Typer(help="Training corpus management (internal)", context_settings=_help_names)
 model_app = typer.Typer(help="ML model management", context_settings=_help_names)
 suppress_app = typer.Typer(help="Suppression file management", context_settings=_help_names)
+badge_app = typer.Typer(help="Badge generation and combination", context_settings=_help_names)
 
 app.add_typer(policy_app, name="policy")
 app.add_typer(intel_app, name="intel")
 app.add_typer(rule_app, name="rule")
 app.add_typer(model_app, name="model")
 app.add_typer(suppress_app, name="suppress")
+app.add_typer(badge_app, name="badge")
 
 
 @app.callback(invoke_without_command=True)
@@ -770,6 +772,11 @@ def scan_cmd(
         "--badge-dir",
         help="Write per-skill badge JSON files to this directory (for multi-skill repos).",
     ),
+    coverage_badge_out: str | None = typer.Option(
+        None,
+        "--coverage-badge-out",
+        help="Write a shields.io-compatible coverage badge JSON file after scanning.",
+    ),
     exclude: list[str] | None = typer.Option(
         None,
         "--exclude",
@@ -1149,6 +1156,14 @@ def scan_cmd(
                 Path(badge_out).write_text(_json.dumps(badge))
                 console.print(f"Badge written to {badge_out}")
 
+            # --- Coverage badge in summary mode ---
+            if coverage_badge_out:
+                from skillscan.badges import count_scannable_files, write_coverage_badge
+
+                _scanned, _total = count_scannable_files(_resolved_target, _exclude_patterns)
+                write_coverage_badge(coverage_badge_out, _scanned, _total)
+                console.print(f"Coverage badge written to {coverage_badge_out}")
+
             if policy_profile == "observe":
                 return
             if exit_code != 0:
@@ -1362,6 +1377,16 @@ def scan_cmd(
         }
         Path(badge_out).write_text(_json.dumps(badge))
         console.print(f"Badge written to {badge_out}")
+
+    # --- Coverage badge output ---
+    if coverage_badge_out:
+        from skillscan.badges import count_scannable_files, write_coverage_badge
+
+        _cov_target = Path(target) if not target.startswith(("http://", "https://")) else None
+        if _cov_target is not None:
+            _scanned, _total = count_scannable_files(_cov_target, _exclude_patterns)
+            write_coverage_badge(coverage_badge_out, _scanned, _total)
+            console.print(f"Coverage badge written to {coverage_badge_out}")
 
     # --- Observe policy: always exit 0 ---
     if policy_profile == "observe":
@@ -2450,6 +2475,35 @@ def suppress_check(
 
     if result.expiring_soon or result.expired_count > 0:
         raise typer.Exit(1)
+
+
+# ---------------------------------------------------------------------------
+# badge commands
+# ---------------------------------------------------------------------------
+
+
+@badge_app.command("combine")
+def badge_combine(
+    scan_badge: Path = typer.Option(..., "--scan-badge", help="Path to scan badge JSON"),
+    lint_badge: Path = typer.Option(..., "--lint-badge", help="Path to lint badge JSON"),
+    out: Path = typer.Option(..., "--out", help="Output path for compound badge JSON"),
+) -> None:
+    """Combine scan and lint badge JSONs into a single compound badge.
+
+    Reads the two individual badge files and produces a compound badge.
+    The color is the worst of the two (red > yellow > brightgreen).
+    """
+    from skillscan.badges import combine_badge_files
+
+    if not scan_badge.exists():
+        console.print(f"[bold red]Scan badge not found:[/] {scan_badge}")
+        raise typer.Exit(2)
+    if not lint_badge.exists():
+        console.print(f"[bold red]Lint badge not found:[/] {lint_badge}")
+        raise typer.Exit(2)
+
+    compound = combine_badge_files(scan_badge, lint_badge, out)
+    console.print(f"Compound badge written to {out}: {compound['message']}")
 
 
 # ---------------------------------------------------------------------------
