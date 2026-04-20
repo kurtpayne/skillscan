@@ -184,9 +184,8 @@ def _run_scan(
     else:
         import json
 
-        from skillscan.render import render_report
-
-        _console.print(json.dumps(render_report(report), indent=2))
+        report_dict = report.model_dump(mode="json", by_alias=True)
+        _console.print(json.dumps(report_dict, indent=2))
 
 
 def register(app: typer.Typer) -> None:
