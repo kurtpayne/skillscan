@@ -7,6 +7,44 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.0.0] — 2026-04-20
+
+### Added
+- `skillscan delta` — security-focused skill version comparison with suppression support
+- `skillscan alert` — regression detection comparing scan reports with known-regression filtering
+- `skillscan watch` — real-time file monitoring with automatic re-scan
+- `--summary` flag for multi-skill directory scan roll-ups
+- `--exclude` patterns with sensible defaults (tests/, node_modules/, etc.)
+- `--badge-out`, `--badge-dir`, `--coverage-badge-out` for shields.io badge generation
+- Frontmatter `includes`/`excludes` for skill boundary declaration
+- 5 detection integrations: YARA (`--yara-rules`), VirusTotal (`--virustotal`), Semgrep (`--semgrep-rules`), OSV.dev live (`--live-vuln-check`), Snyk/Dependabot (`--vuln-report`)
+- `--require-model` flag for CI gates mandating ML detection
+- Interactive model download prompt in TTY mode
+- `-h` help shorthand and `--version` flag
+- Integration and boundary info in scan report provenance
+- `skillscan badge combine` for compound scan+lint badges
+
+### Changed
+- JSON output: finding `id` field renamed to `rule_id`
+- JSON output: `mitigation` field removed from findings
+- Intel lookup uses suffix matching (not substring)
+- Rules decoupled to separate `kurtpayne/skillscan-rules` repo
+- Detection section: 3 pillars (rule-based, ML classifier, integrations)
+- Build backend migrated from setuptools to hatchling
+- ML model: Qwen2.5-1.5B GGUF replaces DeBERTa-v3 ONNX
+
+### Removed
+- `[ml-onnx]` extra (deprecated; use `[ml]` with llama-cpp-python)
+- `--rulepack-channel` flag (non-functional, removed)
+- Showcase examples directory (migrated to inline `test_input` in rules)
+
+### Fixed
+- 26 bugs from comprehensive QA pass
+- 99+ documentation mismatches corrected
+- All phantom CLI flags and commands removed from docs
+
+---
+
 ## [Unreleased]
 
 ### Added
