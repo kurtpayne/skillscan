@@ -1,3 +1,13 @@
+## 2026-04-20
+rulepack: 2026.04.20.1
+Six new rules covering MCP server vulnerabilities (mcp-server-kubernetes argument injection, mcp-framework DoS, Flowise MCP adapter RCE), OpenClaw WebView RCE, NKAbuse RAT via Hugging Face typosquat, and Context.ai Chrome extension supply chain compromise.
+- Added `PSV-032` (high): **mcp-server-kubernetes kubectl argument injection RCE (CVE-2026-39884)** — CVE-2026-39884 (CVSS 8.3, CWE-88) is an argument injection vulnerability in mcp-server-kubernetes <= 3.4.0. The port_forward tool constructs a kubectl command via string concatenation with user-controlled input and naively splits on spaces before passing to spawn(), allowing injection of arbitrary kubectl flags such as --address=0.0.0.0. Upgrade to version 3.5.0.
+- Added `PSV-033` (high): **mcp-framework HTTP server DoS via unbounded POST body (CVE-2026-39313)** — CVE-2026-39313 (CWE-770) is a denial-of-service vulnerability in mcp-framework <= 0.2.21. The readRequestBody() function does not enforce size limits on POST requests to /mcp, allowing memory exhaustion via a single large request.
+- Added `PSV-034` (high): **OpenClaw WebView JavascriptInterface RCE (CVE-2026-35643)** — CVE-2026-35643 is an RCE vulnerability in OpenClaw < 2026.3.22. Unvalidated WebView JavascriptInterface in Android components allows arbitrary code injection. Upgrade to 2026.3.22 or later.
+- Added `PSV-035` (critical): **Flowise authenticated RCE via MCP adapter STDIO command injection (CVE-2026-40933)** — CVE-2026-40933 (GHSA-c9gw-hvqq-f33r) is a critical authenticated RCE in Flowise. Unsafe serialization of stdio commands in the MCP adapter allows adding an MCP server with arbitrary commands, achieving RCE.
+- Added `MAL-070` (critical): **NKAbuse RAT via Hugging Face Spaces typosquat (vsccode-modetx / kagent)** — NKAbuse malware variant delivered via a typosquatted Hugging Face Space (vsccode-modetx). Contains dropper (install-linux.sh) and RAT binary (kagent) using NKN P2P for C2. Persistence via systemd/cron/LaunchAgent.
+- Added `SUP-038` (high): **Context.ai Chrome extension supply chain compromise (Vercel breach)** — The Context.ai Chrome extension (ID: omddlmnhcofjbnbflmjginpjjblphbgk) was involved in a supply chain compromise leading to the Vercel breach in April 2026. A compromised employee account enabled access to Vercel's Google Workspace via the extension's OAuth grant.
+- Updated vuln DB: added CVE-2026-39884 (mcp-server-kubernetes), CVE-2026-39313 (mcp-framework), CVE-2026-35643 (OpenClaw WebView), CVE-2026-40933 (Flowise).
 ## 2026-04-19
 rulepack: 2026.04.19.1
 Six new platform security rules covering mcp-neo4j command injection RCE, AAP MCP server log injection, and four OpenClaw privilege escalation and access control vulnerabilities.
