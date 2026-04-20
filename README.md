@@ -49,7 +49,7 @@ If SkillScan blocks it, you don't need to spend tokens on it. If it passes, you 
 6. IOC extraction with local intel matching (updated regularly).
 7. Dependency vulnerability checks (23 Python + 4 npm packages via OSV.dev).
 8. Social engineering and credential-harvest instruction detection (SE-001, SE-SEM-001).
-9. Policy profiles (`strict`, `balanced`, `permissive`) + custom policies.
+9. Policy profiles (`strict`, `balanced`, `permissive`, `ci`, `enterprise`, `observe`) + custom policies.
 10. Pretty terminal output + JSON / SARIF / JUnit / compact reports.
 11. Auto-refresh managed intel feeds (default checks every scan, 1-hour max age).
 12. Versioned YAML rulepack for flexible detection updates.
@@ -174,6 +174,12 @@ SKILLSCAN_NO_USER_RULES=1 pytest tests/test_rule_inputs.py -q
 
 - `skillscan scan <path>`
 - `skillscan explain <report.json>`
+- `skillscan delta <old_path> <new_path>`
+- `skillscan alert --baseline-report FILE --current-report FILE`
+- `skillscan watch <path>`
+- `skillscan badge combine`
+- `skillscan online-trace <skill>`
+- `skillscan feedback [fp|fn|bug|feature]`
 - `skillscan policy list|show|show-default|validate`
 - `skillscan intel status|list|add|remove|enable|disable|lookup`
 - `skillscan rule list|status|show|test|validate`

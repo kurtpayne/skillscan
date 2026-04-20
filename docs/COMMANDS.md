@@ -32,7 +32,7 @@ Run a scan on a folder, file, archive, or URL.
 - `--clamav-timeout-seconds`: ClamAV scan timeout in seconds (default 30)
 - `--ml-detect / --no-ml-detect`: enable offline ML prompt-injection detection (env: `SKILLSCAN_ML_DETECT`, default off). Requires `pip install 'skillscan-security[ml]'`.
 - `--no-model`: explicitly opt out of ML detection and suppress the "ML layer inactive" notice (env: `SKILLSCAN_NO_MODEL`)
-- `--require-model`: exit with code 3 if `--ml-detect` is requested but model is not installed (env: `SKILLSCAN_REQUIRE_MODEL`)
+- `--require-model`: exit with code 2 if `--ml-detect` is requested but model is not installed (env: `SKILLSCAN_REQUIRE_MODEL`)
 - `--graph / --no-graph`: enable skill graph analysis (env: `SKILLSCAN_GRAPH`, default: on for directory targets, off for single files)
 - `--baseline, --baseline-report`: only report findings not present in a prior scan report JSON
 - `--delta-format`: baseline delta output format: `text|json` (default `text`)
@@ -149,6 +149,68 @@ Quality linter for AI agent skill files (requires `skillscan-lint`).
 ### `skillscan trace`
 
 Behavioral tracer for AI agent skill files.
+
+---
+
+### `skillscan delta <old_path> <new_path>`
+
+Compare two skill file versions and show security-relevant changes. Uses the skill_diff engine to detect added tools, security-pattern additions, frontmatter changes, and other security-relevant diffs.
+
+**Arguments:**
+- `OLD_PATH` (required): path to old/baseline skill file
+- `NEW_PATH` (required): path to new/updated skill file
+
+**Options:**
+- `--suppress`: suppression YAML file — filter out changes matching suppressed IDs
+- `--format`: output format: `text|json` (default `text`)
+- `--fail-on-drift`: exit non-zero if any security-relevant changes are detected (for CI gates)
+
+```bash
+skillscan delta old_skill.md new_skill.md
+skillscan delta old_skill.md new_skill.md --format json
+skillscan delta old_skill.md new_skill.md --fail-on-drift
+```
+
+---
+
+### `skillscan alert`
+
+Compare scan reports and detect regressions.
+
+**Options:**
+- `--baseline-report` (required): path to baseline scan report (JSON)
+- `--current-report` (required): path to current scan report (JSON)
+- `--known-regressions`: YAML file of known/accepted regressions
+- `--format`: output format: `text|json` (default `text`)
+- `--out`: write output to file instead of stdout
+- `--fail-on`: exit 1 if condition met. Currently supports: `unexpected`
+
+```bash
+skillscan alert --baseline-report baseline.json --current-report current.json
+skillscan alert --baseline-report baseline.json --current-report current.json --fail-on unexpected
+```
+
+---
+
+### `skillscan watch <path>`
+
+Watch a directory for skill file changes and re-scan automatically.
+
+**Arguments:**
+- `PATH` (required): directory to watch for skill file changes
+
+**Options:**
+- `--profile`: policy profile to use for scanning (default `standard`)
+- `--format`: output format: `compact|json` (default `compact`)
+- `--poll-interval`: seconds between filesystem polls (default 2.0)
+- `--ml-detect`: enable ML-based detection
+- `--graph`: enable skill-graph analysis
+
+```bash
+skillscan watch ./skills/
+skillscan watch ./skills/ --profile ci --ml-detect --graph
+skillscan watch ./skills/ --poll-interval 5.0 --format json
+```
 
 ---
 
@@ -317,3 +379,22 @@ Check a suppression file for expired or soon-to-expire entries. Exits non-zero w
 **Options:**
 - `--warn-days`: warn when a suppression expires within this many days (default 30)
 - `--json`: output as JSON
+
+---
+
+### `skillscan badge`
+
+Badge generation and combination.
+
+#### `skillscan badge combine`
+
+Combine scan and lint badge JSONs into a single compound badge. The color is the worst of the two (red > yellow > brightgreen).
+
+**Options:**
+- `--scan-badge` (required): path to scan badge JSON
+- `--lint-badge` (required): path to lint badge JSON
+- `--out` (required): output path for compound badge JSON
+
+```bash
+skillscan badge combine --scan-badge scan-badge.json --lint-badge lint-badge.json --out combined.json
+```
