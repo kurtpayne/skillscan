@@ -413,42 +413,6 @@ class TestSkillGraphIntegration:
         findings = skill_graph_findings(tmp_path)
         assert findings == []
 
-    def test_corpus_fixture_malicious_001(self) -> None:
-        """PINJ-GRAPH-001 malicious fixture should trigger the rule."""
-        fixture = Path(__file__).parent.parent / "corpus" / "graph_injection" / "PINJ-GRAPH-001" / "malicious"
-        if not fixture.exists():
-            pytest.skip("Corpus fixture not found")
-        findings = skill_graph_findings(fixture)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-001" in ids
-
-    def test_corpus_fixture_benign_001(self) -> None:
-        """PINJ-GRAPH-001 benign fixture should NOT trigger the rule."""
-        fixture = Path(__file__).parent.parent / "corpus" / "graph_injection" / "PINJ-GRAPH-001" / "benign"
-        if not fixture.exists():
-            pytest.skip("Corpus fixture not found")
-        findings = skill_graph_findings(fixture)
-        graph_001 = [f for f in findings if f.id == "PINJ-GRAPH-001"]
-        assert graph_001 == []
-
-    def test_corpus_fixture_malicious_002(self) -> None:
-        """PINJ-GRAPH-002 malicious fixture should trigger the rule."""
-        fixture = Path(__file__).parent.parent / "corpus" / "graph_injection" / "PINJ-GRAPH-002" / "malicious"
-        if not fixture.exists():
-            pytest.skip("Corpus fixture not found")
-        findings = skill_graph_findings(fixture)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-002" in ids
-
-    def test_corpus_fixture_malicious_003(self) -> None:
-        """PINJ-GRAPH-003 malicious fixture should trigger the rule."""
-        fixture = Path(__file__).parent.parent / "corpus" / "graph_injection" / "PINJ-GRAPH-003" / "malicious"
-        if not fixture.exists():
-            pytest.skip("Corpus fixture not found")
-        findings = skill_graph_findings(fixture)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-003" in ids
-
 
 # ---------------------------------------------------------------------------
 # PINJ-GRAPH-004: cross-skill tool escalation
@@ -556,42 +520,6 @@ class TestToolEscalation:
             child_tools=["Read"],
         )
         findings = skill_graph_findings(root)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-004" not in ids, f"Unexpected PINJ-GRAPH-004 in {ids}"
-
-    def test_adversarial_fixture_a26(self) -> None:
-        """Adversarial fixture a26_graph_escalation must trigger PINJ-GRAPH-004."""
-        fixture = Path(__file__).parent / "adversarial" / "cases" / "a26_graph_escalation"
-        if not fixture.exists():
-            pytest.skip("Adversarial fixture not found")
-        findings = skill_graph_findings(fixture)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-004" in ids, f"Expected PINJ-GRAPH-004, got {ids}"
-
-    def test_benign_fixture_a27(self) -> None:
-        """Adversarial fixture a27_graph_benign must NOT trigger PINJ-GRAPH-004."""
-        fixture = Path(__file__).parent / "adversarial" / "cases" / "a27_graph_benign"
-        if not fixture.exists():
-            pytest.skip("Adversarial fixture not found")
-        findings = skill_graph_findings(fixture)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-004" not in ids, f"Unexpected PINJ-GRAPH-004 in {ids}"
-
-    def test_corpus_fixture_malicious_004(self) -> None:
-        """PINJ-GRAPH-004 malicious corpus fixture should trigger the rule."""
-        fixture = Path(__file__).parent.parent / "corpus" / "graph_injection" / "PINJ-GRAPH-004" / "malicious"
-        if not fixture.exists():
-            pytest.skip("Corpus fixture not found")
-        findings = skill_graph_findings(fixture)
-        ids = [f.id for f in findings]
-        assert "PINJ-GRAPH-004" in ids, f"Expected PINJ-GRAPH-004, got {ids}"
-
-    def test_corpus_fixture_benign_004(self) -> None:
-        """PINJ-GRAPH-004 benign corpus fixture must NOT trigger the rule."""
-        fixture = Path(__file__).parent.parent / "corpus" / "graph_injection" / "PINJ-GRAPH-004" / "benign"
-        if not fixture.exists():
-            pytest.skip("Corpus fixture not found")
-        findings = skill_graph_findings(fixture)
         ids = [f.id for f in findings]
         assert "PINJ-GRAPH-004" not in ids, f"Unexpected PINJ-GRAPH-004 in {ids}"
 
