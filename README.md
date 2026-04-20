@@ -94,8 +94,6 @@ pip install skillscan-security
 pip install 'skillscan-security[ml]'
 ```
 
-> **Note:** The `[ml-onnx]` extra is deprecated. Use `[ml]` (backed by `llama-cpp-python`) instead.
-
 ### Option C: local/dev install
 
 ```bash

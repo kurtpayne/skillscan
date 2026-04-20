@@ -48,11 +48,6 @@ dev = [
 ml = [
   "llama-cpp-python>=0.3.0",
 ]
-# Legacy ONNX backend — deprecated, will be removed in a future release
-ml-onnx = [
-  "transformers>=4.40.0",
-  "optimum[onnxruntime]>=1.19.0",
-]
 # YARA rule integration — run custom .yar/.yara rules against skill files
 yara = [
   "yara-python>=4.5.0",

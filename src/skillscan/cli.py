@@ -656,8 +656,7 @@ def scan_cmd(
         envvar="SKILLSCAN_ML_DETECT",
         help=(
             "Enable offline ML prompt-injection detection. "
-            "Requires: pip install 'skillscan-security[ml-onnx]' (ONNX, recommended) "
-            "or 'skillscan-security[ml]' (PyTorch). "
+            "Requires: pip install 'skillscan-security[ml]' (llama-cpp-python). "
             "Also configurable via SKILLSCAN_ML_DETECT env var."
         ),
     ),
