@@ -5,8 +5,6 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-import pytest
-
 from skillscan.detectors.skill_graph import (
     SkillNode,
     _check_memory_write,
