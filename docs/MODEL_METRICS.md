@@ -2,6 +2,53 @@
 
 Historical ML model evaluation results, most recent first.
 
+## v4.7 — Canary-Seeded Attack Diversity (2026-04-22)
+
+**Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (940 MB)
+**Training:** 26k+ canary-diversified examples — paired benign + attack variants across 20 tool-surface categories (notion, slack, jira, gdrive, github, email, etc). Teacher shifted to Claude Sonnet 4.5 (+ GPT-4o + DeepSeek); Sonnet 4.5 caught real-world malicious examples GPT-4o missed during distillation.
+**Eval set:** 431 held-out files
+
+**Headline metrics (user-facing):**
+
+| Metric | Value | What it measures |
+|---|---|---|
+| Verdict accuracy | 98.8% (426/431) | Share of files where the malicious/benign verdict matches the gold label |
+| Threat detection rate | 97.8% | Share of actual threats the model flagged — 1 false negative |
+| False positives | 1 | Hard-benign enterprise eval file |
+| Parse failures | 0.7% (3/431) | Runs where the model produced non-JSON output |
+
+**Canary-attack coverage (v4.5 → v4.7 improvement story):**
+
+| Eval | v4.5 | v4.7 | Delta |
+|---|---|---|---|
+| Domain-themed attack holdout | 53.4% | **87.1%** | **+33.7pp** |
+
+This is the practical improvement most users see from the canary-seeded diversity training.
+
+**Categorization metric (technical):**
+
+Macro F1: 0.569 — measures how precisely the model picks the specific attack type among 7 labels, not whether it correctly flags malicious skills. Still the weakest metric and appropriately framed: fine-grained categorization is harder than the malicious/benign call.
+
+Per-class results:
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| path_traversal | 0.818 | 0.857 | 0.837 |
+| social_engineering | 0.727 | 0.889 | 0.800 |
+| data_exfiltration | 0.547 | 0.761 | 0.636 |
+| supply_chain | 0.458 | 0.733 | 0.564 |
+| code_injection | 0.364 | 0.640 | 0.464 |
+| prompt_injection | 0.850 | 0.318 | 0.463 |
+| evasion | 0.400 | 0.545 | 0.462 |
+
+**Inference:**
+
+- CPU: ~2s/file
+- GPU: ~0.6s/file
+
+**Rich structured output** (unchanged from v4.2): verdict, labels, severity (critical/high/medium/low/none), sub_classes (15+ finer-grained types), affected_lines, and reasoning.
+
+---
+
 ## v4.2 — Rich Structured Output + Expanded Eval (2026-04-16)
 
 **Architecture:** Qwen2.5-1.5B-Instruct, QLoRA fine-tune, GGUF Q4_K_M (940 MB)
