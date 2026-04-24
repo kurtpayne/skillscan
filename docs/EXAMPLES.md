@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**232 static rules · 14 chain rules**
+**234 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -191,6 +191,7 @@
 | `SUP-035` | critical | dom-utils-lite / centralogger npm SSH backdoor via Supabase C2 | supply_chain, sup, npm, postinstall, ssh-backdoor, supabase, authorized-keys, credential-theft |
 | `SUP-036` | critical | TigerJack malicious VS Code extensions — keylogger, CoinIMP miner, and dynamic backdoor (ab498) | supply_chain, sup, vscode, extension, keylogger, cryptominer, backdoor, tigerjack, coinimp, openvsx |
 | `SUP-037` | critical | Fake Gemini npm package (gemini-ai-checker) — AI tool token stealer | supply_chain, sup, npm, gemini, token-stealer, ottercookie, contagious-interview |
+| `SUP-039` | critical | Xinference PyPI supply chain compromise (2.6.0–2.6.2, TeamPCP credential stealer) | supply_chain, sup, pypi, xinference, credential-stealer, teampcp, ai-ml-platform |
 
 ### Defense Evasion
 
@@ -265,6 +266,7 @@
 | `PSV-029` | high | OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625, < 2026.3.25) | platform_security, psv, openclaw, privilege_escalation, authentication_bypass |
 | `PSV-030` | high | OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512, < 2026.3.25) | platform_security, psv, openclaw, access_control, session_management |
 | `PSV-031` | high | OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621, < 2026.3.24) | platform_security, psv, openclaw, privilege_escalation, allowlist_bypass |
+| `PSV-036` | high | MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2) | platform_security, psv, mcp_server, command_injection, magento, cve-2026-5603, windows-cmd |
 
 ### Execution
 

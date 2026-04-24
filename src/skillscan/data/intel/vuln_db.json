@@ -851,6 +851,26 @@
         "fixed": "PENDING",
         "summary": "CrewAI VU#221883: prompt injection to RCE/SSRF chain via CodeInterpreterTool (CVE-2026-2275/2285/2286/2287)"
       }
+    },
+    "xinference": {
+      "2.6.0": {
+        "id": "PYPI-XINFERENCE-2026-04",
+        "severity": "critical",
+        "fixed": "2.5.0",
+        "summary": "Xinference PyPI supply chain compromise (TeamPCP credential stealer, April 22 2026)"
+      },
+      "2.6.1": {
+        "id": "PYPI-XINFERENCE-2026-04",
+        "severity": "critical",
+        "fixed": "2.5.0",
+        "summary": "Xinference PyPI supply chain compromise (TeamPCP credential stealer, April 22 2026)"
+      },
+      "2.6.2": {
+        "id": "PYPI-XINFERENCE-2026-04",
+        "severity": "critical",
+        "fixed": "2.5.0",
+        "summary": "Xinference PyPI supply chain compromise (TeamPCP credential stealer, April 22 2026)"
+      }
     }
   },
   "npm": {
@@ -1429,6 +1449,42 @@
         "severity": "critical",
         "fixed": null,
         "summary": "TigerJack malicious VS Code extension pythonformat fetches and executes arbitrary JavaScript from ab498.pythonanywhere.com/static/in4.js every 20 minutes, enabling dynamic payload delivery."
+      }
+    },
+    "@elgentos/magento2-dev-mcp": {
+      "1.0.0": {
+        "id": "CVE-2026-5603",
+        "severity": "high",
+        "fixed": "1.0.3",
+        "summary": "Command injection via insufficient shellQuote \u2014 Windows cmd.exe metacharacter bypass"
+      },
+      "1.0.1": {
+        "id": "CVE-2026-5603",
+        "severity": "high",
+        "fixed": "1.0.3",
+        "summary": "Command injection via insufficient shellQuote \u2014 Windows cmd.exe metacharacter bypass"
+      },
+      "1.0.2": {
+        "id": "CVE-2026-5603",
+        "severity": "high",
+        "fixed": "1.0.3",
+        "summary": "Command injection via insufficient shellQuote \u2014 Windows cmd.exe metacharacter bypass"
+      }
+    },
+    "specstudio.code-wakatime-activity-tracker": {
+      "1.0.0": {
+        "id": "OPENVSX-GLASSWORM-WAVE7-2026-04",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "GlassWorm Wave 7 trojanized Open VSX extension (specstudio publisher) \u2014 installs floktokbok.autoimport second-stage"
+      }
+    },
+    "floktokbok.autoimport": {
+      "2.7.9": {
+        "id": "OPENVSX-GLASSWORM-WAVE7-2026-04",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "GlassWorm Wave 7 second-stage Open VSX extension (typosquat of steoates.autoimport)"
       }
     }
   },

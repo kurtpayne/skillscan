@@ -2645,3 +2645,46 @@ def test_psv031_openclaw_chat_send_allowlist() -> None:
     assert rule.pattern.search("chat.send allowlist persist escalation openclaw") is not None
     # Negative: benign chat usage
     assert rule.pattern.search("slack chat api send message") is None
+
+
+def test_sup039_xinference_pypi_supply_chain() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-039"]
+    assert rules, "SUP-039 not found"
+    rule = rules[0]
+    # C2 domain anchors
+    assert rule.pattern.search("whereisitat.lucyatemysuperbox.space exfiltration") is not None
+    assert rule.pattern.search("lucyatemysuperbox.space parent domain") is not None
+    # Malicious version install forms
+    assert rule.pattern.search("pip install xinference==2.6.0") is not None
+    assert rule.pattern.search("pip install xinference==2.6.1") is not None
+    assert rule.pattern.search("pip install xinference==2.6.2") is not None
+    assert rule.pattern.search('"xinference": "2.6.0"') is not None
+    # Attribution / campaign markers
+    assert rule.pattern.search("XprobeBot malicious commit xinference payload") is not None
+    assert rule.pattern.search("xinference TeamPCP credential-harvest payload") is not None
+    # Negative: safe version usage
+    assert rule.pattern.search("xinference==2.5.0 stable release") is None
+    assert rule.pattern.search("pip install xinference==2.7.0") is None
+    assert rule.pattern.search("xinference distributed inference framework guide") is None
+
+
+def test_psv036_mcp_server_shellquote_cve_2026_5603() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-036"]
+    assert rules, "PSV-036 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-5603 magento2-dev-mcp command injection") is not None
+    # Package anchor
+    assert rule.pattern.search("@elgentos/magento2-dev-mcp vulnerable") is not None
+    assert rule.pattern.search("magento2-dev-mcp 1.0.2 shellQuote inject") is not None
+    # Generic pattern: shellQuote + windows cmd.exe
+    assert (
+        rule.pattern.search("shell-quote child_process.exec user input cmd.exe bypass injection") is not None
+    )
+    assert rule.pattern.search("shellQuote insufficient windows cmd tool injection") is not None
+    assert rule.pattern.search("magerun2 exec( shellQuote concat injection") is not None
+    # Negative: benign magento / shell-quote usage
+    assert rule.pattern.search("magento 2 commerce administration guide") is None
+    assert rule.pattern.search("shell-quote npm package documentation") is None
