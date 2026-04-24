@@ -213,6 +213,15 @@ def main() -> int:
         help="Path to skillscan-website repo root (default: ../skillscan-website)",
     )
     parser.add_argument(
+        "--rules-yaml",
+        default=None,
+        help=(
+            "Path to the default.yaml to sync from. Default: this repo's bundled "
+            "src/skillscan/data/rules/default.yaml. Use --rules-yaml ../skillscan-rules/rules/default.yaml "
+            "to sync from the canonical kurtpayne/skillscan-rules repo."
+        ),
+    )
+    parser.add_argument(
         "--dry-run", action="store_true", help="Print what would change without writing files"
     )
     args = parser.parse_args()
@@ -220,7 +229,10 @@ def main() -> int:
     # Resolve paths
     script_dir = Path(__file__).parent
     repo_root = script_dir.parent
-    yaml_path = repo_root / "src/skillscan/data/rules/default.yaml"
+    if args.rules_yaml:
+        yaml_path = Path(args.rules_yaml).resolve()
+    else:
+        yaml_path = repo_root / "src/skillscan/data/rules/default.yaml"
 
     if args.website_dir:
         website_root = Path(args.website_dir).resolve()
