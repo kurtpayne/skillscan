@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**234 static rules · 14 chain rules**
+**237 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -90,6 +90,7 @@
 | `MAL-067` | critical | GlassWorm invisible Unicode PUA payload injection (eval via FE00-FE0F/E0100-E01EF encoding) | malware, glassworm, unicode-injection, invisible-unicode, pua-unicode, supply-chain, npm, vscode-extension, github, eval-injection, solana-c2 |
 | `MAL-068` | critical | js-logger-pack npm multi-platform WebSocket stealer (postinstall C2 agent) | malware_pattern, mal, npm, postinstall, websocket-stealer, ssh-backdoor, credential-theft, keylogger, supply-chain |
 | `MAL-069` | critical | PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse (REF6598) | malware_pattern, mal, obsidian, plugin-abuse, rat, blockchain-c2, social-engineering, cross-platform, ref6598 |
+| `MAL-070` | critical | NKAbuse RAT via Hugging Face Spaces typosquat (vsccode-modetx / kagent) | malware_pattern, mal, nkabuse, rat, huggingface, typosquat, nkn, cross-platform, cve-2026-39987 |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -181,8 +182,6 @@
 | `SUP-027` | critical | Compromised Telnyx package version reference | supply_chain, sup, telnyx, teampcp |
 | `SUP-028` | critical | UNC1069 social engineering lure domain (teams.onlivemeet.com) | supply_chain, unc1069, sapphire-sleet, north-korea, social-engineering, npm, axios |
 | `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
-| `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
-| `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
 | `SUP-030` | high | a11y-mcp SSRF vulnerability (CVE-2026-5323) | supply-chain, mcp, ssrf, cve-2026-5323, a11y |
 | `SUP-031` | high | PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263) | supply-chain, npm, pnpm, cve-2025-69264, cve-2025-69263, lifecycle-bypass, packagegate, zero-day |
 | `SUP-032` | critical | Compromised velora-dex/sdk package version reference | supply-chain, npm, velora-dex, malicious-version, rat |
@@ -191,6 +190,7 @@
 | `SUP-035` | critical | dom-utils-lite / centralogger npm SSH backdoor via Supabase C2 | supply_chain, sup, npm, postinstall, ssh-backdoor, supabase, authorized-keys, credential-theft |
 | `SUP-036` | critical | TigerJack malicious VS Code extensions — keylogger, CoinIMP miner, and dynamic backdoor (ab498) | supply_chain, sup, vscode, extension, keylogger, cryptominer, backdoor, tigerjack, coinimp, openvsx |
 | `SUP-037` | critical | Fake Gemini npm package (gemini-ai-checker) — AI tool token stealer | supply_chain, sup, npm, gemini, token-stealer, ottercookie, contagious-interview |
+| `SUP-038` | high | Context.ai Chrome extension supply chain compromise (Vercel breach, April 2026) | supply_chain, sup, chrome_extension, oauth, google_workspace, vercel, context_ai, lumma_stealer, shinyhunters |
 | `SUP-039` | critical | Xinference PyPI supply chain compromise (2.6.0–2.6.2, TeamPCP credential stealer) | supply_chain, sup, pypi, xinference, credential-stealer, teampcp, ai-ml-platform |
 
 ### Defense Evasion
@@ -203,7 +203,6 @@
 
 | ID | Severity | Title | Tags |
 |---|---|---|---|
-| `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
 | `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
 | `PSV-010` | high | MCP Python SDK DNS rebinding vulnerability (CVE-2025-66416, mcp < 1.23.0) | vulnerability, mcp, dns-rebinding, cve-2025-66416, python-sdk, localhost |
 | `PSV-011` | critical | CrewAI prompt injection to RCE/SSRF chain (VU#221883, CVE-2026-2275/2285/2286/2287) | vulnerability, crewai, rce, ssrf, prompt-injection, sandbox-escape, cve-2026-2275, cve-2026-2285, cve-2026-2286, cve-2026-2287, vu-221883 |
@@ -242,31 +241,45 @@
 | `PSV-006` | critical | Langflow CVE-2026-33017 unauthenticated RCE (CISA KEV) | langflow, rce, cisa-kev, unauthenticated |
 | `PSV-007` | high | OpenClaw CVE-2026-32922 privilege escalation via token rotation | openclaw, privilege-escalation, token-rotation |
 
-### Platform Security
+### Passive Surveillance
 
 | ID | Severity | Title | Tags |
 |---|---|---|---|
-| `PSV-008` | critical | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins | platform_security, psv, cursor, rce, cve-2026-22708 |
-| `PSV-013` | high | Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection | platform_security, psv, cursor, rce, cve-2026-31854, prompt-injection |
-| `PSV-014` | medium | Apollo MCP Server CVE-2026-35577 DNS Rebinding | platform_security, psv, apollo-mcp, dns-rebinding, cve-2026-35577 |
-| `PSV-015` | high | MCP Go SDK DNS rebinding vulnerability (CVE-2026-34742, go-sdk < v1.4.0) | platform_security, psv, mcp, go-sdk, dns-rebinding, cve-2026-34742, localhost |
-| `PSV-016` | high | mobile-mcp arbitrary Android intent execution via unvalidated URL (CVE-2026-35394, < 0.0.50) | platform_security, psv, mobile-mcp, android, intent-injection, rce, cve-2026-35394 |
-| `PSV-017` | high | OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12) | platform_security, psv, openclaw, websocket, authorization-bypass, scope-elevation, cve-2026-22172 |
-| `PSV-018` | high | n8n-MCP Server SSRF via multi-tenant HTTP header (CVE-2026-39974) | platform_security, psv, mcp_server, ssrf, n8n, cve-2026-39974 |
-| `PSV-019` | critical | mcp-server-taskwarrior command injection RCE (CVE-2026-5833, <= 1.0.1) | platform_security, psv, mcp_server, command_injection, rce, cve-2026-5833 |
-| `PSV-020` | critical | MCP STDIO arbitrary command injection via unsanitized adapter configuration (CVE-2026-30623/30624/30616/30617/30618/33224) | platform_security, psv, mcp_server, command_injection, rce, stdio, cve-2026-30623, cve-2026-30624, cve-2026-30616, cve-2026-30617, cve-2026-30618, cve-2026-33224, litellm, agent-zero, langchain, langflow |
-| `PSV-021` | critical | Marimo reactive notebook pre-auth RCE via unauthenticated WebSocket terminal (CVE-2026-39987, < 0.23.0) | platform_security, psv, marimo, pre-auth-rce, websocket, missing-authentication, cve-2026-39987, notebook, python |
-| `PSV-022` | medium | docker-mcp-server OS command injection RCE (CVE-2026-5741, <= 0.1.0) | platform_security, psv, docker, mcp_server, command_injection, rce, cve-2026-5741 |
-| `PSV-023` | critical | nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5) | platform_security, psv, nginx, mcp_server, auth_bypass, actively_exploited, cve-2026-33032 |
-| `PSV-024` | high | Apache SkyWalking MCP SSRF via SW-URL Header (CVE-2026-34476) | platform_security, psv, apache, skywalking, mcp_server, ssrf, cve-2026-34476 |
-| `PSV-025` | high | Open VSX Pre-Publish Scanning Bypass (Open Sesame) | platform_security, psv, openvsx, scan_bypass, fail_open |
-| `PSV-026` | high | mcp-neo4j SSE command injection RCE (CVE-2025-56406, mcp-neo4j 0.3.0) | platform_security, psv, mcp, neo4j, command_injection, rce |
-| `PSV-027` | medium | AAP MCP Server log injection via unsanitized toolsetroute (CVE-2026-6494) | platform_security, psv, mcp, aap, log_injection, social_engineering |
-| `PSV-028` | high | OpenClaw privilege escalation via device.pair.approve scope validation bypass (CVE-2026-35639, < 2026.3.22) | platform_security, psv, openclaw, privilege_escalation, device_pairing |
-| `PSV-029` | high | OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625, < 2026.3.25) | platform_security, psv, openclaw, privilege_escalation, authentication_bypass |
-| `PSV-030` | high | OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512, < 2026.3.25) | platform_security, psv, openclaw, access_control, session_management |
-| `PSV-031` | high | OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621, < 2026.3.24) | platform_security, psv, openclaw, privilege_escalation, allowlist_bypass |
-| `PSV-036` | high | MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2) | platform_security, psv, mcp_server, command_injection, magento, cve-2026-5603, windows-cmd |
+| `PSV-008` | critical | Cursor IDE CVE-2026-22708 RCE via Shell Built-ins | passive_surveillance, psv, cursor, rce, cve-2026-22708 |
+| `PSV-013` | high | Cursor IDE CVE-2026-31854 RCE via Indirect Prompt Injection | passive_surveillance, psv, cursor, rce, cve-2026-31854, prompt-injection |
+| `PSV-014` | medium | Apollo MCP Server CVE-2026-35577 DNS Rebinding | passive_surveillance, psv, apollo-mcp, dns-rebinding, cve-2026-35577 |
+| `PSV-015` | high | MCP Go SDK DNS rebinding vulnerability (CVE-2026-34742, go-sdk < v1.4.0) | passive_surveillance, psv, mcp, go-sdk, dns-rebinding, cve-2026-34742, localhost |
+| `PSV-016` | high | mobile-mcp arbitrary Android intent execution via unvalidated URL (CVE-2026-35394, < 0.0.50) | passive_surveillance, psv, mobile-mcp, android, intent-injection, rce, cve-2026-35394 |
+| `PSV-017` | high | OpenClaw WebSocket authorization bypass — self-declared scope elevation (CVE-2026-22172, < 2026.3.12) | passive_surveillance, psv, openclaw, websocket, authorization-bypass, scope-elevation, cve-2026-22172 |
+| `PSV-018` | high | n8n-MCP Server SSRF via multi-tenant HTTP header (CVE-2026-39974) | passive_surveillance, psv, mcp_server, ssrf, n8n, cve-2026-39974 |
+| `PSV-019` | critical | mcp-server-taskwarrior command injection RCE (CVE-2026-5833, <= 1.0.1) | passive_surveillance, psv, mcp_server, command_injection, rce, cve-2026-5833 |
+| `PSV-020` | critical | MCP STDIO arbitrary command injection via unsanitized adapter configuration (CVE-2026-30623/30624/30616/30617/30618/33224) | passive_surveillance, psv, mcp_server, command_injection, rce, stdio, cve-2026-30623, cve-2026-30624, cve-2026-30616, cve-2026-30617, cve-2026-30618, cve-2026-33224, litellm, agent-zero, langchain, langflow |
+| `PSV-021` | critical | Marimo reactive notebook pre-auth RCE via unauthenticated WebSocket terminal (CVE-2026-39987, < 0.23.0) | passive_surveillance, psv, marimo, pre-auth-rce, websocket, missing-authentication, cve-2026-39987, notebook, python |
+| `PSV-022` | medium | docker-mcp-server OS command injection RCE (CVE-2026-5741, <= 0.1.0) | passive_surveillance, psv, docker, mcp_server, command_injection, rce, cve-2026-5741 |
+| `PSV-023` | critical | nginx-ui MCP endpoint authentication bypass — unauthenticated nginx takeover (CVE-2026-33032, <= 2.3.5) | passive_surveillance, psv, nginx, mcp_server, auth_bypass, actively_exploited, cve-2026-33032 |
+| `PSV-024` | high | Apache SkyWalking MCP SSRF via SW-URL Header (CVE-2026-34476) | passive_surveillance, psv, apache, skywalking, mcp_server, ssrf, cve-2026-34476 |
+| `PSV-025` | high | Open VSX Pre-Publish Scanning Bypass (Open Sesame) | passive_surveillance, psv, openvsx, scan_bypass, fail_open |
+| `PSV-026` | high | mcp-neo4j SSE command injection RCE (CVE-2025-56406, mcp-neo4j 0.3.0) | passive_surveillance, psv, mcp, neo4j, command_injection, rce |
+| `PSV-027` | medium | AAP MCP Server log injection via unsanitized toolsetroute (CVE-2026-6494) | passive_surveillance, psv, mcp, aap, log_injection, social_engineering |
+| `PSV-028` | high | OpenClaw privilege escalation via device.pair.approve scope validation bypass (CVE-2026-35639, < 2026.3.22) | passive_surveillance, psv, openclaw, privilege_escalation, device_pairing |
+| `PSV-029` | high | OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625, < 2026.3.25) | passive_surveillance, psv, openclaw, privilege_escalation, authentication_bypass |
+| `PSV-030` | high | OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512, < 2026.3.25) | passive_surveillance, psv, openclaw, access_control, session_management |
+| `PSV-031` | high | OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621, < 2026.3.24) | passive_surveillance, psv, openclaw, privilege_escalation, allowlist_bypass |
+| `PSV-032` | high | mcp-server-kubernetes kubectl argument injection RCE (CVE-2026-39884, <= 3.4.0) | passive_surveillance, psv, mcp_server, kubernetes, argument_injection, cve-2026-39884 |
+| `PSV-033` | high | mcp-framework HTTP server DoS via unbounded POST body (CVE-2026-39313, <= 0.2.21) | passive_surveillance, psv, mcp_server, denial_of_service, cve-2026-39313 |
+| `PSV-034` | high | OpenClaw WebView JavascriptInterface RCE (CVE-2026-35643, < 2026.3.22) | passive_surveillance, psv, openclaw, webview, javascript_interface, android, rce, cve-2026-35643 |
+| `PSV-035` | critical | Flowise authenticated RCE via MCP adapter STDIO command injection (CVE-2026-40933, < 3.1.0) | passive_surveillance, psv, flowise, mcp_adapter, stdio_injection, rce, cve-2026-40933, actively_exploited |
+| `PSV-036` | high | MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2) | passive_surveillance, psv, mcp_server, command_injection, magento, cve-2026-5603, windows-cmd |
+
+### Permission Scope
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `PSV-001` | medium | Skill instructions imply network access not declared in allowed-tools | permission-scope, network, graph-rule |
+| `PSV-002` | medium | Skill instructions imply filesystem write not declared in allowed-tools | permission-scope, filesystem, graph-rule |
+| `PSV-003` | high | Skill instructions imply shell execution not declared in allowed-tools | permission-scope, shell, graph-rule |
+| `PSV-004` | medium | Unknown frontmatter key may be an injection vector | permission-scope, frontmatter, graph-rule |
+| `PSV-005` | medium | Capability inflation - skill claims wildcard or all-scope permissions | permission-scope, capability-inflation, least-privilege |
 
 ### Execution
 

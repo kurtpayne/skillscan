@@ -6,9 +6,10 @@ from pathlib import Path
 
 import yaml
 
-sys.path.insert(0, "/home/ubuntu/skillscan-security/src")
+REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT / "src"))
 
-rules_dir = Path("/home/ubuntu/skillscan-security/src/skillscan/data/rules")
+rules_dir = REPO_ROOT / "src" / "skillscan" / "data" / "rules"
 all_rules: list[dict] = []
 all_chain: list[dict] = []
 
@@ -41,7 +42,8 @@ cat_labels = {
     "vulnerability": "Vulnerabilities",
     "prompt_injection": "Prompt Injection",
     "passive_vulnerability": "Passive Vulnerabilities",
-    "platform_security": "Platform Security",
+    "passive_surveillance": "Passive Surveillance",
+    "permission_scope": "Permission Scope",
     "execution": "Execution",
     "malware": "Malware",
     "social_engineering": "Social Engineering",
@@ -85,6 +87,6 @@ for r in sorted(all_chain, key=lambda x: x["id"]):
     lines.append(f"| `{r['id']}` | {r.get('severity', '?')} | {title} | `{req}` | {tags} |")
 lines.append("")
 
-out = Path("/home/ubuntu/skillscan-security/docs/EXAMPLES.md")
+out = REPO_ROOT / "docs" / "EXAMPLES.md"
 out.write_text("\n".join(lines))
 print(f"Written {len(lines)} lines to {out}")
