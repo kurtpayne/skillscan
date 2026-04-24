@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**234 static rules · 14 chain rules**
+**240 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -90,6 +90,7 @@
 | `MAL-067` | critical | GlassWorm invisible Unicode PUA payload injection (eval via FE00-FE0F/E0100-E01EF encoding) | malware, glassworm, unicode-injection, invisible-unicode, pua-unicode, supply-chain, npm, vscode-extension, github, eval-injection, solana-c2 |
 | `MAL-068` | critical | js-logger-pack npm multi-platform WebSocket stealer (postinstall C2 agent) | malware_pattern, mal, npm, postinstall, websocket-stealer, ssh-backdoor, credential-theft, keylogger, supply-chain |
 | `MAL-069` | critical | PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse (REF6598) | malware_pattern, mal, obsidian, plugin-abuse, rat, blockchain-c2, social-engineering, cross-platform, ref6598 |
+| `MAL-070` | critical | NKAbuse RAT via Hugging Face Spaces typosquat (vsccode-modetx / kagent) | malware_pattern, mal, nkabuse, rat, huggingface, typosquat, nkn, cross-platform, cve-2026-39987 |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -191,6 +192,7 @@
 | `SUP-035` | critical | dom-utils-lite / centralogger npm SSH backdoor via Supabase C2 | supply_chain, sup, npm, postinstall, ssh-backdoor, supabase, authorized-keys, credential-theft |
 | `SUP-036` | critical | TigerJack malicious VS Code extensions — keylogger, CoinIMP miner, and dynamic backdoor (ab498) | supply_chain, sup, vscode, extension, keylogger, cryptominer, backdoor, tigerjack, coinimp, openvsx |
 | `SUP-037` | critical | Fake Gemini npm package (gemini-ai-checker) — AI tool token stealer | supply_chain, sup, npm, gemini, token-stealer, ottercookie, contagious-interview |
+| `SUP-038` | high | Context.ai Chrome extension supply chain compromise (Vercel breach, April 2026) | supply_chain, sup, chrome_extension, oauth, google_workspace, vercel, context_ai, lumma_stealer, shinyhunters |
 | `SUP-039` | critical | Xinference PyPI supply chain compromise (2.6.0–2.6.2, TeamPCP credential stealer) | supply_chain, sup, pypi, xinference, credential-stealer, teampcp, ai-ml-platform |
 
 ### Defense Evasion
@@ -266,6 +268,10 @@
 | `PSV-029` | high | OpenClaw privilege escalation via silent local shared-auth reconnect (CVE-2026-35625, < 2026.3.25) | platform_security, psv, openclaw, privilege_escalation, authentication_bypass |
 | `PSV-030` | high | OpenClaw improper access control in /sessions/:sessionKey/kill endpoint (CVE-2026-34512, < 2026.3.25) | platform_security, psv, openclaw, access_control, session_management |
 | `PSV-031` | high | OpenClaw privilege escalation via chat.send to allowlist persistence (CVE-2026-35621, < 2026.3.24) | platform_security, psv, openclaw, privilege_escalation, allowlist_bypass |
+| `PSV-032` | high | mcp-server-kubernetes kubectl argument injection RCE (CVE-2026-39884, <= 3.4.0) | platform_security, psv, mcp_server, kubernetes, argument_injection, cve-2026-39884 |
+| `PSV-033` | high | mcp-framework HTTP server DoS via unbounded POST body (CVE-2026-39313, <= 0.2.21) | platform_security, psv, mcp_server, denial_of_service, cve-2026-39313 |
+| `PSV-034` | high | OpenClaw WebView JavascriptInterface RCE (CVE-2026-35643, < 2026.3.22) | platform_security, psv, openclaw, webview, javascript_interface, android, rce, cve-2026-35643 |
+| `PSV-035` | critical | Flowise authenticated RCE via MCP adapter STDIO command injection (CVE-2026-40933, < 3.1.0) | platform_security, psv, flowise, mcp_adapter, stdio_injection, rce, cve-2026-40933, actively_exploited |
 | `PSV-036` | high | MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2) | platform_security, psv, mcp_server, command_injection, magento, cve-2026-5603, windows-cmd |
 
 ### Execution

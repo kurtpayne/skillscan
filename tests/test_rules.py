@@ -2688,3 +2688,111 @@ def test_psv036_mcp_server_shellquote_cve_2026_5603() -> None:
     # Negative: benign magento / shell-quote usage
     assert rule.pattern.search("magento 2 commerce administration guide") is None
     assert rule.pattern.search("shell-quote npm package documentation") is None
+
+
+def test_psv032_mcp_server_kubernetes_argument_injection() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-032"]
+    assert rules, "PSV-032 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-39884 mcp-server-kubernetes argument injection") is not None
+    # Package + version
+    assert rule.pattern.search("mcp-server-kubernetes 3.4.0 port_forward cve-2026-39884") is not None
+    assert rule.pattern.search("flux159/mcp-server-kubernetes vulnerability") is not None
+    # Pattern: injection flag
+    assert rule.pattern.search("kubectl port-forward --address=0.0.0.0 exposed") is not None
+    # Negative: benign k8s
+    assert rule.pattern.search("kubectl port-forward tutorial for beginners") is None
+    assert rule.pattern.search("kubernetes deployment best practices") is None
+
+
+def test_psv033_mcp_framework_dos_cve_2026_39313() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-033"]
+    assert rules, "PSV-033 not found"
+    rule = rules[0]
+    # CVE + package anchors
+    assert rule.pattern.search("CVE-2026-39313 mcp-framework DoS vulnerability") is not None
+    assert rule.pattern.search("mcp-framework 0.2.21 readRequestBody vulnerability") is not None
+    assert rule.pattern.search("quantgeekdev/mcp-framework vulnerability") is not None
+    # Function / mechanism anchor
+    assert rule.pattern.search("readRequestBody mcp unbounded size limit memory exhaust") is not None
+    assert rule.pattern.search("mcp-framework unbounded dos memory") is not None
+    # Negative: benign usage
+    assert rule.pattern.search("mcp framework tutorial building servers") is None
+
+
+def test_psv034_openclaw_webview_javascriptinterface_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-034"]
+    assert rules, "PSV-034 not found"
+    rule = rules[0]
+    # CVE anchor
+    assert rule.pattern.search("CVE-2026-35643 openclaw webview rce") is not None
+    # Version + pattern
+    assert rule.pattern.search("openclaw 2026.3.21 webview javascriptinterface rce cve") is not None
+    # File anchors
+    assert rule.pattern.search("CanvasScreen.kt vulnerability patched") is not None
+    assert rule.pattern.search("CanvasActionTrust.kt origin allowlist fix") is not None
+    # Bridge method pattern
+    assert rule.pattern.search('window.openclaw.runShell("rm -rf")') is not None
+    # Negative: benign webview
+    assert rule.pattern.search("android webview documentation tutorial") is None
+    assert rule.pattern.search("openclaw getting started guide") is None
+
+
+def test_psv035_flowise_mcp_adapter_stdio_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-035"]
+    assert rules, "PSV-035 not found"
+    rule = rules[0]
+    # CVE / GHSA anchors
+    assert rule.pattern.search("CVE-2026-40933 flowise rce") is not None
+    assert rule.pattern.search("GHSA-c9gw-hvqq-f33r flowise mcp adapter") is not None
+    # Package + pattern
+    assert rule.pattern.search("flowise mcp adapter stdio command injection cve-2026-40933") is not None
+    assert rule.pattern.search("flowise unsafe serialization rce < 3.1.0") is not None
+    assert rule.pattern.search("flowiseai/flowise stdio rce") is not None
+    assert rule.pattern.search("mcp adapter flowise unsafe serialization arbitrary command") is not None
+    # Negative: benign flowise
+    assert rule.pattern.search("flowise drag and drop llm flow builder") is None
+
+
+def test_mal070_nkabuse_huggingface_kagent() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-070"]
+    assert rules, "MAL-070 not found"
+    rule = rules[0]
+    # Name anchors
+    assert rule.pattern.search("NKAbuse RAT campaign") is not None
+    assert rule.pattern.search("nkabuse malware huggingface spaces vsccode-modetx") is not None
+    # Typosquatted HF space
+    assert rule.pattern.search("huggingface.co/spaces/attacker42/vsccode-modetx/install-linux.sh") is not None
+    assert rule.pattern.search("vsccode-modetx huggingface space malicious") is not None
+    # Binary + dropper + persistence
+    assert rule.pattern.search("kagent install-linux.sh huggingface dropper") is not None
+    assert rule.pattern.search("kagent nkn p2p c2 persistence systemd launchagent") is not None
+    # CVE chain anchor
+    assert rule.pattern.search("CVE-2026-39987 marimo huggingface kagent") is not None
+    # Negative: legit
+    assert rule.pattern.search("huggingface spaces documentation tutorial") is None
+    assert rule.pattern.search("kagent kubernetes ai agent project readme") is None
+
+
+def test_sup038_context_ai_chrome_vercel_breach() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "SUP-038"]
+    assert rules, "SUP-038 not found"
+    rule = rules[0]
+    # Extension ID anchor
+    assert rule.pattern.search("omddlmnhcofjbnbflmjginpjjblphbgk installed") is not None
+    # Named anchors
+    assert rule.pattern.search("context.ai chrome extension oauth allow all") is not None
+    assert rule.pattern.search("context_ai vercel breach lumma stealer") is not None
+    assert rule.pattern.search("vercel context.ai oauth grant supply chain compromise") is not None
+    assert rule.pattern.search("shinyhunters vercel supply chain claim") is not None
+    assert rule.pattern.search("chrome extension context.ai pivot google workspace") is not None
+    # Negative: benign
+    assert rule.pattern.search("vercel deployment guide for next.js") is None
+    assert rule.pattern.search("chrome extension development documentation") is None
