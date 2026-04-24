@@ -1,4 +1,4 @@
-version: "2026.04.19.1"
+version: "2026.04.23.1"
 static_rules:
   - id: MAL-001
     category: malware_pattern
@@ -12284,6 +12284,204 @@ static_rules:
       to persist entries in the allowlist. This allows attackers to achieve
       persistent privilege escalation by adding unauthorized entries to the
       command allowlist through the chat interface.
+    test_expect: fires
+  - id: SUP-039
+    category: supply_chain
+    severity: critical
+    confidence: 0.95
+    title: Xinference PyPI supply chain compromise (2.6.0–2.6.2, TeamPCP credential stealer)
+    pattern: '(?i)(?:whereisitat\.lucyatemysuperbox\.space|lucyatemysuperbox\.space|XprobeBot[^\n]{0,80}(?:xinference|malicious|payload|commit|base64)|xinference[=@~^<>!]*\s*["'']?2\.6\.[0-2](?:[^\d]|$)|(?:pip|pip3|pipenv|poetry|uv)\s+(?:install|add)[^\n]{0,80}xinference[^\n]{0,40}(?:==\s*|@\s*|~=\s*|>=\s*|\^)?2\.6\.[0-2]|["'']xinference["'']\s*[:=]\s*["''][\^~<>=]*2\.6\.[0-2]|xinference[^\n]{0,120}(?:teampcp|TeamPCP|credential[_\s-]?harvest|token[_\s-]?(?:steal|exfil)|aws[^\n]{0,20}gcp[^\n]{0,20}(?:kubernetes|ssh|wallet)|backdoor[^\n]{0,40}__init__\.py))'
+    mitigation: 'Xinference PyPI supply chain compromise (Ox Security, April 22, 2026). Malicious versions 2.6.0, 2.6.1, and 2.6.2 were uploaded to PyPI with a base64-obfuscated payload injected into __init__.py by commit author XprobeBot (2026-04-22 04:08:08 UTC). The payload harvests AWS, GCP, Kubernetes credentials, SSH keys, API tokens, cryptocurrency wallets, and database credentials, exfiltrating them to C2 domain `whereisitat.lucyatemysuperbox.space`. Over 600,000 downloads occurred during the ~24-hour exposure window. Downgrade to Xinference <= 2.5.0, rotate all cloud credentials and API keys, and audit for unauthorized access. Attributed to "TeamPCP" in the obfuscated code; TeamPCP publicly denied involvement.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - supply_chain
+        - sup
+        - pypi
+        - xinference
+        - credential-stealer
+        - teampcp
+        - ai-ml-platform
+      last_modified: '2026-04-23'
+      techniques:
+        - id: SUP-001
+          name: Supply Chain Compromise via Package Manager
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.95
+        benchmark_set: core-static-v1
+      references:
+        - https://www.ox.security/blog/xinference-allegedly-hacked-by-teampcp-malicious-package-in-pypi/
+        - https://blog.gitguardian.com/three-supply-chain-campaigns-hit-npm-pypi-and-docker-hub-in-48-hours/
+    test_input: |
+      # Xinference PyPI Supply Chain Compromise (TeamPCP, April 2026)
+
+      This document describes the Xinference supply chain attack disclosed by Ox
+      Security on April 22, 2026. Xinference is a popular open-source distributed
+      inference framework used to serve LLM, embedding, and multimodal models. Its
+      PyPI package was compromised for approximately 24 hours when versions
+      2.6.0, 2.6.1, and 2.6.2 were uploaded with an obfuscated credential-stealing
+      payload.
+
+      ## Attack Chain
+
+      A commit by author `XprobeBot` at 2026-04-22 04:08:08 UTC added a base64-
+      encoded payload to `__init__.py`. Any process that imported `xinference` at
+      a malicious version silently executed the stage-2 script, which harvests:
+
+      - AWS credentials and session tokens
+      - GCP service-account keys
+      - Kubernetes kubeconfig files
+      - SSH private keys from `~/.ssh/`
+      - API tokens from `.env`, `.npmrc`, `.pypirc`, `.docker/config.json`
+      - Cryptocurrency wallet files (MetaMask, Exodus, browser extensions)
+      - Database credentials from common config paths
+
+      Exfiltrated data is bundled and posted to the C2 domain
+      `whereisitat.lucyatemysuperbox.space`.
+
+      ## Reproduction
+
+      ```bash
+      pip install xinference==2.6.0
+      pip install xinference==2.6.1
+      pip install xinference==2.6.2
+      ```
+
+      Any of the above installs a package that contains the TeamPCP credential
+      stealer backdoor in __init__.py. Over 600,000 downloads occurred during the
+      exposure window.
+
+      ## Indicators of Compromise
+
+      - Package: `xinference` versions 2.6.0, 2.6.1, 2.6.2 (PyPI)
+      - Malicious commit author: `XprobeBot`
+      - Commit timestamp: 2026-04-22 04:08:08 UTC
+      - Modified file: `__init__.py`
+      - C2 domain: `whereisitat.lucyatemysuperbox.space`
+      - Parent domain: `lucyatemysuperbox.space`
+      - Attribution marker: `TeamPCP` (denied)
+
+      ## Remediation
+
+      Downgrade to Xinference `<= 2.5.0`. Rotate every AWS, GCP, and Kubernetes
+      credential, SSH key, API token, and wallet that was reachable on any host
+      that ran `pip install xinference` during the exposure window. Audit cloud
+      account activity for the last 72 hours.
+
+      ## References
+
+      - Ox Security disclosure: https://www.ox.security/blog/xinference-allegedly-hacked-by-teampcp-malicious-package-in-pypi/
+      - GitGuardian summary: https://blog.gitguardian.com/three-supply-chain-campaigns-hit-npm-pypi-and-docker-hub-in-48-hours/
+    test_expect: fires
+  - id: PSV-036
+    category: platform_security
+    severity: high
+    confidence: 0.9
+    title: MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2)
+    pattern: '(?i)(?:CVE-2026-5603|@elgentos/magento2-dev-mcp|elgentos[_\s/-]magento2[_\s-]dev[_\s-]mcp|magento2-dev-mcp[^\n]{0,80}(?:1\.0\.[0-2]|<=\s*1\.0\.2|shellQuote|command[_\s-]?inject|cve-2026-5603)|shell[_-]?quote[^\n]{0,200}(?:cmd\.exe|child_process\.exec|\.exec\(|windows[^\n]{0,20}(?:meta[_\s-]?character|injection|bypass))|magerun2[^\n]{0,80}(?:exec\(|shellQuote|injection|concat)|shell[_-]?quote[^\n]{0,80}insufficient[^\n]{0,80}(?:windows|cmd|mcp|tool))'
+    mitigation: 'CVE-2026-5603 is a command injection vulnerability affecting @elgentos/magento2-dev-mcp versions <= 1.0.2. All 16 MCP tools in the package concatenate user-supplied parameters into shell commands using the `shell-quote` npm package, which only applies single-quote escaping. On Windows, cmd.exe does not recognize single quotes as quoting characters, so shell metacharacters (`&`, `|`, `>`, `<`) retain their command-separator semantics and allow arbitrary command execution. Upgrade to a version > 1.0.2 (PR #5) which replaces string concatenation with execFile() and argument arrays. More broadly: never pass shell-quoted strings to exec() when the target may be Windows cmd.exe — always use execFile with argv arrays.'
+    metadata:
+      version: 1.0.0
+      status: active
+      author: skillscan
+      created: '2026-04-23'
+      updated: '2026-04-23'
+      tags:
+        - platform_security
+        - psv
+        - mcp_server
+        - command_injection
+        - magento
+        - cve-2026-5603
+        - windows-cmd
+      last_modified: '2026-04-23'
+      techniques:
+        - id: PSV-036
+          name: Platform security vulnerability
+      applies_to:
+        contexts:
+          - source
+          - dependency
+          - workflow
+      lifecycle:
+        introduced: '2026-04-23'
+        last_modified: '2026-04-23'
+      quality:
+        precision_estimate: 0.9
+        benchmark_set: core-static-v1
+      references:
+        - https://dev.to/armor1ai/how-to-check-your-mcp-server-for-cve-2026-5603s-vulnerability-pattern-and-why-shellquote-isnt-gdn
+        - https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/
+    test_input: |
+      ---
+      name: magento2-mcp-helper
+      description: MCP helper for Magento 2 development commands
+      ---
+
+      # CVE-2026-5603 — @elgentos/magento2-dev-mcp shellQuote Command Injection
+
+      This advisory documents CVE-2026-5603, a command injection vulnerability
+      affecting @elgentos/magento2-dev-mcp versions <= 1.0.2. All 16 MCP tools in
+      the package are vulnerable.
+
+      ## Vulnerable Pattern
+
+      ```javascript
+      const shellQuote = require('shell-quote');
+      const { exec } = require('child_process');
+
+      // User-supplied MCP tool parameter reaches shellQuote.quote()
+      const safe = shellQuote.quote([userQuery]);
+      exec(`magerun2 ${safe}`, (err, stdout) => { });
+      ```
+
+      On Windows, cmd.exe ignores the single quotes produced by shell-quote, so
+      metacharacters like `&`, `|`, `>`, `<` from userQuery are interpreted as
+      command separators, leading to arbitrary command execution.
+
+      ## Dependency Declaration
+
+      ```json
+      {
+        "dependencies": {
+          "@elgentos/magento2-dev-mcp": "1.0.2"
+        }
+      }
+      ```
+
+      ## Fix
+
+      Upgrade to @elgentos/magento2-dev-mcp > 1.0.2 (PR #5). The fix replaces
+      shellQuote + exec with execFile + argv array:
+
+      ```javascript
+      const { execFile } = require('child_process');
+      execFile('magerun2', [userQuery], (err, stdout) => { });
+      ```
+
+      ## Indicators
+
+      - Package: `@elgentos/magento2-dev-mcp` versions 1.0.0, 1.0.1, 1.0.2
+      - CVE: CVE-2026-5603
+      - Affected function: all 16 MCP tools that shell out via shellQuote + exec
+      - Windows-specific (cmd.exe metacharacter bypass)
+
+      ## References
+
+      - https://dev.to/armor1ai/how-to-check-your-mcp-server-for-cve-2026-5603s-vulnerability-pattern-and-why-shellquote-isnt-gdn
+      - https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/
     test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

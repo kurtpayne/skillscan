@@ -8,8 +8,8 @@
       "urlhaus_hosts"
     ],
     "note": "Bundled high-precision IOC DB. Hand-curated campaign IOCs are always included. Large feeds (URLhaus URLs, Hagezi TIF, Phishing Army, KADhosts) are runtime-only and merged at scan time via managed_sources.json.",
-    "updated": "2026-04-14",
-    "version": "2026.04.14.1"
+    "updated": "2026-04-23",
+    "version": "2026.04.23.1"
   },
   "domains": [
     "001.smallnode.net",
@@ -4002,7 +4002,9 @@
     "panel.fefea22134.net",
     "0x666.info",
     "ab498.pythonanywhere.com",
-    "server-check-genimi.vercel.app"
+    "server-check-genimi.vercel.app",
+    "whereisitat.lucyatemysuperbox.space",
+    "lucyatemysuperbox.space"
   ],
   "ips": [
     "142.11.206.73",
