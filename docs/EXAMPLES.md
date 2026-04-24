@@ -3,7 +3,7 @@
 > Auto-generated from `src/skillscan/data/rules/`. Do not edit by hand.
 > Run `python3 scripts/generate_examples_table.py` to regenerate.
 
-**240 static rules · 14 chain rules**
+**237 static rules · 14 chain rules**
 
 ## Static Rules
 
@@ -182,8 +182,6 @@
 | `SUP-027` | critical | Compromised Telnyx package version reference | supply_chain, sup, telnyx, teampcp |
 | `SUP-028` | critical | UNC1069 social engineering lure domain (teams.onlivemeet.com) | supply_chain, unc1069, sapphire-sleet, north-korea, social-engineering, npm, axios |
 | `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
-| `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
-| `SUP-029` | critical | Malicious Strapi npm packages (Redis RCE / Credential Harvesting) | supply_chain, npm, strapi, redis, rce, credential-harvesting |
 | `SUP-030` | high | a11y-mcp SSRF vulnerability (CVE-2026-5323) | supply-chain, mcp, ssrf, cve-2026-5323, a11y |
 | `SUP-031` | high | PackageGate npm/pnpm lifecycle script security bypass (CVE-2025-69264, CVE-2025-69263) | supply-chain, npm, pnpm, cve-2025-69264, cve-2025-69263, lifecycle-bypass, packagegate, zero-day |
 | `SUP-032` | critical | Compromised velora-dex/sdk package version reference | supply-chain, npm, velora-dex, malicious-version, rat |
@@ -205,7 +203,6 @@
 
 | ID | Severity | Title | Tags |
 |---|---|---|---|
-| `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
 | `PSV-009` | critical | Langflow Agentic Assistant RCE Vulnerability (CVE-2026-33873) | vulnerability, langflow, rce, cve-2026-33873 |
 | `PSV-010` | high | MCP Python SDK DNS rebinding vulnerability (CVE-2025-66416, mcp < 1.23.0) | vulnerability, mcp, dns-rebinding, cve-2025-66416, python-sdk, localhost |
 | `PSV-011` | critical | CrewAI prompt injection to RCE/SSRF chain (VU#221883, CVE-2026-2275/2285/2286/2287) | vulnerability, crewai, rce, ssrf, prompt-injection, sandbox-escape, cve-2026-2275, cve-2026-2285, cve-2026-2286, cve-2026-2287, vu-221883 |
@@ -273,6 +270,16 @@
 | `PSV-034` | high | OpenClaw WebView JavascriptInterface RCE (CVE-2026-35643, < 2026.3.22) | passive_surveillance, psv, openclaw, webview, javascript_interface, android, rce, cve-2026-35643 |
 | `PSV-035` | critical | Flowise authenticated RCE via MCP adapter STDIO command injection (CVE-2026-40933, < 3.1.0) | passive_surveillance, psv, flowise, mcp_adapter, stdio_injection, rce, cve-2026-40933, actively_exploited |
 | `PSV-036` | high | MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2) | passive_surveillance, psv, mcp_server, command_injection, magento, cve-2026-5603, windows-cmd |
+
+### Permission Scope
+
+| ID | Severity | Title | Tags |
+|---|---|---|---|
+| `PSV-001` | medium | Skill instructions imply network access not declared in allowed-tools | permission-scope, network, graph-rule |
+| `PSV-002` | medium | Skill instructions imply filesystem write not declared in allowed-tools | permission-scope, filesystem, graph-rule |
+| `PSV-003` | high | Skill instructions imply shell execution not declared in allowed-tools | permission-scope, shell, graph-rule |
+| `PSV-004` | medium | Unknown frontmatter key may be an injection vector | permission-scope, frontmatter, graph-rule |
+| `PSV-005` | medium | Capability inflation - skill claims wildcard or all-scope permissions | permission-scope, capability-inflation, least-privilege |
 
 ### Execution
 
