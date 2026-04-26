@@ -1178,6 +1178,18 @@ def scan(
             has_sub_threshold_signal=_has_sub,
         )
 
+        # Cross-layer defense-in-depth hints (Item E). Computed after all
+        # layers have populated `findings`. Hints are advisory and do not
+        # affect the verdict or score.
+        from skillscan.triage_hints import compute_triage_hints
+
+        try:
+            triage_hints = compute_triage_hints(findings, iocs)
+        except Exception as exc:  # never break the scanner over a hint bug
+            logger = __import__("logging").getLogger("skillscan")
+            logger.warning("triage hint computation failed: %s", exc)
+            triage_hints = []
+
         return ScanReport(
             metadata=metadata,
             verdict=verdict,
@@ -1187,6 +1199,7 @@ def scan(
             dependency_findings=dependency_findings,
             capabilities=capabilities,
             triage_metadata=triage_metadata,
+            triage_hints=triage_hints,
         )
     finally:
         if prepared.cleanup_dir is not None:

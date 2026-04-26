@@ -204,6 +204,22 @@ class TriageMetadata(BaseModel):
     )
 
 
+class TriageHint(BaseModel):
+    """A defense-in-depth recommendation derived from cross-layer signal.
+
+    Produced by `skillscan.triage_hints` after all detection layers have
+    fired. Hints help users understand WHY a verdict came out as it did,
+    and what action could improve confidence (run skillscan-trace, refresh
+    IOC intel, manually review, etc.).
+    """
+
+    id: str  # H001, H002, H003, ...
+    title: str
+    detail: str
+    recommendation: str
+    related_finding_ids: list[str] = Field(default_factory=list)
+
+
 class ScanReport(BaseModel):
     metadata: ScanMetadata
     verdict: Verdict
@@ -213,6 +229,11 @@ class ScanReport(BaseModel):
     dependency_findings: list[DependencyFinding]
     capabilities: list[Capability]
     triage_metadata: TriageMetadata = Field(default_factory=TriageMetadata)
+    # Defense-in-depth recommendations (Item E). Cross-layer hints surfaced
+    # after all detection layers fire — e.g., "ML detected with low
+    # logit_confidence and no static-rule corroboration → run skillscan-trace
+    # for behavioral verification."
+    triage_hints: list[TriageHint] = Field(default_factory=list)
 
     def to_json(self) -> str:
         return self.model_dump_json(
