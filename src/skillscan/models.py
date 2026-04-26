@@ -74,6 +74,13 @@ class Finding(BaseModel):
     # indicators: structured threat indicators extracted at inference time
     # from the skill file + model reasoning. See `Indicator` above.
     indicators: list[Indicator] = Field(default_factory=list)
+    # logit_confidence: continuous P(predicted_verdict) ∈ [0, 1] derived from
+    # softmax over the model's "benign" vs "malicious" token logits at the
+    # verdict position. Far better discrimination than the discrete
+    # `confidence` field (which buckets at 0.9/0.95/1.0). None when logprobs
+    # aren't available (e.g., older llama-cpp-python or model load without
+    # logits_all=True).
+    logit_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 class ConfidenceLabel(StrEnum):
