@@ -20,6 +20,29 @@ class Severity(StrEnum):
     CRITICAL = "critical"
 
 
+class Indicator(BaseModel):
+    """A structured threat indicator extracted from a skill file.
+
+    Indicators give downstream tooling concrete entities to filter/route on:
+    "look at the curl to evil.example.com on line 12" instead of just
+    "look at line 12". Populated by the post-processor in `indicators.py`,
+    which runs after a Finding is emitted (no retraining required).
+
+    Fields:
+        type: indicator class — see _VALID_INDICATOR_TYPES below.
+        value: the extracted token (URL, domain, package name, CVE id, etc.)
+        line: 1-indexed line number in the skill file where the indicator
+            was found (None when extracted from `reasoning` or other non-
+            file-anchored text).
+        evidence: short surrounding excerpt for context (first 200 chars).
+    """
+
+    type: str
+    value: str
+    line: int | None = None
+    evidence: str | None = None
+
+
 class Finding(BaseModel):
     id: str = Field(serialization_alias="rule_id")
     category: str
@@ -48,6 +71,9 @@ class Finding(BaseModel):
     sub_classes: list[str] = Field(default_factory=list)
     # affected_lines: line numbers in the skill file the model flagged.
     affected_lines: list[int] = Field(default_factory=list)
+    # indicators: structured threat indicators extracted at inference time
+    # from the skill file + model reasoning. See `Indicator` above.
+    indicators: list[Indicator] = Field(default_factory=list)
 
 
 class ConfidenceLabel(StrEnum):
