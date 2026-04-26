@@ -18,6 +18,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   sync:
@@ -50,3 +51,42 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr merge --auto --squash "${{ steps.cpr.outputs.pull-request-number }}"
+
+      # Open a GitHub issue when the scheduled run fails. Manual workflow_dispatch
+      # is skipped (operator already sees the failure interactively). Each failed
+      # run gets its own issue (titled by run ID) for natural per-run dedup.
+      - name: Alert on failure
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          LOG_TAIL=$(gh run view "$RUN_ID" --log-failed 2>/dev/null | tail -80 | sed 's/^/    /' || echo "    (could not fetch failed log — see run page)")
+
+          BODY=$(cat <<EOF
+          \`sync-bundled-rules.yml\` failed at $(date -u +"%Y-%m-%d %H:%M UTC").
+
+          - **Run:** $RUN_URL
+          - **Trigger:** scheduled cron
+          - **Repo:** \`kurtpayne/skillscan-security\`
+
+          ## Failure log tail
+
+          \`\`\`
+          $LOG_TAIL
+          \`\`\`
+
+          This issue was opened automatically by the workflow's failure handler. Close after the next successful run or after a fix lands.
+          EOF
+          )
+
+          gh issue create \
+            -R "${{ github.repository }}" \
+            --title "🚨 [auto] sync-bundled-rules.yml run #$RUN_ID failed" \
+            --body "$BODY" \
+            --label "automation,cron-failure" 2>&1 || \
+          gh issue create \
+            -R "${{ github.repository }}" \
+            --title "🚨 [auto] sync-bundled-rules.yml run #$RUN_ID failed" \
+            --body "$BODY"
