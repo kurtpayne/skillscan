@@ -76,7 +76,7 @@ jobs:
 
       - name: Open or update regression issue for unexpected verdicts
         if: ${{ always() && inputs.dry_run != 'true' && hashFiles('demo-feed.json') != '' }}
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
