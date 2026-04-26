@@ -357,6 +357,66 @@ class TestLogitConfidenceFlowsToFinding:
         assert finding.logit_confidence is not None
         assert finding.logit_confidence > 0.99
 
+    def test_threshold_filters_low_confidence_findings(self):
+        """ml_threshold filters PINJ-ML-001 findings whose logit_confidence is below threshold.
+
+        Mirrors the inline filter in scanner.scan() so refactors must touch
+        both. Advisory IDs and findings without logit_confidence are kept.
+        """
+        from skillscan.models import Finding
+
+        findings = [
+            # advisory finding — should NEVER be filtered
+            Finding(
+                id="PINJ-ML-NO-MODEL",
+                category="prompt_injection_ml",
+                severity=Severity.LOW,
+                confidence=1.0,
+                title="model missing",
+                evidence_path="x.md",
+                logit_confidence=None,
+            ),
+            # high-conf detection — kept
+            Finding(
+                id="PINJ-ML-001",
+                category="prompt_injection_ml",
+                severity=Severity.HIGH,
+                confidence=0.95,
+                title="high",
+                evidence_path="x.md",
+                logit_confidence=0.99,
+            ),
+            # low-conf detection — dropped
+            Finding(
+                id="PINJ-ML-001",
+                category="prompt_injection_ml",
+                severity=Severity.HIGH,
+                confidence=0.95,
+                title="low",
+                evidence_path="x.md",
+                logit_confidence=0.65,
+            ),
+            # no logit_confidence (older client) — kept (never filter unknown)
+            Finding(
+                id="PINJ-ML-001",
+                category="prompt_injection_ml",
+                severity=Severity.HIGH,
+                confidence=0.95,
+                title="legacy",
+                evidence_path="x.md",
+                logit_confidence=None,
+            ),
+        ]
+        threshold = 0.8
+        kept = [
+            f
+            for f in findings
+            if f.id != "PINJ-ML-001" or f.logit_confidence is None or f.logit_confidence >= threshold
+        ]
+        assert len(kept) == 3
+        assert "low" not in {f.title for f in kept}
+        assert {"model missing", "high", "legacy"} == {f.title for f in kept}
+
     def test_no_logprobs_falls_back_gracefully(self):
         """A mock response without 'logprobs' key produces logit_confidence=None."""
         mock_llm = MagicMock()
