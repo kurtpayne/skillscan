@@ -539,6 +539,18 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     # Use the first affected line as the primary Finding.line when available.
     primary_line = affected_lines[0] if affected_lines else None
 
+    # Extract structured indicators from the skill text + model reasoning.
+    # Runs once per file; same indicator list is attached to every label-
+    # specific Finding produced for this file so downstream filtering doesn't
+    # have to re-correlate.
+    from skillscan.indicators import extract_indicators
+
+    try:
+        indicators = extract_indicators(text, reasoning, affected_lines)
+    except Exception as exc:  # never break the scanner over an extractor bug
+        logger.warning("indicator extraction failed: %s", exc)
+        indicators = []
+
     for label in labels:
         severity = _map_severity(confidence, label)
         human_label = _LABEL_TITLES.get(label, label.replace("_", " "))
@@ -558,6 +570,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 ml_severity=ml_severity,
                 sub_classes=list(sub_classes),
                 affected_lines=list(affected_lines),
+                indicators=list(indicators),
             )
         )
 
