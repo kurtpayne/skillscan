@@ -1,18 +1,21 @@
 name: Sync Bundled Rules
 
-# Pulls the canonical rule and intel files from skillscan-rules into the
-# bundled snapshot shipped inside this Python package. Intel changes daily
-# (refreshed in skillscan-rules by refresh-intel.yml); rules change less
-# often. A single twice-daily run handles both — when nothing changed,
-# peter-evans/create-pull-request opens no PR.
+# MANUAL FALLBACK ONLY — the daily 12:00 UTC pattern-update agent now syncs
+# the bundled rules+intel snapshot as part of its normal flow, eliminating
+# this workflow's previous role as a scheduled cron.
 #
-# Auto-merges the resulting PR once the 4 required status checks pass, so
-# data refresh stays hands-free.
+# Why: PRs created by GITHUB_TOKEN do not trigger workflow runs (a security
+# feature against CI loops), so this workflow's auto-merge loop was
+# structurally broken — the resulting PR's required-status-check CI never
+# fired and the PR sat open forever. The daily agent runs as a real user,
+# so its PRs trigger CI normally.
+#
+# Kept as `workflow_dispatch` only so an operator can manually re-sync if
+# the daily agent missed a run. If you find yourself reaching for this
+# regularly, the daily agent is broken — investigate that, don't paper
+# over it here.
 
 on:
-  schedule:
-    - cron: "0 7 * * *"   # 07:00 UTC — ~1h after the canonical refresh at 06:00
-    - cron: "0 19 * * *"  # 19:00 UTC — ~1h after the canonical refresh at 18:00
   workflow_dispatch: {}
 
 permissions:
