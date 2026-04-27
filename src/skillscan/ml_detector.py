@@ -172,6 +172,7 @@ def _get_llm() -> Any | None:
             n_ctx=2048,
             n_threads=4,
             verbose=False,
+            logits_all=True,  # required for logprobs → logit_confidence
         )
         _grammar_cache = LlamaGrammar.from_string(_GBNF_GRAMMAR)
         logger.info("ML detector v4: loaded GGUF model from %s", _MODEL_PATH)
@@ -270,6 +271,69 @@ def _parse_model_output(raw: str) -> dict[str, Any] | None:
 # ---------------------------------------------------------------------------
 # Severity mapping
 # ---------------------------------------------------------------------------
+
+
+def _extract_logit_confidence(
+    logprobs_content: list[dict[str, Any]] | None,
+    predicted_verdict: str,
+) -> float | None:
+    """Extract continuous P(predicted_verdict) from token logprobs.
+
+    Scans token list left-to-right for the first token that starts the verdict
+    word (`ben` or `mal`). At that position, looks at the chosen token + the
+    top_logprobs alternatives and softmaxes the two candidate-token entries to
+    return P(predicted_verdict) ∈ [0, 1].
+
+    Returns None when the logprobs payload is absent or doesn't contain a
+    verdict-starting token.
+    """
+    import math
+
+    if not logprobs_content:
+        return None
+
+    for item in logprobs_content:
+        chosen = (item.get("token") or "").lstrip().lower()
+        if not (chosen.startswith("ben") or chosen.startswith("mal")):
+            continue
+
+        chosen_lp = item.get("logprob")
+        top = item.get("top_logprobs") or []
+        logp_ben: float | None = None
+        logp_mal: float | None = None
+        if chosen.startswith("ben"):
+            logp_ben = chosen_lp
+        elif chosen.startswith("mal"):
+            logp_mal = chosen_lp
+        for t in top:
+            tk = (t.get("token") or "").lstrip().lower()
+            lp = t.get("logprob")
+            if logp_ben is None and tk.startswith("ben"):
+                logp_ben = lp
+            elif logp_mal is None and tk.startswith("mal"):
+                logp_mal = lp
+
+        if logp_ben is None and logp_mal is None:
+            return None
+
+        # Soft floor for the alternative if it's outside the top-K window.
+        floor = -20.0
+        lp_b = logp_ben if logp_ben is not None else floor
+        lp_m = logp_mal if logp_mal is not None else floor
+        mx = max(lp_b, lp_m)
+        p_ben = math.exp(lp_b - mx)
+        p_mal = math.exp(lp_m - mx)
+        total = p_ben + p_mal
+        if total == 0:
+            return None
+        p_ben /= total
+        p_mal /= total
+        if predicted_verdict == "benign":
+            return float(p_ben)
+        if predicted_verdict == "malicious":
+            return float(p_mal)
+        return None
+    return None
 
 
 def _map_severity(confidence: float, label: str) -> Severity:
@@ -450,6 +514,9 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
         cleaned_text = cleaned_text[:max_input_chars]
 
     # --- Run inference ---
+    # Capture token logprobs so we can compute logit_confidence (continuous
+    # P(verdict) ∈ [0, 1]) — far better discrimination than the discrete
+    # `confidence` field which buckets at 0.9/0.95/1.0.
     try:
         grammar_kwargs = {"grammar": _grammar_cache} if _grammar_cache else {}
         response = llm.create_chat_completion(
@@ -459,11 +526,32 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
             ],
             max_tokens=800,
             temperature=0.0,
+            logprobs=True,
+            top_logprobs=5,
             **grammar_kwargs,
         )
     except Exception as exc:
         logger.error("GGUF inference failed: %s", exc)
-        return age_findings + advisory_findings
+        # Fallback for older llama-cpp-python that doesn't accept logprobs:
+        # retry without it. Logit-derived confidence won't be available but
+        # the rest of the pipeline keeps working.
+        if "logprobs" in str(exc).lower() or "logits_all" in str(exc).lower():
+            try:
+                grammar_kwargs = {"grammar": _grammar_cache} if _grammar_cache else {}
+                response = llm.create_chat_completion(
+                    messages=[
+                        {"role": "system", "content": _SYSTEM_PROMPT},
+                        {"role": "user", "content": cleaned_text},
+                    ],
+                    max_tokens=800,
+                    temperature=0.0,
+                    **grammar_kwargs,
+                )
+            except Exception as exc2:
+                logger.error("GGUF inference failed (no-logprobs retry): %s", exc2)
+                return age_findings + advisory_findings
+        else:
+            return age_findings + advisory_findings
 
     # Extract generated text
     try:
@@ -471,6 +559,13 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     except (KeyError, IndexError, TypeError):
         logger.error("Unexpected model response structure: %s", response)
         return age_findings + advisory_findings
+
+    # Extract logprobs payload (may be absent on older clients or fallback path)
+    try:
+        logprobs_payload = response["choices"][0].get("logprobs")  # type: ignore[index]
+        logprobs_content = logprobs_payload.get("content") if isinstance(logprobs_payload, dict) else None
+    except (KeyError, IndexError, TypeError):
+        logprobs_content = None
 
     if not raw_output:
         logger.warning("Model returned empty output")
@@ -518,6 +613,10 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
     # Clamp confidence to [0, 1]
     confidence = max(0.0, min(1.0, confidence))
 
+    # Continuous logit-derived confidence at the verdict-token position
+    # (None when logprobs payload missing or no verdict-starting token found).
+    logit_confidence = _extract_logit_confidence(logprobs_content, verdict)
+
     # If verdict is benign, no detection findings
     if verdict != "malicious":
         return age_findings + advisory_findings
@@ -558,6 +657,7 @@ def ml_prompt_injection_findings(path: Path, text: str) -> list[Finding]:
                 ml_severity=ml_severity,
                 sub_classes=list(sub_classes),
                 affected_lines=list(affected_lines),
+                logit_confidence=(round(logit_confidence, 4) if logit_confidence is not None else None),
             )
         )
 

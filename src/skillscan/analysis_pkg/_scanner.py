@@ -327,6 +327,7 @@ def scan(
     clamav: bool = False,
     clamav_timeout_seconds: int = 30,
     ml_detect: bool = False,
+    ml_threshold: float = 0.0,
     rulepack_channel: str = "stable",
     graph_scan: bool = False,
     max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
@@ -639,6 +640,20 @@ def scan(
 
             if ml_detect:
                 ml_findings = ml_prompt_injection_findings(path, analysis_text)
+                # --ml-threshold filters out PINJ-ML-001 detections whose
+                # logit_confidence falls below the threshold. Only applies
+                # when the model emitted a logit_confidence (older clients
+                # without logprobs return None and are NEVER filtered).
+                # Advisory findings (PINJ-ML-NO-MODEL, PINJ-ML-STALE,
+                # PINJ-ML-LARGE-FILE, PINJ-ML-UNAVAIL) are never filtered.
+                if ml_threshold > 0.0:
+                    ml_findings = [
+                        mf
+                        for mf in ml_findings
+                        if mf.id != "PINJ-ML-001"
+                        or mf.logit_confidence is None
+                        or mf.logit_confidence >= ml_threshold
+                    ]
                 _f.extend(ml_findings)
                 for mf in ml_findings:
                     if mf.id.startswith("ML-"):
