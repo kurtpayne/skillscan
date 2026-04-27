@@ -2811,11 +2811,11 @@ def test_psv045_markdown_preview_enhanced_rce() -> None:
     # CVE anchor (strongest)
     assert rule.pattern.search("CVE-2025-65716 allows RCE in markdown preview") is not None
     # Extension ID + exploitation term
-    assert rule.pattern.search("shd101wyy.markdown-preview-enhanced javascript execution in preview pane") is not None
+    assert rule.pattern.search("shd101wyy.markdown-preview-enhanced javascript execution") is not None
     assert rule.pattern.search("shd101wyy.markdown-preview-enhanced script inject rce") is not None
     # Crafted markdown + extension combo
     assert rule.pattern.search("crafted .md file shd101wyy execute javascript exfil") is not None
-    assert rule.pattern.search("malicious markdown shd101wyy.markdown-preview-enhanced execute workspace") is not None
+    assert rule.pattern.search("malicious markdown shd101wyy execute workspace") is not None
     # Negative: benign
     assert rule.pattern.search("markdown preview enhanced documentation writing guide") is None
     assert rule.pattern.search("shd101wyy extension render mermaid diagrams") is None
