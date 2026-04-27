@@ -91,6 +91,7 @@
 | `MAL-068` | critical | js-logger-pack npm multi-platform WebSocket stealer (postinstall C2 agent) | malware_pattern, mal, npm, postinstall, websocket-stealer, ssh-backdoor, credential-theft, keylogger, supply-chain |
 | `MAL-069` | critical | PHANTOMPULSE RAT via Obsidian Shell Commands plugin abuse (REF6598) | malware_pattern, mal, obsidian, plugin-abuse, rat, blockchain-c2, social-engineering, cross-platform, ref6598 |
 | `MAL-070` | critical | NKAbuse RAT via Hugging Face Spaces typosquat (vsccode-modetx / kagent) | malware_pattern, mal, nkabuse, rat, huggingface, typosquat, nkn, cross-platform, cve-2026-39987 |
+| `MAL-073` | high | Mark H VS Code extension cryptojacking campaign (asdf11.xyz C2, XMRig miner, April 2026) | malware_pattern, mal, cryptojacking, xmrig, vscode-extension, markh, asdf11 |
 | `RB-001` | high | Ruby backtick or system() shell execution | ruby, shell_exec |
 | `RB-002` | high | Ruby Kernel.eval or binding.eval dynamic execution | ruby, dynamic_exec |
 | `RS-001` | high | Rust std::process::Command shell execution | rust, shell_exec |
@@ -270,6 +271,8 @@
 | `PSV-034` | high | OpenClaw WebView JavascriptInterface RCE (CVE-2026-35643, < 2026.3.22) | passive_surveillance, psv, openclaw, webview, javascript_interface, android, rce, cve-2026-35643 |
 | `PSV-035` | critical | Flowise authenticated RCE via MCP adapter STDIO command injection (CVE-2026-40933, < 3.1.0) | passive_surveillance, psv, flowise, mcp_adapter, stdio_injection, rce, cve-2026-40933, actively_exploited |
 | `PSV-036` | high | MCP server command injection via insufficient shellQuote — CVE-2026-5603 (@elgentos/magento2-dev-mcp <= 1.0.2) | passive_surveillance, psv, mcp_server, command_injection, magento, cve-2026-5603, windows-cmd |
+| `PSV-045` | high | Markdown Preview Enhanced RCE via crafted markdown file (CVE-2025-65716, shd101wyy.markdown-preview-enhanced, CVSS 8.8) | passive_surveillance, psv, vscode-extension, markdown-preview-enhanced, rce, cve-2025-65716, unpatched |
+| `PSV-046` | critical | LibreChat MCP STDIO unauthorized root command execution (CVE-2026-22252, < 0.8.2-rc2, CWE-285) | passive_surveillance, psv, librechat, mcp-stdio, rce, privilege-escalation, cve-2026-22252, cwe-285 |
 
 ### Permission Scope
 

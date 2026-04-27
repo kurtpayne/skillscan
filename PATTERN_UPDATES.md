@@ -1,3 +1,19 @@
+## 2026-04-27
+rulepack: 2026.04.27.1
+
+Three new detection rules covering a VS Code cryptojacking campaign, an unpatched VS Code extension RCE, and a LibreChat MCP privilege escalation. IOC DB updated with 1 new domain; vuln DB updated with 2 new entries. Rule count moves from 236 -> 239 static (250 -> 253 total).
+
+- Added `MAL-073` (high): **Mark H VS Code extension cryptojacking campaign (asdf11.xyz C2, XMRig miner, April 2026)** — Nine trojanized extensions published by "Mark H" accumulated 1M+ installs in 3 days. Affected: MarkH.discord-rich-presence-vs, MarkH.golang-compiler-vscode, MarkH.html-obfuscator-vscode, MarkH.python-obfuscator-vscode, MarkH.rust-compiler-vs, MarkH.claude-ai, MarkH.chatgpt-agent-vscode. C2: asdf11[.]xyz; miner: XMRig; persistence: OnedriveStartup scheduled task. Removed by Microsoft.
+- Added `PSV-045` (high): **CVE-2025-65716 Markdown Preview Enhanced RCE via crafted .md (shd101wyy.markdown-preview-enhanced, CVSS 8.8, unpatched)** — Crafted markdown triggers JavaScript in preview pane; enables file exfiltration. All versions ≤ 0.8.18, no patch.
+- Added `PSV-046` (critical): **CVE-2026-22252 LibreChat MCP STDIO unauthorized root execution (< 0.8.2-rc2, CWE-285)** — Authenticated user can execute arbitrary shell commands as root via single MCP STDIO API request. Fixed in 0.8.2-rc2.
+- IOC update: added `asdf11.xyz` to domain IOC DB.
+- Vuln DB update: `markdown-preview-enhanced` all (CVE-2025-65716); `librechat` <0.8.2-rc2 (CVE-2026-22252).
+
+Sources:
+- https://thehackernews.com/2026/04/malicious-vs-code-extensions-fuel-large-scale-cryptojacking.html
+- https://www.ox.security/blog/cve-2025-65716-markdown-preview-enhanced-vscode-vulnerability/
+- https://thehackernews.com/2026/04/anthropic-mcp-design-vulnerability.html
+
 ## 2026-04-26
 rulepack: 2026.04.26.2
 Three new detection rules covering novel malware delivery and AI-enabled social engineering threats identified April 26, 2026: TradingClaw / Needle Stealer (fake TradingView AI agent site with DLL hijacking and full browser takeover extension), AMOS Stealer delivered via Cursor AI agent ClickFix-style social engineering, and the ATHR AI vishing platform (automated voice phishing PaaS targeting crypto/tech users). IOC DB updated with 3 new domains; vuln DB updated with 2 new entries. Rule count moves from 247 -> 250.
