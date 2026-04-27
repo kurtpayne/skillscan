@@ -1,6 +1,562 @@
 {
+  "pip": {
+    "gptplus": {
+      "2.2.0": {
+        "id": "PYPI-GPTPLUS-2024-JARKASTEALER",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "claudeai-eng": {
+      "1.0.0": {
+        "id": "PYPI-CLAUDEAIENG-2024-JARKASTEALER",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "devtools-assistant": {
+      "0.1.0": {
+        "id": "PYPI-DEVTOOLS-ASSISTANT-2025-MCP",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "hermes-px": {
+      "0.1.0": {
+        "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "hermes-px is a malicious AI proxy that exfiltrates all prompts/responses to attacker Supabase endpoint (JFROG XRAY-961094)"
+      },
+      "0.1.1": {
+        "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
+        "severity": "critical",
+        "fixed": "REMOVED"
+      }
+    },
+    "marimo": {
+      "0.22.9": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.8": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.7": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.6": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.5": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.22.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.21.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.20.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.19.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "0.18.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      },
+      "<0.23.0": {
+        "id": "CVE-2026-39987",
+        "severity": "critical",
+        "fixed": "0.23.0"
+      }
+    },
+    "elementary-data": {
+      "0.23.3": {
+        "id": "PYPI-ELEMENTARY-DATA-2026-04",
+        "severity": "critical",
+        "fixed": "0.23.2",
+        "notes": "Compromised via GitHub Actions script injection 2026-04-24. Ships elementary.pth three-stage credential harvester. Exfiltrates to skyhanni.cloud."
+      }
+    }
+  },
+  "cursor": {
+    "<2.0": {
+      "id": "CVE-2026-31854",
+      "severity": "high",
+      "fixed": "2.0",
+      "summary": "Cursor IDE RCE via indirect prompt injection from malicious websites"
+    }
+  },
+  "nanobot": {
+    "<0.1.6": {
+      "id": "CVE-2026-33654",
+      "severity": "high",
+      "fixed": "0.1.6",
+      "summary": "nanobot indirect prompt injection via email channel"
+    }
+  },
+  "claude-code-action": {
+    "<1.0.78": {
+      "id": "TRA-2026-27",
+      "severity": "medium",
+      "fixed": "1.0.78",
+      "summary": "claude-code-action arbitrary code execution via malicious .mcp.json in PR branch"
+    }
+  },
+  "apollo-mcp": {
+    "<1.7.0": {
+      "id": "CVE-2026-35577",
+      "severity": "medium",
+      "fixed": "1.7.0",
+      "summary": "Apollo MCP Server DNS rebinding vulnerability on StreamableHTTP transport"
+    }
+  },
+  "go": {
+    "github.com/modelcontextprotocol/go-sdk": {
+      "v0.1.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v0.2.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v0.3.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.0.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.1.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.2.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      },
+      "v1.3.0": {
+        "id": "CVE-2026-34742",
+        "severity": "high",
+        "fixed": "v1.4.0",
+        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
+      }
+    }
+  },
+  "openclaw": {
+    "openclaw": {
+      "2026.1.1": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.2.1": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.1": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.5": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.10": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      },
+      "2026.3.11": {
+        "id": "CVE-2026-22172",
+        "severity": "high",
+        "fixed": "2026.3.12",
+        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+      }
+    },
+    "< 2026.3.22 (CVE-2026-35639)": {
+      "id": "CVE-2026-35639",
+      "severity": "high",
+      "fixed": "2026.3.22",
+      "description": "Privilege escalation via device.pair.approve scope validation bypass"
+    },
+    "< 2026.3.25 (CVE-2026-35625)": {
+      "id": "CVE-2026-35625",
+      "severity": "high",
+      "fixed": "2026.3.25",
+      "description": "Privilege escalation via silent local shared-auth reconnect"
+    },
+    "< 2026.3.25 (CVE-2026-34512)": {
+      "id": "CVE-2026-34512",
+      "severity": "high",
+      "fixed": "2026.3.25",
+      "description": "Improper access control in /sessions/:sessionKey/kill endpoint"
+    },
+    "< 2026.3.24 (CVE-2026-35621)": {
+      "id": "CVE-2026-35621",
+      "severity": "high",
+      "fixed": "2026.3.24",
+      "description": "Privilege escalation via chat.send to allowlist persistence"
+    },
+    "< 2026.4.2": {
+      "id": "CVE-2026-41295",
+      "severity": "high",
+      "fixed": "2026.4.2",
+      "notes": "Untrusted workspace channel shadow RCE. CWE-829, CVSS 7.8. Attacker clones workspace with malicious plugin claiming bundled channel id to achieve in-process code execution during channel setup."
+    }
+  },
+  "n8n-mcp": {
+    "CVE-2026-39974": {
+      "id": "CVE-2026-39974",
+      "severity": "high",
+      "fixed": "2.47.4",
+      "summary": "Server-Side Request Forgery (SSRF) in n8n-MCP multi-tenant HTTP mode (CVE-2026-39974). Authenticated attackers can inject arbitrary URLs via multi-tenant HTTP headers, enabling cloud metadata harvesting (AWS IMDS, GCP, Azure) and internal service discovery.",
+      "source": "https://nvd.nist.gov/vuln/detail/CVE-2026-39974",
+      "added": "2026-04-14",
+      "rule_id": "PSV-018"
+    }
+  },
+  "mcp-server-taskwarrior": {
+    "CVE-2026-5833": {
+      "id": "CVE-2026-5833",
+      "severity": "critical",
+      "fixed": "1.0.2",
+      "summary": "Command injection vulnerability in awwaiid mcp-server-taskwarrior up to version 1.0.1 enabling remote code execution through local exploitation.",
+      "source": "https://nvd.nist.gov/vuln/detail/CVE-2026-5833",
+      "added": "2026-04-14",
+      "rule_id": "PSV-019"
+    }
+  },
+  "nginx-ui": {
+    "nginx-ui": {
+      "2.0.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.1.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.2.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.3.0": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
+      },
+      "2.3.1": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.2": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.3": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.4": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      },
+      "2.3.5": {
+        "id": "CVE-2026-33032",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+      }
+    }
+  },
+  "apache-skywalking-mcp": {
+    "0.1.0": {
+      "id": "CVE-2026-34476",
+      "severity": "high",
+      "fixed": "0.2.0",
+      "summary": "Apache SkyWalking MCP 0.1.0 SSRF via SW-URL Header (CVE-2026-34476). Attackers can forge server-side requests to internal resources by manipulating the SW-URL header. Upgrade to 0.2.0 or later."
+    }
+  },
+  "mcp-neo4j": {
+    "0.3.0": {
+      "id": "CVE-2025-56406",
+      "severity": "high",
+      "fixed": "N/A",
+      "description": "Command injection via unauthenticated SSE service endpoint allows RCE"
+    }
+  },
+  "aap-mcp-server": {
+    "all": {
+      "id": "CVE-2026-6494",
+      "severity": "medium",
+      "fixed": "N/A",
+      "description": "Log injection via unsanitized toolsetroute parameter enables social engineering"
+    }
+  },
+  "mcp-server-kubernetes": {
+    "cve": "CVE-2026-39884",
+    "severity": "high",
+    "cvss": 8.3,
+    "cwe": "CWE-88",
+    "affected_versions": "<= 3.4.0",
+    "fixed_version": "3.5.0",
+    "description": "Argument injection in port_forward tool allows kubectl flag injection and RCE",
+    "references": [
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-39884",
+      "https://github.com/Flux159/mcp-server-kubernetes/security/advisories/GHSA-4xqg-gf5c-ghwq"
+    ],
+    "added": "2026-04-20"
+  },
+  "mcp-framework": {
+    "cve": "CVE-2026-39313",
+    "severity": "high",
+    "cvss": 7.5,
+    "cwe": "CWE-770",
+    "affected_versions": "<= 0.2.21",
+    "fixed_version": "unknown",
+    "description": "HTTP server DoS via unbounded POST body to /mcp endpoint causing memory exhaustion",
+    "references": [
+      "https://www.sentinelone.com/vulnerability-database/cve-2026-39313/",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-39313"
+    ],
+    "added": "2026-04-20"
+  },
+  "openclaw-webview": {
+    "cve": "CVE-2026-35643",
+    "severity": "high",
+    "cwe": "CWE-830",
+    "affected_versions": "< 2026.3.22",
+    "fixed_version": "2026.3.22",
+    "description": "RCE via unvalidated WebView JavascriptInterface in Android application components",
+    "references": [
+      "https://www.sentinelone.com/vulnerability-database/cve-2026-35643/",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-35643"
+    ],
+    "added": "2026-04-20"
+  },
+  "flowise": {
+    "cve": "CVE-2026-40933",
+    "severity": "critical",
+    "description": "Authenticated RCE via MCP adapter STDIO command injection",
+    "references": [
+      "https://github.com/advisories/GHSA-c9gw-hvqq-f33r",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-40933"
+    ],
+    "added": "2026-04-20"
+  },
+  "@bitwarden/cli": {
+    "2026.4.0": {
+      "id": "SUP-042",
+      "severity": "critical",
+      "fixed": "2026.5.0",
+      "summary": "Compromised release (TeamPCP Shai-Hulud worm). Preinstall hook bw_setup.js bootstraps Bun and runs bw1.js, a credential harvester exfiltrating to audit.checkmarx.cx/v1/telemetry. Self-propagating npm worm. Active 2026-04-22 17:57-19:30 UTC.",
+      "campaign": "Shai-Hulud",
+      "c2": "audit.checkmarx.cx"
+    }
+  },
+  "@azure-devops/mcp": {
+    "2.5.0": {
+      "id": "CVE-2026-32211",
+      "severity": "critical",
+      "cvss": 9.1,
+      "cwe": "CWE-306",
+      "fixed": null,
+      "summary": "Missing authentication for critical function. Unauthenticated network attacker can access Azure DevOps work items, repos, pipelines, and pull requests. No patch as of 2026-04-25.",
+      "disclosed": "2026-04-03"
+    }
+  },
+  "splunk-mcp-server": {
+    "1.0.0": {
+      "id": "CVE-2026-20205",
+      "severity": "medium",
+      "fixed": "1.0.3",
+      "summary": "Session and authorization tokens logged in cleartext (CWE-532)"
+    },
+    "1.0.1": {
+      "id": "CVE-2026-20205",
+      "severity": "medium",
+      "fixed": "1.0.3",
+      "summary": "Session and authorization tokens logged in cleartext (CWE-532)"
+    },
+    "1.0.2": {
+      "id": "CVE-2026-20205",
+      "severity": "medium",
+      "fixed": "1.0.3",
+      "summary": "Session and authorization tokens logged in cleartext (CWE-532)"
+    }
+  },
+  "mcp-ruby-sdk": {
+    "0.9.0": {
+      "id": "CVE-2026-33946",
+      "severity": "high",
+      "cvss": 7.5,
+      "cwe": "CWE-384",
+      "fixed": "0.9.2",
+      "ecosystem": "ruby",
+      "gem_name": "mcp",
+      "summary": "Session fixation in Streamable HTTP transport allows SSE stream hijacking via session ID replay (CWE-384/639)"
+    },
+    "0.9.1": {
+      "id": "CVE-2026-33946",
+      "severity": "high",
+      "cvss": 7.5,
+      "cwe": "CWE-384",
+      "fixed": "0.9.2",
+      "ecosystem": "ruby",
+      "gem_name": "mcp",
+      "summary": "Session fixation in Streamable HTTP transport allows SSE stream hijacking via session ID replay (CWE-384/639)"
+    }
+  },
+  "codebase-mcp": {
+    "cve": "CVE-2026-5023",
+    "severity": "medium",
+    "cvss": 4.0,
+    "cwe": "CWE-77",
+    "affected_versions": "all (rolling release, no patch as of 2026-03-30)",
+    "fixed_version": null,
+    "ecosystem": "npm",
+    "description": "OS command injection in getCodebase/getRemoteCodebase/saveCodebase via unsanitized shell metacharacters; local access required",
+    "added": "2026-04-25"
+  },
+  "@nor2/heim-mcp": {
+    "0.1.0": {
+      "id": "CVE-2026-5602",
+      "severity": "medium",
+      "cvss": 4.4,
+      "cwe": "CWE-77",
+      "fixed": "patched via commit c321d8af",
+      "summary": "OS command injection in registerTools (new_heim_application/deploy_heim_application) via unsanitized input; local access required"
+    },
+    "0.1.1": {
+      "id": "CVE-2026-5602",
+      "severity": "medium",
+      "cvss": 4.4,
+      "cwe": "CWE-77",
+      "fixed": "patched via commit c321d8af",
+      "summary": "OS command injection in registerTools (new_heim_application/deploy_heim_application) via unsanitized input; local access required"
+    },
+    "0.1.2": {
+      "id": "CVE-2026-5602",
+      "severity": "medium",
+      "cvss": 4.4,
+      "cwe": "CWE-77",
+      "fixed": "patched via commit c321d8af",
+      "summary": "OS command injection in registerTools (new_heim_application/deploy_heim_application) via unsanitized input; local access required"
+    },
+    "0.1.3": {
+      "id": "CVE-2026-5602",
+      "severity": "medium",
+      "cvss": 4.4,
+      "cwe": "CWE-77",
+      "fixed": "patched via commit c321d8af",
+      "summary": "OS command injection in registerTools (new_heim_application/deploy_heim_application) via unsanitized input; local access required"
+    }
+  },
+  "checkmarx-kics": {
+    "v2.1.21": {
+      "id": "DOCKER-CHECKMARX-KICS-2026-04",
+      "severity": "critical",
+      "fixed": "v2.1.20",
+      "notes": "Malicious Docker image pushed 2026-04-22 14:17-15:41 UTC. Downloads mcpAddon.js credential stealer. Exfiltrates to audit.checkmarx.cx (91.195.240.123/94.154.172.43)."
+    }
+  },
+  "azure-data-explorer-mcp-server": {
+    "0.1.0": {
+      "id": "CVE-2026-33980",
+      "severity": "high"
+    },
+    "0.1.1": {
+      "id": "CVE-2026-33980",
+      "severity": "high"
+    }
+  },
+  "windsurf": {
+    "1.9544.26": {
+      "id": "CVE-2026-30615",
+      "severity": "high"
+    }
+  },
+  "tradingclaw": {
+    "pro": {
+      "id": "MAL-071",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "Fake TradingView AI agent site (tradingclaw.pro) distributing Needle Stealer via DLL-hijacking loader (iviewers.dll). Process hollowing into RegAsm.exe. Modular Go infostealer with browser credential theft, clipboard hijacking, crypto wallet spoofing, and malicious browser extension (full browser takeover). Discovered by Malwarebytes, April 2026.",
+      "campaign": "TradingClaw",
+      "c2": "tradingclaw.pro"
+    }
+  },
+  "arkypc": {
+    "com": {
+      "id": "MAL-072",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "ClickFix-style fake Claude Code troubleshooting page at arkypc.com used to social-engineer Cursor AI agent into downloading and executing AMOS Stealer (Atomic macOS Stealer). Two-stage obfuscated AppleScript: stage 1 VM evasion, stage 2 full credential harvest + exfiltration to lakhov.com/contact. Persistent implant installed post-infection. Detected by Field Effect MDR, April 23 2026.",
+      "campaign": "AMOS-Cursor-ClickFix",
+      "c2": "lakhov.com"
+    }
+  },
   "_meta": {
-    "generated": "2026-04-07",
+    "generated": "2026-04-27",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -62,9 +618,7 @@
       "shelljs",
       "tough-cookie",
       "word-wrap"
-    ],
-    "updated": "2026-04-19",
-    "version": "2026.04.19.1"
+    ]
   },
   "python": {
     "bittensor-wallet": {
@@ -199,6 +753,13 @@
         "severity": "high",
         "fixed": "1.23.0",
         "summary": "MCP Python SDK DNS rebinding vulnerability - HTTP servers lack rebinding protection by default"
+      }
+    },
+    "anthropic": {
+      "0.86.0": {
+        "id": "GHSA-q5f5-3gjm-7mfm",
+        "severity": "medium",
+        "fixed": "0.87.0"
       }
     },
     "langchain": {
@@ -690,6 +1251,11 @@
         "id": "GHSA-489j-g2vx-39wf",
         "severity": "medium",
         "fixed": "4.51.0"
+      },
+      "5.0.0rc2": {
+        "id": "GHSA-69w3-r845-3855",
+        "severity": "medium",
+        "fixed": "5.0.0rc3"
       }
     },
     "torch": {
@@ -854,22 +1420,60 @@
     },
     "xinference": {
       "2.6.0": {
-        "id": "PYPI-XINFERENCE-2026-04",
+        "id": "PYPI-TEAMPCP-2026-0422",
         "severity": "critical",
-        "fixed": "2.5.0",
-        "summary": "Xinference PyPI supply chain compromise (TeamPCP credential stealer, April 22 2026)"
+        "fixed": "2.6.3",
+        "title": "Xinference PyPI supply chain compromise (TeamPCP-style credential harvester)",
+        "description": "xinference versions 2.6.0, 2.6.1, and 2.6.2 were compromised in a TeamPCP-style supply chain attack. The malicious payload in xinference/__init__.py runs on import, harvests SSH keys, cloud credentials, Kubernetes configs, .env files, and cryptocurrency wallets, then exfiltrates them to whereisitat.lucyatemysuperbox.space."
       },
       "2.6.1": {
-        "id": "PYPI-XINFERENCE-2026-04",
+        "id": "PYPI-TEAMPCP-2026-0422",
         "severity": "critical",
-        "fixed": "2.5.0",
-        "summary": "Xinference PyPI supply chain compromise (TeamPCP credential stealer, April 22 2026)"
+        "fixed": "2.6.3"
       },
       "2.6.2": {
-        "id": "PYPI-XINFERENCE-2026-04",
+        "id": "PYPI-TEAMPCP-2026-0422",
         "severity": "critical",
-        "fixed": "2.5.0",
-        "summary": "Xinference PyPI supply chain compromise (TeamPCP credential stealer, April 22 2026)"
+        "fixed": "2.6.3"
+      }
+    },
+    "kube-node-health": {
+      "all": {
+        "id": "PYPI-BACKDOOR-2026-0422",
+        "severity": "critical",
+        "fixed": null
+      }
+    },
+    "logutilkit": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-PYPI-2026-0408",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "Contagious Interview (DPRK/UNC1069) PyPI backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip."
+      }
+    },
+    "apachelicense": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-PYPI-2026-0408",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "Contagious Interview (DPRK/UNC1069) PyPI backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip."
+      }
+    },
+    "fluxhttp": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-PYPI-2026-0408",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "Contagious Interview (DPRK/UNC1069) PyPI backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip."
+      }
+    },
+    "license-utils-kit": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-PYPI-2026-0408",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "Contagious Interview (DPRK/UNC1069) PyPI backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip."
       }
     }
   },
@@ -1000,6 +1604,17 @@
         "id": "CVE-2023-26115",
         "severity": "high",
         "fixed": "1.2.4"
+      }
+    },
+    "axios": {
+      "1.14.1": {
+        "id": "MAL-2026-2307",
+        "severity": "medium"
+      },
+      "0.30.4": {
+        "id": "NPM-AXIOS-2026-03",
+        "severity": "critical",
+        "fixed": "0.29.0"
       }
     },
     "fastify": {
@@ -1135,18 +1750,6 @@
         "fixed": "0.1.16"
       }
     },
-    "axios": {
-      "1.14.1": {
-        "id": "NPM-AXIOS-2026-03",
-        "severity": "critical",
-        "fixed": "1.7.9"
-      },
-      "0.30.4": {
-        "id": "NPM-AXIOS-2026-03",
-        "severity": "critical",
-        "fixed": "0.29.0"
-      }
-    },
     "@anthropic-ai/mcp-inspector": {
       "0.14.0": {
         "id": "CVE-2025-49596",
@@ -1166,6 +1769,13 @@
         "title": "NomShub: cursor-tunnel sandbox escape and persistent remote access via shell builtins",
         "fixed": "3.0.0",
         "description": "Cursor AI code editor versions prior to 3.0 are vulnerable to NomShub, a critical vulnerability chain combining indirect prompt injection, shell builtin sandbox escape, and cursor-tunnel remote access hijacking. A malicious repository can silently hijack a developer machine. Disclosed April 3, 2026 by Straiker."
+      },
+      "1.7": {
+        "id": "CVE-2025-61591",
+        "severity": "high",
+        "fixed": "1.7.1-patch-2025.09.17",
+        "title": "Cursor AI MCP OAuth impersonation RCE (CVE-2025-61591)",
+        "description": "Cursor AI code editor versions 1.7 and below are vulnerable to OS command injection via MCP OAuth impersonation (CVE-2025-61591, CVSS 8.8, CWE-78). An attacker can impersonate a malicious MCP server and inject crafted commands during OAuth interaction, achieving RCE with full user privileges. Apply patch 2025.09.17-25b418f."
       }
     },
     "@iflow-mcp/watercrawl-watercrawl-mcp": {
@@ -1471,572 +2081,169 @@
         "summary": "Command injection via insufficient shellQuote \u2014 Windows cmd.exe metacharacter bypass"
       }
     },
-    "specstudio.code-wakatime-activity-tracker": {
-      "1.0.0": {
-        "id": "OPENVSX-GLASSWORM-WAVE7-2026-04",
-        "severity": "critical",
-        "fixed": "REMOVED",
-        "summary": "GlassWorm Wave 7 trojanized Open VSX extension (specstudio publisher) \u2014 installs floktokbok.autoimport second-stage"
-      }
-    },
-    "floktokbok.autoimport": {
-      "2.7.9": {
-        "id": "OPENVSX-GLASSWORM-WAVE7-2026-04",
-        "severity": "critical",
-        "fixed": "REMOVED",
-        "summary": "GlassWorm Wave 7 second-stage Open VSX extension (typosquat of steoates.autoimport)"
-      }
-    },
-    "mcp-server-kubernetes": {
+    "flowise-components": {
       "3.0.0": {
-        "id": "CVE-2026-39884",
+        "id": "CVE-2026-41264",
         "severity": "high",
-        "fixed": "3.5.0",
-        "summary": "kubectl argument injection RCE via port_forward string concatenation (CWE-88)"
-      },
-      "3.1.0": {
-        "id": "CVE-2026-39884",
-        "severity": "high",
-        "fixed": "3.5.0",
-        "summary": "kubectl argument injection RCE via port_forward string concatenation (CWE-88)"
-      },
-      "3.2.0": {
-        "id": "CVE-2026-39884",
-        "severity": "high",
-        "fixed": "3.5.0",
-        "summary": "kubectl argument injection RCE via port_forward string concatenation (CWE-88)"
-      },
-      "3.3.0": {
-        "id": "CVE-2026-39884",
-        "severity": "high",
-        "fixed": "3.5.0",
-        "summary": "kubectl argument injection RCE via port_forward string concatenation (CWE-88)"
-      },
-      "3.4.0": {
-        "id": "CVE-2026-39884",
-        "severity": "high",
-        "fixed": "3.5.0",
-        "summary": "kubectl argument injection RCE via port_forward string concatenation (CWE-88)"
-      }
-    },
-    "mcp-framework": {
-      "0.2.0": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.1": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.2": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.3": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.4": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.5": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.6": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.7": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.8": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.9": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.10": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.11": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.12": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.13": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.14": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.15": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.16": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.17": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.18": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.19": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.20": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      },
-      "0.2.21": {
-        "id": "CVE-2026-39313",
-        "severity": "high",
-        "fixed": "0.2.22",
-        "summary": "Unbounded readRequestBody allows DoS via large POST to /mcp (CWE-770)"
-      }
-    },
-    "flowise": {
-      "3.0.0": {
-        "id": "CVE-2026-40933",
-        "severity": "critical",
         "fixed": "3.1.0",
-        "summary": "Authenticated RCE via unsafe stdio command serialization in MCP adapter (GHSA-c9gw-hvqq-f33r)"
+        "summary": "CSV Agent prompt-injection RCE via Pyodide import-alias allowlist bypass (GHSA-3hjv-c53m-58jj)"
       },
       "3.0.1": {
-        "id": "CVE-2026-40933",
-        "severity": "critical",
+        "id": "CVE-2026-41264",
+        "severity": "high",
         "fixed": "3.1.0",
-        "summary": "Authenticated RCE via unsafe stdio command serialization in MCP adapter (GHSA-c9gw-hvqq-f33r)"
+        "summary": "CSV Agent prompt-injection RCE via Pyodide import-alias allowlist bypass (GHSA-3hjv-c53m-58jj)"
       },
       "3.0.2": {
-        "id": "CVE-2026-40933",
-        "severity": "critical",
+        "id": "CVE-2026-41264",
+        "severity": "high",
         "fixed": "3.1.0",
-        "summary": "Authenticated RCE via unsafe stdio command serialization in MCP adapter (GHSA-c9gw-hvqq-f33r)"
+        "summary": "CSV Agent prompt-injection RCE via Pyodide import-alias allowlist bypass (GHSA-3hjv-c53m-58jj)"
       },
       "3.0.3": {
-        "id": "CVE-2026-40933",
-        "severity": "critical",
+        "id": "CVE-2026-41264",
+        "severity": "high",
         "fixed": "3.1.0",
-        "summary": "Authenticated RCE via unsafe stdio command serialization in MCP adapter (GHSA-c9gw-hvqq-f33r)"
+        "summary": "CSV Agent prompt-injection RCE via Pyodide import-alias allowlist bypass (GHSA-3hjv-c53m-58jj)"
       },
       "3.0.4": {
-        "id": "CVE-2026-40933",
-        "severity": "critical",
+        "id": "CVE-2026-41264",
+        "severity": "high",
         "fixed": "3.1.0",
-        "summary": "Authenticated RCE via unsafe stdio command serialization in MCP adapter (GHSA-c9gw-hvqq-f33r)"
+        "summary": "CSV Agent prompt-injection RCE via Pyodide import-alias allowlist bypass (GHSA-3hjv-c53m-58jj)"
+      },
+      "3.0.5": {
+        "id": "CVE-2026-41264",
+        "severity": "high",
+        "fixed": "3.1.0",
+        "summary": "CSV Agent prompt-injection RCE via Pyodide import-alias allowlist bypass (GHSA-3hjv-c53m-58jj)"
       }
     },
-    "context.ai/chrome-extension": {
-      "omddlmnhcofjbnbflmjginpjjblphbgk": {
-        "id": "CHROME-CONTEXTAI-2026-04",
-        "severity": "high",
-        "fixed": "REMOVED",
-        "summary": "Context.ai Chrome extension (removed from Web Store 2026-03-27); pivot point for April 2026 Vercel supply-chain breach via OAuth Google Workspace access"
-      }
-    }
-  },
-  "pip": {
-    "gptplus": {
-      "2.2.0": {
-        "id": "PYPI-GPTPLUS-2024-JARKASTEALER",
+    "kube-health-tools": {
+      "all": {
+        "id": "NPM-BACKDOOR-2026-0422",
         "severity": "critical",
-        "fixed": "REMOVED"
+        "fixed": null
       }
     },
-    "claudeai-eng": {
-      "1.0.0": {
-        "id": "PYPI-CLAUDEAIENG-2024-JARKASTEALER",
+    "claud-code": {
+      "all": {
+        "id": "NPM-SANDWORM-MODE-2026-0220",
         "severity": "critical",
-        "fixed": "REMOVED"
+        "fixed": null
       }
     },
-    "devtools-assistant": {
-      "0.1.0": {
-        "id": "PYPI-DEVTOOLS-ASSISTANT-2025-MCP",
+    "cloude-code": {
+      "all": {
+        "id": "NPM-SANDWORM-MODE-2026-0220",
         "severity": "critical",
-        "fixed": "REMOVED"
+        "fixed": null
       }
     },
-    "hermes-px": {
-      "0.1.0": {
-        "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
+    "suport-color": {
+      "all": {
+        "id": "NPM-SANDWORM-MODE-2026-0220",
         "severity": "critical",
-        "fixed": "REMOVED",
-        "summary": "hermes-px is a malicious AI proxy that exfiltrates all prompts/responses to attacker Supabase endpoint (JFROG XRAY-961094)"
-      },
-      "0.1.1": {
-        "id": "PYPI-HERMES-PX-2026-JFROG-XRAY-961094",
-        "severity": "critical",
-        "fixed": "REMOVED"
+        "fixed": null
       }
     },
-    "marimo": {
-      "0.22.9": {
-        "id": "CVE-2026-39987",
+    "rimarf": {
+      "all": {
+        "id": "NPM-SANDWORM-MODE-2026-0220",
         "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.22.8": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.22.7": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.22.6": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.22.5": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.22.0": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.21.0": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.20.0": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.19.0": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "0.18.0": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      },
-      "<0.23.0": {
-        "id": "CVE-2026-39987",
-        "severity": "critical",
-        "fixed": "0.23.0"
-      }
-    }
-  },
-  "cursor": {
-    "<2.0": {
-      "id": "CVE-2026-31854",
-      "severity": "high",
-      "fixed": "2.0",
-      "summary": "Cursor IDE RCE via indirect prompt injection from malicious websites"
-    }
-  },
-  "nanobot": {
-    "<0.1.6": {
-      "id": "CVE-2026-33654",
-      "severity": "high",
-      "fixed": "0.1.6",
-      "summary": "nanobot indirect prompt injection via email channel"
-    }
-  },
-  "claude-code-action": {
-    "<1.0.78": {
-      "id": "TRA-2026-27",
-      "severity": "medium",
-      "fixed": "1.0.78",
-      "summary": "claude-code-action arbitrary code execution via malicious .mcp.json in PR branch"
-    }
-  },
-  "apollo-mcp": {
-    "<1.7.0": {
-      "id": "CVE-2026-35577",
-      "severity": "medium",
-      "fixed": "1.7.0",
-      "summary": "Apollo MCP Server DNS rebinding vulnerability on StreamableHTTP transport"
-    }
-  },
-  "go": {
-    "github.com/modelcontextprotocol/go-sdk": {
-      "v0.1.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      },
-      "v0.2.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      },
-      "v0.3.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      },
-      "v1.0.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      },
-      "v1.1.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      },
-      "v1.2.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      },
-      "v1.3.0": {
-        "id": "CVE-2026-34742",
-        "severity": "high",
-        "fixed": "v1.4.0",
-        "summary": "DNS rebinding vulnerability in MCP Go SDK HTTP servers (CVE-2026-34742, GHSA-xw59-hvm2-8pj6). HTTP-based MCP servers do not enable DNS rebinding protection by default when running on localhost without authentication."
-      }
-    }
-  },
-  "openclaw": {
-    "openclaw": {
-      "2026.1.1": {
-        "id": "CVE-2026-22172",
-        "severity": "high",
-        "fixed": "2026.3.12",
-        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
-      },
-      "2026.2.1": {
-        "id": "CVE-2026-22172",
-        "severity": "high",
-        "fixed": "2026.3.12",
-        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
-      },
-      "2026.3.1": {
-        "id": "CVE-2026-22172",
-        "severity": "high",
-        "fixed": "2026.3.12",
-        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
-      },
-      "2026.3.5": {
-        "id": "CVE-2026-22172",
-        "severity": "high",
-        "fixed": "2026.3.12",
-        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
-      },
-      "2026.3.10": {
-        "id": "CVE-2026-22172",
-        "severity": "high",
-        "fixed": "2026.3.12",
-        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
-      },
-      "2026.3.11": {
-        "id": "CVE-2026-22172",
-        "severity": "high",
-        "fixed": "2026.3.12",
-        "summary": "Authorization bypass in OpenClaw WebSocket connect path (CVE-2026-22172). Allows self-declaration of elevated scopes (operator.admin) without server-side binding, enabling admin-only gateway operations."
+        "fixed": null
       }
     },
-    "< 2026.3.22 (CVE-2026-35639)": {
-      "id": "CVE-2026-35639",
-      "severity": "high",
-      "fixed": "2026.3.22",
-      "description": "Privilege escalation via device.pair.approve scope validation bypass"
+    "yarsg": {
+      "all": {
+        "id": "NPM-SANDWORM-MODE-2026-0220",
+        "severity": "critical",
+        "fixed": null
+      }
     },
-    "< 2026.3.25 (CVE-2026-35625)": {
-      "id": "CVE-2026-35625",
-      "severity": "high",
-      "fixed": "2026.3.25",
-      "description": "Privilege escalation via silent local shared-auth reconnect"
+    "@mcpjam/inspector": {
+      "1.4.0": {
+        "id": "CVE-2026-23744",
+        "severity": "critical",
+        "fixed": "1.4.3",
+        "summary": "RCE via unauthenticated /api/mcp/connect endpoint (GHSA-232v-j27c-5pp6, CVSS 9.8, CWE-306). Binds to 0.0.0.0 by default."
+      },
+      "1.4.1": {
+        "id": "CVE-2026-23744",
+        "severity": "critical",
+        "fixed": "1.4.3",
+        "summary": "RCE via unauthenticated /api/mcp/connect endpoint (GHSA-232v-j27c-5pp6, CVSS 9.8, CWE-306). Binds to 0.0.0.0 by default."
+      },
+      "1.4.2": {
+        "id": "CVE-2026-23744",
+        "severity": "critical",
+        "fixed": "1.4.3",
+        "summary": "RCE via unauthenticated /api/mcp/connect endpoint (GHSA-232v-j27c-5pp6, CVSS 9.8, CWE-306). Binds to 0.0.0.0 by default."
+      }
     },
-    "< 2026.3.25 (CVE-2026-34512)": {
-      "id": "CVE-2026-34512",
-      "severity": "high",
-      "fixed": "2026.3.25",
-      "description": "Improper access control in /sessions/:sessionKey/kill endpoint"
-    },
-    "< 2026.3.24 (CVE-2026-35621)": {
-      "id": "CVE-2026-35621",
-      "severity": "high",
-      "fixed": "2026.3.24",
-      "description": "Privilege escalation via chat.send to allowlist persistence"
-    },
-    "< 2026.3.22 (CVE-2026-35643)": {
-      "id": "CVE-2026-35643",
-      "severity": "critical",
-      "fixed": "2026.3.22",
-      "summary": "WebView JavascriptInterface RCE via CanvasScreen.kt unvalidated origin \u2014 attacker can invoke window.openclaw.* methods from untrusted pages to execute code in the Android application context"
-    }
-  },
-  "n8n-mcp": {
-    "CVE-2026-39974": {
-      "id": "CVE-2026-39974",
-      "severity": "high",
-      "fixed": "2.47.4",
-      "summary": "Server-Side Request Forgery (SSRF) in n8n-MCP multi-tenant HTTP mode (CVE-2026-39974). Authenticated attackers can inject arbitrary URLs via multi-tenant HTTP headers, enabling cloud metadata harvesting (AWS IMDS, GCP, Azure) and internal service discovery.",
-      "source": "https://nvd.nist.gov/vuln/detail/CVE-2026-39974",
-      "added": "2026-04-14",
-      "rule_id": "PSV-018"
-    }
-  },
-  "mcp-server-taskwarrior": {
-    "CVE-2026-5833": {
-      "id": "CVE-2026-5833",
-      "severity": "critical",
-      "fixed": "1.0.2",
-      "summary": "Command injection vulnerability in awwaiid mcp-server-taskwarrior up to version 1.0.1 enabling remote code execution through local exploitation.",
-      "source": "https://nvd.nist.gov/vuln/detail/CVE-2026-5833",
-      "added": "2026-04-14",
-      "rule_id": "PSV-019"
-    }
-  },
-  "nginx-ui": {
-    "nginx-ui": {
-      "2.0.0": {
-        "id": "CVE-2026-33032",
+    "dev-log-core": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-NPM-2026-0408",
         "severity": "critical",
         "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
-      },
-      "2.1.0": {
-        "id": "CVE-2026-33032",
+        "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
+      }
+    },
+    "logger-base": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-NPM-2026-0408",
         "severity": "critical",
         "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
-      },
-      "2.2.0": {
-        "id": "CVE-2026-33032",
+        "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
+      }
+    },
+    "logkitx": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-NPM-2026-0408",
         "severity": "critical",
         "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
-      },
-      "2.3.0": {
-        "id": "CVE-2026-33032",
+        "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
+      }
+    },
+    "pino-debugger": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-NPM-2026-0408",
         "severity": "critical",
         "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). The /mcp_message HTTP endpoint only applies IP whitelisting (default: allow all) without authentication, allowing any network attacker to invoke all MCP tools including restarting nginx and modifying configuration files. Actively exploited. No official patch available."
-      },
-      "2.3.1": {
-        "id": "CVE-2026-33032",
+        "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
+      }
+    },
+    "debug-fmt": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-NPM-2026-0408",
         "severity": "critical",
         "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
-      },
-      "2.3.2": {
-        "id": "CVE-2026-33032",
+        "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
+      }
+    },
+    "debug-glitz": {
+      "all": {
+        "id": "CONTAGIOUS-INTERVIEW-NPM-2026-0408",
         "severity": "critical",
         "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
-      },
-      "2.3.3": {
-        "id": "CVE-2026-33032",
-        "severity": "critical",
-        "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
-      },
-      "2.3.4": {
-        "id": "CVE-2026-33032",
-        "severity": "critical",
-        "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
-      },
-      "2.3.5": {
-        "id": "CVE-2026-33032",
-        "severity": "critical",
-        "fixed": null,
-        "summary": "nginx-ui MCP /mcp_message endpoint authentication bypass (CVE-2026-33032, CVSS 9.8). Actively exploited. No official patch available."
+        "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
       }
     }
   },
-  "apache-skywalking-mcp": {
-    "0.1.0": {
-      "id": "CVE-2026-34476",
-      "severity": "high",
-      "fixed": "0.2.0",
-      "summary": "Apache SkyWalking MCP 0.1.0 SSRF via SW-URL Header (CVE-2026-34476). Attackers can forge server-side requests to internal resources by manipulating the SW-URL header. Upgrade to 0.2.0 or later."
-    }
-  },
-  "mcp-neo4j": {
-    "0.3.0": {
-      "id": "CVE-2025-56406",
-      "severity": "high",
-      "fixed": "N/A",
-      "description": "Command injection via unauthenticated SSE service endpoint allows RCE"
-    }
-  },
-  "aap-mcp-server": {
+  "markdown-preview-enhanced": {
     "all": {
-      "id": "CVE-2026-6494",
-      "severity": "medium",
-      "fixed": "N/A",
-      "description": "Log injection via unsanitized toolsetroute parameter enables social engineering"
+      "id": "CVE-2025-65716",
+      "severity": "high",
+      "fixed": null,
+      "summary": "CVE-2025-65716 (CVSS 8.8): RCE via crafted .md file in VS Code extension shd101wyy.markdown-preview-enhanced (all versions <= 0.8.18). JavaScript executes in preview pane, enabling file exfiltration. No patch available."
+    }
+  },
+  "librechat": {
+    "<0.8.2-rc2": {
+      "id": "CVE-2026-22252",
+      "severity": "critical",
+      "fixed": "0.8.2-rc2",
+      "summary": "CVE-2026-22252 (CWE-285): LibreChat MCP STDIO interface allows authenticated users to execute arbitrary shell commands as root container user. Single API request, no extra privileges required."
     }
   }
 }

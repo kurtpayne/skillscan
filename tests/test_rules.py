@@ -2782,3 +2782,58 @@ def test_sup038_context_ai_chrome_vercel_breach() -> None:
     # Negative: benign
     assert rule.pattern.search("vercel deployment guide for next.js") is None
     assert rule.pattern.search("chrome extension development documentation") is None
+
+
+def test_mal073_markh_vscode_cryptojacking() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "MAL-073"]
+    assert rules, "MAL-073 not found"
+    rule = rules[0]
+    # C2 domain anchor
+    assert rule.pattern.search("extension connects to asdf11.xyz for updates") is not None
+    # Publisher prefix anchors
+    assert rule.pattern.search("install MarkH.discord-rich-presence-vs for Discord") is not None
+    assert rule.pattern.search("MarkH.golang-compiler-vscode provides Go support") is not None
+    assert rule.pattern.search("MarkH.claude-ai extension installed") is not None
+    # Persistence + payload anchor
+    assert rule.pattern.search("OnedriveStartup task runs xmrig miner at boot") is not None
+    assert rule.pattern.search("xmrig crypto miner OnedriveStartup persistence") is not None
+    # Negative: benign
+    assert rule.pattern.search("discord rich presence for vscode open source") is None
+    assert rule.pattern.search("golang compiler documentation reference") is None
+
+
+def test_psv045_markdown_preview_enhanced_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-045"]
+    assert rules, "PSV-045 not found"
+    rule = rules[0]
+    # CVE anchor (strongest)
+    assert rule.pattern.search("CVE-2025-65716 allows RCE in markdown preview") is not None
+    # Extension ID + exploitation term
+    assert rule.pattern.search("shd101wyy.markdown-preview-enhanced javascript execution") is not None
+    assert rule.pattern.search("shd101wyy.markdown-preview-enhanced script inject rce") is not None
+    # Crafted markdown + extension combo
+    assert rule.pattern.search("crafted .md file shd101wyy execute javascript exfil") is not None
+    assert rule.pattern.search("malicious markdown shd101wyy execute workspace") is not None
+    # Negative: benign
+    assert rule.pattern.search("markdown preview enhanced documentation writing guide") is None
+    assert rule.pattern.search("shd101wyy extension render mermaid diagrams") is None
+
+
+def test_psv046_librechat_mcp_stdio_rce() -> None:
+    compiled = load_compiled_builtin_rulepack()
+    rules = [r for r in compiled.static_rules if r.id == "PSV-046"]
+    assert rules, "PSV-046 not found"
+    rule = rules[0]
+    # CVE anchor (strongest)
+    assert rule.pattern.search("CVE-2026-22252 librechat root command execution") is not None
+    # LibreChat + MCP STDIO + privilege escalation
+    assert rule.pattern.search("librechat mcp stdio rce as root") is not None
+    assert rule.pattern.search("librechat 0.8.0 mcp stdio arbitrary command exec") is not None
+    assert rule.pattern.search("librechat unauthorized command execution mcp container") is not None
+    # MCP STDIO root context + LibreChat
+    assert rule.pattern.search("mcp stdio root arbitrary command librechat") is not None
+    # Negative: benign
+    assert rule.pattern.search("librechat installation guide docker setup") is None
+    assert rule.pattern.search("mcp server stdio transport documentation") is None
