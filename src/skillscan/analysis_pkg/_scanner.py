@@ -327,6 +327,7 @@ def scan(
     clamav: bool = False,
     clamav_timeout_seconds: int = 30,
     ml_detect: bool = False,
+    ml_threshold: float = 0.0,
     rulepack_channel: str = "stable",
     graph_scan: bool = False,
     max_file_size_bytes: int = 1_048_576,  # 1 MB default — skip larger files with a warning
@@ -639,6 +640,20 @@ def scan(
 
             if ml_detect:
                 ml_findings = ml_prompt_injection_findings(path, analysis_text)
+                # --ml-threshold filters out PINJ-ML-001 detections whose
+                # logit_confidence falls below the threshold. Only applies
+                # when the model emitted a logit_confidence (older clients
+                # without logprobs return None and are NEVER filtered).
+                # Advisory findings (PINJ-ML-NO-MODEL, PINJ-ML-STALE,
+                # PINJ-ML-LARGE-FILE, PINJ-ML-UNAVAIL) are never filtered.
+                if ml_threshold > 0.0:
+                    ml_findings = [
+                        mf
+                        for mf in ml_findings
+                        if mf.id != "PINJ-ML-001"
+                        or mf.logit_confidence is None
+                        or mf.logit_confidence >= ml_threshold
+                    ]
                 _f.extend(ml_findings)
                 for mf in ml_findings:
                     if mf.id.startswith("ML-"):
@@ -1163,6 +1178,18 @@ def scan(
             has_sub_threshold_signal=_has_sub,
         )
 
+        # Cross-layer defense-in-depth hints (Item E). Computed after all
+        # layers have populated `findings`. Hints are advisory and do not
+        # affect the verdict or score.
+        from skillscan.triage_hints import compute_triage_hints
+
+        try:
+            triage_hints = compute_triage_hints(findings, iocs)
+        except Exception as exc:  # never break the scanner over a hint bug
+            logger = __import__("logging").getLogger("skillscan")
+            logger.warning("triage hint computation failed: %s", exc)
+            triage_hints = []
+
         return ScanReport(
             metadata=metadata,
             verdict=verdict,
@@ -1172,6 +1199,7 @@ def scan(
             dependency_findings=dependency_findings,
             capabilities=capabilities,
             triage_metadata=triage_metadata,
+            triage_hints=triage_hints,
         )
     finally:
         if prepared.cleanup_dir is not None:

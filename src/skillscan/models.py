@@ -20,6 +20,29 @@ class Severity(StrEnum):
     CRITICAL = "critical"
 
 
+class Indicator(BaseModel):
+    """A structured threat indicator extracted from a skill file.
+
+    Indicators give downstream tooling concrete entities to filter/route on:
+    "look at the curl to evil.example.com on line 12" instead of just
+    "look at line 12". Populated by the post-processor in `indicators.py`,
+    which runs after a Finding is emitted (no retraining required).
+
+    Fields:
+        type: indicator class — see _VALID_INDICATOR_TYPES below.
+        value: the extracted token (URL, domain, package name, CVE id, etc.)
+        line: 1-indexed line number in the skill file where the indicator
+            was found (None when extracted from `reasoning` or other non-
+            file-anchored text).
+        evidence: short surrounding excerpt for context (first 200 chars).
+    """
+
+    type: str
+    value: str
+    line: int | None = None
+    evidence: str | None = None
+
+
 class Finding(BaseModel):
     id: str = Field(serialization_alias="rule_id")
     category: str
@@ -48,6 +71,16 @@ class Finding(BaseModel):
     sub_classes: list[str] = Field(default_factory=list)
     # affected_lines: line numbers in the skill file the model flagged.
     affected_lines: list[int] = Field(default_factory=list)
+    # indicators: structured threat indicators extracted at inference time
+    # from the skill file + model reasoning. See `Indicator` above.
+    indicators: list[Indicator] = Field(default_factory=list)
+    # logit_confidence: continuous P(predicted_verdict) ∈ [0, 1] derived from
+    # softmax over the model's "benign" vs "malicious" token logits at the
+    # verdict position. Far better discrimination than the discrete
+    # `confidence` field (which buckets at 0.9/0.95/1.0). None when logprobs
+    # aren't available (e.g., older llama-cpp-python or model load without
+    # logits_all=True).
+    logit_confidence: float | None = Field(default=None, ge=0.0, le=1.0)
 
 
 class ConfidenceLabel(StrEnum):
@@ -171,6 +204,22 @@ class TriageMetadata(BaseModel):
     )
 
 
+class TriageHint(BaseModel):
+    """A defense-in-depth recommendation derived from cross-layer signal.
+
+    Produced by `skillscan.triage_hints` after all detection layers have
+    fired. Hints help users understand WHY a verdict came out as it did,
+    and what action could improve confidence (run skillscan-trace, refresh
+    IOC intel, manually review, etc.).
+    """
+
+    id: str  # H001, H002, H003, ...
+    title: str
+    detail: str
+    recommendation: str
+    related_finding_ids: list[str] = Field(default_factory=list)
+
+
 class ScanReport(BaseModel):
     metadata: ScanMetadata
     verdict: Verdict
@@ -180,6 +229,11 @@ class ScanReport(BaseModel):
     dependency_findings: list[DependencyFinding]
     capabilities: list[Capability]
     triage_metadata: TriageMetadata = Field(default_factory=TriageMetadata)
+    # Defense-in-depth recommendations (Item E). Cross-layer hints surfaced
+    # after all detection layers fire — e.g., "ML detected with low
+    # logit_confidence and no static-rule corroboration → run skillscan-trace
+    # for behavioral verification."
+    triage_hints: list[TriageHint] = Field(default_factory=list)
 
     def to_json(self) -> str:
         return self.model_dump_json(
