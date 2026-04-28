@@ -13,6 +13,9 @@ concurrency:
 
 jobs:
   validate-pattern-update:
+    # Skip doc-hygiene checks for bundled-snapshot syncs — those PRs carry the
+    # upstream rulepack verbatim and don't author new rules in this repo.
+    if: "!startsWith(github.head_ref, 'chore/sync-bundled-snapshot')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
