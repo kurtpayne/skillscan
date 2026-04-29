@@ -598,7 +598,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-04-28",
+    "generated": "2026-04-29",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2270,6 +2270,26 @@
         "fixed": null,
         "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
       }
+    }
+  },
+  "code-runner": {
+    "all": {
+      "id": "CVE-2025-65715",
+      "severity": "high",
+      "cvss": 7.8,
+      "cwe": "CWE-78",
+      "fixed": null,
+      "summary": "CVE-2025-65715 (CVSS 7.8): RCE via malicious code-runner.executorMap settings in VS Code extension formulahendry.code-runner (37M+ installs, all versions through v0.12.2). Extension passes executorMap to spawn() with shell:true unsanitized. No patch available."
+    }
+  },
+  "liveserver": {
+    "all": {
+      "id": "CVE-2025-65717",
+      "severity": "critical",
+      "cvss": 9.1,
+      "cwe": "CWE-942",
+      "fixed": null,
+      "summary": "CVE-2025-65717 (CVSS 9.1): local file exfiltration via CORS bypass in VS Code Live Server extension (ritwickdey.liveserver, 72M+ installs, v5.7.9 and below). Extension serves workspace files on localhost:5500 without CORS restrictions, allowing any visited webpage to crawl and exfiltrate files. No patch available."
     }
   }
 }
