@@ -597,8 +597,86 @@
       "summary": "MaxKB CSV formula injection in chat export (CWE-1236)"
     }
   },
+  "code-runner": {
+    "all": {
+      "id": "CVE-2025-65715",
+      "severity": "high",
+      "cvss": 7.8,
+      "cwe": "CWE-78",
+      "fixed": null,
+      "summary": "CVE-2025-65715 (CVSS 7.8): RCE via malicious code-runner.executorMap settings in VS Code extension formulahendry.code-runner (37M+ installs, all versions through v0.12.2). Extension passes executorMap to spawn() with shell:true unsanitized. No patch available."
+    }
+  },
+  "liveserver": {
+    "all": {
+      "id": "CVE-2025-65717",
+      "severity": "critical",
+      "cvss": 9.1,
+      "cwe": "CWE-942",
+      "fixed": null,
+      "summary": "CVE-2025-65717 (CVSS 9.1): local file exfiltration via CORS bypass in VS Code Live Server extension (ritwickdey.liveserver, 72M+ installs, v5.7.9 and below). Extension serves workspace files on localhost:5500 without CORS restrictions, allowing any visited webpage to crawl and exfiltrate files. No patch available."
+    }
+  },
+  "docsgpt": {
+    "all": {
+      "id": "CVE-2026-26015",
+      "severity": "critical",
+      "cvss": 9.8,
+      "cwe": "CWE-78",
+      "fixed": null,
+      "summary": "CVE-2026-26015 (CVSS 9.8): DocsGPT hidden STDIO MCP command injection \u2014 attacker changes transport_type to stdio and injects arbitrary OS commands via JSON payload"
+    }
+  },
+  "langchain": {
+    "all": {
+      "id": "CVE-2025-68664",
+      "severity": "critical",
+      "cvss": 9.3,
+      "cwe": "CWE-502",
+      "fixed": "1.2.22",
+      "summary": "CVE-2025-68664 (CVSS 9.3): LangChain unsafe deserialization leaks API keys and environment secrets"
+    },
+    "path_traversal": {
+      "id": "CVE-2026-34070",
+      "severity": "high",
+      "cvss": 7.5,
+      "cwe": "CWE-22",
+      "fixed": "1.2.22",
+      "summary": "CVE-2026-34070 (CVSS 7.5): LangChain path traversal enables arbitrary file access without validation"
+    }
+  },
+  "langgraph-checkpoint-sqlite": {
+    "3.0.0": {
+      "id": "CVE-2025-67644",
+      "severity": "high",
+      "cvss": 7.3,
+      "cwe": "CWE-89",
+      "fixed": "3.0.1",
+      "summary": "CVE-2025-67644 (CVSS 7.3): SQL injection in langgraph-checkpoint-sqlite < 3.0.1 exposes conversation histories"
+    }
+  },
+  "react": {
+    "19.0.0": {
+      "id": "CVE-2025-55182",
+      "severity": "critical",
+      "cvss": 10.0,
+      "cwe": "CWE-1321",
+      "fixed": "19.2.1",
+      "summary": "CVE-2025-55182 (CVSS 10.0): React2Shell \u2014 React Server Components Flight protocol pre-auth RCE via prototype pollution"
+    }
+  },
+  "upsonic": {
+    "0.71.6": {
+      "id": "CVE-2026-30625",
+      "severity": "critical",
+      "cvss": 9.8,
+      "cwe": "CWE-78",
+      "fixed": null,
+      "summary": "CVE-2026-30625 (CVSS 9.8): Upsonic MCP STDIO allowlist bypass via npx -c command injection"
+    }
+  },
   "_meta": {
-    "generated": "2026-04-29",
+    "generated": "2026-04-30",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2270,26 +2348,57 @@
         "fixed": null,
         "summary": "Contagious Interview (DPRK/UNC1069) npm backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip to hardcoded temp dir 410BB449A-72C6-4500-9765-ACD04JBV827V32V."
       }
+    },
+    "@openwebconcept/design-tokens": {
+      "1.0.1": {
+        "id": "CANISTERSPRAWL-OPENWEBCONCEPT-2026-04",
+        "severity": "critical",
+        "fixed": null,
+        "notes": "CanisterSprawl worm (TeamPCP-style, April 2026). Exfiltrates credentials to telemetry.api-monitor.com and ICP canister cjn37-uyaaa-aaaac-qgnva-cai.raw.icp0.io via postinstall hook. Versions 1.0.1-1.0.3 are malicious."
+      },
+      "1.0.2": {
+        "id": "CANISTERSPRAWL-OPENWEBCONCEPT-2026-04",
+        "severity": "critical",
+        "fixed": null,
+        "notes": "CanisterSprawl worm (TeamPCP-style, April 2026). See 1.0.1 entry."
+      },
+      "1.0.3": {
+        "id": "CANISTERSPRAWL-OPENWEBCONCEPT-2026-04",
+        "severity": "critical",
+        "fixed": null,
+        "notes": "CanisterSprawl worm (TeamPCP-style, April 2026). See 1.0.1 entry."
+      }
+    },
+    "@openwebconcept/theme-owc": {
+      "1.0.1": {
+        "id": "CANISTERSPRAWL-OPENWEBCONCEPT-2026-04",
+        "severity": "critical",
+        "fixed": null,
+        "notes": "CanisterSprawl worm (TeamPCP-style, April 2026). Exfiltrates credentials to telemetry.api-monitor.com and ICP canister cjn37-uyaaa-aaaac-qgnva-cai.raw.icp0.io via postinstall hook. Versions 1.0.1-1.0.3 are malicious."
+      },
+      "1.0.2": {
+        "id": "CANISTERSPRAWL-OPENWEBCONCEPT-2026-04",
+        "severity": "critical",
+        "fixed": null,
+        "notes": "CanisterSprawl worm (TeamPCP-style, April 2026). See 1.0.1 entry."
+      },
+      "1.0.3": {
+        "id": "CANISTERSPRAWL-OPENWEBCONCEPT-2026-04",
+        "severity": "critical",
+        "fixed": null,
+        "notes": "CanisterSprawl worm (TeamPCP-style, April 2026). See 1.0.1 entry."
+      }
     }
   },
-  "code-runner": {
-    "all": {
-      "id": "CVE-2025-65715",
+  "github-enterprise-server": {
+    "<3.19.4": {
+      "id": "CVE-2026-3854",
+      "ghsa": "GHSA-64fw-jx9p-5j24",
       "severity": "high",
-      "cvss": 7.8,
-      "cwe": "CWE-78",
-      "fixed": null,
-      "summary": "CVE-2025-65715 (CVSS 7.8): RCE via malicious code-runner.executorMap settings in VS Code extension formulahendry.code-runner (37M+ installs, all versions through v0.12.2). Extension passes executorMap to spawn() with shell:true unsanitized. No patch available."
-    }
-  },
-  "liveserver": {
-    "all": {
-      "id": "CVE-2025-65717",
-      "severity": "critical",
-      "cvss": 9.1,
-      "cwe": "CWE-942",
-      "fixed": null,
-      "summary": "CVE-2025-65717 (CVSS 9.1): local file exfiltration via CORS bypass in VS Code Live Server extension (ritwickdey.liveserver, 72M+ installs, v5.7.9 and below). Extension serves workspace files on localhost:5500 without CORS restrictions, allowing any visited webpage to crawl and exfiltrate files. No patch available."
+      "cvss": 8.7,
+      "cwe": "CWE-77",
+      "fixed": "3.14.25 / 3.15.20 / 3.16.16 / 3.17.13 / 3.18.8 / 3.19.4 / 3.20.0",
+      "summary": "CVE-2026-3854 (GHSA-64fw-jx9p-5j24, CVSS 8.7, CWE-77): GitHub Enterprise Server RCE via X-Stat push option injection. During git push, user-supplied push option values are embedded in the semicolon-delimited X-Stat internal service header without sanitization. Authenticated attacker with push access can inject rails_env, custom_hooks_dir, and repo_pre_receive_hooks fields to achieve RCE as the git service user in a single git push command. All GHES branches are affected up to their respective patch releases (3.14.25 / 3.15.20 / 3.16.16 / 3.17.13 / 3.18.8 / 3.19.4 / 3.20.0). GitHub.com was patched same-day March 4, 2026. Disclosed publicly April 28, 2026; 88% of self-hosted instances remain unpatched."
     }
   }
 }
