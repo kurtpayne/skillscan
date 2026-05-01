@@ -13868,6 +13868,9 @@ static_rules:
     - stdio
     - command-injection
     - docsgpt
+    techniques:
+    - id: PSV-054
+      name: Passive surveillance vulnerability
     applies_to:
       contexts:
       - source
@@ -13911,6 +13914,9 @@ static_rules:
     - path-traversal
     - deserialization
     - sql-injection
+    techniques:
+    - id: PSV-055
+      name: Passive surveillance vulnerability
     applies_to:
       contexts:
       - source
@@ -14020,6 +14026,9 @@ static_rules:
     - react-server-components
     - prototype-pollution
     - pre-auth-rce
+    techniques:
+    - id: PSV-056
+      name: Passive surveillance vulnerability
     applies_to:
       contexts:
       - source
@@ -14060,6 +14069,9 @@ static_rules:
     - stdio
     - allowlist-bypass
     - npx
+    techniques:
+    - id: SUP-001
+      name: Supply Chain Compromise via Package Manager
     applies_to:
       contexts:
       - source
