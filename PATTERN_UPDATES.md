@@ -1,3 +1,17 @@
+## 2026-05-03
+rulepack: 2026.05.03.2
+Three new detection rules covering the Mini Shai-Hulud cross-ecosystem supply chain attack and the PyTorch Lightning compromise. IOC DB updated with api.github.com; vuln DB updated with 6 new entries. Rule count moves from 266 -> 269.
+- Added `MAL-078` (critical): **Mini Shai-Hulud Bun Runtime Loader** — Detection for the setup.mjs loader used by the Mini Shai-Hulud worm to download and execute obfuscated payloads via the Bun runtime, evading standard Node.js monitoring.
+- Added `MAL-079` (critical): **Mini Shai-Hulud Persistence Hook** — Detection for malicious IDE persistence hooks in .vscode/tasks.json and .claude/settings.json that re-infect systems when a project folder is opened.
+- Added `SUP-050` (critical): **Compromised PyTorch Lightning Version** — Detection for PyTorch Lightning versions 2.6.2 and 2.6.3 which were compromised to steal cloud credentials, crypto wallets, and VPN configs.
+- IOC update: added `api.github.com` to domain IOC DB (used for C2 and exfiltration via dead-drop repos).
+- Vuln DB update: added `lightning` (PYPI-LIGHTNING-2026-MINI-SHAI-HULUD, critical, fixed 2.6.4), `mbt`, `@cap-js/sqlite`, `@cap-js/postgres`, `@cap-js/db-service` (NPM-SAP-2026-MINI-SHAI-HULUD, critical).
+- Corpus update: added 3 organic eval holdout files to skillscan-corpus (MAL-078, MAL-079, SUP-050).
+Sources:
+- StepSecurity (Mini Shai-Hulud): https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
+- The Hacker News (PyTorch Lightning): https://thehackernews.com/2026/04/pytorch-lightning-compromised-in-pypi.html
+- Sonatype (PyTorch Lightning): https://www.sonatype.com/blog/malicious-pytorch-lightning-packages-found-on-pypi
+
 ## 2026-05-01
 rulepack: 2026.05.01.2
 Two new detection rules covering the Mini Shai-Hulud SAP CAP npm supply chain attack (April 29, 2026) and the actively exploited LiteLLM pre-authentication SQL injection CVE-2026-42208 (April 26, 2026). IOC DB updated with 2 new attacker IPs and 1 URL; vuln DB updated with 5 new entries. Rule count moves from 253 -> 255.
