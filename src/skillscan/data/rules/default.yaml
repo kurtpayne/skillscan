@@ -13093,6 +13093,9 @@ static_rules:
   metadata:
     version: 1.0.0
     status: active
+    techniques:
+    - id: PSV-054
+      name: Passive surveillance vulnerability
     references:
     - https://nvd.nist.gov/vuln/detail/CVE-2026-26015
     - https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/
@@ -13125,6 +13128,9 @@ static_rules:
   metadata:
     version: 1.0.0
     status: active
+    techniques:
+    - id: PSV-055
+      name: Passive surveillance vulnerability
     references:
     - https://nvd.nist.gov/vuln/detail/CVE-2026-34070
     - https://nvd.nist.gov/vuln/detail/CVE-2025-68664
@@ -13235,6 +13241,9 @@ static_rules:
   metadata:
     version: 1.0.0
     status: active
+    techniques:
+    - id: PSV-056
+      name: Passive surveillance vulnerability
     references:
     - https://nvd.nist.gov/vuln/detail/CVE-2025-55182
     - https://www.trendmicro.com/en_us/research/25/l/CVE-2025-55182-analysis-poc-itw.html
@@ -13269,6 +13278,9 @@ static_rules:
   metadata:
     version: 1.0.0
     status: active
+    techniques:
+    - id: SUP-047
+      name: Supply Chain Compromise via Package Manager
     references:
     - https://nvd.nist.gov/vuln/detail/CVE-2026-30625
     - https://www.netzilo.com/advisories/mcp-supply-chain-rce-vulnerabilities.html
