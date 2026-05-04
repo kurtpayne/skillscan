@@ -1,3 +1,14 @@
+## 2026-05-04
+rulepack: 2026.05.04.2
+One new detection rule covering the critical GitHub Copilot RCE via Prompt Injection (CVE-2025-53773). Rule count moves from 284 -> 288.
+- Added `PINJ-026` (critical): **GitHub Copilot RCE via Prompt Injection (CVE-2025-53773)** — Detection for the critical vulnerability in GitHub Copilot and Visual Studio that allows wormable remote code execution (RCE) via prompt injection. Attackers can craft malicious pull request descriptions or comments that, when processed by Copilot, execute arbitrary commands on the developer's machine.
+- Corpus update: added 1 organic eval holdout file to skillscan-corpus (PINJ-026).
+- Website sync: updated Rules.tsx, Home.tsx, TerminalScan.tsx, and llms.txt with new rule counts and version.
+Sources:
+- NVD (CVE-2025-53773): https://nvd.nist.gov/vuln/detail/CVE-2025-53773
+- Embrace The Red (Copilot RCE): https://embracethered.com/blog/posts/2025/github-copilot-remote-code-execution-via-prompt-injection/
+- Cycode (AI Security Vulnerabilities 2026): https://cycode.com/blog/ai-security-vulnerabilities/
+
 ## 2026-05-03
 rulepack: 2026.05.03.2
 Three new detection rules covering the Mini Shai-Hulud cross-ecosystem supply chain attack and the PyTorch Lightning compromise. IOC DB updated with api.github.com; vuln DB updated with 6 new entries. Rule count moves from 266 -> 269.
