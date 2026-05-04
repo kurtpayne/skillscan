@@ -98,6 +98,20 @@
         "fixed": "0.23.2",
         "notes": "Compromised via GitHub Actions script injection 2026-04-24. Ships elementary.pth three-stage credential harvester. Exfiltrates to skyhanni.cloud."
       }
+    },
+    "lightning": {
+      "2.6.2": {
+        "id": "PYPI-LIGHTNING-2026-MINI-SHAI-HULUD",
+        "severity": "critical",
+        "fixed": "2.6.4",
+        "summary": "PyTorch Lightning compromised in supply chain attack (Mini Shai-Hulud). Steals cloud credentials, crypto wallets, and VPN configs."
+      },
+      "2.6.3": {
+        "id": "PYPI-LIGHTNING-2026-MINI-SHAI-HULUD",
+        "severity": "critical",
+        "fixed": "2.6.4",
+        "summary": "PyTorch Lightning compromised in supply chain attack (Mini Shai-Hulud). Steals cloud credentials, crypto wallets, and VPN configs."
+      }
     }
   },
   "cursor": {
@@ -826,7 +840,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-05-03",
+    "generated": "2026-05-04",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2550,6 +2564,50 @@
         "affected_versions": ">=1.10.0, <=1.25.3",
         "fixed": "1.26.0",
         "summary": "CVE-2026-25536 (GHSA-345p-7cg4-v4c7, CVSS 7.1 HIGH, CWE-362): Cross-client data leak via shared McpServer/StreamableHTTPServerTransport instance reuse. In stateless StreamableHTTP deployments, JSON-RPC message ID collisions route responses to wrong clients, leaking tool results, authentication context, and resource data across session boundaries. Upgrade to 1.26.0 and create fresh McpServer and transport instances per request or session."
+      }
+    },
+    "mbt": {
+      "latest": {
+        "id": "NPM-SAP-2026-MINI-SHAI-HULUD",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "SAP ecosystem package compromised via Mini Shai-Hulud worm. Executes obfuscated Bun runtime payload for credential theft."
+      }
+    },
+    "@cap-js/sqlite": {
+      "latest": {
+        "id": "NPM-SAP-2026-MINI-SHAI-HULUD",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "SAP ecosystem package compromised via Mini Shai-Hulud worm. Executes obfuscated Bun runtime payload for credential theft."
+      }
+    },
+    "@cap-js/postgres": {
+      "latest": {
+        "id": "NPM-SAP-2026-MINI-SHAI-HULUD",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "SAP ecosystem package compromised via Mini Shai-Hulud worm. Executes obfuscated Bun runtime payload for credential theft."
+      }
+    },
+    "@cap-js/db-service": {
+      "latest": {
+        "id": "NPM-SAP-2026-MINI-SHAI-HULUD",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "SAP ecosystem package compromised via Mini Shai-Hulud worm. Executes obfuscated Bun runtime payload for credential theft."
+      }
+    },
+    "intercom-client": {
+      "7.0.4": {
+        "id": "PYPI-BACKDOOR-2026-0430",
+        "severity": "critical",
+        "fixed": "7.0.6"
+      },
+      "7.0.5": {
+        "id": "PYPI-BACKDOOR-2026-0430",
+        "severity": "critical",
+        "fixed": "7.0.6"
       }
     }
   }
