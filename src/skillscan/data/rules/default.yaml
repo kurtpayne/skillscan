@@ -1,4 +1,4 @@
-version: 2026.05.03.1
+version: 2026.05.04.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -14028,26 +14028,28 @@ static_rules:
   category: supply_chain
   severity: critical
   confidence: 0.95
-  title: intercom-client@7.0.4 npm supply chain compromise (Shai-Hulud worm, April 2026)
-  pattern: (?i)(?:intercom-client[^\n]{0,80}(?:7\.0\.4|preinstall|setup\.mjs)|api\.github\.com[^\n]{0,200}(?:intercom-client|shai-hulud|harvest|credentials)|setup\.mjs[^\n]{0,200}(?:intercom-client|shai-hulud))
-  mitigation: The intercom-client@7.0.4 npm package was compromised in a supply chain attack (part of the Shai-Hulud worm campaign) on April 30, 2026. The malicious version introduces a preinstall hook (node setup.mjs) that executes an obfuscated payload to harvest GitHub, npm, and multi-cloud credentials. The payload specifically detects CI/CD environments (GitHub Actions, Vercel) and exfiltrates stolen secrets by authenticating to api.github.com, creating a private repository under the victim's account, and committing the harvested credentials there. This technique bypasses standard egress controls since the traffic goes to a trusted domain (GitHub). If this package was installed, immediately rotate all GitHub tokens, npm tokens, and cloud credentials.
+  title: intercom-client@7.0.4/7.0.5 npm supply chain compromise (Mini Shai-Hulud, TeamPCP, April 2026)
+  pattern: (?i)(?:intercom-client[^\n]{0,80}(?:7\.0\.[45]|preinstall|setup\.mjs)|api\.github\.com[^\n]{0,200}(?:intercom-client|shai-hulud|harvest|credentials)|setup\.mjs[^\n]{0,200}(?:intercom-client|shai-hulud))
+  mitigation: intercom-client@7.0.4 and 7.0.5 npm packages were compromised in the Mini Shai-Hulud / TeamPCP supply chain attack on April 30, 2026 (7.0.4 per Socket; 7.0.5 additionally confirmed by Wiz). The malicious versions introduce a preinstall hook (node setup.mjs) that executes an obfuscated payload to harvest GitHub, npm, and multi-cloud credentials. The payload specifically detects CI/CD environments (GitHub Actions, Vercel) and exfiltrates stolen secrets by authenticating to api.github.com, creating a private repository under the victim's account, and committing the harvested credentials there. This technique bypasses standard egress controls since the traffic goes to a trusted domain (GitHub). If this package was installed, immediately rotate all GitHub tokens, npm tokens, and cloud credentials.
   metadata:
     version: 1.0.0
     status: active
     author: skillscan
     created: '2026-05-02'
-    updated: '2026-05-02'
+    updated: '2026-05-04'
     tags:
     - supply_chain
     - sup
     - npm
     - intercom-client
     - shai-hulud
+    - mini-shai-hulud
+    - teampcp
     - credential-stealer
-    last_modified: '2026-05-02'
+    last_modified: '2026-05-04'
     techniques:
     - id: SUP-039
-      name: Pattern for SUP-039
+      name: Supply Chain Compromise via Package Manager
     applies_to:
       contexts:
       - source
@@ -14055,12 +14057,14 @@ static_rules:
       - workflow
     lifecycle:
       introduced: '2026-05-02'
-      last_modified: '2026-05-02'
+      last_modified: '2026-05-04'
     quality:
       precision_estimate: 0.95
       benchmark_set: core-static-v1
     references:
     - https://www.upwind.io/feed/intercom-client-7-0-4-supply-chain-attack
+    - https://socket.dev/blog/intercom-s-npm-package-compromised-in-supply-chain-attack
+    - https://www.wiz.io/blog/mini-shai-hulud-supply-chain-sap-npm
   test_input: '---
 
     name: test-skill
@@ -14256,6 +14260,195 @@ static_rules:
     JSON-RPC ID collisions. Upgrade to 1.26.0 to resolve.
 
     '
+  test_expect: fires
+- id: MAL-078
+  category: malware_pattern
+  severity: critical
+  confidence: 0.98
+  title: Mini Shai-Hulud Bun Runtime Loader (bun-v1.3.13, TeamPCP)
+  pattern: 'github\.com/oven-sh/bun/releases/download/bun-v1\.3\.13/'
+  mitigation: Malicious loader pattern for the Mini Shai-Hulud worm (TeamPCP). Compromised packages (lightning 2.6.2/2.6.3, SAP CAP npm @cap-js/* 2.2.2, intercom-client 7.0.4/7.0.5) download the Bun JavaScript runtime at exactly bun-v1.3.13 from GitHub to execute an obfuscated credential-harvesting payload. Uninstall affected packages, upgrade to clean versions, and rotate all API keys, cloud credentials, SSH keys, and GitHub tokens. Audit git history for unexpected commits with author "claude <claude@users.noreply.github.com>".
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-03'
+    updated: '2026-05-03'
+    tags:
+    - malware_pattern
+    - mal
+    - mini-shai-hulud
+    - teampcp
+    - bun-runtime
+    - credential-stealer
+    last_modified: '2026-05-03'
+    techniques:
+    - id: MAL-078
+      name: Malware or malicious behavior
+    applies_to:
+      contexts:
+      - source
+      - dependency
+      - workflow
+    lifecycle:
+      introduced: '2026-05-03'
+      last_modified: '2026-05-03'
+    quality:
+      precision_estimate: 0.98
+      benchmark_set: core-static-v1
+    references:
+    - https://socket.dev/blog/lightning-pypi-package-compromised
+    - https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
+    - https://thehackernews.com/2026/04/pytorch-lightning-compromised-in-pypi.html
+  test_input: |
+    ---
+    name: malicious-setup
+    ---
+    ## Instructions
+    async function setup() {
+      const url = "https://github.com/oven-sh/bun/releases/download/bun-v1.3.13/bun-linux-x64.zip";
+    }
+  test_expect: fires
+- id: MAL-079
+  category: malware_pattern
+  severity: critical
+  confidence: 0.95
+  title: Mini Shai-Hulud IDE persistence hook via folderOpen or SessionStart (TeamPCP)
+  pattern: '("runOn":\s*"folderOpen".*"node\s+\.claude/setup\.mjs"|SessionStart.*"node\s+\.vscode/setup\.mjs")'
+  mitigation: The Mini Shai-Hulud worm (TeamPCP) propagates by committing malicious IDE configuration files into every accessible repository. On VS Code it commits .vscode/tasks.json with "runOn":"folderOpen" that silently executes node .claude/setup.mjs when the repo is opened. On Claude Code it commits .claude/settings.json with a SessionStart hook that executes node .vscode/setup.mjs. Anyone opening the infected repository re-executes the credential-harvesting payload without installing any package. Audit repositories for unexpected .claude/settings.json and .vscode/tasks.json files committed by "claude <claude@users.noreply.github.com>".
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-03'
+    updated: '2026-05-03'
+    tags:
+    - malware_pattern
+    - mal
+    - mini-shai-hulud
+    - teampcp
+    - persistence
+    - ide-hook
+    last_modified: '2026-05-03'
+    techniques:
+    - id: MAL-079
+      name: Malware or malicious behavior
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-05-03'
+      last_modified: '2026-05-03'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+    - https://www.stepsecurity.io/blog/a-mini-shai-hulud-has-appeared
+    - https://socket.dev/blog/lightning-pypi-package-compromised
+    - https://onapsis.com/blog/sap-cap-mini-shai-hulud-supply-chain-attack/
+  test_input: '{"runOn": "folderOpen", "command": "node .claude/setup.mjs"}'
+  test_expect: fires
+- id: SUP-050
+  category: supply_chain
+  severity: critical
+  confidence: 0.90
+  title: Compromised PyTorch Lightning version reference (lightning==2.6.2 or 2.6.3, Mini Shai-Hulud)
+  pattern: 'lightning[=<>]{1,2}2\.6\.[23]'
+  mitigation: PyTorch Lightning versions 2.6.2 and 2.6.3 were compromised in a supply chain attack by the Mini Shai-Hulud / TeamPCP threat actor on April 30, 2026. These specific version constraints in pip requirement files detect projects pinned to the malicious releases. Upgrade to lightning 2.6.4 or later, rotate all API keys and cloud credentials if either version was installed, and check for the C2 domain zero.masscan.cloud in network logs.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-03'
+    updated: '2026-05-03'
+    tags:
+    - supply_chain
+    - sup
+    - pypi
+    - pytorch-lightning
+    - mini-shai-hulud
+    - teampcp
+    last_modified: '2026-05-03'
+    techniques:
+    - id: SUP-050
+      name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-03'
+      last_modified: '2026-05-03'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://socket.dev/blog/lightning-pypi-package-compromised
+    - https://thehackernews.com/2026/04/pytorch-lightning-compromised-in-pypi.html
+    - https://www.aikido.dev/blog/pytorch-lightning-pypi-compromise-mini-shai-hulud
+  test_input: |
+    dependencies:
+      lightning==2.6.2
+  test_expect: fires
+- id: PSV-064
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.9
+  title: create-mcp-server-stdio MCP tool command injection via exec() (CVE-2025-54994, GHSA-3ch2-jxxc-v4xf, @akoskm/create-mcp-server-stdio < 0.0.13, CVSS 9.3)
+  pattern: '(?i)(?:CVE-2025-54994|GHSA-3ch2-jxxc-v4xf|@akoskm/create-mcp-server-stdio[^\n]{0,80}(?:0\.0\.(?:[0-9]|1[0-2])\b|which[_\s-]app[_\s-]on[_\s-]port|exec[^\n]{0,40}(?:lsof|port|inject))|which[_-]app[_-]on[_-]port[^\n]{0,100}(?:exec\s*\(|child_process|lsof\s+-i))'
+  mitigation: CVE-2025-54994 (GHSA-3ch2-jxxc-v4xf, CVSS 9.3 Critical, CWE-77/CWE-78) is a command injection vulnerability in @akoskm/create-mcp-server-stdio versions < 0.0.13. The MCP server's built-in which-app-on-port tool concatenates the user-supplied port number into exec('lsof -i :<port>') without sanitization. An attacker who can influence the port argument — via prompt injection targeting an AI agent using this MCP server — can inject shell metacharacters to execute arbitrary OS commands. Disclosed by Liran Tal; highlighted in the OX Security MCP supply chain advisory (April 2026). Upgrade to @akoskm/create-mcp-server-stdio 0.0.13 or later, which replaces exec() with execFile() and argv arrays.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-04'
+    updated: '2026-05-04'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - command-injection
+    - create-mcp-server-stdio
+    - cve-2025-54994
+    - akoskm
+    last_modified: '2026-05-04'
+    techniques:
+    - id: PSV-064
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-04'
+      last_modified: '2026-05-04'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/advisories/GHSA-3ch2-jxxc-v4xf
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-54994
+    - https://www.nodejs-security.com/blog/create-mcp-server-stdio-command-injection-vulnerability
+    - https://www.ox.security/blog/mcp-supply-chain-advisory-rce-vulnerabilities-across-the-ai-ecosystem/
+  test_input: |
+    ---
+    name: port-inspector
+    description: MCP server for inspecting processes on ports
+    ---
+    # Port Inspector
+
+    Uses @akoskm/create-mcp-server-stdio 0.0.12 to expose the which-app-on-port
+    tool for querying which process is listening on a given port.
+
+    ## Dependencies
+
+    "@akoskm/create-mcp-server-stdio": "0.0.12"
+
+    ## Security Advisory
+
+    CVE-2025-54994 (GHSA-3ch2-jxxc-v4xf, CVSS 9.3): the which-app-on-port tool
+    passes user-supplied port numbers to exec() unsanitized. Upgrade to 0.0.13.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
