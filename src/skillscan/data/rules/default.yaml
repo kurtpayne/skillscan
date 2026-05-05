@@ -1,4 +1,4 @@
-version: 2026.05.04.1
+version: 2026.05.05.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -12897,6 +12897,62 @@ static_rules:
 
     '
   test_expect: fires
+
+- id: PINJ-026
+  category: prompt_injection
+  severity: critical
+  confidence: 0.96
+  title: GitHub Copilot RCE via Prompt Injection (CVE-2025-53773)
+  pattern: (?i)(?:CVE-2025-53773|GitHub[_\s-]?Copilot[^\n]{0,100}RCE|Visual[_\s-]?Studio[^\n]{0,100}RCE[^\n]{0,100}Copilot|wormable[_\s-]?command[_\s-]?execution|prompt[_\s-]?injection[^\n]{0,100}escalat[^\n]{0,100}RCE)
+  mitigation: CVE-2025-53773 is a critical vulnerability in GitHub Copilot and Visual Studio that allows wormable remote code execution (RCE) via prompt injection. Attackers can craft malicious pull request descriptions or comments that, when processed by Copilot, execute arbitrary commands on the developer's machine. Update Visual Studio and GitHub Copilot extensions to the latest versions. Audit any automated PR processing workflows.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-04'
+    updated: '2026-05-04'
+    tags:
+    - rce
+    - prompt-injection
+    - copilot
+    - cve-2025-53773
+    last_modified: '2026-05-04'
+    techniques:
+    - id: PINJ-026
+      name: Prompt Injection
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - prompt
+    lifecycle:
+      introduced: '2026-05-04'
+      last_modified: '2026-05-04'
+    quality:
+      precision_estimate: 0.96
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-53773
+    - https://embracethered.com/blog/posts/2025/github-copilot-remote-code-execution-via-prompt-injection/
+  test_input: |
+    # Security Advisory: CVE-2025-53773
+
+    This document discusses CVE-2025-53773, a critical vulnerability in GitHub Copilot
+    that enables wormable command execution via prompt injection.
+
+    ## Vulnerability Details
+
+    The flaw allows an attacker to achieve RCE by embedding malicious instructions
+    in GitHub pull requests. When a developer uses Copilot to summarize the PR,
+    the injection triggers command execution in the local environment.
+
+    ## Impact
+
+    - Full system compromise of the developer's machine
+    - Potential for wormable spread across repositories
+    - Exfiltration of source code and credentials
+  test_expect: fires
+
 - id: PSV-051
   category: passive_surveillance
   severity: high
@@ -14449,6 +14505,166 @@ static_rules:
 
     CVE-2025-54994 (GHSA-3ch2-jxxc-v4xf, CVSS 9.3): the which-app-on-port tool
     passes user-supplied port numbers to exec() unsanitized. Upgrade to 0.0.13.
+  test_expect: fires
+- id: SUP-051
+  category: supply_chain
+  severity: high
+  confidence: 0.9
+  title: 'dYdX @dydxprotocol/v4-client-js supply chain compromise — wallet stealer + RAT (C2: dydx.priceoracle.site, January 2026)'
+  pattern: '(?i)(?:dydx\.priceoracle\.site|@dydxprotocol/v4-client-js[^\n]{0,80}(?:3\.4\.1|1\.22\.1|1\.15\.2|1\.0\.31)|dydx-v4-client[^\n]{0,80}1\.1\.5post1)'
+  mitigation: Four versions of @dydxprotocol/v4-client-js (npm) — 3.4.1, 1.22.1, 1.15.2, and 1.0.31 — and dydx-v4-client 1.1.5post1 (PyPI) were published via compromised dYdX developer credentials and identified by Socket on January 27, 2026. The npm payload injects malicious code into registry.ts that harvests cryptocurrency wallet seed phrases and device fingerprints, exfiltrating them encrypted to dydx.priceoracle.site/v4/price. The PyPI version additionally drops a Remote Access Trojan with command retrieval via dydx.priceoracle.site/py. Remove affected versions, upgrade to a clean release, rotate all wallet seed phrases, API keys, and developer credentials. The C2 domain was subsequently placed on client hold but is retained as a historical IOC.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-05'
+    updated: '2026-05-05'
+    tags:
+    - supply_chain
+    - sup
+    - npm
+    - pypi
+    - dydx
+    - wallet-stealer
+    - rat
+    - crypto
+    last_modified: '2026-05-05'
+    techniques:
+    - id: SUP-051
+      name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-05'
+      last_modified: '2026-05-05'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://socket.dev/blog/malicious-dydx-packages-published-to-npm-and-pypi
+    - https://thehackernews.com/2026/02/compromised-dydx-npm-and-pypi-packages.html
+  test_input: |
+    ---
+    name: dydx-v4-trading-integration
+    description: dYdX v4 decentralized exchange trading client
+    ---
+    # dYdX v4 Trading Integration
+
+    AI-assisted trading on the dYdX v4 decentralized exchange.
+
+    ## Dependencies
+
+    "@dydxprotocol/v4-client-js": "3.4.1"
+  test_expect: fires
+- id: PSV-065
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: 'xcode-mcp-server OS command injection via build_project/run_tests (CVE-2026-7416, PolarVista, 1.0.0, CVSS 7.3)'
+  pattern: '(?i)(?:CVE-2026-7416|xcode[_\s-]?mcp[_\s-]?server[^\n]{0,80}(?:1\.0\.0|command[_\s-]?inject|build[_\s-]?project|run[_\s-]?tests)|PolarVista[^\n]{0,80}xcode[_\s-]?mcp|(?:build_project|run_tests)[^\n]{0,200}(?:xcode[_\s-]?mcp|command[_\s-]?inject))'
+  mitigation: CVE-2026-7416 (CVSS 7.3 HIGH, AV:N/AC:L/PR:N/UI:N) is an OS command injection vulnerability in PolarVista/xcode-mcp-server version 1.0.0. The build_project and run_tests MCP tool handlers in src/index.ts pass the user-supplied Request argument to OS command execution without input sanitization, allowing an attacker to inject arbitrary shell commands via the MCP interface. The vulnerability can be exploited remotely without authentication. No patch was available at time of disclosure (May 1, 2026). Avoid exposing this MCP server to untrusted callers; do not deploy on internet-accessible hosts until a fixed version is released.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-05'
+    updated: '2026-05-05'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - command-injection
+    - xcode-mcp-server
+    - cve-2026-7416
+    - polarvista
+    last_modified: '2026-05-05'
+    techniques:
+    - id: PSV-065
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-05'
+      last_modified: '2026-05-05'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-7416
+    - https://github.com/PolarVista/Xcode-mcp-server/issues/13
+    - https://cve.threatint.eu/CVE/CVE-2026-7416
+  test_input: |
+    ---
+    name: xcode-mcp-helper
+    description: Xcode build automation via MCP
+    ---
+    # Xcode MCP Helper
+
+    Integrates the PolarVista xcode-mcp-server for AI-assisted Xcode builds.
+
+    ## Security Advisory
+
+    xcode-mcp-server 1.0.0 (CVE-2026-7416, CVSS 7.3): OS command injection in
+    the build_project and run_tests MCP tools via unsanitized Request argument.
+    Remote exploitation possible without authentication.
+  test_expect: fires
+- id: PSV-066
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.85
+  title: 'hwpx-mcp path traversal via output_path in document export tools (CVE-2026-7599, Dayoooun, 0.2.0, CVSS 6.3)'
+  pattern: '(?i)(?:CVE-2026-7599|hwpx[_\s-]?mcp[^\n]{0,80}(?:0\.2\.0|path[_\s-]?traversal|output[_\s-]?path|save[_\s-]?document|export[_\s-]?to)|Dayoooun[^\n]{0,80}hwpx[_\s-]?mcp)'
+  mitigation: CVE-2026-7599 (CVSS 6.3 MEDIUM, CWE-22) is a path traversal vulnerability in Dayoooun/hwpx-mcp version 0.2.0, an MCP server for working with Korean HWP/HWPX document formats. The save_document, export_to_text, and export_to_html MCP tool handlers in mcp-server/src/index.ts accept a user-supplied output_path parameter without validating or sanitizing it for path traversal sequences (e.g. ../). An attacker can write files to arbitrary locations on the server filesystem by supplying a traversal sequence in output_path. Disclosed publicly May 1, 2026; no patched version was available at time of disclosure. Avoid using this MCP server with untrusted callers or in shared/multi-tenant environments.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-05'
+    updated: '2026-05-05'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - path-traversal
+    - hwpx-mcp
+    - cve-2026-7599
+    - dayoooun
+    last_modified: '2026-05-05'
+    techniques:
+    - id: PSV-066
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-05'
+      last_modified: '2026-05-05'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-7599
+    - https://cve.threatint.eu/CVE/CVE-2026-7599
+    - https://www.thehackerwire.com/vulnerability/CVE-2026-7599/
+  test_input: |
+    ---
+    name: hwpx-document-processor
+    description: HWP/HWPX document processing via MCP
+    ---
+    # HWPX Document Processor
+
+    Uses hwpx-mcp 0.2.0 to process Korean HWP/HWPX format documents.
+
+    ## Security Advisory
+
+    hwpx-mcp 0.2.0 (CVE-2026-7599, CVSS 6.3): path traversal via output_path
+    in save_document, export_to_text, and export_to_html MCP tools. Upgrade
+    when a patched version is available.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

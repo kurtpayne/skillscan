@@ -840,7 +840,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-05-04",
+    "generated": "2026-05-05",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1759,6 +1759,14 @@
         "fixed": null,
         "summary": "Contagious Interview (DPRK/UNC1069) PyPI backdoor. Fetches payload from apachelicense.vercel.app/getAddress and extracts ecw_update.zip."
       }
+    },
+    "dydx-v4-client": {
+      "1.1.5post1": {
+        "id": "PYPI-BACKDOOR-2026-0127",
+        "severity": "critical",
+        "fixed": null,
+        "summary": "PYPI-BACKDOOR-2026-0127: dydx-v4-client 1.1.5post1 (PyPI) was compromised alongside the npm package, delivering a wallet stealer plus Remote Access Trojan (RAT) with C2 at dydx.priceoracle.site/py."
+      }
     }
   },
   "npm": {
@@ -2609,6 +2617,48 @@
         "severity": "critical",
         "fixed": "7.0.6"
       }
+    },
+    "@dydxprotocol/v4-client-js": {
+      "3.4.1": {
+        "id": "NPM-BACKDOOR-2026-0127",
+        "severity": "critical",
+        "fixed": "3.4.2",
+        "summary": "NPM-BACKDOOR-2026-0127: @dydxprotocol/v4-client-js 3.4.1, 1.22.1, 1.15.2, 1.0.31 were compromised via stolen developer credentials (Socket, January 27 2026). Malicious code in registry.ts harvests wallet seed phrases and device fingerprints, exfiltrating to C2 dydx.priceoracle.site/v4/price."
+      },
+      "1.22.1": {
+        "id": "NPM-BACKDOOR-2026-0127",
+        "severity": "critical",
+        "fixed": "1.22.2",
+        "summary": "NPM-BACKDOOR-2026-0127: @dydxprotocol/v4-client-js 3.4.1, 1.22.1, 1.15.2, 1.0.31 were compromised via stolen developer credentials (Socket, January 27 2026). Malicious code in registry.ts harvests wallet seed phrases and device fingerprints, exfiltrating to C2 dydx.priceoracle.site/v4/price."
+      },
+      "1.15.2": {
+        "id": "NPM-BACKDOOR-2026-0127",
+        "severity": "critical",
+        "fixed": "1.15.3",
+        "summary": "NPM-BACKDOOR-2026-0127: @dydxprotocol/v4-client-js 3.4.1, 1.22.1, 1.15.2, 1.0.31 were compromised via stolen developer credentials (Socket, January 27 2026). Malicious code in registry.ts harvests wallet seed phrases and device fingerprints, exfiltrating to C2 dydx.priceoracle.site/v4/price."
+      },
+      "1.0.31": {
+        "id": "NPM-BACKDOOR-2026-0127",
+        "severity": "critical",
+        "fixed": "1.0.32",
+        "summary": "NPM-BACKDOOR-2026-0127: @dydxprotocol/v4-client-js 3.4.1, 1.22.1, 1.15.2, 1.0.31 were compromised via stolen developer credentials (Socket, January 27 2026). Malicious code in registry.ts harvests wallet seed phrases and device fingerprints, exfiltrating to C2 dydx.priceoracle.site/v4/price."
+      }
+    }
+  },
+  "xcode-mcp-server": {
+    "1.0.0": {
+      "id": "CVE-2026-7416",
+      "severity": "high",
+      "fixed": null,
+      "summary": "CVE-2026-7416 (CVSS 7.3 HIGH): OS command injection in build_project/run_tests of PolarVista/xcode-mcp-server 1.0.0. The Request argument in src/index.ts is passed to OS command execution without sanitization. No patch available as of May 2026."
+    }
+  },
+  "hwpx-mcp": {
+    "0.2.0": {
+      "id": "CVE-2026-7599",
+      "severity": "medium",
+      "fixed": null,
+      "summary": "CVE-2026-7599 (CVSS 6.3 MEDIUM, CWE-22): Path traversal via output_path in save_document/export_to_text/export_to_html of Dayoooun/hwpx-mcp 0.2.0. No patch available as of May 2026."
     }
   }
 }
