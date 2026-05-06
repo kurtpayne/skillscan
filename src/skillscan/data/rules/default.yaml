@@ -1,4 +1,4 @@
-version: 2026.05.04.1
+version: 2026.05.06.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -12897,6 +12897,62 @@ static_rules:
 
     '
   test_expect: fires
+
+- id: PINJ-026
+  category: prompt_injection
+  severity: critical
+  confidence: 0.96
+  title: GitHub Copilot RCE via Prompt Injection (CVE-2025-53773)
+  pattern: (?i)(?:CVE-2025-53773|GitHub[_\s-]?Copilot[^\n]{0,100}RCE|Visual[_\s-]?Studio[^\n]{0,100}RCE[^\n]{0,100}Copilot|wormable[_\s-]?command[_\s-]?execution|prompt[_\s-]?injection[^\n]{0,100}escalat[^\n]{0,100}RCE)
+  mitigation: CVE-2025-53773 is a critical vulnerability in GitHub Copilot and Visual Studio that allows wormable remote code execution (RCE) via prompt injection. Attackers can craft malicious pull request descriptions or comments that, when processed by Copilot, execute arbitrary commands on the developer's machine. Update Visual Studio and GitHub Copilot extensions to the latest versions. Audit any automated PR processing workflows.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-04'
+    updated: '2026-05-04'
+    tags:
+    - rce
+    - prompt-injection
+    - copilot
+    - cve-2025-53773
+    last_modified: '2026-05-04'
+    techniques:
+    - id: PINJ-026
+      name: Prompt Injection
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - prompt
+    lifecycle:
+      introduced: '2026-05-04'
+      last_modified: '2026-05-04'
+    quality:
+      precision_estimate: 0.96
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-53773
+    - https://embracethered.com/blog/posts/2025/github-copilot-remote-code-execution-via-prompt-injection/
+  test_input: |
+    # Security Advisory: CVE-2025-53773
+
+    This document discusses CVE-2025-53773, a critical vulnerability in GitHub Copilot
+    that enables wormable command execution via prompt injection.
+
+    ## Vulnerability Details
+
+    The flaw allows an attacker to achieve RCE by embedding malicious instructions
+    in GitHub pull requests. When a developer uses Copilot to summarize the PR,
+    the injection triggers command execution in the local environment.
+
+    ## Impact
+
+    - Full system compromise of the developer's machine
+    - Potential for wormable spread across repositories
+    - Exfiltration of source code and credentials
+  test_expect: fires
+
 - id: PSV-051
   category: passive_surveillance
   severity: high
@@ -14449,6 +14505,313 @@ static_rules:
 
     CVE-2025-54994 (GHSA-3ch2-jxxc-v4xf, CVSS 9.3): the which-app-on-port tool
     passes user-supplied port numbers to exec() unsanitized. Upgrade to 0.0.13.
+  test_expect: fires
+- id: SUP-051
+  category: supply_chain
+  severity: high
+  confidence: 0.9
+  title: 'dYdX @dydxprotocol/v4-client-js supply chain compromise — wallet stealer + RAT (C2: dydx.priceoracle.site, January 2026)'
+  pattern: '(?i)(?:dydx\.priceoracle\.site|@dydxprotocol/v4-client-js[^\n]{0,80}(?:3\.4\.1|1\.22\.1|1\.15\.2|1\.0\.31)|dydx-v4-client[^\n]{0,80}1\.1\.5post1)'
+  mitigation: Four versions of @dydxprotocol/v4-client-js (npm) — 3.4.1, 1.22.1, 1.15.2, and 1.0.31 — and dydx-v4-client 1.1.5post1 (PyPI) were published via compromised dYdX developer credentials and identified by Socket on January 27, 2026. The npm payload injects malicious code into registry.ts that harvests cryptocurrency wallet seed phrases and device fingerprints, exfiltrating them encrypted to dydx.priceoracle.site/v4/price. The PyPI version additionally drops a Remote Access Trojan with command retrieval via dydx.priceoracle.site/py. Remove affected versions, upgrade to a clean release, rotate all wallet seed phrases, API keys, and developer credentials. The C2 domain was subsequently placed on client hold but is retained as a historical IOC.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-05'
+    updated: '2026-05-05'
+    tags:
+    - supply_chain
+    - sup
+    - npm
+    - pypi
+    - dydx
+    - wallet-stealer
+    - rat
+    - crypto
+    last_modified: '2026-05-05'
+    techniques:
+    - id: SUP-051
+      name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-05'
+      last_modified: '2026-05-05'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://socket.dev/blog/malicious-dydx-packages-published-to-npm-and-pypi
+    - https://thehackernews.com/2026/02/compromised-dydx-npm-and-pypi-packages.html
+  test_input: |
+    ---
+    name: dydx-v4-trading-integration
+    description: dYdX v4 decentralized exchange trading client
+    ---
+    # dYdX v4 Trading Integration
+
+    AI-assisted trading on the dYdX v4 decentralized exchange.
+
+    ## Dependencies
+
+    "@dydxprotocol/v4-client-js": "3.4.1"
+  test_expect: fires
+- id: PSV-065
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: 'xcode-mcp-server OS command injection via build_project/run_tests (CVE-2026-7416, PolarVista, 1.0.0, CVSS 7.3)'
+  pattern: '(?i)(?:CVE-2026-7416|xcode[_\s-]?mcp[_\s-]?server[^\n]{0,80}(?:1\.0\.0|command[_\s-]?inject|build[_\s-]?project|run[_\s-]?tests)|PolarVista[^\n]{0,80}xcode[_\s-]?mcp|(?:build_project|run_tests)[^\n]{0,200}(?:xcode[_\s-]?mcp|command[_\s-]?inject))'
+  mitigation: CVE-2026-7416 (CVSS 7.3 HIGH, AV:N/AC:L/PR:N/UI:N) is an OS command injection vulnerability in PolarVista/xcode-mcp-server version 1.0.0. The build_project and run_tests MCP tool handlers in src/index.ts pass the user-supplied Request argument to OS command execution without input sanitization, allowing an attacker to inject arbitrary shell commands via the MCP interface. The vulnerability can be exploited remotely without authentication. No patch was available at time of disclosure (May 1, 2026). Avoid exposing this MCP server to untrusted callers; do not deploy on internet-accessible hosts until a fixed version is released.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-05'
+    updated: '2026-05-05'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - command-injection
+    - xcode-mcp-server
+    - cve-2026-7416
+    - polarvista
+    last_modified: '2026-05-05'
+    techniques:
+    - id: PSV-065
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-05'
+      last_modified: '2026-05-05'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-7416
+    - https://github.com/PolarVista/Xcode-mcp-server/issues/13
+    - https://cve.threatint.eu/CVE/CVE-2026-7416
+  test_input: |
+    ---
+    name: xcode-mcp-helper
+    description: Xcode build automation via MCP
+    ---
+    # Xcode MCP Helper
+
+    Integrates the PolarVista xcode-mcp-server for AI-assisted Xcode builds.
+
+    ## Security Advisory
+
+    xcode-mcp-server 1.0.0 (CVE-2026-7416, CVSS 7.3): OS command injection in
+    the build_project and run_tests MCP tools via unsanitized Request argument.
+    Remote exploitation possible without authentication.
+  test_expect: fires
+- id: PSV-066
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.85
+  title: 'hwpx-mcp path traversal via output_path in document export tools (CVE-2026-7599, Dayoooun, 0.2.0, CVSS 6.3)'
+  pattern: '(?i)(?:CVE-2026-7599|hwpx[_\s-]?mcp[^\n]{0,80}(?:0\.2\.0|path[_\s-]?traversal|output[_\s-]?path|save[_\s-]?document|export[_\s-]?to)|Dayoooun[^\n]{0,80}hwpx[_\s-]?mcp)'
+  mitigation: CVE-2026-7599 (CVSS 6.3 MEDIUM, CWE-22) is a path traversal vulnerability in Dayoooun/hwpx-mcp version 0.2.0, an MCP server for working with Korean HWP/HWPX document formats. The save_document, export_to_text, and export_to_html MCP tool handlers in mcp-server/src/index.ts accept a user-supplied output_path parameter without validating or sanitizing it for path traversal sequences (e.g. ../). An attacker can write files to arbitrary locations on the server filesystem by supplying a traversal sequence in output_path. Disclosed publicly May 1, 2026; no patched version was available at time of disclosure. Avoid using this MCP server with untrusted callers or in shared/multi-tenant environments.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-05'
+    updated: '2026-05-05'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - path-traversal
+    - hwpx-mcp
+    - cve-2026-7599
+    - dayoooun
+    last_modified: '2026-05-05'
+    techniques:
+    - id: PSV-066
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-05'
+      last_modified: '2026-05-05'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-7599
+    - https://cve.threatint.eu/CVE/CVE-2026-7599
+    - https://www.thehackerwire.com/vulnerability/CVE-2026-7599/
+  test_input: |
+    ---
+    name: hwpx-document-processor
+    description: HWP/HWPX document processing via MCP
+    ---
+    # HWPX Document Processor
+
+    Uses hwpx-mcp 0.2.0 to process Korean HWP/HWPX format documents.
+
+    ## Security Advisory
+
+    hwpx-mcp 0.2.0 (CVE-2026-7599, CVSS 6.3): path traversal via output_path
+    in save_document, export_to_text, and export_to_html MCP tools. Upgrade
+    when a patched version is available.
+  test_expect: fires
+- id: PSV-067
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.93
+  title: 'mcp-atlassian MCPwnfluence — unauthenticated SSRF + arbitrary file write RCE chain (CVE-2026-27825/27826, GHSA-xjgw-4wvw-rgm4, < 0.17.0)'
+  pattern: '(?i)(?:CVE-2026-2782[56]|GHSA-xjgw-4wvw-rgm4|mcp[_\s-]?atlassian[^\n]{0,200}(?:0\.(?:1[0-6]|[0-9])\b|path[_\s-]?traversal|arbitrary[_\s-]?file[_\s-]?write|ssrf|unauthenticat)|confluence_download_attachment[^\n]{0,120}download_path|X-Atlassian-(?:Jira|Confluence)-Url[^\n]{0,120}(?:ssrf|arbitrary|forged|internal|127\.|0\.0\.0\.0|localhost|169\.254|file://|10\.\d+\.|172\.(?:1[6-9]|2[0-9]|3[01])\.))'
+  mitigation: 'CVE-2026-27825 (GHSA-xjgw-4wvw-rgm4, CVSS 9.1, CWE-22) is a critical arbitrary file write in mcp-atlassian versions before 0.17.0. The confluence_download_attachment MCP tool accepts a download_path parameter without directory confinement, enabling path traversal writes to arbitrary locations (e.g., ~/.ssh/authorized_keys, /etc/cron.d/). CVE-2026-27826 (CVSS 8.2, CWE-918) is a companion SSRF — middleware honors X-Atlassian-Jira-Url and X-Atlassian-Confluence-Url request headers without validation, enabling SSRF to internal hosts. Together ("MCPwnfluence", Pluto Security, 2026-02-19), an unauthenticated network-adjacent attacker sends two HTTP requests and achieves full RCE. mcp-atlassian has 4.4K+ stars and 4M+ downloads. Upgrade to mcp-atlassian >= 0.17.0 (fixed 2026-02-24).'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-06'
+    updated: '2026-05-06'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp-atlassian
+    - ssrf
+    - arbitrary-file-write
+    - rce
+    - unauthenticated
+    - cve-2026-27825
+    - cve-2026-27826
+    last_modified: '2026-05-06'
+    techniques:
+    - id: PSV-067
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-06'
+      last_modified: '2026-05-06'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-27825
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-27826
+    - https://github.com/advisories/GHSA-xjgw-4wvw-rgm4
+    - https://pluto.security/blog/mcpwnfluence-cve-2026-27825-critical/
+    - https://arcticwolf.com/resources/blog/cve-2026-27825/
+    - https://github.com/plutosecurity/MCPwnfluence
+  test_input: |
+    # mcp-atlassian MCPwnfluence (CVE-2026-27825, CVE-2026-27826)
+
+    This skill documents GHSA-xjgw-4wvw-rgm4 (CVE-2026-27825), an unauthenticated
+    arbitrary file write in mcp-atlassian < 0.17.0. The confluence_download_attachment
+    tool exposes an unconstrained download_path parameter allowing path traversal writes.
+    Paired with CVE-2026-27826 (SSRF via X-Atlassian-Jira-Url header forged to localhost),
+    this achieves full unauthenticated RCE. Upgrade mcp-atlassian to >= 0.17.0.
+  test_expect: fires
+- id: PSV-068
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: 'MCP Java SDK DNS rebinding via missing Origin validation (CVE-2026-35568, GHSA-8jxr-pr72-r468, mcp-core < 1.0.0)'
+  pattern: '(?i)(?:CVE-2026-35568|GHSA-8jxr-pr72-r468|io\.modelcontextprotocol\.sdk[^\n]{0,80}(?:mcp[_\s-]?core|dns[_\s-]?rebind|origin[_\s-]?valid|0\.[0-9]+\.[0-9]+)|mcp[_\s-]?core[^\n]{0,120}(?:dns[_\s-]?rebind|origin[_\s-]?valid|CVE[_\s-]?2026[_\s-]?35568|<[_\s=]*1\.0\.0)|modelcontextprotocol[^\n]{0,80}java[_\s-]?sdk[^\n]{0,80}(?:dns[_\s-]?rebind|origin[_\s-]?valid|0\.[0-9]))'
+  mitigation: "CVE-2026-35568 (GHSA-8jxr-pr72-r468, CVSS 7.6, CWE-346) is a DNS rebinding vulnerability in the MCP Java SDK (io.modelcontextprotocol.sdk:mcp-core) prior to version 1.0.0. All versions before 1.0.0 perform no Origin header validation, violating the MCP transport specification. A remote attacker leverages DNS rebinding to make a victim's browser contact a locally-running Java MCP server and invoke any tool call as if they were a locally connected AI agent, enabling unauthorized access to all exposed MCP tools. Fixed in mcp-core 1.0.0 (2026-04-07). Upgrade io.modelcontextprotocol.sdk:mcp-core to >= 1.0.0 immediately."
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-06'
+    updated: '2026-05-06'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp-java-sdk
+    - dns-rebinding
+    - origin-validation
+    - cve-2026-35568
+    last_modified: '2026-05-06'
+    techniques:
+    - id: PSV-068
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-06'
+      last_modified: '2026-05-06'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-35568
+    - https://github.com/modelcontextprotocol/java-sdk/security/advisories/GHSA-8jxr-pr72-r468
+    - https://advisories.gitlab.com/pkg/maven/io.modelcontextprotocol.sdk/mcp-core/CVE-2026-35568/
+  test_input: |
+    # MCP Java SDK DNS Rebinding (CVE-2026-35568)
+
+    CVE-2026-35568 (GHSA-8jxr-pr72-r468) affects the MCP Java SDK
+    (io.modelcontextprotocol.sdk:mcp-core) before version 1.0.0.
+    The mcp-core library performs no Origin header validation before 1.0.0,
+    allowing browser-based dns rebinding attacks to invoke any MCP tool call
+    on a local or network-adjacent server. Upgrade to mcp-core 1.0.0.
+  test_expect: fires
+- id: PSV-069
+  category: passive_surveillance
+  severity: high
+  confidence: 0.91
+  title: 'OpenClaw MCP stdio config env var injection via unsafe cast (GHSA-MJ59-H3Q9-GHFH, < 2026.4.20)'
+  pattern: '(?i)(?:GHSA-mj59-h3q9-ghfh|resolveStdioMcpServerLaunchConfig[^\n]{0,120}(?:env|inject|cast|arbitrary|config|unsafe)|openclaw[^\n]{0,200}(?:2026\.(?:[12]\.[0-9.]+|3\.[0-9.]+|4\.[0-9]\b|4\.1[0-9]\b)[^\n]{0,80}(?:mcp[_\s-]?stdio|stdio[_\s-]?mcp|resolveStdio|env[_\s-]?inject|arbitrary[_\s-]?(?:code|exec)|launch[_\s-]?config)|mcp[_\s-]?stdio[_\s-]?(?:config|transport|launch)[^\n]{0,80}(?:env[_\s-]?inject|arbitrary[_\s-]?(?:code|exec)|unsafe[_\s-]?cast)))'
+  mitigation: 'GHSA-MJ59-H3Q9-GHFH is an arbitrary code execution vulnerability in OpenClaw versions prior to 2026.4.20. The resolveStdioMcpServerLaunchConfig function maps the env field from MCP stdio transport workspace configurations using an unsafe generic cast without sanitizing dangerous environment variable keys (e.g., NODE_OPTIONS, LD_PRELOAD). Opening a crafted repository whose workspace config supplies malicious env entries triggers arbitrary code execution on server initialization. This is distinct from CVE-2026-22177 (PSV-050, < 2026.2.21), which targeted the general startup config path; this advisory targets the MCP stdio transport config path specifically. Update to OpenClaw >= 2026.4.20 (fix commit 62fa5071896e95edc7f67d1cebc70a2859e283af, 2026-04-20).'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-06'
+    updated: '2026-05-06'
+    tags:
+    - passive_surveillance
+    - psv
+    - openclaw
+    - env-var-injection
+    - mcp-stdio
+    - arbitrary-code-execution
+    last_modified: '2026-05-06'
+    techniques:
+    - id: PSV-069
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-06'
+      last_modified: '2026-05-06'
+    quality:
+      precision_estimate: 0.91
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/openclaw/openclaw/security/advisories/GHSA-MJ59-H3Q9-GHFH
+    - https://cvereports.com/reports/GHSA-MJ59-H3Q9-GHFH
+  test_input: |
+    # OpenClaw MCP Stdio Env Var Injection (GHSA-MJ59-H3Q9-GHFH)
+
+    GHSA-MJ59-H3Q9-GHFH affects OpenClaw versions prior to 2026.4.20.
+    The resolveStdioMcpServerLaunchConfig function in the MCP stdio
+    transport layer maps workspace env config via an unsafe cast,
+    enabling arbitrary code execution when a malicious workspace
+    config file is opened. Update to OpenClaw 2026.4.20 or later.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
