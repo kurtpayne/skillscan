@@ -1,4 +1,4 @@
-version: 2026.05.07.1
+version: 2026.05.08.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -14904,6 +14904,75 @@ static_rules:
     CVE-2026-35228 affects oracle-mcp-server-helper versions 1.0.1 through 1.0.156.
     Unauthenticated SQL injection via HTTP allows an attacker to execute malicious SQL
     against the database backend without any credentials.
+  test_expect: fires
+- id: PINJ-027
+  category: prompt_injection
+  severity: medium
+  confidence: 0.88
+  title: OpenClaw log poisoning — indirect prompt injection via WebSocket headers (GHSA-g27f-9qjv-22pm,
+    < 2026.2.13)
+  pattern: (?i)(?:GHSA-g27f-9qjv-22pm|openclaw[^\n]{0,200}(?:log[_\s-]?poison|websocket[^\n]{0,80}(?:origin|user[_\s-]?agent)[^\n]{0,80}(?:inject|log|contamin|poison|sanitiz)|2026\.2\.(?:[0-9]|1[012])(?:[^\d]|$))|log[_\s-]?poison(?:ing)?[^\n]{0,80}openclaw)
+  mitigation: GHSA-g27f-9qjv-22pm is an indirect prompt injection vulnerability in OpenClaw
+    prior to version 2026.2.13 (npm package `openclaw`). On the "closed before connect"
+    WebSocket path, gateway logs include raw Origin and User-Agent header values without
+    sanitization or length limits. An unauthenticated attacker can send crafted WebSocket
+    headers containing up to ~15 KB of arbitrary text; if those logs are later consumed
+    by an LLM (e.g., via AI-assisted debugging), the injected content becomes an indirect
+    prompt injection attack. Upgrade to openclaw >= 2026.2.13. Additionally, treat gateway
+    logs as untrusted input when feeding them to any LLM; sanitize control characters,
+    truncate lines, and never auto-execute instructions derived from log content. Apply
+    reverse-proxy header size limits as a defense-in-depth measure.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-08'
+    updated: '2026-05-08'
+    tags:
+    - prompt_injection
+    - pinj
+    - openclaw
+    - log-poisoning
+    - indirect-prompt-injection
+    - ghsa-g27f-9qjv-22pm
+    last_modified: '2026-05-08'
+    techniques:
+    - id: PINJ-027
+      name: Prompt Injection
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - prompt
+    lifecycle:
+      introduced: '2026-05-08'
+      last_modified: '2026-05-08'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/openclaw/openclaw/security/advisories/GHSA-g27f-9qjv-22pm
+    - https://advisories.gitlab.com/pkg/npm/openclaw/GHSA-g27f-9qjv-22pm/
+    - https://research.eye.security/log-poisoning-in-openclaw/
+    - https://www.eye.security/blog/log-poisoning-openclaw-ai-agent-injection-risk
+    - https://docs.openclaw.ai
+  test_input: |
+    # OpenClaw Log Auditing Guide
+
+    This guide explains how to review OpenClaw gateway logs for anomalies.
+
+    ## Environment
+
+    Running openclaw@2026.2.10 on the gateway server. This version is
+    affected by GHSA-g27f-9qjv-22pm (log poisoning via WebSocket headers).
+
+    ## Log Review
+
+    Pass the gateway logs to the LLM for automated anomaly analysis:
+
+    ```bash
+    cat /var/log/openclaw/gateway.log | openclaw-analyze --llm gpt-4
+    ```
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
