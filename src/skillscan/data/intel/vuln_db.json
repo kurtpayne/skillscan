@@ -266,6 +266,12 @@
       "severity": "high",
       "fixed": "2026.4.20",
       "notes": "MCP stdio config env var injection via unsafe cast in resolveStdioMcpServerLaunchConfig (GHSA-MJ59-H3Q9-GHFH, CWE-454). Opening malicious workspace triggers arbitrary code execution via crafted env field (NODE_OPTIONS, LD_PRELOAD). Fix commit 62fa5071896e95edc7f67d1cebc70a2859e283af."
+    },
+    "< 2026.2.13 (GHSA-g27f-9qjv-22pm)": {
+      "id": "GHSA-g27f-9qjv-22pm",
+      "severity": "medium",
+      "fixed": "2026.2.13",
+      "notes": "Indirect prompt injection via unsanitized WebSocket headers in gateway logs (log poisoning). Origin and User-Agent values on the closed-before-connect path are written to core logs without sanitization or length limits; if logs are consumed by an LLM (e.g., AI-assisted debugging), attacker-controlled header content becomes an indirect prompt injection payload. Up to ~15 KB can be injected per connection attempt. Fixed: header values are now sanitized and truncated before logging."
     }
   },
   "n8n-mcp": {
@@ -883,8 +889,22 @@
       "summary": "MCP Java SDK (io.modelcontextprotocol.sdk:mcp-core) DNS rebinding vulnerability via missing Origin header validation (CVE-2026-35568, GHSA-8jxr-pr72-r468, CVSS 7.6, CWE-346). No Origin validation before 1.0.0 allows browser-based DNS rebinding to invoke any tool call on a local MCP server. Fixed in 1.0.0 (2026-04-07)."
     }
   },
+  "oracle-mcp-server-helper": {
+    "added": "2026-05-07",
+    "affected_versions": "1.0.1 - 1.0.156",
+    "cve": "CVE-2026-35228",
+    "cvss": null,
+    "cwe": null,
+    "description": "Unauthenticated SQL injection via HTTP in Oracle MCP Server Helper Tool. Allows unauthenticated attackers with network access to execute malicious SQL.",
+    "fixed_version": ">= 1.0.157",
+    "references": [
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-35228",
+      "https://www.oracle.com/security-alerts/cpuapr2026.html"
+    ],
+    "severity": "high"
+  },
   "_meta": {
-    "generated": "2026-05-07",
+    "generated": "2026-05-08",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2693,19 +2713,5 @@
         "summary": "NPM-BACKDOOR-2026-0127: @dydxprotocol/v4-client-js 3.4.1, 1.22.1, 1.15.2, 1.0.31 were compromised via stolen developer credentials (Socket, January 27 2026). Malicious code in registry.ts harvests wallet seed phrases and device fingerprints, exfiltrating to C2 dydx.priceoracle.site/v4/price."
       }
     }
-  },
-  "oracle-mcp-server-helper": {
-    "added": "2026-05-07",
-    "affected_versions": "1.0.1 - 1.0.156",
-    "cve": "CVE-2026-35228",
-    "cvss": null,
-    "cwe": null,
-    "description": "Unauthenticated SQL injection via HTTP in Oracle MCP Server Helper Tool. Allows unauthenticated attackers with network access to execute malicious SQL.",
-    "fixed_version": ">= 1.0.157",
-    "references": [
-      "https://nvd.nist.gov/vuln/detail/CVE-2026-35228",
-      "https://www.oracle.com/security-alerts/cpuapr2026.html"
-    ],
-    "severity": "high"
   }
 }
