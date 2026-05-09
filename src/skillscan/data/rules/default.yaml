@@ -1,4 +1,4 @@
-version: 2026.05.08.1
+version: 2026.05.09.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -14973,6 +14973,59 @@ static_rules:
     ```bash
     cat /var/log/openclaw/gateway.log | openclaw-analyze --llm gpt-4
     ```
+  test_expect: fires
+- id: PSV-071
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.88
+  title: FastGPT MCP tool endpoint SSRF via stored internal URL (CVE-2026-44284, < 4.14.17)
+  pattern: '(?i)(?:CVE-2026-44284|(?:fast[_\s-]?gpt)[^\n]{0,160}(?:(?:https?://)(?:localhost|127\.0\.0\.1|169\.254\.|192\.168\.|10\.\d|172\.(?:1[6-9]|2\d|3[01])\.\d)[^\n]{0,80}(?:mcp|tool|endpoint)|4\.(?:[0-9]|1[0-3])\.\d|4\.14\.(?:[0-9]|1[0-6])(?:[^0-9]|$)))'
+  mitigation: 'CVE-2026-44284 (CVSS 6.3) is an SSRF vulnerability in FastGPT prior to
+    version 4.14.17. An authenticated user with permission to create or manage MCP toolsets
+    can save an internal endpoint (e.g. http://localhost:3000/mcp) as an MCP tool URL.
+    The FastGPT backend workflow runner later fetches that stored URL without revalidating
+    the destination, bypassing SSRF protection. This allows pivoting to internal services
+    reachable by the FastGPT backend. Upgrade to FastGPT >= 4.14.17. Additionally, enforce
+    a server-side allowlist of permitted MCP tool endpoint URL prefixes and audit existing
+    MCP toolset configurations for internal-address entries.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-09'
+    updated: '2026-05-09'
+    tags:
+        - passive_surveillance
+        - psv
+        - fastgpt
+        - ssrf
+        - mcp-server
+        - cve-2026-44284
+    last_modified: '2026-05-09'
+    techniques:
+    - id: PSV-071
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-09'
+      last_modified: '2026-05-09'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.thehackerwire.com/vulnerability/CVE-2026-44284/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-44284
+  test_input: |
+    # FastGPT MCP Tool Configuration (CVE-2026-44284)
+
+    FastGPT version 4.14.10 is affected by CVE-2026-44284.
+    An authenticated user can configure an MCP tool endpoint
+    pointing to http://localhost:8080/internal-api, bypassing SSRF
+    protection in the workflow runner.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

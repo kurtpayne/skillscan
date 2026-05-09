@@ -904,7 +904,7 @@
     "severity": "high"
   },
   "_meta": {
-    "generated": "2026-05-08",
+    "generated": "2026-05-09",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1172,6 +1172,11 @@
         "id": "GHSA-q84m-rmw3-4382",
         "severity": "medium",
         "fixed": "0.1.35"
+      },
+      "1.3.2": {
+        "id": "GHSA-pjwx-r37v-7724",
+        "severity": "high",
+        "fixed": "1.3.3"
       }
     },
     "langchain-community": {
@@ -1465,6 +1470,10 @@
         "id": "PYSEC-2018-69",
         "severity": "medium",
         "fixed": "2.0.9"
+      },
+      "4.0.0": {
+        "id": "GHSA-r374-rxx8-8654",
+        "severity": "low"
       }
     },
     "jinja2": {
@@ -2713,5 +2722,19 @@
         "summary": "NPM-BACKDOOR-2026-0127: @dydxprotocol/v4-client-js 3.4.1, 1.22.1, 1.15.2, 1.0.31 were compromised via stolen developer credentials (Socket, January 27 2026). Malicious code in registry.ts harvests wallet seed phrases and device fingerprints, exfiltrating to C2 dydx.priceoracle.site/v4/price."
       }
     }
+  },
+  "fastgpt": {
+    "cve": "CVE-2026-44284",
+    "severity": "medium",
+    "cvss": 6.3,
+    "cwe": "CWE-918",
+    "affected_versions": "< 4.14.17",
+    "fixed_version": "4.14.17",
+    "description": "SSRF vulnerability in FastGPT MCP tool URL handling. An authenticated user with permission to create or manage MCP toolsets can store an internal endpoint (e.g. http://localhost:3000/mcp) as an MCP tool URL. The FastGPT backend workflow runner later fetches that stored URL without revalidating the destination, bypassing SSRF protection and allowing pivoting to internal services.",
+    "references": [
+      "https://www.thehackerwire.com/vulnerability/CVE-2026-44284/",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-44284"
+    ],
+    "added": "2026-05-09"
   }
 }
