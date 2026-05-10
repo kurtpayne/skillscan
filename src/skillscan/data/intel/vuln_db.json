@@ -903,8 +903,22 @@
     ],
     "severity": "high"
   },
+  "fastgpt": {
+    "cve": "CVE-2026-44284",
+    "severity": "medium",
+    "cvss": 6.3,
+    "cwe": "CWE-918",
+    "affected_versions": "< 4.14.17",
+    "fixed_version": "4.14.17",
+    "description": "SSRF vulnerability in FastGPT MCP tool URL handling. An authenticated user with permission to create or manage MCP toolsets can store an internal endpoint (e.g. http://localhost:3000/mcp) as an MCP tool URL. The FastGPT backend workflow runner later fetches that stored URL without revalidating the destination, bypassing SSRF protection and allowing pivoting to internal services.",
+    "references": [
+      "https://www.thehackerwire.com/vulnerability/CVE-2026-44284/",
+      "https://nvd.nist.gov/vuln/detail/CVE-2026-44284"
+    ],
+    "added": "2026-05-09"
+  },
   "_meta": {
-    "generated": "2026-05-09",
+    "generated": "2026-05-10",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2723,18 +2737,100 @@
       }
     }
   },
-  "fastgpt": {
-    "cve": "CVE-2026-44284",
-    "severity": "medium",
-    "cvss": 6.3,
-    "cwe": "CWE-918",
-    "affected_versions": "< 4.14.17",
-    "fixed_version": "4.14.17",
-    "description": "SSRF vulnerability in FastGPT MCP tool URL handling. An authenticated user with permission to create or manage MCP toolsets can store an internal endpoint (e.g. http://localhost:3000/mcp) as an MCP tool URL. The FastGPT backend workflow runner later fetches that stored URL without revalidating the destination, bypassing SSRF protection and allowing pivoting to internal services.",
-    "references": [
-      "https://www.thehackerwire.com/vulnerability/CVE-2026-44284/",
-      "https://nvd.nist.gov/vuln/detail/CVE-2026-44284"
-    ],
-    "added": "2026-05-09"
+  "spring-ai": {
+    "1.0.0": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.0.1": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.0.2": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.0.3": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.0.4": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.0.5": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.0.6": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.0.7",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.1.0": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.1.6",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.1.1": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.1.6",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.1.2": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.1.6",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.1.3": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.1.6",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.1.4": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.1.6",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    },
+    "1.1.5": {
+      "id": "CVE-2026-41713",
+      "severity": "high",
+      "fixed": "1.1.6",
+      "summary": "PromptChatMemoryAdvisor prompt injection via memory poisoning (CWE-99)"
+    }
+  },
+  "@yoda.digital/gitlab-mcp-server": {
+    "<0.6.0": {
+      "id": "CVE-2026-44895",
+      "severity": "high",
+      "fixed": "0.6.0",
+      "summary": "SSE transport auth bypass and wildcard CORS expose GITLAB_PERSONAL_ACCESS_TOKEN (CWE-306, CWE-942)"
+    }
+  },
+  "@profullstack/mcp-server": {
+    "<=1.4.12": {
+      "id": "GHSA-v6wj-c83f-v46x",
+      "severity": "critical",
+      "fixed": "NONE",
+      "summary": "Unauthenticated OS command injection in domain_lookup via unquoted execAsync() shell (CWE-78)"
+    }
   }
 }

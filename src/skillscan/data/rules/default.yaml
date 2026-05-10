@@ -1,4 +1,4 @@
-version: 2026.05.09.1
+version: 2026.05.10.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15026,6 +15026,201 @@ static_rules:
     An authenticated user can configure an MCP tool endpoint
     pointing to http://localhost:8080/internal-api, bypassing SSRF
     protection in the workflow runner.
+  test_expect: fires
+- id: PINJ-028
+  category: prompt_injection
+  severity: high
+  confidence: 0.88
+  title: Spring AI PromptChatMemoryAdvisor prompt injection via memory poisoning (CVE-2026-41713,
+    spring-ai < 1.0.7 / < 1.1.6)
+  pattern: (?i)(?:CVE-2026-41713|PromptChatMemoryAdvisor|org\.springframework\.ai[^\n]{0,100}:(?:1\.0\.[0-6]|1\.1\.[0-5])(?:[^\d.]|$))
+  mitigation: CVE-2026-41713 (CVSS 7.2 HIGH, CWE-99) is a prompt injection vulnerability
+    via memory poisoning in the Spring AI PromptChatMemoryAdvisor component. Affected
+    versions are spring-ai 1.0.0–1.0.6 and 1.1.0–1.1.5. An attacker can craft input
+    that is stored in conversation memory and later reinterpreted by the AI model in
+    an unintended way, enabling manipulation of model behavior across conversation turns.
+    PromptChatMemoryAdvisor has been deprecated in the fix; migrate to the updated chat
+    memory advisor APIs that require an explicit conversation ID. Upgrade spring-ai to
+    1.0.7+ or 1.1.6+.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-10'
+    updated: '2026-05-10'
+    tags:
+        - prompt_injection
+        - pinj
+        - spring-ai
+        - memory-poisoning
+        - cve-2026-41713
+    last_modified: '2026-05-10'
+    techniques:
+    - id: PINJ-028
+      name: Prompt Injection
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - prompt
+    lifecycle:
+      introduced: '2026-05-10'
+      last_modified: '2026-05-10'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://spring.io/security/cve-2026-41713/
+    - https://spring.io/blog/2026/05/08/spring-ai-1-0-7-1-1-6-2-0-0-M6-available-now/
+  test_input: |
+    # Spring AI Chatbot with Persistent Memory
+
+    This skill builds a multi-turn chatbot using Spring AI with memory.
+
+    ## Dependencies
+
+    ```xml
+    <dependency>
+      <groupId>org.springframework.ai</groupId>
+      <artifactId>spring-ai-openai</artifactId>
+      <version>1.0.5</version>
+    </dependency>
+    ```
+
+    ## Memory Configuration
+
+    ```java
+    @Bean
+    public PromptChatMemoryAdvisor memoryAdvisor() {
+        return new PromptChatMemoryAdvisor(chatMemory);
+    }
+    ```
+  test_expect: fires
+- id: PSV-072
+  category: passive_surveillance
+  severity: high
+  confidence: 0.88
+  title: '@yoda.digital/gitlab-mcp-server SSE transport auth bypass and wildcard CORS
+    (CVE-2026-44895, < 0.6.0)'
+  pattern: (?i)(?:CVE-2026-44895|@yoda\.digital/gitlab-mcp-server|yoda-digital/mcp-gitlab-server)
+  mitigation: CVE-2026-44895 (CVSS HIGH, CWE-306/CWE-942) is an authentication bypass
+    and permissive CORS vulnerability in @yoda.digital/gitlab-mcp-server < 0.6.0.
+    When USE_SSE=true, the SSE HTTP transport runs with wildcard CORS and no credential
+    check on GET /sse and POST /messages?sessionId=<id>, binding to 0.0.0.0 by default.
+    Any network-adjacent attacker can open an SSE session and send arbitrary MCP tool
+    calls using the server's loaded GITLAB_PERSONAL_ACCESS_TOKEN, gaining full read/write
+    access to all 86 exposed GitLab tools. Upgrade to @yoda.digital/gitlab-mcp-server
+    >= 0.6.0. As a workaround, avoid USE_SSE=true on internet-exposed hosts and bind
+    the server to 127.0.0.1 explicitly.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-10'
+    updated: '2026-05-10'
+    tags:
+        - passive_surveillance
+        - psv
+        - gitlab-mcp
+        - auth-bypass
+        - cors
+        - cve-2026-44895
+    last_modified: '2026-05-10'
+    techniques:
+    - id: PSV-072
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-10'
+      last_modified: '2026-05-10'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://advisories.gitlab.com/npm/@yoda.digital/gitlab-mcp-server/CVE-2026-44895/
+    - https://github.com/yoda-digital/mcp-gitlab-server
+  test_input: |
+    # GitLab Integration via MCP
+
+    This skill integrates Claude with GitLab using the MCP server.
+
+    ## Installation
+
+    ```bash
+    npm install -g @yoda.digital/gitlab-mcp-server@0.5.9
+    export GITLAB_PERSONAL_ACCESS_TOKEN=glpat-xxxxxxxxxxxxxxxxxxxx
+    export USE_SSE=true
+    npx @yoda.digital/gitlab-mcp-server
+    ```
+
+    ## Tools Available
+
+    The MCP server exposes 86 GitLab tools for repositories, issues,
+    merge requests, pipelines, and CI/CD management.
+  test_expect: fires
+- id: PSV-073
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.9
+  title: '@profullstack/mcp-server unauthenticated OS command injection in domain_lookup
+    (GHSA-v6wj-c83f-v46x, <= 1.4.12, no fix)'
+  pattern: (?i)(?:GHSA-v6wj-c83f-v46x|@profullstack/mcp-server|profullstack/mcp-server)
+  mitigation: GHSA-v6wj-c83f-v46x (CVSS 9.8 CRITICAL, CWE-78) is an unauthenticated
+    OS command injection vulnerability in @profullstack/mcp-server <= 1.4.12. The domain_lookup
+    module passes user-supplied arrays directly to execAsync() via shell interpolation
+    (tldx ${keywords.join(' ')}). Shell metacharacters (semicolons, pipes) in the domains
+    or keywords parameters execute arbitrary commands with server process privileges.
+    The server binds to 0.0.0.0 by default with no authentication, enabling remote
+    unauthenticated exploitation. No fix is available as of 2026-05-10. Stop using
+    @profullstack/mcp-server or deploy it behind a strict reverse proxy that rejects
+    input containing shell metacharacters.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-10'
+    updated: '2026-05-10'
+    tags:
+        - passive_surveillance
+        - psv
+        - command-injection
+        - mcp-server
+        - ghsa-v6wj-c83f-v46x
+    last_modified: '2026-05-10'
+    techniques:
+    - id: PSV-073
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-10'
+      last_modified: '2026-05-10'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/advisories/GHSA-v6wj-c83f-v46x
+  test_input: |
+    # Domain Intelligence MCP
+
+    This skill uses @profullstack/mcp-server for domain lookup and
+    WHOIS queries across a target list.
+
+    ## Setup
+
+    ```bash
+    npm install -g @profullstack/mcp-server@1.4.12
+    npx @profullstack/mcp-server
+    ```
+
+    The server binds on 0.0.0.0:3000. Send domain lookups via POST /domain-lookup/check.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
