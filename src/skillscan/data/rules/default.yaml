@@ -1,4 +1,4 @@
-version: 2026.05.10.1
+version: 2026.05.11.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15221,6 +15221,134 @@ static_rules:
     ```
 
     The server binds on 0.0.0.0:3000. Send domain lookups via POST /domain-lookup/check.
+  test_expect: fires
+- id: PSV-074
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.9
+  title: Cline kanban server cross-origin WebSocket hijacking, no Origin validation
+    (CVE-2026-44211, GHSA-5c57-rqjx-35g2, cline <= 2.13.0)
+  pattern: '(?i)(?:CVE-2026-44211|GHSA-5c57-rqjx-35g2|cline[^\n]{0,120}kanban[^\n]{0,120}(?:websocket[^\n]{0,80}(?:3484|origin)|:3484|origin[_\s-]?(?:valid|hijack|check|missing)|cross[_\s-]?origin)|:3484[^\n]{0,120}(?:cline|kanban|origin[_\s-]?(?:valid|hijack|missing)))'
+  mitigation: CVE-2026-44211 (CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:H/A:H Critical,
+    CWE-1385/CWE-306, GHSA-5c57-rqjx-35g2) is a cross-origin WebSocket hijacking
+    vulnerability in the Cline kanban agent-orchestration feature (cline npm package,
+    all versions up to 2.13.0, no patch as of 2026-05-08 disclosure). The Cline kanban
+    board starts a WebSocket server on 127.0.0.1:3484 with no Origin header validation
+    (CWE-1385). Because browsers do not enforce CORS on WebSocket handshakes, any web
+    page a developer visits while kanban is running can silently connect to :3484 and
+    (1) read real-time workspace data — filesystem paths, task descriptions, git branch
+    names, AI agent chat messages — or (2) inject arbitrary prompts into running
+    Cline/Claude Code/Codex agent sessions, enabling remote code execution. Disclosed
+    by Oasis Security (May 8, 2026). No fix is available. Mitigate by stopping the
+    Cline kanban server when browsing untrusted websites. Monitor github.com/cline/cline
+    for a patched release and upgrade immediately when available.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-11'
+    updated: '2026-05-11'
+    tags:
+        - passive_surveillance
+        - psv
+        - cline
+        - kanban
+        - websocket-hijacking
+        - cve-2026-44211
+    last_modified: '2026-05-11'
+    techniques:
+    - id: PSV-074
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-11'
+      last_modified: '2026-05-11'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+    - https://advisories.gitlab.com/npm/cline/CVE-2026-44211/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-44211
+    - https://www.oasis.security/blog/cline-kanban-websocket-hijack
+    - https://gbhackers.com/cline-kanban-websocket-vulnerability/
+  test_input: |
+    # Cline Kanban Agent Orchestration
+
+    This skill configures a Cline kanban board for orchestrating multiple parallel
+    AI coding agents (Claude Code, Codex, Gemini CLI).
+
+    ## Security Advisory
+
+    CVE-2026-44211 (GHSA-5c57-rqjx-35g2) — cline kanban starts a WebSocket server
+    on 127.0.0.1:3484 with no origin validation. Any malicious website visited while
+    the kanban server is running can cross-origin-connect and exfiltrate workspace
+    data or inject prompts into active agent sessions, leading to RCE.
+  test_expect: fires
+- id: PSV-075
+  category: passive_surveillance
+  severity: low
+  confidence: 0.8
+  title: n8n-MCP HTTP transport logs bearer tokens from unauthorized /mcp requests (CVE-2026-41495,
+    n8n-mcp < 2.47.11)
+  pattern: '(?i)(?:CVE-2026-41495|n8n[_\s-]?mcp[^\n]{0,120}(?:bearer[_\s-]?token[^\n]{0,80}(?:log|persist|leak|dump)|api[_\s-]?key[^\n]{0,80}(?:log|persist|leak|dump)|log[^\n]{0,80}sensitive[^\n]{0,80}(?:/mcp|n8n|401|unauthorized)|sensitive[_\s-]?request[_\s-]?data[^\n]{0,80}(?:n8n|log))|czlonkowski/n8n[_\s-]?mcp[^\n]{0,80}(?:log|sensitive|bearer))'
+  mitigation: CVE-2026-41495 (CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N Low,
+    CWE-532) is a sensitive-information-in-log-file vulnerability in czlonkowski/n8n-mcp
+    (npm) prior to version 2.47.11. When n8n-mcp runs in HTTP transport mode, incoming
+    POST /mcp requests have their metadata — bearer tokens, per-tenant API keys, and
+    JSON-RPC payloads — written to server logs regardless of whether authentication
+    succeeds. Unauthenticated requests are correctly rejected with 401, but the rejected
+    request headers containing credentials persist in the log. In deployments with
+    centralized log aggregation, SIEM pipelines, or shared log storage, this exposes
+    authentication tokens to parties outside the request trust boundary. Upgrade to
+    n8n-mcp >= 2.47.11. Until patched, restrict log forwarding scope and audit log
+    access controls to limit exposure of logged credential material.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-11'
+    updated: '2026-05-11'
+    tags:
+        - passive_surveillance
+        - psv
+        - n8n
+        - n8n-mcp
+        - information-disclosure
+        - cve-2026-41495
+    last_modified: '2026-05-11'
+    techniques:
+    - id: PSV-075
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-11'
+      last_modified: '2026-05-11'
+    quality:
+      precision_estimate: 0.8
+      benchmark_set: core-static-v1
+    references:
+    - https://advisories.gitlab.com/npm/n8n-mcp/CVE-2026-41495/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-41495
+    - https://radar.offseq.com/threat/cve-2026-41495-cwe-532-insertion-of-sensitive-info-dc23ff94
+  test_input: |
+    # n8n-MCP HTTP Transport Configuration
+
+    This skill configures n8n-mcp in HTTP transport mode for webhook-based
+    AI workflow automation.
+
+    ## Security Note
+
+    CVE-2026-41495: n8n-mcp < 2.47.11 logs bearer tokens from unauthorized POST /mcp
+    requests to the server log, leaking credentials even from rejected 401 responses.
+    Upgrade to czlonkowski/n8n-mcp >= 2.47.11 to remediate.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
