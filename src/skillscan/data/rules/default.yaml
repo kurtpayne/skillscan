@@ -1,4 +1,4 @@
-version: 2026.05.13.1
+version: 2026.05.14.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
