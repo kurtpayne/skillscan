@@ -1048,8 +1048,30 @@
       "summary": "CVE-2026-5029: Unauthenticated RCE in @mcpc-tech/code-runner-mcp (all versions). When started with --transport http, exposes /mcp JSON-RPC endpoint on port 3088 without authentication, allowing arbitrary code execution. No fix available as of May 2026 (CERT Polska)."
     }
   },
+  "@tanstack/react-router": {
+    "1.169.5": {
+      "id": "MAL-081",
+      "severity": "critical",
+      "cvss": 9.6,
+      "fixed": "1.169.6",
+      "summary": "@tanstack/react-router@1.169.5 compromised in Mini Shai-Hulud wave-3 / TeamPCP supply chain attack (CVE-2026-45321, May 11 2026). Drops router_init.js credential stealer (SHA-256 ab4fcadaec49c03278063dd269ea5eef82d24f2124a8e15d7b90f2fa8601266c) via preinstall hook.",
+      "campaign": "Mini-Shai-Hulud",
+      "cve": "CVE-2026-45321"
+    }
+  },
+  "@tanstack/router-core": {
+    "1.169.5": {
+      "id": "MAL-081",
+      "severity": "critical",
+      "cvss": 9.6,
+      "fixed": "1.169.6",
+      "summary": "@tanstack/router-core@1.169.5 compromised in Mini Shai-Hulud wave-3 / TeamPCP supply chain attack (CVE-2026-45321, May 11 2026). Same credential-stealer payload as react-router.",
+      "campaign": "Mini-Shai-Hulud",
+      "cve": "CVE-2026-45321"
+    }
+  },
   "_meta": {
-    "generated": "2026-05-14",
+    "generated": "2026-05-15",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2922,28 +2944,32 @@
         "severity": "critical",
         "fixed": "REMOVED"
       }
-    }
-  },
-  "@tanstack/react-router": {
-    "1.169.5": {
-      "id": "MAL-081",
-      "severity": "critical",
-      "cvss": 9.6,
-      "fixed": "1.169.6",
-      "summary": "@tanstack/react-router@1.169.5 compromised in Mini Shai-Hulud wave-3 / TeamPCP supply chain attack (CVE-2026-45321, May 11 2026). Drops router_init.js credential stealer (SHA-256 ab4fcadaec49c03278063dd269ea5eef82d24f2124a8e15d7b90f2fa8601266c) via preinstall hook.",
-      "campaign": "Mini-Shai-Hulud",
-      "cve": "CVE-2026-45321"
-    }
-  },
-  "@tanstack/router-core": {
-    "1.169.5": {
-      "id": "MAL-081",
-      "severity": "critical",
-      "cvss": 9.6,
-      "fixed": "1.169.6",
-      "summary": "@tanstack/router-core@1.169.5 compromised in Mini Shai-Hulud wave-3 / TeamPCP supply chain attack (CVE-2026-45321, May 11 2026). Same credential-stealer payload as react-router.",
-      "campaign": "Mini-Shai-Hulud",
-      "cve": "CVE-2026-45321"
+    },
+    "node-ipc": {
+      "9.1.6": {
+        "id": "SUP-052",
+        "severity": "critical",
+        "summary": "node-ipc supply chain compromise via expired maintainer email domain takeover (atlantis-software.net). Obfuscated 80 KB credential stealer exfiltrates 90+ credential categories to sh.azurestaticprovider.net. Versions 9.1.6, 9.2.3, and 12.0.1 are affected; pin to 9.2.1 or 12.0.0.",
+        "fixed": "9.2.1",
+        "affected_range": "==9.1.6",
+        "published": "2026-05-14"
+      },
+      "9.2.3": {
+        "id": "SUP-052",
+        "severity": "critical",
+        "summary": "node-ipc supply chain compromise via expired maintainer email domain takeover (atlantis-software.net). Obfuscated 80 KB credential stealer exfiltrates 90+ credential categories to sh.azurestaticprovider.net. Versions 9.1.6, 9.2.3, and 12.0.1 are affected; pin to 9.2.1 or 12.0.0.",
+        "fixed": "9.2.1",
+        "affected_range": "==9.2.3",
+        "published": "2026-05-14"
+      },
+      "12.0.1": {
+        "id": "SUP-052",
+        "severity": "critical",
+        "summary": "node-ipc supply chain compromise via expired maintainer email domain takeover (atlantis-software.net). Obfuscated 80 KB credential stealer exfiltrates 90+ credential categories to sh.azurestaticprovider.net. Versions 9.1.6, 9.2.3, and 12.0.1 are affected; pin to 9.2.1 or 12.0.0.",
+        "fixed": "12.0.0",
+        "affected_range": "==12.0.1",
+        "published": "2026-05-14"
+      }
     }
   }
 }
