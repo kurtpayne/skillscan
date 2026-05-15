@@ -1,4 +1,4 @@
-version: 2026.05.14.1
+version: 2026.05.15.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15537,6 +15537,62 @@ static_rules:
     CVE-2026-5029: @mcpc-tech/code-runner-mcp exposes an unauthenticated
     /mcp JSON-RPC endpoint on port 3088 when started with --transport http,
     enabling unauthenticated arbitrary code execution by any network caller.
+  test_expect: fires
+- id: SUP-052
+  category: supply_chain
+  severity: critical
+  confidence: 0.92
+  title: 'node-ipc supply chain compromise via expired maintainer email domain takeover (9.1.6/9.2.3/12.0.1, C2: sh.azurestaticprovider.net)'
+  pattern: '(?i)(?:sh\.azurestaticprovider\.net|atlantis-software\.net|node-ipc[^\n]{0,80}(?:9\.1\.6|9\.2\.3|12\.0\.1))'
+  mitigation: Three node-ipc versions — 9.1.6, 9.2.3, and 12.0.1 — were published on May 14, 2026 through a compromised maintainer account. The attacker re-registered the dormant maintainer's expired email domain (atlantis-software.net) via Namecheap, triggering a standard npm password-reset flow to gain publish rights. The 80 KB obfuscated payload silently harvests 90+ credential categories (AWS, GCP, Azure, GitHub CLI, Kubernetes, HashiCorp Vault, Claude AI settings, SSH keys, shell history, database passwords) compresses them into a gzip archive, and exfiltrates to sh.azurestaticprovider.net masquerading as Azure infrastructure. A secondary DNS-TXT exfiltration channel overrides the system DNS resolver to 8.8.8.8 to bypass local inspection. The malware does not establish persistence. Remove versions 9.1.6, 9.2.3, and 12.0.1; pin to 9.2.1 or 12.0.0; rotate all credentials, cloud keys, and package registry tokens immediately.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-15'
+    updated: '2026-05-15'
+    tags:
+    - supply_chain
+    - sup
+    - npm
+    - credential-stealer
+    - dns-exfiltration
+    - expired-domain-takeover
+    last_modified: '2026-05-15'
+    techniques:
+    - id: SUP-052
+      name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-15'
+      last_modified: '2026-05-15'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/05/stealer-backdoor-found-in-3-node-ipc.html
+    - https://safedep.io/malicious-node-ipc-npm-compromise/
+    - https://www.stepsecurity.io/blog/node-ipc-npm-supply-chain-attack
+    - https://socket.dev/blog/node-ipc-package-compromised
+  test_input: |
+    ---
+    name: realtime-app-comms
+    description: Real-time inter-process communication for Node.js microservices
+    ---
+    # Real-time IPC Communication
+
+    Uses node-ipc for cross-process messaging in a microservice architecture.
+
+    ## Setup
+
+    npm install node-ipc@9.2.3
+
+    ## Dependencies
+
+    "node-ipc": "9.2.3"
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
