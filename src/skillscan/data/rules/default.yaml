@@ -1,4 +1,4 @@
-version: 2026.05.15.1
+version: 2026.05.16.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15593,6 +15593,169 @@ static_rules:
     ## Dependencies
 
     "node-ipc": "9.2.3"
+  test_expect: fires
+- id: PSV-078
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.85
+  title: Apache Doris MCP Server SQL injection (CVE-2025-66335, GHSA-qhfq-gvvc-5q6q,
+    doris-mcp-server < 0.6.1)
+  pattern: '(?i)(?:CVE-2025-66335|GHSA-qhfq-gvvc-5q6q|doris[_\s-]?mcp[_\s-]?server[^\n]{0,120}(?:sql[_\s-]?inject|injection|0\.[1-5]\.\d|<\s*0\.6\.1|bypass[^\n]{0,40}(?:access|query|sql)|unintended[_\s-]?sql|unauthorized[_\s-]?query)|doris[_\s-]?mcp[^\n]{0,80}(?:cve-2025-66335|ghsa-qhfq))'
+  mitigation: 'CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89) is a SQL injection
+    vulnerability in the Apache Doris MCP Server (PyPI: doris-mcp-server) versions >=
+    0.1.0 and < 0.6.1. The MCP query execution interface fails to adequately validate
+    and neutralize input parameters before constructing SQL statements, allowing attackers
+    to inject additional SQL syntax that alters query behavior, executes unintended statements,
+    and bypasses access restrictions. Upgrade to doris-mcp-server 0.6.1 or later.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-16'
+    updated: '2026-05-16'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - sql-injection
+    - apache-doris
+    - doris-mcp-server
+    - cve-2025-66335
+    last_modified: '2026-05-16'
+    techniques:
+    - id: PSV-078
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-16'
+      last_modified: '2026-05-16'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/advisories/GHSA-qhfq-gvvc-5q6q
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-66335
+    - https://github.com/apache/doris-mcp-server
+  test_input: |
+    # Apache Doris MCP Server SQL Injection (CVE-2025-66335)
+
+    CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3): SQL injection in doris-mcp-server < 0.6.1.
+    The MCP query execution interface fails to neutralize SQL input parameters, allowing
+    injection of unintended SQL statements that bypass access restrictions. Upgrade to 0.6.1.
+  test_expect: fires
+- id: PSV-079
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.80
+  title: Alibaba Cloud RDS OpenAPI MCP Server unauthenticated RAG tool info disclosure
+    (alibabacloud-rds-openapi-mcp-server, all versions, no fix)
+  pattern: '(?i)(?:alibabacloud[_\s-]?rds[_\s-]?openapi[_\s-]?mcp[_\s-]?server|uvx[^\n]{0,60}alibabacloud[_\s-]?rds|aliyun[^\n]{0,60}rds[_\s-]?openapi[_\s-]?mcp[^\n]{0,80}(?:unauthenticat|rag[_\s-]?tool|vector[_\s-]?index|schema|information[_\s-]?disclos))'
+  mitigation: 'The Alibaba Cloud RDS OpenAPI MCP Server (alibabacloud-rds-openapi-mcp-server)
+    does not authenticate users before invoking the RAG MCP tool. Any client that can
+    reach the MCP endpoint can invoke the RAG tool without credentials, potentially
+    accessing sensitive metadata from the vector index including table names, schema
+    definitions, and database structure. Alibaba declined to patch this vulnerability
+    (classified as "not applicable"). All published versions are affected. Mitigate
+    by placing the MCP server behind an authenticating reverse proxy or restricting
+    the endpoint to trusted networks only. Reported by Tomer Peled (Akamai), escalated
+    to CERT/CC, May 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-16'
+    updated: '2026-05-16'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - information-disclosure
+    - alibaba-cloud
+    - rds-mcp
+    - unauthenticated
+    - no-fix
+    last_modified: '2026-05-16'
+    techniques:
+    - id: PSV-079
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-16'
+      last_modified: '2026-05-16'
+    quality:
+      precision_estimate: 0.80
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/aliyun/alibabacloud-rds-openapi-mcp-server
+    - https://www.theregister.com/security/2026/05/13/bug-hunter-tracks-down-three-serious-mcp-database-flaws-one-left-unpatched/
+  test_input: |
+    # Alibaba Cloud RDS Database Integration
+
+    mcpServers:
+      alibaba-rds:
+        command: uvx
+        args: [alibabacloud-rds-openapi-mcp-server]
+  test_expect: fires
+- id: PSV-080
+  category: passive_surveillance
+  severity: high
+  confidence: 0.83
+  title: Apache Pinot (StarTree) MCP Server SQL injection via auth bypass (mcp-pinot-server,
+    <= 1.1.0)
+  pattern: '(?i)(?:mcp[_\s-]?pinot[_\s-]?server[^\n]{0,120}(?:sql[_\s-]?inject|auth[_\s-]?bypass|unauthenticat|takeover|unauthorized[_\s-]?(?:query|sql|access)|vuln)|startreedata[^\n]{0,80}(?:mcp[_\s-]?pinot|sql[_\s-]?inject|auth[_\s-]?bypass|unauthenticat)|mcp[_\s-]?pinot[^\n]{0,80}(?:0\.1\.[0-9]|1\.[01]\.\d)[^\n]{0,120}(?:sql[_\s-]?inject|auth[_\s-]?bypass|unauthenticat|vuln|takeover))'
+  mitigation: 'The Apache Pinot MCP Server (PyPI: mcp-pinot-server, maintained by StarTree
+    at github.com/startreedata/mcp-pinot) versions through 1.1.0 have an authentication
+    bypass that enables SQL injection against the connected Pinot instance. The MCP endpoint
+    does not enforce authentication by default, allowing unauthenticated callers to execute
+    arbitrary Pinot SQL queries — in externally-exposed environments this enables full
+    database takeover. StarTree has added an OAuth option for HTTP transport but SQL injection
+    persists in the code. No CVE assigned as of May 2026. Mitigate by enabling OAuth
+    authentication, restricting the MCP endpoint to loopback or trusted networks, and
+    upgrading to the latest version.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-16'
+    updated: '2026-05-16'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - sql-injection
+    - auth-bypass
+    - apache-pinot
+    - mcp-pinot-server
+    - startree
+    last_modified: '2026-05-16'
+    techniques:
+    - id: PSV-080
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-16'
+      last_modified: '2026-05-16'
+    quality:
+      precision_estimate: 0.83
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/startreedata/mcp-pinot
+    - https://pypi.org/project/mcp-pinot-server/
+    - https://www.theregister.com/security/2026/05/13/bug-hunter-tracks-down-three-serious-mcp-database-flaws-one-left-unpatched/
+  test_input: |
+    # Apache Pinot Analytics MCP Integration
+
+    mcp-pinot-server 1.1.0 has an auth bypass enabling SQL injection
+    against the Pinot cluster. Unauthenticated callers can run arbitrary SQL.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
