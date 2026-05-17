@@ -1070,8 +1070,86 @@
       "cve": "CVE-2026-45321"
     }
   },
+  "doris-mcp-server": {
+    "0.1.0": {
+      "id": "CVE-2025-66335",
+      "severity": "medium",
+      "fixed": "0.6.1",
+      "summary": "CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89): SQL injection in Apache Doris MCP Server. The MCP query execution interface fails to neutralize input parameters before constructing SQL statements, allowing injection of unintended SQL statements that bypass access restrictions. Fixed in 0.6.1."
+    },
+    "0.2.0": {
+      "id": "CVE-2025-66335",
+      "severity": "medium",
+      "fixed": "0.6.1",
+      "summary": "CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89): SQL injection in Apache Doris MCP Server. The MCP query execution interface fails to neutralize input parameters before constructing SQL statements, allowing injection of unintended SQL statements that bypass access restrictions. Fixed in 0.6.1."
+    },
+    "0.3.0": {
+      "id": "CVE-2025-66335",
+      "severity": "medium",
+      "fixed": "0.6.1",
+      "summary": "CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89): SQL injection in Apache Doris MCP Server. The MCP query execution interface fails to neutralize input parameters before constructing SQL statements, allowing injection of unintended SQL statements that bypass access restrictions. Fixed in 0.6.1."
+    },
+    "0.4.0": {
+      "id": "CVE-2025-66335",
+      "severity": "medium",
+      "fixed": "0.6.1",
+      "summary": "CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89): SQL injection in Apache Doris MCP Server. The MCP query execution interface fails to neutralize input parameters before constructing SQL statements, allowing injection of unintended SQL statements that bypass access restrictions. Fixed in 0.6.1."
+    },
+    "0.5.0": {
+      "id": "CVE-2025-66335",
+      "severity": "medium",
+      "fixed": "0.6.1",
+      "summary": "CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89): SQL injection in Apache Doris MCP Server. The MCP query execution interface fails to neutralize input parameters before constructing SQL statements, allowing injection of unintended SQL statements that bypass access restrictions. Fixed in 0.6.1."
+    },
+    "0.5.1": {
+      "id": "CVE-2025-66335",
+      "severity": "medium",
+      "fixed": "0.6.1",
+      "summary": "CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89): SQL injection in Apache Doris MCP Server. The MCP query execution interface fails to neutralize input parameters before constructing SQL statements, allowing injection of unintended SQL statements that bypass access restrictions. Fixed in 0.6.1."
+    }
+  },
+  "alibabacloud-rds-openapi-mcp-server": {
+    "0.1.0": {
+      "id": "PSV-079",
+      "severity": "medium",
+      "fixed": null,
+      "summary": "PSV-079: Alibaba Cloud RDS OpenAPI MCP Server does not authenticate users before invoking the RAG MCP tool, exposing table names, schema definitions, and database metadata to unauthenticated callers. All versions affected. Vendor declined to patch (classified as 'not applicable'). No fix available."
+    },
+    "0.2.0": {
+      "id": "PSV-079",
+      "severity": "medium",
+      "fixed": null,
+      "summary": "PSV-079: Alibaba Cloud RDS OpenAPI MCP Server does not authenticate users before invoking the RAG MCP tool, exposing table names, schema definitions, and database metadata to unauthenticated callers. All versions affected. Vendor declined to patch (classified as 'not applicable'). No fix available."
+    },
+    "1.0.0": {
+      "id": "PSV-079",
+      "severity": "medium",
+      "fixed": null,
+      "summary": "PSV-079: Alibaba Cloud RDS OpenAPI MCP Server does not authenticate users before invoking the RAG MCP tool, exposing table names, schema definitions, and database metadata to unauthenticated callers. All versions affected. Vendor declined to patch (classified as 'not applicable'). No fix available."
+    }
+  },
+  "mcp-pinot-server": {
+    "0.1.0": {
+      "id": "PSV-080",
+      "severity": "high",
+      "fixed": null,
+      "summary": "PSV-080: Apache Pinot (StarTree) MCP Server has an authentication bypass enabling SQL injection against the connected Pinot instance. Unauthenticated callers can execute arbitrary Pinot SQL queries; in exposed environments this enables full database takeover. No CVE assigned. OAuth option added in later versions but SQLi persists."
+    },
+    "1.0.0": {
+      "id": "PSV-080",
+      "severity": "high",
+      "fixed": null,
+      "summary": "PSV-080: Apache Pinot (StarTree) MCP Server has an authentication bypass enabling SQL injection against the connected Pinot instance. Unauthenticated callers can execute arbitrary Pinot SQL queries; in exposed environments this enables full database takeover. No CVE assigned. OAuth option added in later versions but SQLi persists."
+    },
+    "1.1.0": {
+      "id": "PSV-080",
+      "severity": "high",
+      "fixed": null,
+      "summary": "PSV-080: Apache Pinot (StarTree) MCP Server has an authentication bypass enabling SQL injection against the connected Pinot instance. Unauthenticated callers can execute arbitrary Pinot SQL queries; in exposed environments this enables full database takeover. No CVE assigned. OAuth option added in later versions but SQLi persists."
+    }
+  },
   "_meta": {
-    "generated": "2026-05-15",
+    "generated": "2026-05-17",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2016,6 +2094,13 @@
         "severity": "critical",
         "fixed": null,
         "summary": "PYPI-BACKDOOR-2026-0127: dydx-v4-client 1.1.5post1 (PyPI) was compromised alongside the npm package, delivering a wallet stealer plus Remote Access Trojan (RAT) with C2 at dydx.priceoracle.site/py."
+      }
+    },
+    "semantic-kernel": {
+      "1.39.3": {
+        "id": "CVE-2026-26030",
+        "severity": "high",
+        "fixed": "1.39.4"
       }
     }
   },
@@ -2970,6 +3055,13 @@
         "affected_range": "==12.0.1",
         "published": "2026-05-14"
       }
+    }
+  },
+  "microsoft.semantickernel": {
+    "1.70.0": {
+      "id": "CVE-2026-25592",
+      "severity": "high",
+      "fixed": "1.71.0"
     }
   }
 }
