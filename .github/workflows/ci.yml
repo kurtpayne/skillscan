@@ -76,12 +76,18 @@ jobs:
           mypy src
       - name: Tests with coverage
         if: steps.changes.outputs.code == 'true' && matrix.python-version == '3.12'
+        # -n auto: spawn one worker per CPU core (2 on ubuntu-latest, sometimes 4)
+        # --dist=loadfile: keep all tests from the same file in the same worker
+        #   (safer than the default `load` distribution against any per-file
+        #   fixture ordering hazards; conftest's lru_cache clear is per-test
+        #   so already safe across workers, but loadfile costs almost nothing
+        #   and removes a class of "passes serially / fails in parallel" bugs)
         run: |
-          pytest -q --cov=skillscan --cov-report=xml --cov-report=term
+          pytest -q -n auto --dist=loadfile --cov=skillscan --cov-report=xml --cov-report=term
       - name: Tests
         if: steps.changes.outputs.code == 'true' && matrix.python-version != '3.12'
         run: |
-          pytest -q
+          pytest -q -n auto --dist=loadfile
       - name: Upload coverage to Codecov
         if: steps.changes.outputs.code == 'true' && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v6
