@@ -7,7 +7,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Bumped from 30 → 45 on 2026-05-20. Recent successful test (3.12) runs
+    # have been finishing in 24-29 min (very close to the prior 30-min
+    # ceiling), and sync-bundled-snapshot PRs from May 17 onward all hit the
+    # ceiling and got cancelled. Root cause is test-suite growth; 50%
+    # headroom buys time to land the backlog while a permanent fix (slow-
+    # test markers + a split fast/slow lane) is designed.
+    timeout-minutes: 45
     strategy:
       matrix:
         python-version: ['3.12', '3.13']
