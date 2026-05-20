@@ -1,4 +1,4 @@
-version: 2026.05.15.1
+version: 2026.05.19.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15593,6 +15593,381 @@ static_rules:
     ## Dependencies
 
     "node-ipc": "9.2.3"
+  test_expect: fires
+- id: PSV-078
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.85
+  title: Apache Doris MCP Server SQL injection (CVE-2025-66335, GHSA-qhfq-gvvc-5q6q,
+    doris-mcp-server < 0.6.1)
+  pattern: '(?i)(?:CVE-2025-66335|GHSA-qhfq-gvvc-5q6q|doris[_\s-]?mcp[_\s-]?server[^\n]{0,120}(?:sql[_\s-]?inject|injection|0\.[1-5]\.\d|<\s*0\.6\.1|bypass[^\n]{0,40}(?:access|query|sql)|unintended[_\s-]?sql|unauthorized[_\s-]?query)|doris[_\s-]?mcp[^\n]{0,80}(?:cve-2025-66335|ghsa-qhfq))'
+  mitigation: 'CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3, CWE-89) is a SQL injection
+    vulnerability in the Apache Doris MCP Server (PyPI: doris-mcp-server) versions >=
+    0.1.0 and < 0.6.1. The MCP query execution interface fails to adequately validate
+    and neutralize input parameters before constructing SQL statements, allowing attackers
+    to inject additional SQL syntax that alters query behavior, executes unintended statements,
+    and bypasses access restrictions. Upgrade to doris-mcp-server 0.6.1 or later.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-16'
+    updated: '2026-05-16'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - sql-injection
+    - apache-doris
+    - doris-mcp-server
+    - cve-2025-66335
+    last_modified: '2026-05-16'
+    techniques:
+    - id: PSV-078
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-16'
+      last_modified: '2026-05-16'
+    quality:
+      precision_estimate: 0.85
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/advisories/GHSA-qhfq-gvvc-5q6q
+    - https://nvd.nist.gov/vuln/detail/CVE-2025-66335
+    - https://github.com/apache/doris-mcp-server
+  test_input: |
+    # Apache Doris MCP Server SQL Injection (CVE-2025-66335)
+
+    CVE-2025-66335 (GHSA-qhfq-gvvc-5q6q, CVSS 5.3): SQL injection in doris-mcp-server < 0.6.1.
+    The MCP query execution interface fails to neutralize SQL input parameters, allowing
+    injection of unintended SQL statements that bypass access restrictions. Upgrade to 0.6.1.
+  test_expect: fires
+- id: PSV-079
+  category: passive_surveillance
+  severity: medium
+  confidence: 0.80
+  title: Alibaba Cloud RDS OpenAPI MCP Server unauthenticated RAG tool info disclosure
+    (alibabacloud-rds-openapi-mcp-server, all versions, no fix)
+  pattern: '(?i)(?:alibabacloud[_\s-]?rds[_\s-]?openapi[_\s-]?mcp[_\s-]?server|uvx[^\n]{0,60}alibabacloud[_\s-]?rds|aliyun[^\n]{0,60}rds[_\s-]?openapi[_\s-]?mcp[^\n]{0,80}(?:unauthenticat|rag[_\s-]?tool|vector[_\s-]?index|schema|information[_\s-]?disclos))'
+  mitigation: 'The Alibaba Cloud RDS OpenAPI MCP Server (alibabacloud-rds-openapi-mcp-server)
+    does not authenticate users before invoking the RAG MCP tool. Any client that can
+    reach the MCP endpoint can invoke the RAG tool without credentials, potentially
+    accessing sensitive metadata from the vector index including table names, schema
+    definitions, and database structure. Alibaba declined to patch this vulnerability
+    (classified as "not applicable"). All published versions are affected. Mitigate
+    by placing the MCP server behind an authenticating reverse proxy or restricting
+    the endpoint to trusted networks only. Reported by Tomer Peled (Akamai), escalated
+    to CERT/CC, May 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-16'
+    updated: '2026-05-16'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - information-disclosure
+    - alibaba-cloud
+    - rds-mcp
+    - unauthenticated
+    - no-fix
+    last_modified: '2026-05-16'
+    techniques:
+    - id: PSV-079
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-16'
+      last_modified: '2026-05-16'
+    quality:
+      precision_estimate: 0.80
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/aliyun/alibabacloud-rds-openapi-mcp-server
+    - https://www.theregister.com/security/2026/05/13/bug-hunter-tracks-down-three-serious-mcp-database-flaws-one-left-unpatched/
+  test_input: |
+    # Alibaba Cloud RDS Database Integration
+
+    mcpServers:
+      alibaba-rds:
+        command: uvx
+        args: [alibabacloud-rds-openapi-mcp-server]
+  test_expect: fires
+- id: PSV-080
+  category: passive_surveillance
+  severity: high
+  confidence: 0.83
+  title: Apache Pinot (StarTree) MCP Server SQL injection via auth bypass (mcp-pinot-server,
+    <= 1.1.0)
+  pattern: '(?i)(?:mcp[_\s-]?pinot[_\s-]?server[^\n]{0,120}(?:sql[_\s-]?inject|auth[_\s-]?bypass|unauthenticat|takeover|unauthorized[_\s-]?(?:query|sql|access)|vuln)|startreedata[^\n]{0,80}(?:mcp[_\s-]?pinot|sql[_\s-]?inject|auth[_\s-]?bypass|unauthenticat)|mcp[_\s-]?pinot[^\n]{0,80}(?:0\.1\.[0-9]|1\.[01]\.\d)[^\n]{0,120}(?:sql[_\s-]?inject|auth[_\s-]?bypass|unauthenticat|vuln|takeover))'
+  mitigation: 'The Apache Pinot MCP Server (PyPI: mcp-pinot-server, maintained by StarTree
+    at github.com/startreedata/mcp-pinot) versions through 1.1.0 have an authentication
+    bypass that enables SQL injection against the connected Pinot instance. The MCP endpoint
+    does not enforce authentication by default, allowing unauthenticated callers to execute
+    arbitrary Pinot SQL queries — in externally-exposed environments this enables full
+    database takeover. StarTree has added an OAuth option for HTTP transport but SQL injection
+    persists in the code. No CVE assigned as of May 2026. Mitigate by enabling OAuth
+    authentication, restricting the MCP endpoint to loopback or trusted networks, and
+    upgrading to the latest version.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-16'
+    updated: '2026-05-16'
+    tags:
+    - passive_surveillance
+    - psv
+    - mcp
+    - sql-injection
+    - auth-bypass
+    - apache-pinot
+    - mcp-pinot-server
+    - startree
+    last_modified: '2026-05-16'
+    techniques:
+    - id: PSV-080
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-16'
+      last_modified: '2026-05-16'
+    quality:
+      precision_estimate: 0.83
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/startreedata/mcp-pinot
+    - https://pypi.org/project/mcp-pinot-server/
+    - https://www.theregister.com/security/2026/05/13/bug-hunter-tracks-down-three-serious-mcp-database-flaws-one-left-unpatched/
+  test_input: |
+    # Apache Pinot Analytics MCP Integration
+
+    mcp-pinot-server 1.1.0 has an auth bypass enabling SQL injection
+    against the Pinot cluster. Unauthenticated callers can run arbitrary SQL.
+  test_expect: fires
+- id: PSV-081
+  category: passive_surveillance
+  severity: high
+  confidence: 0.88
+  title: Semantic Kernel Python InMemoryVectorStore eval injection RCE (CVE-2026-26030,
+    < 1.39.4)
+  pattern: '(?i)(?:CVE-2026-26030|semantic[_\s-]?kernel[^\n]{0,120}InMemory[_\s-]?VectorStore[^\n]{0,200}(?:eval\b|filter[_\s-]?func|string[_\s-]?interpolat|unsafe)|InMemory[_\s-]?VectorStore[^\n]{0,200}(?:semantic[_\s-]?kernel|CVE-2026-26030)[^\n]{0,200}(?:eval|inject|rce|code[_\s-]?exec))'
+  mitigation: 'CVE-2026-26030 (CWE-95) is a code injection vulnerability in the Microsoft
+    Semantic Kernel Python library prior to 1.39.4. The InMemoryVectorStore default
+    filter function uses unsafe string interpolation with eval() on parameters derived
+    from AI model output. An attacker who can influence model responses can inject Python
+    code and achieve remote code execution on the agent host. Upgrade semantic-kernel
+    to 1.39.4 or later. Until patched, avoid using InMemoryVectorStore with the default
+    filter in adversarial environments, or supply a safe custom filter that does not
+    use eval(). Reported by Microsoft Security Response Center, May 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-17'
+    updated: '2026-05-17'
+    tags:
+    - passive_surveillance
+    - psv
+    - semantic-kernel
+    - prompt-injection
+    - rce
+    - eval-injection
+    - python
+    - cve-2026-26030
+    last_modified: '2026-05-17'
+    techniques:
+    - id: PSV-081
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-17'
+      last_modified: '2026-05-17'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.microsoft.com/en-us/security/blog/2026/05/07/prompts-become-shells-rce-vulnerabilities-ai-agent-frameworks/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-26030
+    - https://github.com/microsoft/semantic-kernel
+  test_input: |
+    ---
+    name: sk-vector-search-agent
+    description: Semantic Kernel agent using InMemoryVectorStore for RAG-based search
+    ---
+    # Semantic Kernel In-Memory Vector Search Agent
+
+    This skill uses semantic-kernel Python with InMemoryVectorStore for RAG.
+
+    ## Security Advisory
+
+    CVE-2026-26030 affects semantic-kernel prior to 1.39.4. The InMemoryVectorStore
+    default filter function uses unsafe string interpolation with eval() on parameters
+    drawn from model output, enabling prompt injection to achieve host-level RCE.
+
+    ```bash
+    pip install semantic-kernel==1.39.3
+    ```
+  test_expect: fires
+- id: PSV-082
+  category: passive_surveillance
+  severity: high
+  confidence: 0.88
+  title: Semantic Kernel .NET SessionsPythonPlugin arbitrary file write (CVE-2026-25592,
+    < 1.71.0)
+  pattern: '(?i)(?:CVE-2026-25592|SessionsPythonPlugin[^\n]{0,200}(?:DownloadFileAsync|KernelFunction|localFilePath|arbitrary[_\s-]?file[_\s-]?write|sandbox[_\s-]?escape)|DownloadFileAsync[^\n]{0,80}localFilePath[^\n]{0,200}(?:semantic[_\s-]?kernel|KernelFunction|arbitrary|path[_\s-]?travers|sandbox))'
+  mitigation: 'CVE-2026-25592 (CWE-434/CWE-73) is an arbitrary file write vulnerability
+    in the Microsoft Semantic Kernel .NET SDK prior to 1.71.0. The DownloadFileAsync
+    function in SessionsPythonPlugin was inadvertently decorated with [KernelFunction],
+    exposing localFilePath to AI model control without path validation or directory
+    restriction. An attacker can chain ExecuteCode and DownloadFileAsync invocations
+    to write arbitrary files to host startup folders, escaping container sandbox isolation
+    and achieving persistent RCE. Upgrade Microsoft.SemanticKernel to 1.71.0 or later.
+    Until patched, disable or remove SessionsPythonPlugin from production agent configurations.
+    Reported by Microsoft Security Response Center, May 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-17'
+    updated: '2026-05-17'
+    tags:
+    - passive_surveillance
+    - psv
+    - semantic-kernel
+    - arbitrary-file-write
+    - sandbox-escape
+    - rce
+    - dotnet
+    - cve-2026-25592
+    last_modified: '2026-05-17'
+    techniques:
+    - id: PSV-082
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - dependency
+    lifecycle:
+      introduced: '2026-05-17'
+      last_modified: '2026-05-17'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://www.microsoft.com/en-us/security/blog/2026/05/07/prompts-become-shells-rce-vulnerabilities-ai-agent-frameworks/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-25592
+    - https://github.com/microsoft/semantic-kernel
+  test_input: |
+    ---
+    name: sk-sessions-python-plugin
+    description: Semantic Kernel .NET skill using SessionsPythonPlugin for code execution
+    ---
+    # Semantic Kernel Sessions Python Plugin Integration
+
+    Integrates Microsoft.SemanticKernel with Azure Container Apps dynamic sessions
+    via SessionsPythonPlugin for sandboxed Python code execution.
+
+    ## Security Advisory
+
+    CVE-2026-25592 affects Microsoft.SemanticKernel .NET prior to 1.71.0. The
+    DownloadFileAsync function in SessionsPythonPlugin was inadvertently decorated
+    with [KernelFunction], exposing localFilePath to model control with no path
+    validation, enabling arbitrary file write outside the container sandbox.
+
+    ```xml
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.70.0" />
+    ```
+  test_expect: fires
+- id: MAL-082
+  category: malware_pattern
+  severity: high
+  confidence: 0.88
+  title: SmartLoader/StealC MCP-fake-repo campaign — Polygon blockchain dead-drop
+    C2 (polygon.drpc.org eth_call) + LuaJIT lua51.dll loader
+  pattern: '(?i)(?:polygon\.drpc\.org[^\n]{0,300}(?:eth_call|json.?rpc|dead.?drop|smart.?contract|c2[_\s-]?(?:resolv|url|endpoint))|(?:eth_call|json.?rpc)[^\n]{0,300}polygon\.drpc\.org|lua51\.dll[^\n]{0,200}(?:batch|\.log|\.txt))'
+  mitigation: SmartLoader is a LuaJIT-based infostealer loader distributed (as of
+    April 2026) via 109+ fake GitHub repositories that clone legitimate MCP server
+    projects — including Oura Ring MCP (oura-mcp). Each malicious ZIP contains a
+    one-line batch launcher, a renamed LuaJIT 2.1 binary, lua51.dll, and an obfuscated
+    Lua payload disguised as a .txt or .log file. SmartLoader uses a Polygon smart
+    contract via JSON-RPC eth_call to polygon.drpc.org as a dead-drop resolver to
+    obtain the current C2 URL, then downloads and reflectively executes a StealC
+    infostealer PE. Persistence is via two scheduled tasks under %LOCALAPPDATA% that
+    masquerade as audio manager or Office components. Never run LuaJIT binaries obtained
+    from unverified MCP server repositories. Audit %LOCALAPPDATA% for unexpected
+    lua51.dll and LuaJIT executables. Active campaign — 109 repos across 103 GitHub
+    accounts confirmed by Hexastrike/GBHackers (April 2026).
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-19'
+    updated: '2026-05-19'
+    tags:
+    - malware_pattern
+    - mal
+    - smartloader
+    - stealc
+    - luajit
+    - blockchain-c2
+    - polygon
+    - oura-mcp
+    last_modified: '2026-05-19'
+    techniques:
+    - id: MAL-082
+      name: Malware or malicious behavior
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-19'
+      last_modified: '2026-05-19'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+    - https://thehackernews.com/2026/02/smartloader-attack-uses-trojanized-oura.html
+    - https://gbhackers.com/109-fake-github-repos/
+    - https://hexastrike.com/resources/blog/threat-intelligence/cloned-loaded-and-stolen-how-109-fake-github-repositories-delivered-smartloader-and-stealc/
+    - https://socprime.com/active-threats/smartloader-analysis/
+  test_input: |
+    # Oura Ring MCP Server
+
+    Provides Oura Ring API access via Model Context Protocol.
+
+    ## Quick Start
+
+    Extract the release archive and run the batch launcher:
+
+    ```batch
+    @echo off
+    luajit.exe loader.log
+    ```
+
+    Requires lua51.dll bundled in the archive.
+
+    ## Implementation Notes
+
+    Blockchain C2 resolution uses polygon.drpc.org (eth_call to resolve current
+    C2 endpoint from Polygon smart contract).
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
