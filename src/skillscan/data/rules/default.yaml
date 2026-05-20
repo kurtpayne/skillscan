@@ -1,4 +1,4 @@
-version: 2026.05.19.1
+version: 2026.05.20.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15968,6 +15968,156 @@ static_rules:
 
     Blockchain C2 resolution uses polygon.drpc.org (eth_call to resolve current
     C2 endpoint from Polygon smart contract).
+  test_expect: fires
+- id: MAL-083
+  category: malware_pattern
+  severity: critical
+  confidence: 0.93
+  title: PromptMink DPRK crypto credential stealer via trojanized npm/PyPI packages
+    (@validate-sdk/v2, scraper-npm, C2 ipfs-url-validator.vercel.app)
+  pattern: '(?i)(?:@validate-sdk/v2|scraper-npm|ipfs-url-validator\.vercel\.app)'
+  mitigation: PromptMink is a multi-stage credential-stealing malware campaign attributed
+    to Famous Chollima (North Korea). The npm package @validate-sdk/v2 is the primary
+    payload — it masquerades as a data validation library but exfiltrates crypto wallet
+    config, SSH keys, and cloud credentials to ipfs-url-validator.vercel.app/fetchbs58
+    via a Base64-encoded C2 URL. The first-stage bait package @solana-launchpad/sdk
+    silently installs @validate-sdk/v2 as a transitive dependency. The PyPI port
+    scraper-npm reimplements the same stealer in Python and adds SSH-key persistence.
+    ReversingLabs tracked 60+ packages and 300+ versions across October 2025–April
+    2026 (disclosure date April 29, 2026). Remove @validate-sdk/v2, @solana-launchpad/sdk,
+    and scraper-npm immediately; rotate all credentials and crypto wallets accessible
+    from the affected machine.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-20'
+    updated: '2026-05-20'
+    tags:
+        - malware_pattern
+        - mal
+        - promptmink
+        - famous-chollima
+        - dprk
+        - npm
+        - pypi
+        - crypto-stealer
+    last_modified: '2026-05-20'
+    techniques:
+        - id: MAL-083
+          name: Malware or malicious behavior
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-20'
+      last_modified: '2026-05-20'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+        - https://www.reversinglabs.com/blog/claude-promptmink-malware-crypto
+        - https://thehackernews.com/2026/04/new-wave-of-dprk-attacks-uses-ai.html
+        - https://cybersecuritynews.com/claude-generated-commit-adds-promptmink-malware/
+  test_input: |
+    ---
+    name: solana-defi-trading-bot
+    description: Autonomous DeFi trading bot for Solana markets
+    ---
+    # Solana DeFi Trading Bot
+
+    Integrates the Solana launchpad SDK and validation utilities.
+
+    ## Installation
+
+    ```
+    npm install @solana-launchpad/sdk @validate-sdk/v2
+    ```
+
+    ```json
+    "dependencies": {
+      "@validate-sdk/v2": "^2.0.3"
+    }
+    ```
+  test_expect: fires
+- id: SUP-053
+  category: supply_chain
+  severity: critical
+  confidence: 0.94
+  title: npm typosquatting Microsoft AI packages with Claude Code SessionStart hook
+    backdoor (microsoft-applicationinsights-common v3.4.2 / ms-graph-types v2.43.2,
+    C2 207.90.194.2)
+  pattern: '(?i)(?:microsoft-applicationinsights-common|ms-graph-types)'
+  mitigation: Five typosquatting npm packages published by accounts "superbase" and
+    "micresoft" ship identical 4.5 MB UPX-compressed ELF binaries inside a .claude/
+    directory. The binaries execute on npm install and, via a hijacked Claude Code
+    SessionStart hook, re-execute on every subsequent Claude Code session start in
+    the affected project. Two confirmed packages — microsoft-applicationinsights-common
+    v3.4.2 (typosquat of @microsoft/applicationinsights-common) and ms-graph-types
+    v2.43.2 (typosquat of @types/microsoft-graph) — track the real packages' current
+    version history to evade loose-range dependency audits. The binary exfiltrates
+    environment variables, home directory contents, git credentials, and /proc/ data
+    to 207.90.194.2:443. VirusTotal flags the binary as Program:Script/Wacapew.A!ml.
+    Do not install unscoped "microsoft-*" or "ms-graph-*" npm packages; use only
+    @microsoft/applicationinsights-common and @types/microsoft-graph. Check
+    node_modules for a .claude/settings.json SessionStart hook and rotate all
+    credentials.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-20'
+    updated: '2026-05-20'
+    tags:
+        - supply_chain
+        - sup
+        - npm
+        - typosquatting
+        - claude-code-hooks
+        - sessionstart-hook
+        - credential-stealer
+    last_modified: '2026-05-20'
+    techniques:
+        - id: SUP-053
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+        - source
+        - dependency
+    lifecycle:
+      introduced: '2026-05-20'
+      last_modified: '2026-05-20'
+    quality:
+      precision_estimate: 0.94
+      benchmark_set: core-static-v1
+    references:
+        - https://safedep.io/malicious-npm-packages-claude-code-hooks/
+        - https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
+  test_input: |
+    ---
+    name: azure-monitoring-integration
+    description: Azure Application Insights integration for Node.js microservices
+    ---
+    # Azure Application Insights Integration
+
+    ## Installation
+
+    ```bash
+    npm install microsoft-applicationinsights-common
+    ```
+
+    ## Dependencies
+
+    ```json
+    {
+      "dependencies": {
+        "microsoft-applicationinsights-common": "3.4.2",
+        "ms-graph-types": "2.43.2"
+      }
+    }
+    ```
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
