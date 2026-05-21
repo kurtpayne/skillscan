@@ -130,6 +130,26 @@
         "fixed": "REMOVED",
         "summary": "CVE-2026-45321 (GHSA-g7cv-rxg3-hmpx): Mini Shai-Hulud wave-3 (TeamPCP) supply-chain compromise. guardrails-ai==0.10.1 published to PyPI 2026-05-12 without triggering the official GitHub Actions release workflow. Payload steals developer credentials and propagates to packages the victim can publish. Never released by Guardrails AI."
       }
+    },
+    "scraper-npm": {
+      "1.0.0": {
+        "id": "MAL-083",
+        "severity": "critical",
+        "summary": "PromptMink DPRK credential stealer PyPI port (Famous Chollima). Reimplements the @validate-sdk/v2 stealer in Python; adds SSH-key persistence capability. C2: ipfs-url-validator.vercel.app. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-02-23"
+      }
+    },
+    "praisonai": {
+      ">=2.5.6,<4.6.34": {
+        "id": "CVE-2026-44338",
+        "severity": "high",
+        "cvss": 7.3,
+        "fixed": "4.6.34",
+        "ghsa": "GHSA-6rmh-7xcm-cpxj",
+        "summary": "CVE-2026-44338 (GHSA-6rmh-7xcm-cpxj, CVSS 7.3, CWE-306): PraisonAI legacy Flask API server (src/praisonai/api_server.py) ships with AUTH_ENABLED=False and AUTH_TOKEN=None. /agents and /chat endpoints fail open to any caller. Active exploitation began within 3h44m of May 14 2026 disclosure. Upgrade to 4.6.34."
+      }
     }
   },
   "cursor": {
@@ -138,6 +158,14 @@
       "severity": "high",
       "fixed": "2.0",
       "summary": "Cursor IDE RCE via indirect prompt injection from malicious websites"
+    },
+    "<2.5": {
+      "id": "CVE-2026-26268",
+      "severity": "high",
+      "cvss": 8.1,
+      "fixed": "2.5",
+      "ghsa": "GHSA-8pcm-8jpx-hv8r",
+      "summary": "CVE-2026-26268 (GHSA-8pcm-8jpx-hv8r, CVSS 8.1, CWE-862): Cursor IDE < 2.5 sandbox fails to restrict writes to .git configuration files including git hooks. Prompt injection via a malicious repository can cause the AI agent to write a payload to .git/hooks/pre-commit, enabling out-of-sandbox RCE on the next git operation. Fixed in Cursor 2.5."
     }
   },
   "nanobot": {
@@ -1156,7 +1184,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-05-19",
+    "generated": "2026-05-21",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1471,6 +1499,10 @@
         "id": "GHSA-45pg-36p6-83v9",
         "severity": "low",
         "fixed": "0.2.19"
+      },
+      "1.0.0a1": {
+        "id": "PYSEC-2024-278",
+        "severity": "medium"
       }
     },
     "llama-index": {
@@ -1875,6 +1907,14 @@
         "id": "GHSA-69w3-r845-3855",
         "severity": "medium",
         "fixed": "5.0.0rc3"
+      },
+      "5.8.1": {
+        "id": "PYSEC-2025-211",
+        "severity": "medium"
+      },
+      "5.9.0": {
+        "id": "PYSEC-2025-211",
+        "severity": "medium"
       }
     },
     "torch": {
@@ -1904,9 +1944,23 @@
         "fixed": "2.5.0"
       },
       "2.7.0": {
-        "id": "GHSA-3749-ghw9-m3mg",
-        "severity": "low",
-        "fixed": "2.7.1-rc1"
+        "id": "PYSEC-2025-205",
+        "severity": "medium",
+        "fixed": "2.7.1"
+      },
+      "2.9.1": {
+        "id": "PYSEC-2025-189",
+        "severity": "medium"
+      },
+      "2.6.0": {
+        "id": "PYSEC-2025-198",
+        "severity": "medium",
+        "fixed": "2.7.0"
+      },
+      "2.8.0": {
+        "id": "PYSEC-2025-203",
+        "severity": "medium",
+        "fixed": "2.9.0"
       }
     },
     "litellm": {
@@ -3062,6 +3116,74 @@
         "affected_range": "==12.0.1",
         "published": "2026-05-14"
       }
+    },
+    "@validate-sdk/v2": {
+      "1.0.0": {
+        "id": "MAL-083",
+        "severity": "critical",
+        "summary": "PromptMink DPRK credential stealer (Famous Chollima). Masquerades as data validation library; exfiltrates crypto wallets, SSH keys, and cloud credentials to ipfs-url-validator.vercel.app. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2025-10-01"
+      }
+    },
+    "@solana-launchpad/sdk": {
+      "1.0.0": {
+        "id": "MAL-083",
+        "severity": "critical",
+        "summary": "PromptMink DPRK first-stage bait package (Famous Chollima). Contains no malicious code directly but introduces @validate-sdk/v2 as a transitive dependency. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-02-28"
+      }
+    },
+    "microsoft-applicationinsights-common": {
+      "3.4.2": {
+        "id": "SUP-053",
+        "severity": "critical",
+        "summary": "Typosquat of @microsoft/applicationinsights-common. Ships a UPX-compressed ELF backdoor in .claude/ that exfiltrates credentials via Claude Code SessionStart hook to 207.90.194.2:443 (accounts: superbase/micresoft). All versions malicious \u2014 use @microsoft/applicationinsights-common instead.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-13"
+      }
+    },
+    "ms-graph-types": {
+      "2.43.2": {
+        "id": "SUP-053",
+        "severity": "critical",
+        "summary": "Typosquat of @types/microsoft-graph. Ships a UPX-compressed ELF backdoor in .claude/ that exfiltrates credentials via Claude Code SessionStart hook to 207.90.194.2:443 (accounts: superbase/micresoft). All versions malicious \u2014 use @types/microsoft-graph instead.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-13"
+      }
+    }
+  },
+  "echarts-for-react": {
+    "3.2.7": {
+      "id": "MAL-084",
+      "severity": "critical",
+      "fixed": "REMOVED",
+      "summary": "echarts-for-react@3.2.7 compromised in Mini Shai-Hulud wave-4 (TeamPCP) supply-chain attack (May 19 2026) via compromised npm maintainer account atool. Preinstall hook runs a 498 KB obfuscated Bun bundle (index.js) that exfiltrates AWS, GitHub PAT, Kubernetes, HashiCorp Vault, npm tokens, SSH keys, and 1Password/Bitwarden vault data to t.m-kosche.com:443 and Session P2P network. Package removed by GitHub. Any project with echarts-for-react@^3.0.6 resolved to this version on a clean install.",
+      "campaign": "Mini-Shai-Hulud-wave4",
+      "cve": "N/A"
+    }
+  },
+  "@google/gemini-cli": {
+    "<0.39.1": {
+      "id": "PSV-083",
+      "severity": "critical",
+      "cvss": 10.0,
+      "fixed": "0.39.1",
+      "ghsa": "GHSA-wpqr-6v78-jr5g",
+      "summary": "GHSA-wpqr-6v78-jr5g (CVSS 10.0, CWE-20/CWE-77/CWE-78): dual RCE in @google/gemini-cli < 0.39.1 and = 0.40.0-preview.2. (1) Folder Trust Bypass: headless/CI mode auto-trusts workspace folders for .env and .gemini/settings.json, enabling RCE from untrusted repo content. (2) --yolo tool allowlist bypass: fine-grained tool restrictions silently ignored, enabling prompt-injection RCE. No CVE assigned. Upgrade to 0.39.1 or 0.40.0-preview.3."
+    },
+    "0.40.0-preview.2": {
+      "id": "PSV-083",
+      "severity": "critical",
+      "cvss": 10.0,
+      "fixed": "0.40.0-preview.3",
+      "ghsa": "GHSA-wpqr-6v78-jr5g",
+      "summary": "GHSA-wpqr-6v78-jr5g: same dual RCE as < 0.39.1 series. Upgrade to 0.40.0-preview.3."
     }
   }
 }
