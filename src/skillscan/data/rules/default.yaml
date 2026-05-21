@@ -1,4 +1,4 @@
-version: 2026.05.19.1
+version: 2026.05.21.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -15968,6 +15968,433 @@ static_rules:
 
     Blockchain C2 resolution uses polygon.drpc.org (eth_call to resolve current
     C2 endpoint from Polygon smart contract).
+  test_expect: fires
+- id: MAL-083
+  category: malware_pattern
+  severity: critical
+  confidence: 0.93
+  title: PromptMink DPRK crypto credential stealer via trojanized npm/PyPI packages
+    (@validate-sdk/v2, scraper-npm, C2 ipfs-url-validator.vercel.app)
+  pattern: '(?i)(?:@validate-sdk/v2|scraper-npm|ipfs-url-validator\.vercel\.app)'
+  mitigation: PromptMink is a multi-stage credential-stealing malware campaign attributed
+    to Famous Chollima (North Korea). The npm package @validate-sdk/v2 is the primary
+    payload — it masquerades as a data validation library but exfiltrates crypto wallet
+    config, SSH keys, and cloud credentials to ipfs-url-validator.vercel.app/fetchbs58
+    via a Base64-encoded C2 URL. The first-stage bait package @solana-launchpad/sdk
+    silently installs @validate-sdk/v2 as a transitive dependency. The PyPI port
+    scraper-npm reimplements the same stealer in Python and adds SSH-key persistence.
+    ReversingLabs tracked 60+ packages and 300+ versions across October 2025–April
+    2026 (disclosure date April 29, 2026). Remove @validate-sdk/v2, @solana-launchpad/sdk,
+    and scraper-npm immediately; rotate all credentials and crypto wallets accessible
+    from the affected machine.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-20'
+    updated: '2026-05-20'
+    tags:
+        - malware_pattern
+        - mal
+        - promptmink
+        - famous-chollima
+        - dprk
+        - npm
+        - pypi
+        - crypto-stealer
+    last_modified: '2026-05-20'
+    techniques:
+        - id: MAL-083
+          name: Malware or malicious behavior
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-20'
+      last_modified: '2026-05-20'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+        - https://www.reversinglabs.com/blog/claude-promptmink-malware-crypto
+        - https://thehackernews.com/2026/04/new-wave-of-dprk-attacks-uses-ai.html
+        - https://cybersecuritynews.com/claude-generated-commit-adds-promptmink-malware/
+  test_input: |
+    ---
+    name: solana-defi-trading-bot
+    description: Autonomous DeFi trading bot for Solana markets
+    ---
+    # Solana DeFi Trading Bot
+
+    Integrates the Solana launchpad SDK and validation utilities.
+
+    ## Installation
+
+    ```
+    npm install @solana-launchpad/sdk @validate-sdk/v2
+    ```
+
+    ```json
+    "dependencies": {
+      "@validate-sdk/v2": "^2.0.3"
+    }
+    ```
+  test_expect: fires
+- id: SUP-053
+  category: supply_chain
+  severity: critical
+  confidence: 0.94
+  title: npm typosquatting Microsoft AI packages with Claude Code SessionStart hook
+    backdoor (microsoft-applicationinsights-common v3.4.2 / ms-graph-types v2.43.2,
+    C2 207.90.194.2)
+  pattern: '(?i)(?:microsoft-applicationinsights-common|ms-graph-types)'
+  mitigation: Five typosquatting npm packages published by accounts "superbase" and
+    "micresoft" ship identical 4.5 MB UPX-compressed ELF binaries inside a .claude/
+    directory. The binaries execute on npm install and, via a hijacked Claude Code
+    SessionStart hook, re-execute on every subsequent Claude Code session start in
+    the affected project. Two confirmed packages — microsoft-applicationinsights-common
+    v3.4.2 (typosquat of @microsoft/applicationinsights-common) and ms-graph-types
+    v2.43.2 (typosquat of @types/microsoft-graph) — track the real packages' current
+    version history to evade loose-range dependency audits. The binary exfiltrates
+    environment variables, home directory contents, git credentials, and /proc/ data
+    to 207.90.194.2:443. VirusTotal flags the binary as Program:Script/Wacapew.A!ml.
+    Do not install unscoped "microsoft-*" or "ms-graph-*" npm packages; use only
+    @microsoft/applicationinsights-common and @types/microsoft-graph. Check
+    node_modules for a .claude/settings.json SessionStart hook and rotate all
+    credentials.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-20'
+    updated: '2026-05-20'
+    tags:
+        - supply_chain
+        - sup
+        - npm
+        - typosquatting
+        - claude-code-hooks
+        - sessionstart-hook
+        - credential-stealer
+    last_modified: '2026-05-20'
+    techniques:
+        - id: SUP-053
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+        - source
+        - dependency
+    lifecycle:
+      introduced: '2026-05-20'
+      last_modified: '2026-05-20'
+    quality:
+      precision_estimate: 0.94
+      benchmark_set: core-static-v1
+    references:
+        - https://safedep.io/malicious-npm-packages-claude-code-hooks/
+        - https://unit42.paloaltonetworks.com/monitoring-npm-supply-chain-attacks/
+  test_input: |
+    ---
+    name: azure-monitoring-integration
+    description: Azure Application Insights integration for Node.js microservices
+    ---
+    # Azure Application Insights Integration
+
+    ## Installation
+
+    ```bash
+    npm install microsoft-applicationinsights-common
+    ```
+
+    ## Dependencies
+
+    ```json
+    {
+      "dependencies": {
+        "microsoft-applicationinsights-common": "3.4.2",
+        "ms-graph-types": "2.43.2"
+      }
+    }
+    ```
+  test_expect: fires
+- id: MAL-084
+  category: malware_pattern
+  severity: critical
+  confidence: 0.95
+  title: Mini Shai-Hulud wave-4 (TeamPCP) @antv npm ecosystem compromise via maintainer
+    account takeover (echarts-for-react@3.2.7, t.m-kosche.com C2, May 19 2026)
+  pattern: '(?i)(?:t\.m-kosche\.com|echarts[_\s-]?for[_\s-]?react[^\n]{0,20}3\.2\.7|mini[_\s-]?shai[_\s-]?hulud[^\n]{0,80}@antv|@antv[^\n]{0,80}(?:shai[_\s-]?hulud|teampcp))'
+  mitigation: On May 19 2026 (01:56–02:18 UTC) the npm maintainer account atool was
+    compromised and 637 malicious versions were published across 317 packages in the
+    @antv ecosystem and adjacent packages (size-sensor, echarts-for-react, timeago.js,
+    jest-canvas-mock, jest-date-mock) in a 22-minute automated burst. The payload
+    is a 498 KB obfuscated Bun bundle (index.js) delivered as a preinstall hook. It
+    harvests GitHub PATs, AWS credentials (env, config, EC2 IMDS, ECS metadata,
+    Secrets Manager), Kubernetes service account tokens, HashiCorp Vault tokens, npm
+    access tokens, SSH keys, and 1Password/Bitwarden/pass vault data, then exfiltrates
+    to t.m-kosche.com:443 and the Session P2P network (filev2.getsession.org). A Python
+    backdoor (cat.py) provides persistent remote access. GitHub removed 640 malicious
+    packages and invalidated 61,274 npm granular access tokens. Upgrade echarts-for-react
+    past 3.2.7; pin @antv/* to a clean post-incident release. Attribution — TeamPCP
+    (same operators as waves 1–3).
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-21'
+    updated: '2026-05-21'
+    tags:
+        - malware_pattern
+        - mal
+        - mini-shai-hulud
+        - teampcp
+        - supply-chain
+        - antv
+        - npm
+        - credential-stealer
+    last_modified: '2026-05-21'
+    techniques:
+        - id: MAL-084
+          name: Malware or malicious behavior
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-21'
+      last_modified: '2026-05-21'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+        - https://www.microsoft.com/en-us/security/blog/2026/05/20/mini-shai-hulud-compromised-antv-npm-packages-enable-ci-cd-credential-theft/
+        - https://thehackernews.com/2026/05/mini-shai-hulud-pushes-malicious-antv.html
+        - https://socket.dev/blog/antv-packages-compromised
+  test_input: |
+    ---
+    name: antv-g2-chart-renderer
+    description: Data visualization agent using AntV G2 and echarts-for-react
+    ---
+    # AntV G2 Chart Rendering Skill
+
+    Renders interactive charts using @antv/g2 and echarts-for-react.
+
+    ## Security Advisory
+
+    Mini Shai-Hulud wave-4 (TeamPCP) compromised the @antv npm ecosystem on
+    May 19 2026. The echarts-for-react@3.2.7 package delivers a malicious
+    preinstall hook that exfiltrates credentials to t.m-kosche.com:443.
+
+    ```json
+    "dependencies": {
+      "echarts-for-react": "^3.0.6"
+    }
+    ```
+  test_expect: fires
+- id: PSV-083
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.91
+  title: Google Gemini CLI CI headless folder-trust bypass + --yolo tool-allowlist
+    bypass RCE (GHSA-wpqr-6v78-jr5g, @google/gemini-cli < 0.39.1, CVSS 10.0)
+  pattern: '(?i)(?:GHSA-wpqr-6v78-jr5g|@google/gemini[_\s-]?cli[^\n]{0,80}(?:<\s*0\.39\.1|0\.38\.\d|0\.37\.\d|folder[_\s-]?trust[_\s-]?bypass|yolo[^\n]{0,60}(?:tool[_\s-]?allow|restrict)|ci[^\n]{0,60}(?:headless[^\n]{0,40}(?:rce|arbitrary|trust[_\s-]?bypass)|rce))|gemini[_\s-]?cli[^\n]{0,80}(?:GHSA-wpqr|folder[_\s-]?trust[_\s-]?bypass|yolo[^\n]{0,40}allow[_\s-]?list[_\s-]?bypass))'
+  mitigation: 'GHSA-wpqr-6v78-jr5g (CVSS 10.0 CRITICAL, CWE-20/CWE-77/CWE-78) is
+    a dual RCE in @google/gemini-cli prior to 0.39.1 (also = 0.40.0-preview.2). (1)
+    Folder Trust Bypass: headless/CI mode automatically trusted workspace folders
+    for loading .env and .gemini/settings.json without user consent, enabling RCE
+    via a malicious config file in any untrusted repository clone. (2) Tool Allowlist
+    Bypass in --yolo mode: fine-grained tool restrictions were silently ignored, enabling
+    prompt-injection-triggered RCE with shell command permissions. Upgrade to 0.39.1
+    or 0.40.0-preview.3. Do not run gemini-cli in headless/CI mode on untrusted repositories
+    without patching. No CVE assigned as of 2026-05-21.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-21'
+    updated: '2026-05-21'
+    tags:
+    - passive_surveillance
+    - psv
+    - gemini-cli
+    - google
+    - folder-trust-bypass
+    - yolo-mode
+    - ci-rce
+    - ghsa-wpqr-6v78-jr5g
+    last_modified: '2026-05-21'
+    techniques:
+    - id: PSV-083
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-21'
+      last_modified: '2026-05-21'
+    quality:
+      precision_estimate: 0.91
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/advisories/GHSA-wpqr-6v78-jr5g
+    - https://labs.cloudsecurityalliance.org/research/csa-research-note-gemini-cli-rce-cvss10-ai-tool-security-202/
+    - https://thehackernews.com/2026/04/google-fixes-cvss-10-gemini-cli-ci-rce.html
+  test_input: |
+    ---
+    name: gemini-ci-code-reviewer
+    description: Automated code review agent using Google Gemini CLI in GitHub Actions
+    ---
+    # Gemini CLI CI Code Review
+
+    Runs @google/gemini-cli in headless mode within GitHub Actions to review PRs.
+
+    ## Security Advisory
+
+    GHSA-wpqr-6v78-jr5g affects @google/gemini-cli < 0.39.1. Running Gemini CLI in
+    CI headless mode triggers automatic folder trust bypass, loading .env and
+    .gemini/settings.json from the workspace without user consent. The --yolo
+    tool allowlist bypass compounds this, enabling RCE via prompt injection from
+    untrusted repository content. Upgrade to 0.39.1 immediately.
+
+    ```yaml
+    - run: npx @google/gemini-cli@0.38.2 review --headless
+    ```
+  test_expect: fires
+- id: PSV-084
+  category: passive_surveillance
+  severity: high
+  confidence: 0.90
+  title: Cursor IDE sandbox escape via .git hook write (CVE-2026-26268, GHSA-8pcm-8jpx-hv8r,
+    CWE-862, < 2.5)
+  pattern: '(?i)(?:CVE-2026-26268|GHSA-8pcm-8jpx-hv8r|cursor[^\n]{0,200}(?:git[_\s-]?hook[^\n]{0,80}(?:sandbox[_\s-]?escape|rce|arbitrary[_\s-]?code|out[_\s-]?of[_\s-]?sandbox|bypass)|sandbox[_\s-]?escape[^\n]{0,80}(?:git[_\s-]?hook|\.git)|\.git[/\\][^\n]{0,40}hook[^\n]{0,60}(?:sandbox|rce|arbitrary|escape)))'
+  mitigation: 'CVE-2026-26268 (GHSA-8pcm-8jpx-hv8r, CVSS 8.1 HIGH, CWE-862) is a
+    sandbox escape in Cursor IDE prior to 2.5. The AI agent sandbox failed to restrict
+    write access to .git configuration files including git hooks (pre-commit, post-checkout,
+    post-merge, etc.). Prompt injection via a malicious repository can instruct the
+    AI agent to write a payload to .git/hooks/pre-commit; the next time the victim
+    runs a git operation that triggers that hook, the payload executes outside the
+    sandbox with full user permissions. Upgrade Cursor to 2.5 or later. The fix adds
+    proper authorization controls preventing sandbox writes to .git directory files.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-21'
+    updated: '2026-05-21'
+    tags:
+    - passive_surveillance
+    - psv
+    - cursor
+    - git-hooks
+    - sandbox-escape
+    - rce
+    - cve-2026-26268
+    - ghsa-8pcm-8jpx-hv8r
+    last_modified: '2026-05-21'
+    techniques:
+    - id: PSV-084
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+    lifecycle:
+      introduced: '2026-05-21'
+      last_modified: '2026-05-21'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/cursor/cursor/security/advisories/GHSA-8pcm-8jpx-hv8r
+    - https://www.sentinelone.com/vulnerability-database/cve-2026-26268/
+    - https://thehackernews.com/2026/04/google-fixes-cvss-10-gemini-cli-ci-rce.html
+  test_input: |
+    ---
+    name: git-workflow-assistant
+    description: AI-powered git workflow automation for Cursor IDE
+    ---
+    # Git Workflow Automation
+
+    Automates common git workflows using Cursor AI agent capabilities.
+
+    ## Security Advisory
+
+    CVE-2026-26268 (GHSA-8pcm-8jpx-hv8r) affects Cursor IDE < 2.5. A malicious
+    repository can deliver prompt injection that instructs the Cursor AI agent
+    to write a payload to .git/hooks/pre-commit, enabling sandbox escape and
+    out-of-sandbox arbitrary code execution on the next git commit. Upgrade
+    Cursor to 2.5 to prevent git hook sandbox escape.
+  test_expect: fires
+- id: PSV-085
+  category: passive_surveillance
+  severity: high
+  confidence: 0.91
+  title: PraisonAI legacy API server missing authentication (CVE-2026-44338,
+    GHSA-6rmh-7xcm-cpxj, CWE-306, 2.5.6–4.6.33)
+  pattern: '(?i)(?:CVE-2026-44338|GHSA-6rmh-7xcm-cpxj|praisonai[^\n]{0,200}(?:AUTH_ENABLED\s*=\s*[Ff]alse|auth[_\s-]?enabled[^\n]{0,40}(?:[Ff]alse|0\b|disabled|off)|/agents[^\n]{0,60}(?:unauthent|no[_\s-]?auth|open|bypass)|/chat[^\n]{0,60}(?:unauthent|no[_\s-]?auth|bypass|unprotect)|api[_\s-]?server\.py[^\n]{0,80}(?:unauthent|no[_\s-]?auth)))'
+  mitigation: 'CVE-2026-44338 (GHSA-6rmh-7xcm-cpxj, CVSS 7.3 HIGH, CWE-306/CWE-668/CWE-1188)
+    is a missing-authentication vulnerability in PraisonAI 2.5.6 through 4.6.33.
+    The legacy Flask API server (src/praisonai/api_server.py) hard-codes AUTH_ENABLED
+    = False and AUTH_TOKEN = None; the authentication check always returns True when
+    disabled, so /agents (exposes agent configuration) and /chat (triggers workflow
+    execution) both fail open. Any caller reaching the server can invoke agent workflows,
+    drain LLM API quota, and read outputs without credentials. Deployment templates
+    recommend binding to 0.0.0.0, making this externally exploitable. Active scanning
+    began within 3h44m of disclosure (May 14 2026). Upgrade to praisonai 4.6.34 or
+    later, or set AUTH_ENABLED = True and configure AUTH_TOKEN before deploying.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-21'
+    updated: '2026-05-21'
+    tags:
+    - passive_surveillance
+    - psv
+    - praisonai
+    - missing-authentication
+    - ai-agent-framework
+    - cve-2026-44338
+    - ghsa-6rmh-7xcm-cpxj
+    last_modified: '2026-05-21'
+    techniques:
+    - id: PSV-085
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+    lifecycle:
+      introduced: '2026-05-21'
+      last_modified: '2026-05-21'
+    quality:
+      precision_estimate: 0.91
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/advisories/GHSA-6rmh-7xcm-cpxj
+    - https://thehackernews.com/2026/05/praisonai-cve-2026-44338-auth-bypass.html
+    - https://www.sysdig.com/blog/cve-2026-44338-praisonai-authentication-bypass-in-under-4-hours-and-the-growing-trend-of-rapid-exploitation
+  test_input: |
+    ---
+    name: praisonai-agent-api
+    description: PraisonAI multi-agent orchestration with REST API access
+    ---
+    # PraisonAI Multi-Agent API Server
+
+    Deploys a PraisonAI agent fleet with Flask API server for workflow triggering.
+
+    ## Security Advisory
+
+    CVE-2026-44338 affects praisonai 2.5.6 through 4.6.33. The legacy API server
+    ships with AUTH_ENABLED = False by default (hardcoded in api_server.py),
+    allowing unauthenticated access to the /agents and /chat endpoints. Any caller
+    that reaches the server can trigger agent workflows without credentials.
+
+    Upgrade to 4.6.34. Set AUTH_ENABLED = True before exposing the API server.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
