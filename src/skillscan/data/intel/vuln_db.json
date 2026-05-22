@@ -1183,8 +1183,36 @@
       "fixed": "1.71.0"
     }
   },
+  "echarts-for-react": {
+    "3.2.7": {
+      "id": "MAL-084",
+      "severity": "critical",
+      "fixed": "REMOVED",
+      "summary": "echarts-for-react@3.2.7 compromised in Mini Shai-Hulud wave-4 (TeamPCP) supply-chain attack (May 19 2026) via compromised npm maintainer account atool. Preinstall hook runs a 498 KB obfuscated Bun bundle (index.js) that exfiltrates AWS, GitHub PAT, Kubernetes, HashiCorp Vault, npm tokens, SSH keys, and 1Password/Bitwarden vault data to t.m-kosche.com:443 and Session P2P network. Package removed by GitHub. Any project with echarts-for-react@^3.0.6 resolved to this version on a clean install.",
+      "campaign": "Mini-Shai-Hulud-wave4",
+      "cve": "N/A"
+    }
+  },
+  "@google/gemini-cli": {
+    "<0.39.1": {
+      "id": "PSV-083",
+      "severity": "critical",
+      "cvss": 10.0,
+      "fixed": "0.39.1",
+      "ghsa": "GHSA-wpqr-6v78-jr5g",
+      "summary": "GHSA-wpqr-6v78-jr5g (CVSS 10.0, CWE-20/CWE-77/CWE-78): dual RCE in @google/gemini-cli < 0.39.1 and = 0.40.0-preview.2. (1) Folder Trust Bypass: headless/CI mode auto-trusts workspace folders for .env and .gemini/settings.json, enabling RCE from untrusted repo content. (2) --yolo tool allowlist bypass: fine-grained tool restrictions silently ignored, enabling prompt-injection RCE. No CVE assigned. Upgrade to 0.39.1 or 0.40.0-preview.3."
+    },
+    "0.40.0-preview.2": {
+      "id": "PSV-083",
+      "severity": "critical",
+      "cvss": 10.0,
+      "fixed": "0.40.0-preview.3",
+      "ghsa": "GHSA-wpqr-6v78-jr5g",
+      "summary": "GHSA-wpqr-6v78-jr5g: same dual RCE as < 0.39.1 series. Upgrade to 0.40.0-preview.3."
+    }
+  },
   "_meta": {
-    "generated": "2026-05-21",
+    "generated": "2026-05-22",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1915,6 +1943,10 @@
       "5.9.0": {
         "id": "PYSEC-2025-211",
         "severity": "medium"
+      },
+      "5.0.0rc0": {
+        "id": "PYSEC-2025-217",
+        "severity": "medium"
       }
     },
     "torch": {
@@ -1949,13 +1981,12 @@
         "fixed": "2.7.1"
       },
       "2.9.1": {
-        "id": "PYSEC-2025-189",
+        "id": "PYSEC-2026-139",
         "severity": "medium"
       },
       "2.6.0": {
-        "id": "PYSEC-2025-198",
-        "severity": "medium",
-        "fixed": "2.7.0"
+        "id": "PYSEC-2025-191",
+        "severity": "medium"
       },
       "2.8.0": {
         "id": "PYSEC-2025-203",
@@ -3156,34 +3187,6 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-13"
       }
-    }
-  },
-  "echarts-for-react": {
-    "3.2.7": {
-      "id": "MAL-084",
-      "severity": "critical",
-      "fixed": "REMOVED",
-      "summary": "echarts-for-react@3.2.7 compromised in Mini Shai-Hulud wave-4 (TeamPCP) supply-chain attack (May 19 2026) via compromised npm maintainer account atool. Preinstall hook runs a 498 KB obfuscated Bun bundle (index.js) that exfiltrates AWS, GitHub PAT, Kubernetes, HashiCorp Vault, npm tokens, SSH keys, and 1Password/Bitwarden vault data to t.m-kosche.com:443 and Session P2P network. Package removed by GitHub. Any project with echarts-for-react@^3.0.6 resolved to this version on a clean install.",
-      "campaign": "Mini-Shai-Hulud-wave4",
-      "cve": "N/A"
-    }
-  },
-  "@google/gemini-cli": {
-    "<0.39.1": {
-      "id": "PSV-083",
-      "severity": "critical",
-      "cvss": 10.0,
-      "fixed": "0.39.1",
-      "ghsa": "GHSA-wpqr-6v78-jr5g",
-      "summary": "GHSA-wpqr-6v78-jr5g (CVSS 10.0, CWE-20/CWE-77/CWE-78): dual RCE in @google/gemini-cli < 0.39.1 and = 0.40.0-preview.2. (1) Folder Trust Bypass: headless/CI mode auto-trusts workspace folders for .env and .gemini/settings.json, enabling RCE from untrusted repo content. (2) --yolo tool allowlist bypass: fine-grained tool restrictions silently ignored, enabling prompt-injection RCE. No CVE assigned. Upgrade to 0.39.1 or 0.40.0-preview.3."
-    },
-    "0.40.0-preview.2": {
-      "id": "PSV-083",
-      "severity": "critical",
-      "cvss": 10.0,
-      "fixed": "0.40.0-preview.3",
-      "ghsa": "GHSA-wpqr-6v78-jr5g",
-      "summary": "GHSA-wpqr-6v78-jr5g: same dual RCE as < 0.39.1 series. Upgrade to 0.40.0-preview.3."
     }
   }
 }
