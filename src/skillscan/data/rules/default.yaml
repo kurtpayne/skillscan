@@ -1,4 +1,4 @@
-version: 2026.05.21.1
+version: 2026.05.23.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -16395,6 +16395,160 @@ static_rules:
     that reaches the server can trigger agent workflows without credentials.
 
     Upgrade to 4.6.34. Set AUTH_ENABLED = True before exposing the API server.
+  test_expect: fires
+- id: MAL-085
+  category: malware_pattern
+  severity: critical
+  confidence: 0.95
+  title: Mini Shai-Hulud wave-4 (TeamPCP) Nx Console VS Code extension supply chain
+    compromise (nrwl.angular-console v18.95.0, May 18 2026)
+  pattern: '(?i)(?:nrwl\.angular[_\s-]?console[^\n]{0,60}18\.95\.0|18\.95\.0[^\n]{0,60}nrwl\.angular[_\s-]?console|mini[_\s-]?shai[_\s-]?hulud[^\n]{0,80}(?:nx[_\s-]?console|nrwl)|nx[_\s-]?console[^\n]{0,80}(?:teampcp|wave[_\s-]?4|orphan[_\s-]?commit|dangling[_\s-]?commit))'
+  mitigation: On May 18 2026 (12:30–12:48 UTC) the nrwl.angular-console VS Code extension
+    (Nx Console, v18.95.0) was published to the Visual Studio Marketplace with a malicious
+    payload active for 18 minutes. The compromised release silently fetched and executed
+    a 498 KB obfuscated payload hidden in a dangling orphan commit inside the official
+    nrwl/nx GitHub repository. The payload harvests GitHub tokens, npm access tokens,
+    AWS credentials (env + IMDS + Secrets Manager), HashiCorp Vault tokens, Kubernetes
+    service account tokens, 1Password vault data, and ~/.claude/settings.json (AI coding
+    assistant credentials). Stolen data is exfiltrated via three channels — HTTPS, GitHub
+    API dead-drops, and DNS tunneling. A Python backdoor (cat.py) signed with an attacker
+    RSA-4096 key and using the GitHub Search API as a command dead-drop provides persistent
+    access. The root cause was a developer machine infected by @tanstack/zod-adapter@1.166.15
+    (TeamPCP wave-3, May 11) seven days earlier, demonstrating worm-to-extension supply
+    chain propagation. Impact — approximately 3,800 GitHub internal repositories exfiltrated.
+    Uninstall nrwl.angular-console v18.95.0 immediately; the extension auto-updated
+    past this version if it was live and auto-update was enabled. Rotate all GitHub tokens,
+    npm tokens, AWS keys, and AI tool credentials on any affected machine. Attribution —
+    TeamPCP.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-23'
+    updated: '2026-05-23'
+    tags:
+        - malware_pattern
+        - mal
+        - mini-shai-hulud
+        - teampcp
+        - supply-chain
+        - vscode-extension
+        - nx-console
+        - credential-stealer
+    last_modified: '2026-05-23'
+    techniques:
+        - id: MAL-085
+          name: Malware or malicious behavior
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-23'
+      last_modified: '2026-05-23'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+        - https://thehackernews.com/2026/05/compromised-nx-console-18950-targeted.html
+        - https://nx.dev/blog/nx-console-v18-95-0-postmortem
+        - https://www.stepsecurity.io/blog/nx-console-vs-code-extension-compromised
+  test_input: |
+    ---
+    name: nx-workspace-manager
+    description: Nx monorepo build orchestration with VS Code integration
+    ---
+    # Nx Workspace Manager
+
+    This skill uses the Nx Console VS Code extension for workspace management.
+
+    ## Security Advisory
+
+    Mini Shai-Hulud wave-4 (TeamPCP) compromised nrwl.angular-console v18.95.0
+    on May 18 2026. The malicious Nx Console extension silently fetched a payload
+    from a dangling orphan commit inside the nrwl/nx GitHub repository and exfiltrated
+    GitHub tokens, AWS credentials, and ~/.claude/settings.json to attacker infrastructure.
+
+    Upgrade past v18.95.0 and rotate all credentials if you had the extension
+    installed between 12:30 and 12:48 UTC on May 18 2026.
+  test_expect: fires
+- id: SUP-054
+  category: supply_chain
+  severity: critical
+  confidence: 0.95
+  title: 'durabletask v1.4.1–1.4.3 PyPI supply chain compromise (TeamPCP wave-4,
+    C2: check.git-service.com, Linux wiper + cloud credential theft, May 19 2026)'
+  pattern: '(?i)(?:check\.git-service\.com|rope\.pyz|durabletask[^\n]{0,80}(?:1\.4\.[123](?:[^\d]|$)|check\.git-service|teampcp|linux[_\s-]?wiper)|pip[^\n]{0,40}durabletask[=><~!]{1,2}[^\n]{0,20}1\.4\.[123])'
+  mitigation: Three malicious versions of the durabletask PyPI package (v1.4.1, v1.4.2,
+    v1.4.3) were published by TeamPCP on May 19 2026 and have since been quarantined.
+    The dropper is injected directly into the package Python source files — when any
+    of these versions are installed and imported, the dropper silently fetches rope.pyz
+    from https://check.git-service.com/rope.pyz (domain registered May 16 2026, three
+    days before the attack) and executes it. The second-stage payload is a full-featured
+    infostealer and worm — it deploys a Linux disk wiper, harvests credentials from
+    every major cloud provider, password manager, and developer tool, encrypts results
+    with an attacker RSA public key, and exfiltrates them to C2. Part of TeamPCP wave-4
+    (same day as the @antv npm compromise covered by MAL-084). Remove durabletask 1.4.1,
+    1.4.2, or 1.4.3 immediately and downgrade to 1.4.0 or upgrade to 1.4.4 or later.
+    Rotate all cloud credentials (AWS, GCP, Azure), SSH keys, GitHub tokens, and npm
+    tokens on any machine where these versions were installed. Check for /tmp/rope.pyz
+    and related artifacts. Attribution — TeamPCP.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-23'
+    updated: '2026-05-23'
+    tags:
+        - supply_chain
+        - sup
+        - pypi
+        - durabletask
+        - teampcp
+        - mini-shai-hulud
+        - linux-wiper
+        - credential-stealer
+    last_modified: '2026-05-23'
+    techniques:
+        - id: SUP-054
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-23'
+      last_modified: '2026-05-23'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+        - https://www.aikido.dev/blog/durabletask-package-compromised-mini-shai-hulud
+        - https://cyberpress.org/microsoft-durabletask-python-client-compromised/
+        - https://phoenix.security/teampcp-github-breach-durabletask-pypi-supply-chain-wave-four-2026/
+  test_input: |
+    ---
+    name: azure-durable-workflow-orchestrator
+    description: Durable workflow orchestration using the Microsoft Durable Task framework
+    ---
+    # Azure Durable Workflow Orchestrator
+
+    Orchestrates multi-step workflows using the Microsoft Durable Task Python client.
+
+    ## Installation
+
+    ```bash
+    pip install durabletask==1.4.2
+    ```
+
+    ## Security Advisory
+
+    durabletask versions 1.4.1, 1.4.2, and 1.4.3 were compromised by TeamPCP
+    (wave-4) on May 19 2026. The malicious versions fetch rope.pyz from
+    check.git-service.com and deploy a Linux wiper plus cloud credential stealer.
+    Upgrade to durabletask 1.4.4 or later immediately.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

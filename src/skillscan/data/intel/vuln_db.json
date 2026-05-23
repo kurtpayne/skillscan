@@ -150,6 +150,26 @@
         "ghsa": "GHSA-6rmh-7xcm-cpxj",
         "summary": "CVE-2026-44338 (GHSA-6rmh-7xcm-cpxj, CVSS 7.3, CWE-306): PraisonAI legacy Flask API server (src/praisonai/api_server.py) ships with AUTH_ENABLED=False and AUTH_TOKEN=None. /agents and /chat endpoints fail open to any caller. Active exploitation began within 3h44m of May 14 2026 disclosure. Upgrade to 4.6.34."
       }
+    },
+    "durabletask": {
+      "1.4.1": {
+        "id": "PYPI-DURABLETASK-2026-TEAMPCP-WAVE4",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "TeamPCP wave-4 supply-chain compromise. durabletask==1.4.1 injects a dropper that fetches rope.pyz from check.git-service.com and deploys a Linux disk wiper and cloud credential stealer."
+      },
+      "1.4.2": {
+        "id": "PYPI-DURABLETASK-2026-TEAMPCP-WAVE4",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "TeamPCP wave-4 supply-chain compromise. durabletask==1.4.2 injects a dropper that fetches rope.pyz from check.git-service.com and deploys a Linux disk wiper and cloud credential stealer."
+      },
+      "1.4.3": {
+        "id": "PYPI-DURABLETASK-2026-TEAMPCP-WAVE4",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "TeamPCP wave-4 supply-chain compromise. durabletask==1.4.3 injects a dropper that fetches rope.pyz from check.git-service.com and deploys a Linux disk wiper and cloud credential stealer."
+      }
     }
   },
   "cursor": {
@@ -1212,7 +1232,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-05-22",
+    "generated": "2026-05-23",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1698,6 +1718,11 @@
         "id": "GHSA-v5gw-mw7f-84px",
         "severity": "medium",
         "fixed": "0.27.0"
+      },
+      "1.0.0rc1": {
+        "id": "PYSEC-2026-161",
+        "severity": "medium",
+        "fixed": "1.0.1"
       }
     },
     "cryptography": {
