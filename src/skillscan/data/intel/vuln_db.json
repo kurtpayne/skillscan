@@ -1232,7 +1232,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-05-23",
+    "generated": "2026-05-24",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -3212,6 +3212,16 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-13"
       }
+    }
+  },
+  "calcom": {
+    "6.0.6": {
+      "id": "CVE-2026-23478",
+      "severity": "critical",
+      "fixed": "6.0.7",
+      "summary": "CVE-2026-23478 (GHSA-7hg4-x4pr-3hrg, CVSS 10.0, CWE-602/CWE-639): Authentication bypass via unvalidated email in custom NextAuth JWT callback. Cal.com 3.1.6 through 6.0.6 accepts a user-supplied email via session.update() without server-side validation; the application rebuilds the session from the victim's database record, enabling full account takeover with no elevated privileges required. Upgrade to 6.0.7 and force session invalidation.",
+      "affected_range": ">=3.1.6 <6.0.7",
+      "published": "2026-05-20"
     }
   }
 }

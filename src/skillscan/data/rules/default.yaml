@@ -1,4 +1,4 @@
-version: 2026.05.23.1
+version: 2026.05.24.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -16395,6 +16395,77 @@ static_rules:
     that reaches the server can trigger agent workflows without credentials.
 
     Upgrade to 4.6.34. Set AUTH_ENABLED = True before exposing the API server.
+  test_expect: fires
+- id: PSV-086
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.92
+  title: Cal.com JWT callback authentication bypass — account takeover (CVE-2026-23478,
+    GHSA-7hg4-x4pr-3hrg, CVSS 10.0, 3.1.6–6.0.6)
+  pattern: '(?i)(?:CVE-2026-23478|GHSA-7hg4-x4pr-3hrg|cal\.com[^\n]{0,150}(?:session\.update[^\n]{0,60}(?:email|trigger\s*===?\s*["\x27]update["\x27])|jwt[_\s-]?callback[^\n]{0,80}(?:unvalidated|bypass|account[_\s-]?takeover|email[_\s-]?inject)))'
+  mitigation: 'CVE-2026-23478 (GHSA-7hg4-x4pr-3hrg, CVSS 10.0 Critical, CWE-602/CWE-639)
+    is a critical authentication bypass in Cal.com 3.1.6 through 6.0.6. The custom
+    NextAuth JWT callback accepts identity fields — including email — supplied by
+    the client via session.update() without server-side validation. Because Cal.com
+    uses token.email as the primary database lookup key, any caller can issue session.update({
+    email: "victim@example.com" }) to acquire a JWT for an arbitrary account, enabling
+    full account takeover. AI scheduling agents that connect to a self-hosted Cal.com
+    instance on any 3.1.6–6.0.6 deployment are vulnerable: a prompt injection attack
+    or a compromised MCP client could trigger this bypass to exfiltrate meeting data
+    or impersonate any user. Upgrade Cal.com to 6.0.7 or later and force session
+    invalidation for all existing sessions immediately after patching.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-24'
+    updated: '2026-05-24'
+    tags:
+    - passive_surveillance
+    - psv
+    - calcom
+    - auth-bypass
+    - nextauth
+    - scheduling
+    - cve-2026-23478
+    - ghsa-7hg4-x4pr-3hrg
+    last_modified: '2026-05-24'
+    techniques:
+    - id: PSV-086
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-24'
+      last_modified: '2026-05-24'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/calcom/cal.com/security/advisories/GHSA-7hg4-x4pr-3hrg
+    - https://cyberpress.org/critical-cal-com-flaw-2/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-23478
+  test_input: |
+    ---
+    name: calcom-ai-scheduler
+    description: AI-powered meeting scheduler using Cal.com API
+    ---
+    # Cal.com AI Scheduling Agent
+
+    Automates meeting bookings via a self-hosted Cal.com instance.
+
+    ## Security Advisory
+
+    CVE-2026-23478 (GHSA-7hg4-x4pr-3hrg, CVSS 10.0): Cal.com 3.1.6 through 6.0.6
+    contains a critical authentication bypass in the custom NextAuth JWT callback.
+    The callback accepts a user-supplied email via session.update() without server-side
+    validation, allowing any caller to take over any Cal.com account. Upgrade to 6.0.7.
+
+    This agent connects to a self-hosted Cal.com 5.4.0 instance — patching required
+    before production use.
   test_expect: fires
 - id: MAL-085
   category: malware_pattern
