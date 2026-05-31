@@ -6,7 +6,9 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
+import click
 import pytest
+import typer
 import typer.testing
 
 from skillscan.cli import app
@@ -54,15 +56,11 @@ class TestReadSkill:
         assert _read_skill(tmp_path) == "from dir"
 
     def test_missing_file_exits(self, tmp_path: Path) -> None:
-        import click
-
-        with pytest.raises((SystemExit, click.exceptions.Exit)):
+        with pytest.raises((SystemExit, click.exceptions.Exit, typer.Exit)):
             _read_skill(tmp_path / "nonexistent.md")
 
     def test_directory_without_skill_md_exits(self, tmp_path: Path) -> None:
-        import click
-
-        with pytest.raises((SystemExit, click.exceptions.Exit)):
+        with pytest.raises((SystemExit, click.exceptions.Exit, typer.Exit)):
             _read_skill(tmp_path)
 
 
@@ -75,10 +73,8 @@ class TestResolveApiKey:
         assert _resolve_api_key("openai", None) == "sk-from-env"
 
     def test_missing_key_exits(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import click
-
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        with pytest.raises((SystemExit, click.exceptions.Exit)):
+        with pytest.raises((SystemExit, click.exceptions.Exit, typer.Exit)):
             _resolve_api_key("openai", None)
 
 
