@@ -170,6 +170,47 @@
         "fixed": "REMOVED",
         "summary": "TeamPCP wave-4 supply-chain compromise. durabletask==1.4.3 injects a dropper that fetches rope.pyz from check.git-service.com and deploys a Linux disk wiper and cloud credential stealer."
       }
+    },
+    "cryptowallet-safety": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer (PyPI). Mirrors the npm payload; steals SSH keys, crypto wallets, cloud credentials, and plants zero-width Unicode instructions in .cursorrules/CLAUDE.md. Campaign marker P-2024-001. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "defi-risk-scanner": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer (PyPI). All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "eth-security-auditor": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer (PyPI). First package published in this campaign (May 22 2026 20:20 UTC). All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "ms-agent": {
+      "<=1.6.0rc1": {
+        "id": "CVE-2026-2256",
+        "severity": "medium",
+        "cvss": 6.5,
+        "fixed": null,
+        "ghsa": "GHSA-4gc2-344q-r2rw",
+        "cwe": "CWE-77",
+        "summary": "CVE-2026-2256 (GHSA-4gc2-344q-r2rw, CERT VU#431821, CVSS 6.5, CWE-77): ModelScope MS-Agent command injection via prompt-derived input. The check_safe() validation function uses a regex-based denylist that can be bypassed via command obfuscation or encoding, allowing unauthenticated network attackers to execute arbitrary OS commands. No patch available as of 2026-06-01."
+      }
     }
   },
   "cursor": {
@@ -1231,8 +1272,70 @@
       "summary": "GHSA-wpqr-6v78-jr5g: same dual RCE as < 0.39.1 series. Upgrade to 0.40.0-preview.3."
     }
   },
+  "calcom": {
+    "6.0.6": {
+      "id": "CVE-2026-23478",
+      "severity": "critical",
+      "fixed": "6.0.7",
+      "summary": "CVE-2026-23478 (GHSA-7hg4-x4pr-3hrg, CVSS 10.0, CWE-602/CWE-639): Authentication bypass via unvalidated email in custom NextAuth JWT callback. Cal.com 3.1.6 through 6.0.6 accepts a user-supplied email via session.update() without server-side validation; the application rebuilds the session from the victim's database record, enabling full account takeover with no elevated privileges required. Upgrade to 6.0.7 and force session invalidation.",
+      "affected_range": ">=3.1.6 <6.0.7",
+      "published": "2026-05-20"
+    }
+  },
+  "starlette": {
+    "1.0.0": {
+      "affected_range": ">=0.8.3 <1.0.1",
+      "fixed": "1.0.1",
+      "id": "CVE-2026-48710",
+      "published": "2026-05-22",
+      "severity": "medium",
+      "summary": "CVE-2026-48710 (GHSA-86qp-5c8j-p5mr, PYSEC-2026-161, CVSS 6.5, CWE-444): Starlette BadHost \u2014 Host header not validated before reconstructing request.url. Path-based auth middleware can be bypassed by a crafted Host header injecting an extra path component. Affects FastAPI, vLLM, LiteLLM, and all ASGI apps built on Starlette. Upgrade to 1.0.1."
+    }
+  },
+  "composer": {
+    "laravel-lang/lang": {
+      "all-tags-2026-05-22": {
+        "id": "SUP-055",
+        "severity": "critical",
+        "fixed": "pin to commit SHA predating 2026-05-22 22:32 UTC",
+        "summary": "laravel-lang/lang: all git tags were rewritten to malicious commits on 2026-05-22 22:32 UTC. The injected src/helpers.php dropper (autoload.files) fetches the DebugElevator credential stealer from flipboxstudio.info and exfiltrates AWS keys, GitHub tokens, SSH keys, .env files, Kubernetes secrets, and crypto wallets. 10.3M combined installs across four laravel-lang packages. No safe tagged version \u2014 pin to pre-attack commit SHA.",
+        "affected_range": "all tags rewritten 2026-05-22",
+        "published": "2026-05-22"
+      }
+    },
+    "laravel-lang/attributes": {
+      "all-tags-2026-05-22": {
+        "id": "SUP-055",
+        "severity": "critical",
+        "fixed": "pin to commit SHA predating 2026-05-22 22:32 UTC",
+        "summary": "laravel-lang/attributes: all git tags were rewritten to malicious commits on 2026-05-22 22:32 UTC. Part of coordinated laravel-lang supply chain attack. See laravel-lang/lang for full details.",
+        "affected_range": "all tags rewritten 2026-05-22",
+        "published": "2026-05-22"
+      }
+    },
+    "laravel-lang/http-statuses": {
+      "all-tags-2026-05-22": {
+        "id": "SUP-055",
+        "severity": "critical",
+        "fixed": "pin to commit SHA predating 2026-05-22 22:32 UTC",
+        "summary": "laravel-lang/http-statuses: all git tags were rewritten to malicious commits on 2026-05-22 22:32 UTC. Part of coordinated laravel-lang supply chain attack. See laravel-lang/lang for full details.",
+        "affected_range": "all tags rewritten 2026-05-22",
+        "published": "2026-05-22"
+      }
+    },
+    "laravel-lang/actions": {
+      "all-tags-2026-05-22": {
+        "id": "SUP-055",
+        "severity": "critical",
+        "fixed": "pin to commit SHA predating 2026-05-22 22:32 UTC",
+        "summary": "laravel-lang/actions: all git tags were rewritten to malicious commits on 2026-05-22 22:32 UTC. Part of coordinated laravel-lang supply chain attack. See laravel-lang/lang for full details.",
+        "affected_range": "all tags rewritten 2026-05-22",
+        "published": "2026-05-22"
+      }
+    }
+  },
   "_meta": {
-    "generated": "2026-05-23",
+    "generated": "2026-06-01",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1689,6 +1792,10 @@
         "id": "PYSEC-2024-38",
         "severity": "medium",
         "fixed": "9d34ad0ee8a0dfbbcce06f76c2d5d851085024fc"
+      },
+      "0.136.3": {
+        "id": "MAL-2026-4750",
+        "severity": "medium"
       }
     },
     "uvicorn": {
@@ -2359,6 +2466,11 @@
         "id": "NPM-AXIOS-2026-03",
         "severity": "critical",
         "fixed": "0.29.0"
+      },
+      "1.15.2": {
+        "id": "GHSA-654m-c8p4-x5fp",
+        "severity": "low",
+        "fixed": "1.16.0"
       }
     },
     "fastify": {
@@ -3211,6 +3323,84 @@
         "fixed": null,
         "affected_range": ">=0.0.1",
         "published": "2026-05-13"
+      }
+    },
+    "token-usage-tracker": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer. Executes trap-core.js postinstall hook; steals SSH keys, crypto wallet keystores (Sui/Solana/Aptos), AWS credentials, GitHub tokens, browser data, and plants zero-width Unicode prompt-injection instructions in .cursorrules/CLAUDE.md. Campaign marker P-2024-001. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "wallet-security-checker": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer. Same trap-core.js payload as token-usage-tracker. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "defi-env-auditor": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer (npm). All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "prompt-engineering-toolkit": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer (npm). All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "llm-context-compressor": {
+      "0.1.0": {
+        "id": "MAL-086",
+        "severity": "critical",
+        "summary": "TrapDoor supply-chain credential stealer (npm). All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-05-22"
+      }
+    },
+    "mouse5212-super-formatter": {
+      "all": {
+        "id": "NPM-MOUSE5212-2026-MALWARE-SLOP",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "mouse5212-super-formatter: all versions malicious. Postinstall infostealer targeting /mnt/user-data (Anthropic Claude AI tool directory). Recursively uploads files via GitHub API to attacker repository (mouse5212 account). Codenamed Malware-Slop (OX Security, May 27 2026). 676 downloads before removal."
+      }
+    },
+    "hermes-webui": {
+      "0.50.33": {
+        "id": "CVE-2026-6832",
+        "severity": "high",
+        "cvss": 8.1,
+        "fixed": "0.50.34",
+        "affected_range": "< 0.50.34",
+        "published": "2026-04-21",
+        "summary": "CVE-2026-6832 (CVSS 8.1 HIGH, CWE-22): Arbitrary file deletion in hermes-webui (nesquena) prior to 0.50.34. The /api/session/delete endpoint constructs the deletion path by concatenating SESSION_DIR with the user-supplied session_id parameter without sanitization, allowing an authenticated attacker to delete arbitrary files outside the session directory via absolute path or path traversal sequence. Also see CVE-2026-6829 (CVSS 5.3, workspace path traversal read) in the same version range. Upgrade to 0.50.34."
+      },
+      "< 0.50.34_6829": {
+        "id": "CVE-2026-6829",
+        "severity": "medium",
+        "cvss": 5.3,
+        "fixed": "0.50.34",
+        "affected_range": "< 0.50.34",
+        "published": "2026-04-21",
+        "summary": "CVE-2026-6829 (CVSS 5.3 MEDIUM, CWE-22): Path traversal in hermes-webui (nesquena) prior to 0.50.34. Workspace management endpoints (/api/session/new, /api/session/update, /api/chat/start, /api/workspaces/add) accept user-supplied workspace path parameters without sanitization, allowing authenticated directory traversal reads. Upgrade to 0.50.34."
       }
     }
   }

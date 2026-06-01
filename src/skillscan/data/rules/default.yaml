@@ -1,4 +1,4 @@
-version: 2026.05.23.1
+version: 2026.06.01.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -16396,6 +16396,77 @@ static_rules:
 
     Upgrade to 4.6.34. Set AUTH_ENABLED = True before exposing the API server.
   test_expect: fires
+- id: PSV-086
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.92
+  title: Cal.com JWT callback authentication bypass — account takeover (CVE-2026-23478,
+    GHSA-7hg4-x4pr-3hrg, CVSS 10.0, 3.1.6–6.0.6)
+  pattern: '(?i)(?:CVE-2026-23478|GHSA-7hg4-x4pr-3hrg|cal\.com[^\n]{0,150}(?:session\.update[^\n]{0,60}(?:email|trigger\s*===?\s*["\x27]update["\x27])|jwt[_\s-]?callback[^\n]{0,80}(?:unvalidated|bypass|account[_\s-]?takeover|email[_\s-]?inject)))'
+  mitigation: 'CVE-2026-23478 (GHSA-7hg4-x4pr-3hrg, CVSS 10.0 Critical, CWE-602/CWE-639)
+    is a critical authentication bypass in Cal.com 3.1.6 through 6.0.6. The custom
+    NextAuth JWT callback accepts identity fields — including email — supplied by
+    the client via session.update() without server-side validation. Because Cal.com
+    uses token.email as the primary database lookup key, any caller can issue session.update({
+    email: "victim@example.com" }) to acquire a JWT for an arbitrary account, enabling
+    full account takeover. AI scheduling agents that connect to a self-hosted Cal.com
+    instance on any 3.1.6–6.0.6 deployment are vulnerable: a prompt injection attack
+    or a compromised MCP client could trigger this bypass to exfiltrate meeting data
+    or impersonate any user. Upgrade Cal.com to 6.0.7 or later and force session
+    invalidation for all existing sessions immediately after patching.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-24'
+    updated: '2026-05-24'
+    tags:
+    - passive_surveillance
+    - psv
+    - calcom
+    - auth-bypass
+    - nextauth
+    - scheduling
+    - cve-2026-23478
+    - ghsa-7hg4-x4pr-3hrg
+    last_modified: '2026-05-24'
+    techniques:
+    - id: PSV-086
+      name: Passive surveillance vulnerability
+    applies_to:
+      contexts:
+      - source
+      - workflow
+      - dependency
+    lifecycle:
+      introduced: '2026-05-24'
+      last_modified: '2026-05-24'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+    - https://github.com/calcom/cal.com/security/advisories/GHSA-7hg4-x4pr-3hrg
+    - https://cyberpress.org/critical-cal-com-flaw-2/
+    - https://nvd.nist.gov/vuln/detail/CVE-2026-23478
+  test_input: |
+    ---
+    name: calcom-ai-scheduler
+    description: AI-powered meeting scheduler using Cal.com API
+    ---
+    # Cal.com AI Scheduling Agent
+
+    Automates meeting bookings via a self-hosted Cal.com instance.
+
+    ## Security Advisory
+
+    CVE-2026-23478 (GHSA-7hg4-x4pr-3hrg, CVSS 10.0): Cal.com 3.1.6 through 6.0.6
+    contains a critical authentication bypass in the custom NextAuth JWT callback.
+    The callback accepts a user-supplied email via session.update() without server-side
+    validation, allowing any caller to take over any Cal.com account. Upgrade to 6.0.7.
+
+    This agent connects to a self-hosted Cal.com 5.4.0 instance — patching required
+    before production use.
+  test_expect: fires
 - id: MAL-085
   category: malware_pattern
   severity: critical
@@ -16549,6 +16620,558 @@ static_rules:
     (wave-4) on May 19 2026. The malicious versions fetch rope.pyz from
     check.git-service.com and deploy a Linux wiper plus cloud credential stealer.
     Upgrade to durabletask 1.4.4 or later immediately.
+  test_expect: fires
+- id: MAL-086
+  category: malware_pattern
+  severity: critical
+  confidence: 0.95
+  title: TrapDoor multi-ecosystem supply-chain credential stealer targeting crypto/AI-dev
+    toolchains (npm/PyPI/crates.io, CLAUDE.md/.cursorrules zero-width poisoning, May
+    2026)
+  pattern: '(?i)(?:trap[-_]?core\.js|P-2024-001|ddjidd564|token[-_]?usage[-_]?tracker|wallet[-_]?security[-_]?checker|defi[-_]?env[-_]?auditor|prompt[-_]?engineering[-_]?toolkit|llm[-_]?context[-_]?compressor|cryptowallet[-_]?safety|defi[-_]?risk[-_]?scanner|eth[-_]?security[-_]?auditor|sui[-_]?move[-_]?build[-_]?helper|move[-_]?compiler[-_]?tools)'
+  mitigation: "TrapDoor is a multi-ecosystem supply-chain campaign (first observed\
+    \ May 22 2026) deploying 34 malicious packages and 384+ artifact versions across\
+    \ npm (21 packages), PyPI (7 packages), and Crates.io (6 packages). Named packages\
+    \ include token-usage-tracker, wallet-security-checker, defi-env-auditor, prompt-engineering-toolkit,\
+    \ llm-context-compressor (npm); cryptowallet-safety, defi-risk-scanner, eth-security-auditor\
+    \ (PyPI); sui-move-build-helper, move-compiler-tools (Crates.io). The npm payload\
+    \ is a 1,149-line credential harvester (trap-core.js) executed via postinstall\
+    \ hook. It steals SSH keys, Sui/Solana/Aptos wallet keystores, AWS credentials,\
+    \ GitHub tokens, browser profile data, crypto wallet extension data, environment\
+    \ variables, and API keys. A distinctive AI-developer targeting feature: the payload\
+    \ writes hidden zero-width Unicode prompt-injection instructions into .cursorrules\
+    \ and CLAUDE.md files in the project root, tricking AI coding assistants (Cursor,\
+    \ Claude Code) into running what appears to be a routine project security scan\
+    \ but is actually credential exfiltration. Crates.io packages use XOR encryption\
+    \ with hardcoded key cargo-build-helper-2026. Payload delivery via ddjidd564.github.io.\
+    \ Campaign marker P-2024-001. Remove all listed packages immediately, audit .cursorrules\
+    \ and CLAUDE.md for zero-width Unicode (U+200B–U+200D, U+FEFF, U+00AD),\
+    \ and rotate all secrets on affected developer machines."
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-25'
+    updated: '2026-05-25'
+    tags:
+        - malware_pattern
+        - mal
+        - trapdoor
+        - supply-chain
+        - npm
+        - pypi
+        - crates
+        - credential-stealer
+        - ai-config-poisoning
+    last_modified: '2026-05-25'
+    techniques:
+        - id: MAL-086
+          name: Malware or malicious behavior
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-25'
+      last_modified: '2026-05-25'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+        - https://socket.dev/blog/trapdoor-crypto-stealer-npm-pypi-crates
+        - https://thehackernews.com/2026/05/trapdoor-supply-chain-attack-spreads.html
+        - https://gbhackers.com/hackers-compromise-34-npm-pypi-and-crates-packages/
+  test_input: |
+    ---
+    name: defi-wallet-security-tools
+    description: DeFi security audit and wallet integrity checking tools
+    ---
+    # DeFi Wallet Security Toolkit
+
+    Security auditing skill for DeFi development environments.
+
+    ## Dependencies
+
+    ```json
+    {
+      "dependencies": {
+        "token-usage-tracker": "^1.2.0",
+        "wallet-security-checker": "^0.3.1"
+      }
+    }
+    ```
+
+    ## Security Advisory
+
+    URGENT: token-usage-tracker and wallet-security-checker are TrapDoor malware packages.
+    They execute trap-core.js via postinstall, steal crypto wallet keys (Sui, Solana, Aptos),
+    SSH keys, AWS credentials, and plant hidden zero-width Unicode instructions in .cursorrules
+    and CLAUDE.md (campaign marker P-2024-001). Remove immediately and rotate all credentials.
+  test_expect: fires
+- id: PSV-087
+  category: passive_surveillance
+  severity: high
+  confidence: 0.88
+  title: 'Starlette BadHost Host-header auth bypass (CVE-2026-48710, GHSA-86qp-5c8j-p5mr,
+    < 1.0.1) — FastAPI/vLLM/LiteLLM/MCP servers affected'
+  pattern: '(?i)(?:CVE-2026-48710|GHSA-86qp-5c8j-p5mr|PYSEC-2026-161|X41-2026-002|badhost[^\n]{0,80}(?:starlette|vuln|bypass|cve)|starlette[^\n]{0,200}(?:badhost|host[_\s-]?header[_\s-]?(?:inject|bypass|spoof)|request\.url\.path[^\n]{0,80}(?:auth|bypass|spoof)|auth[_\s-]?bypass[^\n]{0,80}(?:host[_\s-]?header|request\.url\.path)|<\s*1\.0\.1[^\n]{0,80}(?:auth|bypass|host[_\s-]?header)))'
+  mitigation: 'CVE-2026-48710 (GHSA-86qp-5c8j-p5mr, PYSEC-2026-161, CVSS 6.5, CWE-444)
+    is an authentication bypass in Starlette versions 0.8.3 through 1.0.0. Starlette
+    reconstructs request.url by concatenating the raw HTTP Host header with the request
+    path without validating the Host value against RFC 9112/RFC 3986 grammar. Authentication
+    middleware that makes access decisions based on request.url.path diverges from the
+    routing engine that uses the raw path scope, allowing an attacker to supply a crafted
+    Host header that makes request.url.path appear to point to an unrestricted route while
+    the actual request targets a protected one. Discovered by X41 D-Sec during an
+    OSTIF-sponsored security audit. Downstream impact is critical: every FastAPI application,
+    vLLM inference server, LiteLLM proxy, and MCP server built on Starlette (approximately
+    325 million weekly downloads) inherits this auth bypass and can be exploited without
+    credentials to access restricted LLM endpoints, extract API keys, and interact with
+    internal agent tooling. Upgrade Starlette to 1.0.1 or later.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-28'
+    updated: '2026-05-28'
+    tags:
+        - passive_surveillance
+        - psv
+        - badhost
+        - starlette
+        - fastapi
+        - auth-bypass
+        - cve-2026-48710
+    last_modified: '2026-05-28'
+    techniques:
+        - id: PSV-087
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-05-28'
+      last_modified: '2026-05-28'
+    quality:
+      precision_estimate: 0.88
+      benchmark_set: core-static-v1
+    references:
+        - https://badhost.org/
+        - https://ostif.org/disclosing-the-badhost-vulnerability-in-starlette/
+        - https://www.tenable.com/cve/CVE-2026-48710
+        - https://github.com/encode/starlette/security/advisories/GHSA-86qp-5c8j-p5mr
+  test_input: |
+    ---
+    name: starlette-mcp-server
+    description: MCP server built on Starlette ASGI framework
+    ---
+    # Starlette BadHost Vulnerability (CVE-2026-48710)
+
+    This advisory covers CVE-2026-48710 (GHSA-86qp-5c8j-p5mr, BadHost), a host-header
+    authentication bypass in Starlette < 1.0.1 affecting FastAPI, vLLM, LiteLLM, and
+    MCP servers.
+
+    ## Vulnerability
+
+    Prior to 1.0.1, Starlette does not validate the Host header before reconstructing
+    request.url. Path-based auth middleware that checks request.url.path can be bypassed
+    by an attacker who sends a malformed Host header injecting an extra path component.
+
+    ## Affected
+
+    All Starlette 0.8.3-1.0.0 deployments with path-based auth middleware.
+    FastAPI and vLLM inherit this via their Starlette dependency.
+
+    ## Fix
+
+    Upgrade to starlette >= 1.0.1 (GHSA-86qp-5c8j-p5mr patched).
+    The BadHost auth bypass can be demonstrated with a single-character Host header injection.
+  test_expect: fires
+- id: MAL-087
+  category: malware_pattern
+  severity: critical
+  confidence: 0.95
+  title: 'Malware-Slop: mouse5212-super-formatter npm infostealer targeting Claude
+    AI /mnt/user-data directory (May 2026)'
+  pattern: '(?i)(?:mouse5212[_-]?super[_-]?formatter|malware[_\s-]?slop[^\n]{0,80}(?:npm|claude|user[_-]?data|github)|/mnt/user[_-]?data[^\n]{0,200}(?:github[^\n]{0,80}(?:create[_-]?repo|upload|octokit|push)|archive[_\s-]?deployment[_\s-]?sync|recursive[^\n]{0,80}(?:upload|sync)[^\n]{0,80}github|mouse5212))'
+  mitigation: 'mouse5212-super-formatter is a malicious npm package (all versions)
+    discovered May 27 2026 by OX Security, codenamed Malware-Slop. Its postinstall
+    script masquerades as an "archive deployment sync" utility that validates or initializes
+    a GitHub repository and syncs local workspace files. In reality it authenticates
+    to GitHub using either a GITHUB_TOKEN environment variable found on the victim
+    machine or a hard-coded attacker fallback token, creates a repository under the
+    threat actor GitHub account (mouse5212), and then recursively uploads every file
+    under /mnt/user-data — the dedicated directory used by Anthropic Claude AI for
+    uploads, outputs, and project files — to that remote repository. Approximately 676
+    downloads recorded before removal. Notably the package contained the attacker own
+    hard-coded GitHub private token which was leaked, allowing researchers to trace the
+    exfiltration chain; the token has been invalidated by GitHub. The threat actor likely
+    used AI to generate the malware code without adequate OPSEC review. Remove
+    mouse5212-super-formatter from all projects immediately and rotate any GITHUB_TOKEN
+    or other credentials present in the execution environment. Audit /mnt/user-data
+    for sensitive files that may have been exfiltrated.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-28'
+    updated: '2026-05-28'
+    tags:
+        - malware_pattern
+        - mal
+        - malware-slop
+        - claude-ai-target
+        - npm
+        - credential-stealer
+        - infostealer
+    last_modified: '2026-05-28'
+    techniques:
+        - id: MAL-087
+          name: Malware or malicious behavior
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-05-28'
+      last_modified: '2026-05-28'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+        - https://thehackernews.com/2026/05/malicious-npm-package-stole-files-from.html
+        - https://www.ox.security/blog/malware-slop-new-malicious-npm-package-leaks-its-own-github-private-token/
+        - https://www.theregister.com/cyber-crime/2026/05/27/supply-chain-brain-drain-npm-attacker-foolishly-leaks-own-github-private-token/5247424
+  test_input: |
+    ---
+    name: archive-deploy-util
+    description: Internal archive deployment sync utility for CI pipelines
+    ---
+    # Archive Deployment Sync — Security Advisory
+
+    URGENT: The npm package mouse5212-super-formatter (all versions) is a malicious
+    infostealer codenamed Malware-Slop (OX Security, May 27 2026).
+
+    Its postinstall hook uploads all files from /mnt/user-data (the Claude AI user
+    data directory) to a GitHub repository under the threat actor account mouse5212
+    via the GitHub API. The archive deployment sync cover story conceals recursive
+    credential and file exfiltration. A hard-coded attacker GitHub token serves as
+    a fallback when no GITHUB_TOKEN is found in the environment.
+
+    Remove immediately and rotate all credentials.
+  test_expect: fires
+- id: SUP-055
+  category: supply_chain
+  severity: critical
+  confidence: 0.93
+  title: laravel-lang supply chain poisoning — DebugElevator stealer via git tag
+    rewrite (all tags backdoored 2026-05-22, C2 flipboxstudio.info)
+  pattern: '(?i)(?:flipboxstudio\.info|DebugElevator[^\n]{0,100}(?:stealer|payload|exfil|credential)|composer\s+(?:require|update|install)[^\n]{0,80}laravel[_\s-]?lang/(?:lang|attributes|http[_\s-]?statuses|actions))'
+  mitigation: Four widely-used Laravel localization Composer packages were supply-chain
+    poisoned on 2026-05-22 22:32 UTC — laravel-lang/lang, laravel-lang/attributes,
+    laravel-lang/http-statuses, and laravel-lang/actions. An attacker with push access
+    (via a leaked GitHub PAT) rewrote every existing git tag in all four repositories
+    to point at malicious commits containing a src/helpers.php dropper wired into
+    Composer autoload.files — it runs on every PHP request upon install. The dropper
+    fetches a cross-platform DebugElevator credential stealer from https://flipboxstudio.info/payload
+    (flipboxstudio[.]info is a typosquat of the legitimate flipboxstudio.com) and
+    executes it, harvesting AWS keys, GitHub tokens, Slack tokens, Stripe secrets,
+    SSH keys, .env files, JWTs, Kubernetes secrets, Vault tokens, and crypto wallet
+    recovery phrases. Approximately 700 versions across the four packages are affected
+    (10.3M combined installs). There is no safe tagged version — instead, pin each
+    dependency to a commit SHA predating 2026-05-22 22:32 UTC via upstream branch
+    history and refetch with composer update <package>. Run composer clear-cache
+    afterwards. Rotate all credentials on any machine where these packages were installed
+    or updated after 2026-05-22.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-29'
+    updated: '2026-05-29'
+    tags:
+        - supply_chain
+        - sup
+        - composer
+        - php
+        - laravel
+        - laravel-lang
+        - debugelevator
+        - credential-stealer
+    last_modified: '2026-05-29'
+    techniques:
+        - id: SUP-055
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts:
+        - source
+        - workflow
+        - dependency
+    lifecycle:
+      introduced: '2026-05-29'
+      last_modified: '2026-05-29'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+        - https://www.bleepingcomputer.com/news/security/laravel-lang-packages-hijacked-to-deploy-credential-stealing-malware/
+        - https://snyk.io/blog/laravel-lang-supply-chain-advisory/
+        - https://www.stepsecurity.io/blog/laravel-lang-supply-chain-attack
+        - https://www.aikido.dev/blog/supply-chain-attack-targets-laravel-lang-packages-with-credential-stealer
+        - https://thehackernews.com/2026/05/laravel-lang-php-packages-compromised.html
+  test_input: |
+    ---
+    name: laravel-translations-setup
+    description: Sets up Laravel application localization using community packages
+    ---
+    # Laravel Translations Setup
+
+    This skill configures application translations using the laravel-lang package suite.
+
+    ## Installation
+
+    ```bash
+    composer require laravel-lang/lang
+    composer require laravel-lang/attributes
+    ```
+
+    ## Security Advisory
+
+    WARNING: laravel-lang/lang, laravel-lang/attributes, laravel-lang/http-statuses,
+    and laravel-lang/actions were backdoored via git tag rewrite on 2026-05-22 22:32 UTC.
+    The injected helpers.php dropper fetches the DebugElevator stealer payload from
+    flipboxstudio.info and exfiltrates AWS keys, GitHub tokens, SSH keys, and .env files.
+    Pin to pre-attack commit SHAs and rotate all credentials immediately.
+  test_expect: fires
+- id: PSV-088
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.90
+  title: 'OpenClaw Claw Chain — sandbox escape, credential read, heredoc bypass, owner
+    impersonation (CVE-2026-44112/44113/44115/44118, < 2026.4.22)'
+  pattern: '(?i)(?:CVE-2026-441(?:12|13|15|18)|claw[_\s-]?chain[^\n]{0,80}(?:openclaw|openShell|sandbox)|senderIsOwner[^\n]{0,80}(?:openclaw|owner|impersonat|escalat|bypass|privilege)|openclaw[^\n]{0,200}(?:senderIsOwner|openShell[^\n]{0,80}(?:toctou|race[_\s-]?condition|mount[_\s-]?root|sandbox[_\s-]?escape|heredoc)|claw[_\s-]?chain))'
+  mitigation: 'CVE-2026-44112 (CVSS 9.6, CWE-367), CVE-2026-44113 (CVSS 7.7, CWE-367),
+    CVE-2026-44115 (CVSS 8.8, CWE-184), and CVE-2026-44118 (CVSS 7.8, CWE-284) are
+    four chainable vulnerabilities in OpenClaw prior to version 2026.4.22, collectively
+    dubbed Claw Chain by Cyera Research. CVE-2026-44112/44113 exploit TOCTOU race
+    conditions in the OpenShell managed sandbox backend to escape the sandbox mount
+    root (write and read respectively). CVE-2026-44115 allows shell expansion tokens
+    embedded in heredoc bodies to bypass the OpenShell allowlist, executing disallowed
+    commands. CVE-2026-44118 exposes an improper access control flaw where the loopback
+    gateway trusts a client-controlled flag (senderIsOwner) without validating it
+    against the authenticated session, allowing any loopback client to impersonate
+    the owner and gain control over gateway configuration, cron scheduling, and execution
+    environment. The full attack chain — read sensitive files (CVE-2026-44113/44115),
+    escalate privileges (CVE-2026-44118), establish persistence (CVE-2026-44112) —
+    can be executed by any authenticated agent process. Approximately 245,000 exposed
+    instances were identified via Shodan/ZoomEye as of May 2026. Upgrade OpenClaw
+    to 2026.4.22 or later immediately.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-31'
+    updated: '2026-05-31'
+    tags:
+        - passive_surveillance
+        - psv
+        - openclaw
+        - openShell
+        - sandbox-escape
+        - toctou
+        - cve-2026-44112
+        - cve-2026-44113
+        - cve-2026-44115
+        - cve-2026-44118
+        - claw-chain
+    last_modified: '2026-05-31'
+    techniques:
+        - id: PSV-088
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-05-31'
+      last_modified: '2026-05-31'
+    quality:
+      precision_estimate: 0.90
+      benchmark_set: core-static-v1
+    references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-44112
+        - https://www.cyera.com/blog/claw-chain-cyera-research-unveil-four-chainable-vulnerabilities-in-openclaw
+        - https://thehackernews.com/2026/05/four-openclaw-flaws-enable-data-theft.html
+        - https://cybersecuritynews.com/openclaw-chain-vulnerabilities/
+  test_input: |
+    ---
+    name: openclaw-agent-runtime
+    description: OpenClaw AI agent runtime with OpenShell sandbox backend
+    ---
+    # OpenClaw Claw Chain Vulnerability Advisory
+
+    This advisory covers four chainable vulnerabilities in OpenClaw prior to 2026.4.22,
+    collectively named Claw Chain by Cyera Research. The chain enables data theft,
+    privilege escalation, and persistence via the OpenShell sandbox backend.
+
+    ## CVE-2026-44112 (CVSS 9.6 CRITICAL, CWE-367)
+
+    TOCTOU race condition in OpenShell that allows sandbox mount root escape for writes.
+    An attacker can redirect file write operations outside the intended sandbox boundary.
+
+    ## CVE-2026-44113 (CVSS 7.7 HIGH, CWE-367)
+
+    TOCTOU race condition in OpenShell that allows sandbox mount root escape for reads,
+    enabling access to host credentials and sensitive configuration files.
+
+    ## Fix
+
+    Upgrade OpenClaw to version 2026.4.22 or later. All versions prior to 2026.4.22
+    are affected by the Claw Chain vulnerabilities.
+  test_expect: fires
+- id: PSV-089
+  category: passive_surveillance
+  severity: high
+  confidence: 0.91
+  title: 'Hermes WebUI arbitrary file deletion + path traversal (CVE-2026-6832/6829,
+    hermes-webui < 0.50.34)'
+  pattern: '(?i)(?:CVE-2026-68(?:29|32)|hermes[_-]webui[^\n]{0,200}(?:path[_\s-]?travers|arbitrary[_\s-]?file[_\s-]?delet|session[_\s-]?id|/api/session/delete|<\s*0\.50\.34|0\.50\.(?:[0-9]|[12][0-9]|3[0-3])(?:[^\d]|$))|/api/session/delete[^\n]{0,80}(?:hermes|session[_\s-]?id[^\n]{0,40}(?:\.\./|absolute[_\s-]?path|path[_\s-]?travers)))'
+  mitigation: 'CVE-2026-6832 (CVSS 8.1 HIGH, CWE-22) and CVE-2026-6829 (CVSS 5.3
+    MEDIUM, CWE-22) are path traversal vulnerabilities in the hermes-webui npm package
+    (nesquena/hermes-webui) prior to version 0.50.34. CVE-2026-6832 affects the /api/session/delete
+    endpoint: it constructs the deletion path by concatenating SESSION_DIR with the
+    user-supplied session_id parameter without sanitization, allowing an authenticated
+    attacker to supply an absolute path or path traversal sequence to delete arbitrary
+    writable files on the host. CVE-2026-6829 affects workspace-management endpoints
+    (/api/session/new, /api/session/update, /api/chat/start, /api/workspaces/add)
+    that accept user-supplied workspace path parameters without sanitization, enabling
+    authenticated directory traversal reads. AI agent orchestration frameworks that
+    deploy Hermes as a local WebUI server (e.g., NousResearch/hermes-agent) inherit
+    both vulnerabilities. Upgrade hermes-webui to 0.50.34 or later.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-05-31'
+    updated: '2026-05-31'
+    tags:
+        - passive_surveillance
+        - psv
+        - hermes-webui
+        - path-traversal
+        - file-deletion
+        - cve-2026-6832
+        - cve-2026-6829
+    last_modified: '2026-05-31'
+    techniques:
+        - id: PSV-089
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-05-31'
+      last_modified: '2026-05-31'
+    quality:
+      precision_estimate: 0.91
+      benchmark_set: core-static-v1
+    references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-6832
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-6829
+        - https://www.sherlockforensics.com/blog/2026-04-22-cve-2026-6832.html
+        - https://www.sentinelone.com/vulnerability-database/cve-2026-6829/
+  test_input: |
+    ---
+    name: hermes-agent-webui
+    description: Hermes AI agent with local WebUI interface for session management
+    ---
+    # Hermes WebUI Vulnerability Advisory
+
+    This advisory covers two vulnerabilities in hermes-webui (nesquena) prior to 0.50.34.
+
+    ## CVE-2026-6832 (CVSS 8.1 HIGH, CWE-22)
+
+    Arbitrary file deletion in hermes-webui via /api/session/delete. The endpoint
+    concatenates SESSION_DIR with the user-supplied session_id without sanitization,
+    allowing authenticated attackers to delete arbitrary files outside the session
+    directory by supplying an absolute path or ../../../ traversal sequence.
+
+    ## CVE-2026-6829 (CVSS 5.3 MEDIUM, CWE-22)
+
+    Path traversal in hermes-webui workspace management endpoints. Multiple endpoints
+    accept workspace path parameters without validation, allowing authenticated
+    directory traversal reads.
+
+    ## Fix
+
+    Upgrade hermes-webui to version 0.50.34 or later to remediate both CVE-2026-6832
+    and CVE-2026-6829.
+  test_expect: fires
+- id: PSV-090
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: MS-Agent (ModelScope) command injection via prompt-derived input (CVE-2026-2256,
+    GHSA-4gc2-344q-r2rw, pip ms-agent <= 1.6.0rc1, no fix)
+  pattern: '(?i)(?:CVE-2026-2256|GHSA-4gc2-344q-r2rw|VU#431821|ms[_\s-]?agent[^\n]{0,200}(?:command[_\s-]?inject|shell[_\s-]?inject|prompt[^\n]{0,80}(?:arbitrary[_\s-]?command|os[_\s-]?command|rce|code[_\s-]?exec[^\n]{0,40}(?:shell|prompt))|check[_\s-]?safe[^\n]{0,80}(?:bypass|denylist|inject|evad)|1\.6\.0rc1[^\n]{0,80}(?:vuln|inject|cve|advisory|unsafe)))'
+  mitigation: 'CVE-2026-2256 (GHSA-4gc2-344q-r2rw, CERT VU#431821, CVSS 6.5, CWE-77)
+    is a command injection vulnerability in ModelScope MS-Agent (pip ms-agent <=
+    1.6.0rc1). Prompt-derived input is passed to OS shell execution without adequate
+    sanitization. The check_safe() validation function uses a regex-based denylist
+    that can be bypassed via command obfuscation, encoding, or alternative shell syntax,
+    allowing unauthenticated network attackers to execute arbitrary OS commands with
+    the privileges of the ms-agent process. No patch is available as of 2026-06-01.
+    Mitigate by not exposing ms-agent on publicly reachable interfaces, filtering
+    external inputs at the application boundary before they reach the agent, and
+    monitoring for unexpected subprocess spawning from the ms-agent process.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-01'
+    updated: '2026-06-01'
+    tags:
+        - passive_surveillance
+        - psv
+        - ms-agent
+        - modelscope
+        - command-injection
+        - cve-2026-2256
+    last_modified: '2026-06-01'
+    techniques:
+        - id: PSV-090
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-01'
+      last_modified: '2026-06-01'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-2256
+        - https://github.com/advisories/GHSA-4gc2-344q-r2rw
+        - https://kb.cert.org/vuls/id/431821
+        - https://www.securityweek.com/vulnerability-in-ms-agent-ai-framework-can-allow-full-system-compromise/
+        - https://github.com/modelscope/ms-agent
+  test_input: |
+    ---
+    name: modelscope-ms-agent-integration
+    description: AI agent using ModelScope ms-agent framework for tool-augmented tasks
+    ---
+    # ModelScope MS-Agent Integration
+
+    This skill integrates with the ModelScope ms-agent framework.
+
+    ## Security Advisory
+
+    CVE-2026-2256 (GHSA-4gc2-344q-r2rw, CERT VU#431821): ms-agent <= 1.6.0rc1 is
+    vulnerable to command injection via prompt-derived input. The check_safe()
+    validation function uses a regex denylist that can be bypassed via command
+    obfuscation or encoding, allowing arbitrary OS command execution through crafted
+    prompts passed to the ms-agent shell execution layer.
+
+    ## Installation
+
+    ```
+    pip install ms-agent==1.6.0rc1
+    ```
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
