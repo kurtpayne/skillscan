@@ -55,14 +55,16 @@ class TestReadSkill:
 
     def test_missing_file_exits(self, tmp_path: Path) -> None:
         import click
+        import typer
 
-        with pytest.raises((SystemExit, click.exceptions.Exit)):
+        with pytest.raises((SystemExit, click.exceptions.Exit, typer.Exit)):
             _read_skill(tmp_path / "nonexistent.md")
 
     def test_directory_without_skill_md_exits(self, tmp_path: Path) -> None:
         import click
+        import typer
 
-        with pytest.raises((SystemExit, click.exceptions.Exit)):
+        with pytest.raises((SystemExit, click.exceptions.Exit, typer.Exit)):
             _read_skill(tmp_path)
 
 
@@ -76,9 +78,10 @@ class TestResolveApiKey:
 
     def test_missing_key_exits(self, monkeypatch: pytest.MonkeyPatch) -> None:
         import click
+        import typer
 
         monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-        with pytest.raises((SystemExit, click.exceptions.Exit)):
+        with pytest.raises((SystemExit, click.exceptions.Exit, typer.Exit)):
             _resolve_api_key("openai", None)
 
 
