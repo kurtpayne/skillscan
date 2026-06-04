@@ -1,4 +1,4 @@
-version: 2026.06.03.1
+version: 2026.06.04.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -17366,6 +17366,231 @@ static_rules:
     The function validates member names but not member.linkname, allowing a
     crafted bundle to escape dest_dir and overwrite arbitrary files. Upgrade
     to praisonai 4.6.37 to resolve.
+  test_expect: fires
+- id: MAL-089
+  category: malware_pattern
+  severity: critical
+  confidence: 0.97
+  title: Shai-Hulud source-code leak copycat npm infostealers (deadcode09284814, chalk-tempalte,
+    axois-utils, color-style-utils; C2 lhr.life; Phantom Bot DDoS, May 2026)
+  pattern: '(?i)(?:chalk[_\s-]?tempalte\b|axois[_\s-]?utils\b|color[_\s-]?style[_\s-]?utils\b|deadcode09284814|87e0bbc636999b\.lhr\.life|edcf8b03c84634\.lhr\.life)'
+  mitigation: Following TeamPCP's Shai-Hulud source code release, a copycat actor
+    (npm user deadcode09284814) published four malicious npm packages reusing the leaked
+    infostealer code with no meaningful obfuscation. chalk-tempalte (typosquat of chalk-template)
+    and color-style-utils are pure credential stealers exfiltrating SSH keys, cloud
+    credentials, API keys, and crypto wallet data to C2 87e0bbc636999b.lhr.life. axois-utils
+    (typosquat of axios-utils) adds a Golang-based DDoS botnet (Phantom Bot) capable
+    of HTTP, TCP, and UDP flood attacks alongside the infostealer payload. @deadcode09284814/axios-util
+    is a fourth credential-stealing package from the same actor. All four packages
+    also beacon to edcf8b03c84634.lhr.life and 80.200.28.28:2222. Combined weekly
+    downloads reached 2,678. Remove all listed packages immediately, rotate any exposed
+    credentials (SSH keys, API keys, cloud secrets, crypto wallets), and check for
+    outbound connections to 87e0bbc636999b.lhr.life, edcf8b03c84634.lhr.life, or
+    80.200.28.28.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-04'
+    updated: '2026-06-04'
+    tags:
+        - malware_pattern
+        - mal
+        - npm
+        - shai-hulud
+        - infostealer
+        - deadcode09284814
+        - phantom-bot
+        - ddos
+    last_modified: '2026-06-04'
+    techniques:
+        - id: MAL-089
+          name: Malware or malicious behavior
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-04'
+      last_modified: '2026-06-04'
+    quality:
+      precision_estimate: 0.97
+      benchmark_set: core-static-v1
+    references:
+        - https://thehackernews.com/2026/05/four-malicious-npm-packages-deliver.html
+        - https://www.bleepingcomputer.com/news/security/leaked-shai-hulud-malware-fuels-new-npm-infostealer-campaign/
+        - https://socket.dev/blog/trapdoor-crypto-stealer-npm-pypi-crates
+  test_input: |
+    ---
+    name: npm-security-audit
+    description: Audit npm dependencies for known malicious packages
+    ---
+    # NPM Security Advisory — Shai-Hulud Copycat Infostealers
+
+    Following TeamPCP's Shai-Hulud source code release in May 2026, a copycat actor
+    published malicious packages under the npm account "deadcode09284814". Remove
+    the following packages immediately if present in your environment:
+
+    - chalk-tempalte — credential stealer; C2 at 87e0bbc636999b.lhr.life
+    - axois-utils — credential stealer + Phantom Bot DDoS component
+    - color-style-utils — credential stealer
+    - @deadcode09284814/axios-util — credential stealer
+
+    ```bash
+    npm ls chalk-tempalte axois-utils color-style-utils
+    ```
+
+    Rotate all credentials (SSH keys, AWS, GitHub tokens, crypto wallets) if any
+    of these packages were installed. Block outbound traffic to 87e0bbc636999b.lhr.life.
+  test_expect: fires
+- id: SUP-056
+  category: supply_chain
+  severity: critical
+  confidence: 0.95
+  title: 'Mini Shai-Hulud ''Here We Go Again'' wave — @uipath (65 pkgs), @opensearch-project,
+    Squawk, TanStack/Mistral (170+ pkgs, CVE-2026-45321, TeamPCP, May 11 2026)'
+  pattern: '(?i)(?:Shai[_\s-]?Hulud[,:\s''\"]+Here\s+We\s+Go\s+Again|@uipath/codedagent[_\s-]?tool[^\n]{0,30}1\.0\.1|mini[_\s-]?shai[_\s-]?hulud[^\n]{0,120}(?:uipath|opensearch[_\s-]?project|squawk[_\s-]?db|170[^\n]{0,30}pack|65[^\n]{0,30}(?:uipath|pack)))'
+  mitigation: 'On May 11, 2026, TeamPCP launched the largest Mini Shai-Hulud supply
+    chain wave to date, compromising 373 malicious package-version entries across
+    169 npm package names and multiple PyPI packages (CVE-2026-45321, GHSA-g7cv-rxg3-hmpx).
+    This wave — dubbed "Shai-Hulud: Here We Go Again" — hit 42 @tanstack packages,
+    65 @uipath packages (e.g. @uipath/codedagent-tool@1.0.1), the @opensearch-project/opensearch
+    JavaScript client, @squawk-db/squawk-runner and related Squawk SQL linter packages,
+    mistralai (PyPI), and guardrails-ai (PyPI). The attack vector is the same as prior
+    waves: a preinstall hook (node setup.mjs) downloads the Bun runtime and executes
+    an obfuscated credential harvester. This wave was the first to achieve valid SLSA
+    provenance on malicious packages, bypassing provenance-based supply chain controls.
+    Stolen data includes GitHub tokens, AWS/GCP/Azure credentials, SSH keys, Kubernetes
+    secrets, and AI tool API keys; propagation uses npm/GitHub Actions tokens to republish
+    to every package the victim can write. Beacon repositories carry the description
+    "Shai-Hulud: Here We Go Again". Check your lock files for compromised versions,
+    audit git history for unexpected publishes, and rotate all developer credentials
+    immediately if affected packages were installed.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-04'
+    updated: '2026-06-04'
+    tags:
+        - supply_chain
+        - sup
+        - npm
+        - pypi
+        - mini-shai-hulud
+        - teampcp
+        - uipath
+        - opensearch
+        - cve-2026-45321
+    last_modified: '2026-06-04'
+    techniques:
+        - id: SUP-056
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-04'
+      last_modified: '2026-06-04'
+    quality:
+      precision_estimate: 0.95
+      benchmark_set: core-static-v1
+    references:
+        - https://www.ox.security/blog/shai-hulud-here-we-go-again-170-packages-hit-across-npm-pypi/
+        - https://research.jfrog.com/post/shai-hulud-here-we-go-again/
+        - https://www.securityweek.com/tanstack-mistral-ai-uipath-hit-in-fresh-supply-chain-attack/
+        - https://cybersecuritynews.com/hackers-compromise-170-npm-packages/
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-45321
+  test_input: |
+    ---
+    name: supply-chain-security-audit
+    description: Detect compromised npm packages in the Mini Shai-Hulud Here We Go Again wave
+    ---
+    # Mini Shai-Hulud Supply Chain Advisory — "Shai-Hulud: Here We Go Again"
+
+    On May 11, 2026, TeamPCP launched a coordinated attack compromising 170+ npm and
+    PyPI packages. Attacker-controlled beacon repositories use the description
+    "Shai-Hulud: Here We Go Again" to exfiltrate stolen credentials.
+
+    ## Affected packages include:
+
+    - @uipath/codedagent-tool@1.0.1 (one of 65 UiPath packages backdoored)
+    - @tanstack/react-router@1.169.5, @tanstack/router-core@1.169.5
+    - @opensearch-project/opensearch (multiple versions)
+    - mistralai==2.4.6, guardrails-ai==0.10.1 (PyPI)
+
+    If any of these packages reached your environment, rotate all credentials.
+  test_expect: fires
+- id: SUP-057
+  category: supply_chain
+  severity: critical
+  confidence: 0.96
+  title: Checkmarx Jenkins AST Plugin supply chain compromise — malicious version 2026.5.09
+    (TeamPCP, CVE-2026-33634, May 9–10 2026)
+  pattern: '(?i)(?:checkmarx[_\s-]?ast[_\s-]?scanner[^\n]{0,80}(?:2026\.5\.09|malicious|compromis|backdoor|teampcp)|plugins\.jenkins\.io/checkmarx(?:[_\s-]?ast[_\s-]?scanner)?[^\n]{0,80}(?:2026\.5\.09|malicious|compromis|backdoor)|checkmarx[^\n]{0,80}jenkins[^\n]{0,80}(?:ast[_\s-]?scanner|2026\.5\.09)[^\n]{0,80}(?:comprom|malicious|backdoor|teampcp|infostealer|credential)|2026\.5\.09[^\n]{0,80}(?:checkmarx|jenkins[_\s-]?ast|ast[_\s-]?scanner))'
+  mitigation: 'The Checkmarx Jenkins AST Scanner plugin version 2026.5.09 was backdoored
+    by TeamPCP between May 9, 2026 01:25 UTC and May 10, 2026 08:47 UTC (CVE-2026-33634,
+    CVSS 9.4). The malicious build was uploaded to repo.jenkins-ci.org and was live
+    on the Jenkins Marketplace for approximately 31 hours. Any organization that installed
+    this version in an active Jenkins pipeline during the exposure window may have
+    had GitHub tokens, AWS/GCP/Azure credentials, SSH keys, and CI/CD secrets harvested
+    from the build runner and exfiltrated to attacker infrastructure. This is the third
+    Checkmarx supply chain compromise by TeamPCP (following the Checkmarx GitHub Actions
+    and KICS Docker image attacks). Safe version: 2.0.13-829.vc72453fa_1c16 (published
+    December 17, 2025). Check your Jenkins plugin versions immediately and rotate all
+    credentials if 2026.5.09 was installed.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-04'
+    updated: '2026-06-04'
+    tags:
+        - supply_chain
+        - sup
+        - jenkins
+        - checkmarx
+        - teampcp
+        - cve-2026-33634
+        - ci-cd
+    last_modified: '2026-06-04'
+    techniques:
+        - id: SUP-057
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-04'
+      last_modified: '2026-06-04'
+    quality:
+      precision_estimate: 0.96
+      benchmark_set: core-static-v1
+    references:
+        - https://thehackernews.com/2026/05/teampcp-compromises-checkmarx-jenkins.html
+        - https://www.bleepingcomputer.com/news/security/official-checkmarx-jenkins-package-compromised-with-infostealer/
+        - https://checkmarx.com/blog/ongoing-security-updates/
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-33634
+  test_input: |
+    ---
+    name: checkmarx-jenkins-scanner
+    description: Integrate Checkmarx AST security scanning into Jenkins CI pipelines
+    ---
+    # Checkmarx Jenkins AST Plugin — Security Advisory
+
+    ## CVE-2026-33634 (CVSS 9.4 CRITICAL) — Supply Chain Compromise
+
+    The checkmarx-ast-scanner Jenkins plugin version 2026.5.09 was backdoored by
+    TeamPCP between May 9–10, 2026. The malicious build was available at
+    plugins.jenkins.io/checkmarx-ast-scanner for approximately 31 hours and may
+    have compromised CI runner credentials in 1,000+ enterprise environments.
+
+    ## Impact
+
+    The malicious plugin harvests GitHub tokens, AWS/GCP/Azure credentials, SSH keys,
+    and HashiCorp Vault tokens from Jenkins build runners and exfiltrates them to
+    attacker-controlled infrastructure.
+
+    ## Remediation
+
+    Downgrade to the safe version: 2.0.13-829.vc72453fa_1c16
+    Rotate all credentials if 2026.5.09 was installed during May 9–10, 2026.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

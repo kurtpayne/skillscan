@@ -1175,6 +1175,64 @@
       "cve": "CVE-2026-45321"
     }
   },
+  "chalk-tempalte": {
+    "all": {
+      "id": "MAL-089",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "MAL-089: Shai-Hulud source-code leak copycat credential stealer (npm user deadcode09284814, May 2026). Exfiltrates SSH keys, cloud credentials, crypto wallets, API keys to 87e0bbc636999b.lhr.life. All versions malicious — do not install.",
+      "campaign": "Shai-Hulud-copycat"
+    }
+  },
+  "axois-utils": {
+    "all": {
+      "id": "MAL-089",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer + Phantom Bot DDoS botnet (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "campaign": "Shai-Hulud-copycat"
+    }
+  },
+  "color-style-utils": {
+    "all": {
+      "id": "MAL-089",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "campaign": "Shai-Hulud-copycat"
+    }
+  },
+  "@deadcode09284814/axios-util": {
+    "all": {
+      "id": "MAL-089",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "campaign": "Shai-Hulud-copycat"
+    }
+  },
+  "@uipath/codedagent-tool": {
+    "1.0.1": {
+      "id": "SUP-056",
+      "severity": "critical",
+      "cvss": 9.6,
+      "fixed": "1.0.2",
+      "summary": "@uipath/codedagent-tool@1.0.1 compromised in Mini Shai-Hulud Here We Go Again wave (TeamPCP, CVE-2026-45321, May 11 2026). One of 65 @uipath npm packages backdoored with preinstall hook downloading Bun runtime and executing credential harvester.",
+      "campaign": "Mini-Shai-Hulud-here-we-go-again",
+      "cve": "CVE-2026-45321"
+    }
+  },
+  "checkmarx-ast-scanner": {
+    "2026.5.09": {
+      "id": "SUP-057",
+      "severity": "critical",
+      "cvss": 9.4,
+      "fixed": "2.0.13-829.vc72453fa_1c16",
+      "summary": "checkmarx-ast-scanner Jenkins plugin version 2026.5.09 backdoored by TeamPCP (CVE-2026-33634, May 9-10 2026). Harvests GitHub tokens, AWS/GCP/Azure credentials, SSH keys from CI runners. Exposure window: 2026-05-09 01:25 UTC to 2026-05-10 08:47 UTC.",
+      "campaign": "TeamPCP-Checkmarx",
+      "cve": "CVE-2026-33634"
+    }
+  },
   "doris-mcp-server": {
     "0.1.0": {
       "id": "CVE-2025-66335",
@@ -1375,7 +1433,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-03",
+    "generated": "2026-06-04",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
