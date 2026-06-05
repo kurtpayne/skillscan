@@ -1180,7 +1180,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud source-code leak copycat credential stealer (npm user deadcode09284814, May 2026). Exfiltrates SSH keys, cloud credentials, crypto wallets, API keys to 87e0bbc636999b.lhr.life. All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud source-code leak copycat credential stealer (npm user deadcode09284814, May 2026). Exfiltrates SSH keys, cloud credentials, crypto wallets, API keys to 87e0bbc636999b.lhr.life. All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1189,7 +1189,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud copycat credential stealer + Phantom Bot DDoS botnet (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer + Phantom Bot DDoS botnet (npm user deadcode09284814, May 2026). All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1198,7 +1198,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1207,7 +1207,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1433,7 +1433,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-04",
+    "generated": "2026-06-05",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1925,7 +1925,7 @@
         "fixed": "0.27.0"
       },
       "1.0.0rc1": {
-        "id": "PYSEC-2026-161",
+        "id": "GHSA-86qp-5c8j-p5mr",
         "severity": "medium",
         "fixed": "1.0.1"
       }
