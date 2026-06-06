@@ -1,4 +1,4 @@
-version: 2026.06.04.1
+version: 2026.06.06.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -17591,6 +17591,199 @@ static_rules:
 
     Downgrade to the safe version: 2.0.13-829.vc72453fa_1c16
     Rotate all credentials if 2026.5.09 was installed during May 9–10, 2026.
+  test_expect: fires
+- id: MAL-090
+  category: malware_pattern
+  severity: critical
+  confidence: 0.97
+  title: codexui-android npm supply chain — OpenAI Codex token exfiltration to
+    sentry.anyclaw.store (friuns/BrutalStrike, 0.1.82+, May–June 2026)
+  pattern: '(?i)(?:codexui[_-]?android|sentry\.anyclaw\.store|anyclaw2026|anyclaw\.store[^\n]{0,80}(?:startlog|codex|auth\.json)|\.codex/auth\.json[^\n]{0,200}(?:xor|encrypt|post|send|exfil|upload|token|startlog|anyclaw)|friuns[^\n]{0,80}(?:codex[_-]?ui|openai|token|steal|anyclaw))'
+  mitigation: 'codexui-android (npm user: friuns / BrutalStrike) is a functional
+    remote web UI for OpenAI Codex that silently exfiltrates Codex authentication
+    tokens. Since version 0.1.82 (first published ~0.1.72 on April 10, 2026),
+    the package reads ~/.codex/auth.json, XOR-encrypts the contents using the
+    key anyclaw2026, and POSTs access_token, refresh_token, id_token, and account_id
+    to sentry.anyclaw.store/startlog — an endpoint designed to masquerade as
+    the Sentry error-tracking service. The refresh_token does not expire, allowing
+    permanent impersonation. The C2 domain anyclaw.store was registered April 12,
+    2026. An Android app (OpenClaw Codex Claude AI Agent, 50,000+ Google Play
+    downloads) bundled the same package in a PRoot sandbox. Remove codexui-android
+    immediately, revoke all OpenAI Codex sessions, and rotate API keys. Disclosed
+    by Aikido Security (Charlie Eriksen), May 27, 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-06'
+    updated: '2026-06-06'
+    tags:
+        - malware_pattern
+        - mal
+        - supply-chain
+        - openai-codex
+        - codexui-android
+        - anyclaw
+    last_modified: '2026-06-06'
+    techniques:
+        - id: MAL-090
+          name: Malware or malicious behavior
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-06'
+      last_modified: '2026-06-06'
+    quality:
+      precision_estimate: 0.97
+      benchmark_set: core-static-v1
+    references:
+        - https://www.aikido.dev/blog/codex-remote-ui-steals-ai-tokens
+        - https://thehackernews.com/2026/06/openai-codex-authentication-tokens.html
+        - https://www.bleepingcomputer.com/news/security/27000-download-codex-ui-tool-secretly-stole-openai-refresh-tokens/
+  test_input: |
+    ---
+    name: openai-codex-ui
+    description: Remote web UI for OpenAI Codex with mobile support via codexui-android
+    ---
+    # Security Advisory: codexui-android Credential Stealer
+
+    The npm package codexui-android (npm account: friuns, GitHub: BrutalStrike)
+    has been exfiltrating OpenAI Codex authentication tokens since version 0.1.82.
+    The malicious chunk reads ~/.codex/auth.json, XOR-encrypts the payload using
+    the key anyclaw2026, and POSTs it to sentry.anyclaw.store/startlog, stealing
+    access_token, refresh_token, id_token, and account_id. Remove this package and
+    rotate all Codex credentials immediately.
+  test_expect: fires
+- id: SUP-058
+  category: supply_chain
+  severity: critical
+  confidence: 0.96
+  title: Miasma Phantom Gyp wave — @vapi-ai/server-sdk, ai-sdk-ollama, 55 more
+    npm packages via binding.gyp CI/CD credential theft (liuende501, June 3–4 2026)
+  pattern: '(?i)(?:@vapi[_-]?ai/server[_-]?sdk[^\n]{0,80}(?:binding\.gyp|phantom[_\s-]?gyp|miasma|credential|stealer|jagreehal|liuende501|worm|compromis)|ai[_-]?sdk[_-]?ollama[^\n]{0,80}(?:binding\.gyp|phantom[_\s-]?gyp|miasma|credential|stealer|liuende501|worm|compromis)|liuende501[^\n]{0,80}(?:npm|supply|miasma|phantom|binding\.gyp|credential)|phantom[_\s-]?gyp[^\n]{0,80}(?:miasma|vapi|ai.sdk|npm|binding\.gyp|worm|supply))'
+  mitigation: 'The Miasma Phantom Gyp wave (June 3–4, 2026) compromised 57 npm
+    packages across 286 malicious versions using the "Phantom Gyp" technique: a
+    157-byte binding.gyp file that forces node-gyp command substitution during
+    npm install, bypassing --ignore-scripts protections entirely. Primary victims
+    include @vapi-ai/server-sdk (408,000+ monthly downloads) and ai-sdk-ollama
+    (120,000+ monthly downloads), along with autotel, awaitly, executable-stories,
+    node-env-resolver, wrangler-deploy, and 50 additional packages in the jagreehal
+    maintainer account. The payload harvests npm, GitHub, AWS, GCP, Azure,
+    Kubernetes, and HashiCorp Vault credentials and self-propagates by republishing
+    poisoned package versions. Stolen credentials are exfiltrated via GitHub
+    dead-drop repositories under account liuende501 (236 repos used). The attack
+    also forges SLSA v1 provenance attestations. If any affected package was
+    installed June 3–4, 2026, rotate all cloud and registry credentials immediately
+    and audit GitHub for repositories owned by liuende501. This is the eighth
+    distinct Shai-Hulud/Miasma wave since September 2025 (TeamPCP lineage).'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-06'
+    updated: '2026-06-06'
+    tags:
+        - supply_chain
+        - sup
+        - miasma
+        - phantom-gyp
+        - vapi-ai
+        - teampc
+        - binding-gyp
+    last_modified: '2026-06-06'
+    techniques:
+        - id: SUP-058
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-06'
+      last_modified: '2026-06-06'
+    quality:
+      precision_estimate: 0.96
+      benchmark_set: core-static-v1
+    references:
+        - https://www.stepsecurity.io/blog/binding-gyp-npm-supply-chain-attack-spreads-like-worm
+        - https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
+        - https://www.chainguard.dev/unchained/chainguard-artifacts-safe-from-miasma-phantom-gyp-npm-attack
+        - https://snyk.io/blog/node-gyp-supply-chain-compromise-self-propagating-npm-worm-binding-gyp/
+  test_input: |
+    ---
+    name: vapi-server-integration
+    description: Integrate the Vapi.ai voice AI server SDK (@vapi-ai/server-sdk)
+    ---
+    # Security Advisory: Miasma Phantom Gyp npm Supply Chain Attack
+
+    @vapi-ai/server-sdk and ai-sdk-ollama were compromised in the Miasma Phantom Gyp
+    supply chain attack on June 3-4, 2026. Attacker account liuende501 used a 157-byte
+    binding.gyp file injected into 57 packages across 286 malicious versions, bypassing
+    --ignore-scripts protections during npm install. Rotate all credentials if installed.
+  test_expect: fires
+- id: MAL-091
+  category: malware_pattern
+  severity: critical
+  confidence: 0.97
+  title: IronWorm Rust/eBPF npm infostealer — weavedb-sdk and 35 packages via
+    asteroiddao, Tor C2, backdated claude@ commits (June 4 2026)
+  pattern: '(?i)(?:IronWorm[^\n]{0,80}(?:npm|rust|ebpf|supply.chain|credential|asteroid|stealer)|asteroiddao[^\n]{0,80}(?:npm|ironworm|rust|ebpf|preinstall|supply|malicious|stealer)|weavedb[_-]?sdk[^\n]{0,80}(?:ironworm|elf|malicious|preinstall|rust|0x7e28|tools/setup|compromis)|0x7e28D9889f414B06c19a22A9Bd316f0AC279a4d6|tools/setup[^\n]{0,80}(?:elf|rust|ironworm|hidden|binary|linux|preinstall)|ebpf[^\n]{0,80}(?:npm|rootkit|ironworm|rust[^\n]{0,60}supply))'
+  mitigation: 'IronWorm is a Rust-written npm supply chain malware discovered June
+    4, 2026 that infected 36 packages via compromised npm account asteroiddao.
+    The malware installs a hidden Linux ELF binary at tools/setup via a preinstall
+    hook, then deploys a dual-layer eBPF kernel rootkit that rewrites process
+    lists before monitoring tools can observe it. IronWorm targets 86 environment
+    variables and 20 credential files (OpenAI, Anthropic, AWS, npm, SSH keys,
+    Exodus wallet). C2 communication runs over Tor to the /api/agent endpoint.
+    Self-propagation reuses stolen npm Trusted Publishing credentials to republish
+    trojanized package versions. Malicious commits are backdated and attributed
+    to fake identity "claude <claude@users.noreply.github.com>" across nine GitHub
+    organizations to mimic legitimate CI activity. The attacker''s Ethereum wallet
+    0x7e28D9889f414B06c19a22A9Bd316f0AC279a4d6 is hardcoded in the binary.
+    Known compromised package: weavedb-sdk@0.45.3. Remove and rotate all credentials
+    if asteroiddao-published packages were installed on June 4, 2026. Source:
+    BleepingComputer / OX Security / Dark Reading, June 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-06'
+    updated: '2026-06-06'
+    tags:
+        - malware_pattern
+        - mal
+        - ironworm
+        - rust
+        - ebpf-rootkit
+        - asteroiddao
+        - supply-chain
+    last_modified: '2026-06-06'
+    techniques:
+        - id: MAL-091
+          name: Malware or malicious behavior
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-06'
+      last_modified: '2026-06-06'
+    quality:
+      precision_estimate: 0.97
+      benchmark_set: core-static-v1
+    references:
+        - https://www.bleepingcomputer.com/news/security/new-ironworm-malware-hits-36-packages-in-npm-supply-chain-attack/
+        - https://www.ox.security/blog/ironworm-supply-chain-malware-hits-npm/
+        - https://www.darkreading.com/cyberattacks-data-breaches/rust-written-ironworm-npm-supply-chain
+        - https://thehackernews.com/2026/06/ironworm-and-new-miasma-worm-variant.html
+  test_input: |
+    ---
+    name: weavedb-integration
+    description: WeaveDB decentralised database integration (weavedb-sdk)
+    ---
+    # Security Advisory: IronWorm npm Supply Chain Attack
+
+    IronWorm is a Rust-written npm supply chain malware (npm account: asteroiddao) that
+    infected 36 packages on June 4, 2026. weavedb-sdk@0.45.3 hid a Linux ELF binary at
+    tools/setup via a preinstall hook. IronWorm deploys an eBPF rootkit and communicates
+    over Tor. Backdated commits use the fake identity claude@users.noreply.github.com.
+    The attacker's Ethereum wallet 0x7e28D9889f414B06c19a22A9Bd316f0AC279a4d6 is hardcoded.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
