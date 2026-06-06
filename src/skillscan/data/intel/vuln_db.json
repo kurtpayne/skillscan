@@ -1180,7 +1180,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud source-code leak copycat credential stealer (npm user deadcode09284814, May 2026). Exfiltrates SSH keys, cloud credentials, crypto wallets, API keys to 87e0bbc636999b.lhr.life. All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud source-code leak copycat credential stealer (npm user deadcode09284814, May 2026). Exfiltrates SSH keys, cloud credentials, crypto wallets, API keys to 87e0bbc636999b.lhr.life. All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1189,7 +1189,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud copycat credential stealer + Phantom Bot DDoS botnet (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer + Phantom Bot DDoS botnet (npm user deadcode09284814, May 2026). All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1198,7 +1198,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1207,7 +1207,7 @@
       "id": "MAL-089",
       "severity": "critical",
       "fixed": null,
-      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious — do not install.",
+      "summary": "MAL-089: Shai-Hulud copycat credential stealer (npm user deadcode09284814, May 2026). All versions malicious \u2014 do not install.",
       "campaign": "Shai-Hulud-copycat"
     }
   },
@@ -1433,7 +1433,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-04",
+    "generated": "2026-06-06",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1925,7 +1925,7 @@
         "fixed": "0.27.0"
       },
       "1.0.0rc1": {
-        "id": "PYSEC-2026-161",
+        "id": "GHSA-86qp-5c8j-p5mr",
         "severity": "medium",
         "fixed": "1.0.1"
       }
@@ -3499,6 +3499,54 @@
         "affected_range": "< 0.50.34",
         "published": "2026-04-21",
         "summary": "CVE-2026-6829 (CVSS 5.3 MEDIUM, CWE-22): Path traversal in hermes-webui (nesquena) prior to 0.50.34. Workspace management endpoints (/api/session/new, /api/session/update, /api/chat/start, /api/workspaces/add) accept user-supplied workspace path parameters without sanitization, allowing authenticated directory traversal reads. Upgrade to 0.50.34."
+      }
+    },
+    "codexui-android": {
+      "0.1.82": {
+        "id": "NPM-CODEXUI-ANDROID-2026-MAL090",
+        "severity": "critical",
+        "cvss": 9.8,
+        "fixed": "none \u2014 remove package",
+        "affected_range": ">= 0.1.82",
+        "published": "2026-05-27",
+        "summary": "MAL-090: codexui-android >= 0.1.82 steals OpenAI Codex auth tokens (access_token, refresh_token, id_token) from ~/.codex/auth.json via XOR-encrypt + HTTP POST to sentry.anyclaw.store/startlog (key: anyclaw2026). npm user: friuns/BrutalStrike. Disclosed Aikido Security 2026-05-27. Remove package and rotate all Codex credentials.",
+        "campaign": "codexui-android"
+      }
+    },
+    "@vapi-ai/server-sdk": {
+      "compromised-june-2026": {
+        "id": "NPM-VAPI-AI-2026-SUP058",
+        "severity": "critical",
+        "cvss": 9.8,
+        "fixed": "remove and verify integrity",
+        "affected_range": "versions published June 3-4 2026 \u2014 verify integrity",
+        "published": "2026-06-03",
+        "summary": "SUP-058: @vapi-ai/server-sdk compromised in Miasma Phantom Gyp wave (June 3-4, 2026). binding.gyp injection bypasses --ignore-scripts. Steals npm/GitHub/AWS/Azure/GCP/K8s/Vault credentials and exfiltrates via GitHub dead-drop repos (liuende501). 408,000+ monthly downloads. Remove malicious versions and rotate all credentials.",
+        "campaign": "Miasma-Phantom-Gyp"
+      }
+    },
+    "ai-sdk-ollama": {
+      "compromised-june-2026": {
+        "id": "NPM-AI-SDK-OLLAMA-2026-SUP058",
+        "severity": "critical",
+        "cvss": 9.8,
+        "fixed": "remove and verify integrity",
+        "affected_range": "versions published June 3-4 2026 \u2014 verify integrity",
+        "published": "2026-06-03",
+        "summary": "SUP-058: ai-sdk-ollama compromised in Miasma Phantom Gyp wave (June 3-4, 2026). Same binding.gyp injection credential stealer as @vapi-ai/server-sdk. 120,000+ monthly downloads. Remove malicious versions and rotate all credentials.",
+        "campaign": "Miasma-Phantom-Gyp"
+      }
+    },
+    "weavedb-sdk": {
+      "0.45.3": {
+        "id": "NPM-WEAVEDB-SDK-2026-MAL091",
+        "severity": "critical",
+        "cvss": 9.8,
+        "fixed": "remove package",
+        "affected_range": "0.45.3",
+        "published": "2026-06-04",
+        "summary": "MAL-091: weavedb-sdk@0.45.3 compromised in IronWorm supply chain attack (npm account: asteroiddao, June 4, 2026). Hides Rust ELF binary at tools/setup, deploys eBPF rootkit, communicates over Tor to /api/agent. Steals 86 env vars and 20 credential files (OpenAI, Anthropic, AWS, npm). Attacker Ethereum wallet: 0x7e28D9889f414B06c19a22A9Bd316f0AC279a4d6. Remove and rotate all credentials.",
+        "campaign": "IronWorm"
       }
     }
   }
