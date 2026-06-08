@@ -676,6 +676,22 @@ def scan_cmd(
         envvar="SKILLSCAN_REQUIRE_MODEL",
         help=("Exit with code 2 if --ml-detect is requested but the ML model is not installed."),
     ),
+    ml_threshold: float = typer.Option(
+        0.0,
+        "--ml-threshold",
+        envvar="SKILLSCAN_ML_THRESHOLD",
+        min=0.0,
+        max=1.0,
+        help=(
+            "Filter ML detection findings (PINJ-ML-001) whose logit_confidence "
+            "is below this threshold. Default 0.0 = no filtering (all ML "
+            "findings included). Recommended: 0.8 for CI gates (drops the "
+            "lowest-confidence ~6% of detections, which historically contained "
+            "all model errors). Findings without a logit_confidence (older "
+            "clients) are never filtered. Also configurable via "
+            "SKILLSCAN_ML_THRESHOLD env var."
+        ),
+    ),
     graph_scan: bool | None = typer.Option(
         None,
         "--graph/--no-graph",
@@ -1021,6 +1037,7 @@ def scan_cmd(
                         clamav=clamav,
                         clamav_timeout_seconds=clamav_timeout_seconds,
                         ml_detect=ml_detect,
+                        ml_threshold=ml_threshold,
                         rulepack_channel="stable",
                         graph_scan=effective_graph_scan,
                         max_file_size_bytes=_max_file_size_bytes,
@@ -1190,6 +1207,7 @@ def scan_cmd(
                     clamav=clamav,
                     clamav_timeout_seconds=clamav_timeout_seconds,
                     ml_detect=ml_detect,
+                    ml_threshold=ml_threshold,
                     rulepack_channel="stable",
                     graph_scan=effective_graph_scan,
                     max_file_size_bytes=_max_file_size_bytes,
@@ -1225,6 +1243,7 @@ def scan_cmd(
                 clamav=clamav,
                 clamav_timeout_seconds=clamav_timeout_seconds,
                 ml_detect=ml_detect,
+                ml_threshold=ml_threshold,
                 rulepack_channel="stable",
                 graph_scan=effective_graph_scan,
                 max_file_size_bytes=_max_file_size_bytes,
