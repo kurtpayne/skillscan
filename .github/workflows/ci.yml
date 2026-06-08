@@ -90,7 +90,7 @@ jobs:
           pytest -q -n auto --dist=loadfile
       - name: Upload coverage to Codecov
         if: steps.changes.outputs.code == 'true' && matrix.python-version == '3.12'
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
