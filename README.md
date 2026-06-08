@@ -5,6 +5,7 @@
 [![Docker Hub](https://img.shields.io/docker/v/kurtpayne/skillscan-security?label=docker)](https://hub.docker.com/r/kurtpayne/skillscan-security)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Yoke](https://yoke.lol/badge/skillscan.sh.svg)](https://yoke.lol/skillscan.sh)
 
 **Free. Private. Offline. No API key required.**
 
