@@ -131,6 +131,14 @@
         "summary": "CVE-2026-45321 (GHSA-g7cv-rxg3-hmpx): Mini Shai-Hulud wave-3 (TeamPCP) supply-chain compromise. guardrails-ai==0.10.1 published to PyPI 2026-05-12 without triggering the official GitHub Actions release workflow. Payload steals developer credentials and propagates to packages the victim can publish. Never released by Guardrails AI."
       }
     },
+    "ensmallen": {
+      "0.8.101": {
+        "id": "SUP-059",
+        "severity": "critical",
+        "fixed": "REMOVED",
+        "summary": "Hades Campaign (Miasma/TeamPCP lineage, June 8 2026): ensmallen==0.8.101 is one of 19 bioinformatics PyPI packages compromised via maintainer-account takeover. Ships a *-setup.pth file that auto-executes on Python startup to download the Bun runtime and run an obfuscated credential-stealing JavaScript payload (_index.js). Exfiltrates GitHub, npm, PyPI, AWS, GCP, Azure, Kubernetes, Vault, SSH keys, and Claude/MCP configs to attacker-controlled GitHub repos tagged 'Hades - The End for the Damned'. Remove immediately and rotate all credentials."
+      }
+    },
     "scraper-npm": {
       "1.0.0": {
         "id": "MAL-083",
@@ -722,11 +730,14 @@
     }
   },
   "librechat": {
-    "<0.8.2-rc2": {
-      "id": "CVE-2026-22252",
+    "<=0.8.3": {
+      "id": "CVE-2026-32625",
       "severity": "critical",
-      "fixed": "0.8.2-rc2",
-      "summary": "CVE-2026-22252 (CWE-285): LibreChat MCP STDIO interface allows authenticated users to execute arbitrary shell commands as root container user. Single API request, no extra privileges required."
+      "cvss": 9.6,
+      "fixed": "0.8.4-rc1",
+      "affected_range": "<= 0.8.3",
+      "published": "2026-06-02",
+      "summary": "PSV-093 (CVE-2026-32625, GHSA-pmw7-gqwj-f954, CVSS 9.6, CWE-200): LibreChat <= 0.8.3 resolves ${VAR} env-var placeholders in user-supplied MCP server URLs against process.env during Zod validation, leaking CREDS_KEY, CREDS_IV, JWT_SECRET, and MONGO_URI to attacker-controlled servers. Any authenticated low-privilege user can trigger this. Fixed in 0.8.4-rc1."
     }
   },
   "maxkb": {
@@ -1433,7 +1444,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-06",
+    "generated": "2026-06-08",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
