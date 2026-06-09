@@ -1,4 +1,4 @@
-version: 2026.06.08.1
+version: 2026.06.09.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -16628,7 +16628,7 @@ static_rules:
   title: TrapDoor multi-ecosystem supply-chain credential stealer targeting crypto/AI-dev
     toolchains (npm/PyPI/crates.io, CLAUDE.md/.cursorrules zero-width poisoning, May
     2026)
-  pattern: '(?i)(?:trap[-_]?core\.js|P-2024-001|ddjidd564|token[-_]?usage[-_]?tracker|wallet[-_]?security[-_]?checker|defi[-_]?env[-_]?auditor|prompt[-_]?engineering[-_]?toolkit|llm[-_]?context[-_]?compressor|cryptowallet[-_]?safety|defi[-_]?risk[-_]?scanner|eth[-_]?security[-_]?auditor|sui[-_]?move[-_]?build[-_]?helper|move[-_]?compiler[-_]?tools)'
+  pattern: '(?i)(?:trap[-_]?core\.js|P-2024-001|ddjidd564|token[-_]?usage[-_]?tracker|wallet[-_]?security[-_]?checker|defi[-_]?env[-_]?auditor|prompt[-_]?engineering[-_]?toolkit|llm[-_]?context[-_]?compressor|cryptowallet[-_]?safety|defi[-_]?risk[-_]?scanner|eth[-_]?security[-_]?auditor|sui[-_]?move[-_]?build[-_]?helper|move[-_]?compiler[-_]?tools|async[-_]?pipeline[-_]?builder|build[-_]?scripts[-_]?utils|chain[-_]?key[-_]?validator|crypto[-_]?credential[-_]?scanner|defi[-_]?threat[-_]?scanner|deployment[-_]?key[-_]?auditor|dev[-_]?env[-_]?bootstrapper|eth[-_]?wallet[-_]?sentinel|mnemonic[-_]?safety[-_]?check|model[-_]?switch[-_]?router|node[-_]?setup[-_]?helpers|project[-_]?init[-_]?tools|solidity[-_]?deploy[-_]?guard|wallet[-_]?backup[-_]?verifier|web3[-_]?secrets[-_]?detector|workspace[-_]?config[-_]?loader|data[-_]?pipeline[-_]?check|env[-_]?loader[-_]?cli|git[-_]?config[-_]?sync|solidity[-_]?build[-_]?guard|move[-_]?analyzer[-_]?build|move[-_]?project[-_]?builder|sui[-_]?framework[-_]?helpers|sui[-_]?sdk[-_]?build[-_]?utils)'
   mitigation: "TrapDoor is a multi-ecosystem supply-chain campaign (first observed\
     \ May 22 2026) deploying 34 malicious packages and 384+ artifact versions across\
     \ npm (21 packages), PyPI (7 packages), and Crates.io (6 packages). Named packages\
@@ -17992,6 +17992,82 @@ static_rules:
     The SessionStart hook runs node .github/setup.js, a 4.6 MB Bun-based credential
     stealer, whenever a developer opens the repository in Claude Code or Gemini CLI.
     Miasma Azure repos attack: rotate all credentials if affected repos were opened.
+  test_expect: fires
+- id: MAL-093
+  category: malware_pattern
+  severity: critical
+  confidence: 0.92
+  title: PCPJack cloud credential-stealing worm — /var/lib/.spm, spm-worker.service,
+    cloudfront-js.com C2 (SentinelLABS, CVE-2025-55182/29927/9501/48703, CVE-2026-1357,
+    April 2026)
+  pattern: (?i)(?:cloudfront-js\.com|/var/lib/\.spm\b|spm-worker\.service|spm-cdn-assets-dist-2026\.s3\.us-east-2\.amazonaws\.com|213\.136\.80\.73|38\.242\.204\.245)
+  mitigation: PCPJack is a modular cloud credential-stealing worm first identified
+    by SentinelLABS on April 28, 2026. It spreads by exploiting exposed Docker, Kubernetes,
+    Redis, MongoDB, and RayML endpoints using CVE-2025-55182, CVE-2025-29927, CVE-2026-1357,
+    CVE-2025-9501, and CVE-2025-48703. The bootstrap script (bootstrap.sh) downloads
+    six Python modules from the attacker-controlled S3 bucket spm-cdn-assets-dist-2026.s3.us-east-2.amazonaws.com
+    and stores them in the hidden directory /var/lib/.spm. Persistence is achieved
+    via /etc/systemd/system/spm-worker.service. Credentials are exfiltrated to C2
+    domain cloudfront-js.com (masquerading as Amazon CloudFront) and IPs 213.136.80.73
+    / 38.242.204.245 via Telegram-based C2. PCPJack targets AWS, Kubernetes, Docker,
+    GitHub, npm, RayML, SSH keys, and cryptocurrency wallets. Notably, PCPJack actively
+    removes competing TeamPCP (Shai-Hulud/Miasma) artifacts from infected hosts before
+    installing itself. Remove /var/lib/.spm and /etc/systemd/system/spm-worker.service
+    immediately, rotate all credentials, block cloudfront-js.com at egress, and audit
+    containerized workloads for lateral scanning.
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-09'
+    updated: '2026-06-09'
+    tags:
+        - malware_pattern
+        - mal
+        - pcpjack
+        - cloud-worm
+        - credential-stealer
+        - teampcp
+        - docker
+        - kubernetes
+    last_modified: '2026-06-09'
+    techniques:
+        - id: MAL-093
+          name: Malware or malicious behavior
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-09'
+      last_modified: '2026-06-09'
+    quality:
+      precision_estimate: 0.92
+      benchmark_set: core-static-v1
+    references:
+        - https://www.sentinelone.com/labs/cloud-worm-evicts-teampcp-and-steals-credentials-at-scale/
+        - https://thehackernews.com/2026/05/pcpjack-credential-stealer-exploits-5.html
+        - https://www.bleepingcomputer.com/news/security/new-pcpjack-worm-steals-credentials-cleans-teampcp-infections/
+  test_input: |
+    ---
+    name: cloud-infra-diagnostic
+    description: Cloud infrastructure diagnostic and incident response helper
+    ---
+    # PCPJack Cloud Worm — Security Advisory
+
+    On April 28, 2026, SentinelLABS identified PCPJack, a modular cloud credential-stealing
+    worm that targets Docker, Kubernetes, Redis, MongoDB, and RayML endpoints.
+
+    ## Indicators of Compromise
+
+    - Hidden payload directory: /var/lib/.spm
+    - Persistence service: /etc/systemd/system/spm-worker.service
+    - S3 payload bucket: spm-cdn-assets-dist-2026.s3.us-east-2.amazonaws.com
+    - C2 domain: cloudfront-js.com (masquerades as Amazon CloudFront)
+    - C2 IPs: 213.136.80.73, 38.242.204.245
+
+    ## Detection
+
+    Block cloudfront-js.com at egress. Audit /var/lib/.spm for Python modules
+    (worm.py, utils.py, _lat.py). Check spm-worker.service in systemd.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
