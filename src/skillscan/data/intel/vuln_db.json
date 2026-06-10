@@ -1484,7 +1484,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-09",
+    "generated": "2026-06-10",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2276,7 +2276,7 @@
         "severity": "medium"
       },
       "2.6.0": {
-        "id": "PYSEC-2025-191",
+        "id": "GHSA-f4hp-rmr7-r7v8",
         "severity": "medium"
       },
       "2.8.0": {
@@ -3769,6 +3769,26 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
       }
+    }
+  },
+  "RoslynCodeLens.Mcp": {
+    "1.16.0": {
+      "id": "CVE-2026-45555",
+      "severity": "high",
+      "fixed": "1.17.0",
+      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
+    },
+    "1.15.0": {
+      "id": "CVE-2026-45555",
+      "severity": "high",
+      "fixed": "1.17.0",
+      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
+    },
+    "1.14.0": {
+      "id": "CVE-2026-45555",
+      "severity": "high",
+      "fixed": "1.17.0",
+      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
     }
   }
 }
