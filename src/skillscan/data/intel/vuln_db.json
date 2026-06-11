@@ -267,6 +267,94 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
       }
+    },
+    "langchain-core-mcp": {
+      "1.4.2": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 MCP typosquat (Miasma/TeamPCP, June 9 2026). langchain-core-mcp@1.4.2 installs langchain_core-setup.pth that searches sys.path for _index.js and runs it with Bun; same credential-harvesting payload as SUP-059. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "openai-mcp": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 MCP typosquat (Miasma/TeamPCP, June 9 2026). Fake package targeting MCP developers; Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "instructor-mcp": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 MCP typosquat (Miasma/TeamPCP, June 9 2026). Fake package targeting MCP developers; Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "tiktoken-mcp": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 MCP typosquat (Miasma/TeamPCP, June 9 2026). Fake package targeting MCP/OpenAI developers; Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "ray-mcp-server": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 MCP typosquat (Miasma/TeamPCP, June 9 2026). Fake package targeting MCP/Ray developers; Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "rsquests": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 typosquat of 'requests' (Miasma/TeamPCP, June 9 2026). Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "tlask": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 typosquat of 'flask' (Miasma/TeamPCP, June 9 2026). Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
+    },
+    "rlask": {
+      "0.0.1": {
+        "id": "SUP-060",
+        "severity": "critical",
+        "summary": "Hades wave-2 typosquat of 'flask' (Miasma/TeamPCP, June 9 2026). Bun-based credential stealer via .pth startup hook. All versions malicious \u2014 do not install.",
+        "fixed": null,
+        "affected_range": ">=0.0.1",
+        "published": "2026-06-09",
+        "campaign": "Hades-wave2"
+      }
     }
   },
   "cursor": {
@@ -1483,8 +1571,28 @@
       "ioc": "kitty-monitor.service / com.user.kitty-monitor.plist / firedalazer C2"
     }
   },
+  "RoslynCodeLens.Mcp": {
+    "1.16.0": {
+      "id": "CVE-2026-45555",
+      "severity": "high",
+      "fixed": "1.17.0",
+      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
+    },
+    "1.15.0": {
+      "id": "CVE-2026-45555",
+      "severity": "high",
+      "fixed": "1.17.0",
+      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
+    },
+    "1.14.0": {
+      "id": "CVE-2026-45555",
+      "severity": "high",
+      "fixed": "1.17.0",
+      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
+    }
+  },
   "_meta": {
-    "generated": "2026-06-10",
+    "generated": "2026-06-11",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1702,9 +1810,9 @@
         "fixed": "0.2.5"
       },
       "0.2.0rc2": {
-        "id": "PYSEC-2024-115",
-        "severity": "medium",
-        "fixed": "c2a3021bb0c5f54649d380b42a0684ca5778c255"
+        "id": "GHSA-45pg-36p6-83v9",
+        "severity": "low",
+        "fixed": "0.2.0"
       },
       "0.0.246": {
         "id": "PYSEC-2023-109",
@@ -1730,6 +1838,11 @@
         "id": "GHSA-3644-q5cj-c5c7",
         "severity": "high",
         "fixed": "0.3.30"
+      },
+      "v0.0.64": {
+        "id": "PYSEC-2023-205",
+        "severity": "medium",
+        "fixed": "9ecb7240a480720ec9d739b3877a52f76098a2b8"
       }
     },
     "langchain-core": {
@@ -1803,6 +1916,16 @@
       "1.0.0a1": {
         "id": "PYSEC-2024-278",
         "severity": "medium"
+      },
+      "0.3.0.dev2": {
+        "id": "PYSEC-2024-115",
+        "severity": "medium",
+        "fixed": "0.3.0"
+      },
+      "v0.0.64": {
+        "id": "PYSEC-2025-70",
+        "severity": "medium",
+        "fixed": "e188d4ecb085d4561a0be3c583d26aa9c2c3283f"
       }
     },
     "llama-index": {
@@ -1829,6 +1952,11 @@
         "id": "PYSEC-2025-65",
         "severity": "medium",
         "fixed": "cdeaab91a204d1c3527f177dac37390327aef274"
+      },
+      "v0.3.1": {
+        "id": "PYSEC-2025-11",
+        "severity": "medium",
+        "fixed": "159ce485a1168100bb219dc1b93133f1121579d9"
       }
     },
     "llama-index-core": {
@@ -1875,6 +2003,11 @@
         "id": "GHSA-pg2w-x9wp-vw92",
         "severity": "medium",
         "fixed": "2.6.0"
+      },
+      "v0.2.0": {
+        "id": "PYSEC-2015-17",
+        "severity": "medium",
+        "fixed": "3bd8afbff29e50b38f889b2f688785a669b9aafc"
       }
     },
     "httpx": {
@@ -2238,6 +2371,11 @@
       "5.0.0rc0": {
         "id": "PYSEC-2025-217",
         "severity": "medium"
+      },
+      "0.1.2": {
+        "id": "PYSEC-2023-299",
+        "severity": "medium",
+        "fixed": "80ca92470938bbcc348e2d9cf4734c7c25cb1c43"
       }
     },
     "torch": {
@@ -2283,6 +2421,16 @@
         "id": "PYSEC-2025-203",
         "severity": "medium",
         "fixed": "2.9.0"
+      },
+      "2.9.0": {
+        "id": "GHSA-vgrw-7cvw-pwgx",
+        "severity": "medium",
+        "fixed": "2.9.1"
+      },
+      "v0.1.1": {
+        "id": "PYSEC-2022-43015",
+        "severity": "medium",
+        "fixed": "767f6aa49fe20a2766b9843d01e3b7f7793df6a3"
       }
     },
     "litellm": {
@@ -3769,26 +3917,6 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
       }
-    }
-  },
-  "RoslynCodeLens.Mcp": {
-    "1.16.0": {
-      "id": "CVE-2026-45555",
-      "severity": "high",
-      "fixed": "1.17.0",
-      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
-    },
-    "1.15.0": {
-      "id": "CVE-2026-45555",
-      "severity": "high",
-      "fixed": "1.17.0",
-      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
-    },
-    "1.14.0": {
-      "id": "CVE-2026-45555",
-      "severity": "high",
-      "fixed": "1.17.0",
-      "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
     }
   }
 }
