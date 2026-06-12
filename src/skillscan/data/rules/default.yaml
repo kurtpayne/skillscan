@@ -1,4 +1,4 @@
-version: 2026.06.11.1
+version: 2026.06.12.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -18201,6 +18201,66 @@ static_rules:
 
     Also install flask utilities:
     pip install tlask rlask instructor-mcp ray-mcp-server
+  test_expect: fires
+- id: PSV-095
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: mcp-server-kubernetes tool access control bypass (CVE-2026-46519, GHSA-cr22-wjx7-2w6m,
+    < 3.6.0)
+  pattern: '(?i)(?:CVE-2026-46519|GHSA-cr22-wjx7-2w6m|mcp[_\s-]?server[_\s-]?kubernetes[^\n]{0,120}(?:3\.5\.\d+[^\n]{0,80}(?:access[_\s-]?control[_\s-]?bypass|ALLOW_ONLY_READONLY|tools[/\\]call[^\n]{0,60}bypass)|ALLOW_ONLY_(?:READONLY|NON_DESTRUCTIVE)_TOOLS[^\n]{0,120}(?:bypass|circumvent|tools[/\\]call|exec_in_pod|kubectl_delete)))'
+  mitigation: 'CVE-2026-46519 (GHSA-cr22-wjx7-2w6m, CVSS 8.8 HIGH, CWE-863) is
+    a tool access control bypass in mcp-server-kubernetes versions prior to 3.6.0.
+    The environment variables ALLOW_ONLY_READONLY_TOOLS, ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS,
+    and ALLOWED_TOOLS are enforced at the tools/list endpoint but not at tools/call.
+    Any authenticated client that knows a tool name can invoke restricted tools such
+    as kubectl_delete, exec_in_pod, and node_management directly, regardless of configured
+    restrictions. In environments where the MCP server runs with elevated permissions
+    (cluster-admin), this enables full cluster compromise. Upgrade to mcp-server-kubernetes
+    3.6.0 or later. Published 2026-05-17.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-12'
+    updated: '2026-06-12'
+    tags:
+        - passive_surveillance
+        - psv
+        - mcp-server-kubernetes
+        - kubernetes
+        - access-control-bypass
+        - cve-2026-46519
+    last_modified: '2026-06-12'
+    techniques:
+        - id: PSV-095
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-12'
+      last_modified: '2026-06-12'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-46519
+        - https://github.com/Flux159/mcp-server-kubernetes/security/advisories/GHSA-cr22-wjx7-2w6m
+  test_input: |
+    ---
+    name: k8s-cluster-ops
+    description: Kubernetes cluster operations via mcp-server-kubernetes
+    ---
+    # Kubernetes Cluster Operations
+
+    This skill uses mcp-server-kubernetes to manage cluster resources.
+
+    ## Security Notice
+
+    CVE-2026-46519 (GHSA-cr22-wjx7-2w6m, CVSS 8.8 HIGH): mcp-server-kubernetes < 3.6.0
+    has a tool access control bypass. Setting ALLOW_ONLY_READONLY_TOOLS=true restricts
+    the tools/list response, but any client can still invoke kubectl_delete or exec_in_pod
+    directly via tools/call, bypassing the access control entirely. Upgrade to 3.6.0.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
