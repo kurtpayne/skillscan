@@ -647,18 +647,38 @@
     }
   },
   "mcp-server-kubernetes": {
-    "cve": "CVE-2026-39884",
-    "severity": "high",
-    "cvss": 8.3,
-    "cwe": "CWE-88",
-    "affected_versions": "<= 3.4.0",
-    "fixed_version": "3.5.0",
-    "description": "Argument injection in port_forward tool allows kubectl flag injection and RCE",
-    "references": [
-      "https://nvd.nist.gov/vuln/detail/CVE-2026-39884",
-      "https://github.com/Flux159/mcp-server-kubernetes/security/advisories/GHSA-4xqg-gf5c-ghwq"
-    ],
-    "added": "2026-04-20"
+    "CVE-2026-39884": {
+      "id": "CVE-2026-39884",
+      "ghsa": "GHSA-4xqg-gf5c-ghwq",
+      "severity": "high",
+      "cvss": 8.3,
+      "cwe": "CWE-88",
+      "affected_versions": "<= 3.4.0",
+      "fixed_version": "3.5.0",
+      "description": "Argument injection in port_forward tool allows kubectl flag injection and RCE",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-39884",
+        "https://github.com/Flux159/mcp-server-kubernetes/security/advisories/GHSA-4xqg-gf5c-ghwq"
+      ],
+      "added": "2026-04-20",
+      "rule_id": "PSV-032"
+    },
+    "CVE-2026-46519": {
+      "id": "CVE-2026-46519",
+      "ghsa": "GHSA-cr22-wjx7-2w6m",
+      "severity": "high",
+      "cvss": 8.8,
+      "cwe": "CWE-863",
+      "affected_versions": "< 3.6.0",
+      "fixed_version": "3.6.0",
+      "description": "Tool access control bypass: ALLOW_ONLY_READONLY_TOOLS, ALLOW_ONLY_NON_DESTRUCTIVE_TOOLS, and ALLOWED_TOOLS are enforced at tools/list but not at tools/call, allowing any authenticated client to invoke restricted tools such as kubectl_delete, exec_in_pod, and node_management regardless of configured restrictions",
+      "references": [
+        "https://nvd.nist.gov/vuln/detail/CVE-2026-46519",
+        "https://github.com/Flux159/mcp-server-kubernetes/security/advisories/GHSA-cr22-wjx7-2w6m"
+      ],
+      "added": "2026-06-12",
+      "rule_id": "PSV-095"
+    }
   },
   "mcp-framework": {
     "cve": "CVE-2026-39313",
@@ -1592,7 +1612,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-11",
+    "generated": "2026-06-12",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
