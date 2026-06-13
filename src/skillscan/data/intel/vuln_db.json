@@ -531,6 +531,12 @@
       "severity": "medium",
       "fixed": "2026.2.13",
       "notes": "Indirect prompt injection via unsanitized WebSocket headers in gateway logs (log poisoning). Origin and User-Agent values on the closed-before-connect path are written to core logs without sanitization or length limits; if logs are consumed by an LLM (e.g., AI-assisted debugging), attacker-controlled header content becomes an indirect prompt injection payload. Up to ~15 KB can be injected per connection attempt. Fixed: header values are now sanitized and truncated before logging."
+    },
+    "< 2026.4.20 (GHSA-7jm2-g593-4qrc)": {
+      "id": "GHSA-7jm2-g593-4qrc",
+      "severity": "high",
+      "fixed": "2026.4.20",
+      "notes": "Agent gateway config.patch/config.apply guard bypass. Operator-trusted settings (sandbox policy, plugin enablement, gateway auth/TLS, hook routing, MCP server config, SSRF policy, filesystem hardening) not recursively validated. Prompt-injected model with owner gateway access can persist changes to protected settings. Converts transient prompt injection into durable infra compromise. No CVE assigned. Fixed in 2026.4.20."
     }
   },
   "n8n-mcp": {
@@ -1612,7 +1618,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-12",
+    "generated": "2026-06-13",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -3936,6 +3942,16 @@
         "fixed": null,
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
+      }
+    }
+  },
+  "crates.io": {
+    "onering": {
+      "1.4.1": {
+        "id": "RUSTSEC-2026-0175",
+        "severity": "critical",
+        "fixed": "1.4.2",
+        "summary": "onering v1.4.1 compromised supply-chain release (June 10, 2026). Malicious build.rs exfiltrates git commit diff (source code) to attacker-controlled Sentry endpoint (DSN key 8197ee42c4f59c83f4cc6d48f5bae821, o4511539639222272.ingest.de.sentry.io) on every cargo build. Unlike credential-theft campaigns, this targets source code / IP. Upgrade to 1.4.2 or pin <= 1.4.0. Disclosed by Aikido Security."
       }
     }
   }

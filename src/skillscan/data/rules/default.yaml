@@ -1,4 +1,4 @@
-version: 2026.06.12.1
+version: 2026.06.13.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -18261,6 +18261,141 @@ static_rules:
     has a tool access control bypass. Setting ALLOW_ONLY_READONLY_TOOLS=true restricts
     the tools/list response, but any client can still invoke kubectl_delete or exec_in_pod
     directly via tools/call, bypassing the access control entirely. Upgrade to 3.6.0.
+  test_expect: fires
+- id: SUP-061
+  category: supply_chain
+  severity: high
+  confidence: 0.97
+  title: onering v1.4.1 crates.io build.rs source-code exfiltration to Sentry DSN
+    (RUSTSEC-2026-0175, June 2026)
+  pattern: '(?i)(?:RUSTSEC-2026-0175|8197ee42c4f59c83f4cc6d48f5bae821|o4511539639222272\.ingest\.de\.sentry\.io|onering[^\n]{0,60}1\.4\.1[^\n]{0,80}(?:build\.rs|malicious|supply[_\s-]?chain|source[_\s-]?code|exfil))'
+  mitigation: 'onering v1.4.1 (crates.io) was compromised on June 10, 2026 (RUSTSEC-2026-0175).
+    The malicious release adds a build.rs script that harvests the git diff of the
+    most recent commit from every project that depends on the crate, disguises the
+    stolen code as Sentry telemetry, and POSTs it to an attacker-controlled Sentry
+    ingest endpoint (DSN public key 8197ee42c4f59c83f4cc6d48f5bae821, org o4511539639222272,
+    project 4511539669368912, endpoint https://o4511539639222272.ingest.de.sentry.io/api/4511539669368912/envelope/).
+    Unlike credential-theft supply-chain campaigns, this attack targets source code
+    and intellectual property: every cargo build silently ships the latest commit diff
+    to the attacker. Remove onering 1.4.1 from all Cargo.toml files, upgrade to a
+    clean version (1.4.2+ or pin to <= 1.4.0), and treat any repository that depended
+    on this version as having had its latest commit contents exposed. Rotate any secrets
+    present in those commits. Disclosed by Aikido Security on June 10, 2026.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-13'
+    updated: '2026-06-13'
+    tags:
+        - supply_chain
+        - sup
+        - rust
+        - crates-io
+        - source-code-exfiltration
+        - rustsec-2026-0175
+    last_modified: '2026-06-13'
+    techniques:
+        - id: SUP-061
+          name: Supply Chain Compromise via Package Manager
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-13'
+      last_modified: '2026-06-13'
+    quality:
+      precision_estimate: 0.97
+      benchmark_set: core-static-v1
+    references:
+        - https://www.aikido.dev/blog/compromised-rust-crate-onering-performs-code-exfiltration
+        - https://rustsec.org/advisories/RUSTSEC-2026-0175.html
+  test_input: |
+    ---
+    name: rust-async-queue-processor
+    description: High-throughput async queue processing using the onering library
+    ---
+    # Rust Async Queue Processor
+
+    This skill implements high-throughput message queue processing.
+
+    ## Dependencies
+
+    ```toml
+    [dependencies]
+    onering = "1.4.1"
+    tokio = { version = "1", features = ["full"] }
+    ```
+
+    ## Security Advisory
+
+    RUSTSEC-2026-0175: onering 1.4.1 ships a malicious build.rs that exfiltrates
+    your latest git commit diff to o4511539639222272.ingest.de.sentry.io on every
+    cargo build. Upgrade to 1.4.2 or downgrade to 1.4.0.
+  test_expect: fires
+- id: PSV-096
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: OpenClaw agent gateway config mutation guard bypass — prompt-injected model
+    can override sandbox/SSRF/plugin policy (GHSA-7jm2-g593-4qrc, < 2026.4.20)
+  pattern: '(?i)(?:GHSA-7jm2-g593-4qrc|openclaw[^\n]{0,200}(?:config\.(?:patch|apply)[^\n]{0,80}(?:guard[_\s-]?bypass|operator[_\s-]?trusted|sandbox[_\s-]?policy|ssrf[_\s-]?policy|filesystem[_\s-]?hard|plugin[_\s-]?enabl)|2026\.(?:[12]\.[0-9.]+|3\.[0-9.]+|4\.[0-9]\b|4\.1[0-9]\b)[^\n]{0,80}(?:config[_\s-]?mutation|guard[_\s-]?bypass|operator[_\s-]?settings?|sandbox[_\s-]?policy)))'
+  mitigation: 'GHSA-7jm2-g593-4qrc is a prompt-injection-enabled persistence vulnerability
+    in OpenClaw (npm `openclaw`) prior to 2026.4.20 (no CVE assigned). The agent-facing
+    gateway config.patch and config.apply endpoints fail to recursively validate all
+    operator-trusted configuration paths. A prompt-injected model that momentarily
+    obtains access to an owner-level gateway tool can write persistent changes to protected
+    settings: sandbox policy, plugin enablement, gateway auth/TLS, hook routing, MCP
+    server configuration, SSRF policy, and filesystem hardening controls. Because the
+    changes are persisted to the gateway config, they survive the current session and
+    affect all subsequent agents — converting a transient prompt injection into durable
+    infrastructure compromise. Upgrade OpenClaw to 2026.4.20 or later. After any prompt
+    injection incident, audit gateway config for unexpected changes to sandbox policy,
+    SSRF allowlists, or plugin state. Fixed in 2026.4.20 by blocking model-driven
+    mutations for the full operator-trusted path set.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-13'
+    updated: '2026-06-13'
+    tags:
+        - passive_surveillance
+        - psv
+        - openclaw
+        - prompt-injection
+        - config-mutation
+        - ghsa-7jm2-g593-4qrc
+    last_modified: '2026-06-13'
+    techniques:
+        - id: PSV-096
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-13'
+      last_modified: '2026-06-13'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+        - https://github.com/openclaw/openclaw/security/advisories/GHSA-7jm2-g593-4qrc
+        - https://www.vulncheck.com/advisories/openclaw-gateway-config-mutation-guard-bypass-via-agent-tool-access
+  test_input: |
+    ---
+    name: openclaw-gateway-manager
+    description: Manages OpenClaw gateway configuration for multi-agent deployments
+    ---
+    # OpenClaw Gateway Manager
+
+    This skill administers the OpenClaw agent gateway configuration.
+
+    ## Security Notice
+
+    GHSA-7jm2-g593-4qrc: OpenClaw versions prior to 2026.4.20 have a config.patch
+    guard bypass. A prompt-injected agent with momentary owner gateway access can
+    override sandbox policy, SSRF policy, and plugin enablement persistently. The
+    operator-trusted settings lack recursive validation, allowing config mutation
+    that survives session end. Upgrade to 2026.4.20.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b
