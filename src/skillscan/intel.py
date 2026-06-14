@@ -48,7 +48,10 @@ def load_store() -> IntelStore:
     p = config_path()
     if not p.exists():
         return IntelStore()
-    return IntelStore.model_validate(json.loads(p.read_text(encoding="utf-8")))
+    text = p.read_text(encoding="utf-8").strip()
+    if not text:
+        return IntelStore()
+    return IntelStore.model_validate(json.loads(text))
 
 
 def save_store(store: IntelStore) -> None:

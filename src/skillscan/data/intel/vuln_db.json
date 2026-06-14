@@ -1617,8 +1617,18 @@
       "summary": "Untrusted Roslyn DiagnosticAnalyzer DLL loading via get_diagnostics enables arbitrary code execution (GHSA-552p-8f74-6x7q, CWE-94). Upgrade to 1.17.0."
     }
   },
+  "crates.io": {
+    "onering": {
+      "1.4.1": {
+        "id": "RUSTSEC-2026-0175",
+        "severity": "critical",
+        "fixed": "1.4.2",
+        "summary": "onering v1.4.1 compromised supply-chain release (June 10, 2026). Malicious build.rs exfiltrates git commit diff (source code) to attacker-controlled Sentry endpoint (DSN key 8197ee42c4f59c83f4cc6d48f5bae821, o4511539639222272.ingest.de.sentry.io) on every cargo build. Unlike credential-theft campaigns, this targets source code / IP. Upgrade to 1.4.2 or pin <= 1.4.0. Disclosed by Aikido Security."
+      }
+    }
+  },
   "_meta": {
-    "generated": "2026-06-13",
+    "generated": "2026-06-14",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -3942,16 +3952,6 @@
         "fixed": null,
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
-      }
-    }
-  },
-  "crates.io": {
-    "onering": {
-      "1.4.1": {
-        "id": "RUSTSEC-2026-0175",
-        "severity": "critical",
-        "fixed": "1.4.2",
-        "summary": "onering v1.4.1 compromised supply-chain release (June 10, 2026). Malicious build.rs exfiltrates git commit diff (source code) to attacker-controlled Sentry endpoint (DSN key 8197ee42c4f59c83f4cc6d48f5bae821, o4511539639222272.ingest.de.sentry.io) on every cargo build. Unlike credential-theft campaigns, this targets source code / IP. Upgrade to 1.4.2 or pin <= 1.4.0. Disclosed by Aikido Security."
       }
     }
   }
