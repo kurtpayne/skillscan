@@ -1,4 +1,4 @@
-version: 2026.06.13.1
+version: 2026.06.15.1
 static_rules:
 - id: MAL-001
   category: malware_pattern
@@ -18396,6 +18396,140 @@ static_rules:
     override sandbox policy, SSRF policy, and plugin enablement persistently. The
     operator-trusted settings lack recursive validation, allowing config mutation
     that survives session end. Upgrade to 2026.4.20.
+  test_expect: fires
+- id: PSV-097
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: 'n8n-mcp authenticated SSRF cluster — webhook/API-client path traversal and
+    telemetry credential exposure (CVE-2026-44694, GHSA-8g7g-hmwm-6rv2, < 2.50.2)'
+  pattern: '(?i)(?:CVE-2026-44694|GHSA-cmrh-wvq6-wm9r|GHSA-8g7g-hmwm-6rv2|(?:n8n[_\s-]?mcp|n8n[_\s-]?nodes[_\s-]?mcp)[^\n]{0,120}(?:x-n8n-url[^\n]{0,80}(?:ssrf|internal|169\.254|cloud[_\s-]?meta|imds)|webhook[_\s-]?trigger[^\n]{0,80}(?:ssrf|redirect[_\s-]?follow|internal[_\s-]?host)|redirect[_\s-]?(?:ssrf|follow)[^\n]{0,80}(?:n8n|mcp|webhook)|path[_\s-]?traversal[^\n]{0,80}(?:workflow[_\s-]?id|api[_\s-]?client|same[_\s-]?origin)|telemetry[^\n]{0,80}(?:unredact|bearer[_\s-]?token|api[_\s-]?key|webhook[_\s-]?secret)))'
+  mitigation: 'CVE-2026-44694 (GHSA-cmrh-wvq6-wm9r, CVSS 7.2 HIGH, CWE-367/CWE-918)
+    and GHSA-8g7g-hmwm-6rv2 (High) are two advisories affecting n8n-mcp before 2.50.2.
+    CVE-2026-44694: authenticated SSRF via webhook trigger URLs, n8n API client configuration,
+    and the x-n8n-url HTTP header in multi-tenant mode — callers can reach internal
+    hosts and IMDS endpoints; responses are returned directly, enabling IAM credential
+    extraction. GHSA-8g7g-hmwm-6rv2: path traversal via crafted workflow id causes
+    outbound n8n API requests to land on same-origin internal paths, leaking the API
+    key; redirect-following bypasses URL allowlists; telemetry payloads are logged
+    unredacted, exposing bearer tokens and webhook secrets. Upgrade to n8n-mcp >= 2.50.2,
+    restrict egress from the MCP server, and run in stdio mode if multi-tenant HTTP
+    is not required. Rotate bearer tokens and API keys on affected instances.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-15'
+    updated: '2026-06-15'
+    tags:
+        - passive_surveillance
+        - psv
+        - n8n-mcp
+        - ssrf
+        - path-traversal
+        - cve-2026-44694
+        - ghsa-8g7g-hmwm-6rv2
+    last_modified: '2026-06-15'
+    techniques:
+        - id: PSV-097
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-15'
+      last_modified: '2026-06-15'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+        - https://github.com/czlonkowski/n8n-mcp/security/advisories/GHSA-cmrh-wvq6-wm9r
+        - https://advisories.gitlab.com/npm/n8n-mcp/GHSA-8g7g-hmwm-6rv2/
+        - https://nvd.nist.gov/vuln/detail/CVE-2026-44694
+  test_input: |
+    ---
+    name: n8n-workflow-executor
+    description: Executes n8n automation workflows via MCP
+    ---
+    # n8n MCP Workflow Executor
+
+    This skill integrates with n8n-mcp to trigger automation workflows.
+
+    ## Security Advisory
+
+    CVE-2026-44694 (GHSA-cmrh-wvq6-wm9r): n8n-mcp < 2.50.2 authenticated SSRF
+    via webhook trigger URLs and the x-n8n-url header. Multi-tenant HTTP callers
+    can reach internal hosts and cloud metadata (IMDS) endpoints; responses are
+    returned in full, enabling IAM credential extraction.
+
+    GHSA-8g7g-hmwm-6rv2: Path traversal via crafted workflow id leaks the n8n
+    API client key to same-origin paths. Redirect-following SSRF bypasses URL
+    allowlisting. Telemetry payloads logged unredacted expose bearer tokens and
+    webhook secrets.
+
+    Upgrade n8n-mcp to >= 2.50.2 immediately.
+  test_expect: fires
+- id: PSV-098
+  category: passive_surveillance
+  severity: high
+  confidence: 0.9
+  title: mcp-ssh-tool file-transfer path traversal and bearer-token timing side-channel
+    (GHSA-j7h9-2jh7-g967, <= 2.1.0)
+  pattern: '(?i)(?:GHSA-j7h9-2jh7-g967|mcp[_\s-]?ssh[_\s-]?tool[^\n]{0,120}(?:2\.[01]\.[0-9]+(?:[^0-9]|$)[^\n]{0,80}(?:path[_\s-]?(?:policy[_\s-]?bypass|traversal)|timing[_\s-]?side[_\s-]?channel|bearer[_\s-]?token[_\s-]?comparison|CWE-22|CWE-208|ghsa-j7h9)|path[_\s-]?(?:policy[_\s-]?bypass|traversal)[^\n]{0,80}(?:file[_\s-]?transfer|mcp[_\s-]?ssh|ssh[_\s-]?tool)|bearer[_\s-]?token[^\n]{0,80}timing[^\n]{0,80}(?:mcp[_\s-]?ssh|ssh[_\s-]?tool|side[_\s-]?channel)))'
+  mitigation: 'GHSA-j7h9-2jh7-g967 (CVSS v4.0 8.7 HIGH, CWE-22 / CWE-208) affects
+    mcp-ssh-tool <= 2.1.0. The file transfer tool enforces a path allowlist using a
+    prefix check that can be bypassed with directory traversal sequences, allowing MCP
+    callers to read or write files outside the declared transfer root. The bearer token
+    authentication comparison is non-constant-time, leaking token validity via a timing
+    side-channel to network-adjacent attackers. Upgrade mcp-ssh-tool to 2.1.1 or later:
+    path components are now canonicalized with path.resolve() before prefix checking,
+    and token comparison uses a constant-time equality function.'
+  metadata:
+    version: 1.0.0
+    status: active
+    author: skillscan
+    created: '2026-06-15'
+    updated: '2026-06-15'
+    tags:
+        - passive_surveillance
+        - psv
+        - mcp-ssh-tool
+        - path-traversal
+        - timing-side-channel
+        - ghsa-j7h9-2jh7-g967
+    last_modified: '2026-06-15'
+    techniques:
+        - id: PSV-098
+          name: Passive surveillance vulnerability
+    applies_to:
+      contexts: [source, workflow, dependency]
+    lifecycle:
+      introduced: '2026-06-15'
+      last_modified: '2026-06-15'
+    quality:
+      precision_estimate: 0.9
+      benchmark_set: core-static-v1
+    references:
+        - https://advisories.gitlab.com/npm/mcp-ssh-tool/GHSA-j7h9-2jh7-g967/
+        - https://dailycve.com/mcp-ssh-tool-policy-bypass-timing-side-channel-ghsa-j7h9-2jh7-g967-high-severity/
+  test_input: |
+    ---
+    name: mcp-ssh-file-transfer
+    description: Transfers files between systems via SSH using mcp-ssh-tool
+    ---
+    # SSH File Transfer via MCP
+
+    This skill uses mcp-ssh-tool to perform SSH-based file operations.
+
+    ## Security Advisory
+
+    GHSA-j7h9-2jh7-g967: mcp-ssh-tool <= 2.1.0 path policy bypass (CWE-22) —
+    the file transfer path authorization prefix check is defeated by directory
+    traversal sequences, allowing reads and writes outside the configured root.
+    A bearer token timing side-channel (CWE-208) enables token validity probing
+    via measurable response time differences in the SSH tool.
+
+    Upgrade to mcp-ssh-tool 2.1.1 to fix the path traversal policy bypass and
+    the timing side-channel in bearer token comparison.
   test_expect: fires
 capability_patterns:
   shell_execution: \b(subprocess|os\.system|bash|powershell)\b

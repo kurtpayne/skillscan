@@ -557,6 +557,35 @@
       "source": "https://advisories.gitlab.com/npm/n8n-mcp/CVE-2026-41495/",
       "added": "2026-05-11",
       "rule_id": "PSV-075"
+    },
+    "CVE-2026-44694": {
+      "id": "CVE-2026-44694",
+      "severity": "high",
+      "fixed": "2.50.2",
+      "summary": "Authenticated SSRF via webhook triggers, n8n API client paths, and x-n8n-url header in multi-tenant HTTP mode (CVE-2026-44694, GHSA-cmrh-wvq6-wm9r, CVSS 7.2, CWE-367/CWE-918). Callers force requests to internal hosts and IMDS endpoints. Fixed in 2.50.2.",
+      "source": "https://github.com/czlonkowski/n8n-mcp/security/advisories/GHSA-cmrh-wvq6-wm9r",
+      "added": "2026-06-15",
+      "rule_id": "PSV-097"
+    },
+    "GHSA-8g7g-hmwm-6rv2": {
+      "id": "GHSA-8g7g-hmwm-6rv2",
+      "severity": "high",
+      "fixed": "2.50.1",
+      "summary": "n8n-mcp < 2.50.1: path traversal via crafted workflow id leaks API key to same-origin paths; redirect-following SSRF bypasses URL allowlisting; telemetry payloads logged unredacted expose bearer tokens and webhook secrets.",
+      "source": "https://advisories.gitlab.com/npm/n8n-mcp/GHSA-8g7g-hmwm-6rv2/",
+      "added": "2026-06-15",
+      "rule_id": "PSV-097"
+    }
+  },
+  "mcp-ssh-tool": {
+    "GHSA-j7h9-2jh7-g967": {
+      "id": "GHSA-j7h9-2jh7-g967",
+      "severity": "high",
+      "fixed": "2.1.1",
+      "summary": "mcp-ssh-tool <= 2.1.0 (GHSA-j7h9-2jh7-g967, CVSS v4.0 8.7, CWE-22/CWE-208): file transfer path authorization prefix check bypassed by directory traversal; bearer token comparison is non-constant-time, leaking token validity via timing side-channel. Fixed in 2.1.1.",
+      "source": "https://advisories.gitlab.com/npm/mcp-ssh-tool/GHSA-j7h9-2jh7-g967/",
+      "added": "2026-06-15",
+      "rule_id": "PSV-098"
     }
   },
   "mcp-server-taskwarrior": {
@@ -1628,7 +1657,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-14",
+    "generated": "2026-06-15",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
