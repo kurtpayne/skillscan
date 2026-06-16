@@ -1657,7 +1657,7 @@
     }
   },
   "_meta": {
-    "generated": "2026-06-15",
+    "generated": "2026-06-16",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -2182,6 +2182,21 @@
         "id": "GHSA-86qp-5c8j-p5mr",
         "severity": "medium",
         "fixed": "1.0.1"
+      },
+      "1.3.0": {
+        "id": "GHSA-82w8-qh3p-5jfq",
+        "severity": "high",
+        "fixed": "1.3.1"
+      },
+      "1.0.1": {
+        "id": "GHSA-wqp7-x3pw-xc5r",
+        "severity": "high",
+        "fixed": "1.1.0"
+      },
+      "1.2.1": {
+        "id": "GHSA-jp82-jpqv-5vv3",
+        "severity": "low",
+        "fixed": "1.3.0"
       }
     },
     "cryptography": {
@@ -2234,6 +2249,11 @@
         "id": "GHSA-39hc-v87j-747x",
         "severity": "medium",
         "fixed": "38.0.3"
+      },
+      "48.0.0": {
+        "id": "GHSA-537c-gmf6-5ccf",
+        "severity": "high",
+        "fixed": "48.0.1"
       }
     },
     "paramiko": {
@@ -3982,6 +4002,33 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
       }
+    }
+  },
+  "@solana-labs/spl-toke": {
+    "all": {
+      "id": "SUP-062",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "SUP-062: @solana-labs/spl-toke is a typosquat of @solana-labs/spl-token (note missing trailing n) distributed in the Solana FakeFix campaign (PassWord1337 / JFrog Research, June 12 2026). Postinstall hook harvests Solana keypair files, SSH keys, AWS credentials, .env files, and env vars containing KEY/SECRET/MNEMONIC/PASSWORD; exfiltrates to attacker-controlled Telegram bot. All versions malicious \u2014 do not install.",
+      "campaign": "FakeFix"
+    }
+  },
+  "solana-web3-stable": {
+    "all": {
+      "id": "SUP-062",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "SUP-062: solana-web3-stable is a malicious npm package in the Solana FakeFix campaign (PassWord1337, June 12 2026). Promoted via GitHub issue spam as a stable-build fix for @solana/web3.js. Postinstall hook harvests credentials and Solana wallet keys; exfiltrates via Telegram bot. All versions malicious \u2014 do not install.",
+      "campaign": "FakeFix"
+    }
+  },
+  "solana-rpc-client": {
+    "all": {
+      "id": "SUP-062",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "SUP-062: solana-rpc-client is a malicious npm package in the Solana FakeFix campaign (PassWord1337, June 12 2026). Promoted as a community fork drop-in replacement. Postinstall hook harvests credentials and wallet keys; exfiltrates via Telegram bot. All versions malicious \u2014 do not install.",
+      "campaign": "FakeFix"
     }
   }
 }
