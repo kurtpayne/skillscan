@@ -1656,8 +1656,35 @@
       }
     }
   },
+  "@solana-labs/spl-toke": {
+    "all": {
+      "id": "SUP-062",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "SUP-062: @solana-labs/spl-toke is a typosquat of @solana-labs/spl-token (note missing trailing n) distributed in the Solana FakeFix campaign (PassWord1337 / JFrog Research, June 12 2026). Postinstall hook harvests Solana keypair files, SSH keys, AWS credentials, .env files, and env vars containing KEY/SECRET/MNEMONIC/PASSWORD; exfiltrates to attacker-controlled Telegram bot. All versions malicious \u2014 do not install.",
+      "campaign": "FakeFix"
+    }
+  },
+  "solana-web3-stable": {
+    "all": {
+      "id": "SUP-062",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "SUP-062: solana-web3-stable is a malicious npm package in the Solana FakeFix campaign (PassWord1337, June 12 2026). Promoted via GitHub issue spam as a stable-build fix for @solana/web3.js. Postinstall hook harvests credentials and Solana wallet keys; exfiltrates via Telegram bot. All versions malicious \u2014 do not install.",
+      "campaign": "FakeFix"
+    }
+  },
+  "solana-rpc-client": {
+    "all": {
+      "id": "SUP-062",
+      "severity": "critical",
+      "fixed": null,
+      "summary": "SUP-062: solana-rpc-client is a malicious npm package in the Solana FakeFix campaign (PassWord1337, June 12 2026). Promoted as a community fork drop-in replacement. Postinstall hook harvests credentials and wallet keys; exfiltrates via Telegram bot. All versions malicious \u2014 do not install.",
+      "campaign": "FakeFix"
+    }
+  },
   "_meta": {
-    "generated": "2026-06-16",
+    "generated": "2026-06-17",
     "source": "OSV.dev (https://osv.dev)",
     "python_packages_checked": [
       "mcp",
@@ -1908,6 +1935,11 @@
         "id": "PYSEC-2023-205",
         "severity": "medium",
         "fixed": "9ecb7240a480720ec9d739b3877a52f76098a2b8"
+      },
+      "1.3.8": {
+        "id": "GHSA-gr75-jv2w-4656",
+        "severity": "medium",
+        "fixed": "1.3.9"
       }
     },
     "langchain-core": {
@@ -4002,33 +4034,14 @@
         "affected_range": ">=0.0.1",
         "published": "2026-05-22"
       }
-    }
-  },
-  "@solana-labs/spl-toke": {
-    "all": {
-      "id": "SUP-062",
-      "severity": "critical",
-      "fixed": null,
-      "summary": "SUP-062: @solana-labs/spl-toke is a typosquat of @solana-labs/spl-token (note missing trailing n) distributed in the Solana FakeFix campaign (PassWord1337 / JFrog Research, June 12 2026). Postinstall hook harvests Solana keypair files, SSH keys, AWS credentials, .env files, and env vars containing KEY/SECRET/MNEMONIC/PASSWORD; exfiltrates to attacker-controlled Telegram bot. All versions malicious \u2014 do not install.",
-      "campaign": "FakeFix"
-    }
-  },
-  "solana-web3-stable": {
-    "all": {
-      "id": "SUP-062",
-      "severity": "critical",
-      "fixed": null,
-      "summary": "SUP-062: solana-web3-stable is a malicious npm package in the Solana FakeFix campaign (PassWord1337, June 12 2026). Promoted via GitHub issue spam as a stable-build fix for @solana/web3.js. Postinstall hook harvests credentials and Solana wallet keys; exfiltrates via Telegram bot. All versions malicious \u2014 do not install.",
-      "campaign": "FakeFix"
-    }
-  },
-  "solana-rpc-client": {
-    "all": {
-      "id": "SUP-062",
-      "severity": "critical",
-      "fixed": null,
-      "summary": "SUP-062: solana-rpc-client is a malicious npm package in the Solana FakeFix campaign (PassWord1337, June 12 2026). Promoted as a community fork drop-in replacement. Postinstall hook harvests credentials and wallet keys; exfiltrates via Telegram bot. All versions malicious \u2014 do not install.",
-      "campaign": "FakeFix"
+    },
+    "easy-day-js": {
+      "1.11.22": {
+        "id": "SUP-063",
+        "severity": "critical",
+        "fixed": "REMOVE \u2014 do not use easy-day-js; it is a typosquat. Use dayjs instead.",
+        "summary": "easy-day-js@1.11.22 is a malicious typosquat of the dayjs date library, distributed via a hijacked @mastra contributor account (ehindero) on June 17 2026. The postinstall hook fetches and executes a stage-2 RAT from 23.254.164.92:8000/update/49890878 that harvests browser credentials, crypto wallet data, and installs persistence. 141 @mastra packages were compromised. Remove immediately and rotate all credentials."
+      }
     }
   }
 }
