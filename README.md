@@ -1,3 +1,13 @@
+# ⚠️ RETIRED — no longer maintained
+
+> Retired 2026-07-03. We benchmarked this product family honestly — including against our own tools — and the results said stop: static scanning of AI skills doesn't work as a security boundary. The full story and the measurements are at [skillscan.sh](https://skillscan.sh/about.html), which now lives on as an independent benchmark of skill-security scanners.
+>
+> No further updates, releases, or security fixes.
+> The PyPI package `skillscan-security` and any Docker images are **deprecated** — do not use in new projects.
+
+
+---
+
 
 [![CI](https://github.com/kurtpayne/skillscan-security/actions/workflows/ci.yml/badge.svg)](https://github.com/kurtpayne/skillscan-security/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/kurtpayne/skillscan-security/actions/workflows/codeql.yml/badge.svg)](https://github.com/kurtpayne/skillscan-security/actions/workflows/codeql.yml)
